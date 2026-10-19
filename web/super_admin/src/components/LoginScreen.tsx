@@ -4,6 +4,7 @@ import { apiService } from '../services/api';
 import { AdminProfile } from '../types';
 import { LogoBadge } from './ui/Logo';
 import { PIPELINE_ORDER, STATUS_META } from '../lib/tokens';
+import { brand } from '../config/brand';
 
 interface LoginScreenProps {
   onLoginSuccess: (profile: AdminProfile) => void;
@@ -52,7 +53,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             Every order.<br />Every runner.<br /><span className="text-kraveo-g300">One calm screen.</span>
           </h2>
           <p className="k-reveal mt-6 max-w-md text-base text-kraveo-g100/80" style={{ ['--i' as string]: 2 }}>
-            The dispatch console for Kraveo campus deliveries at VIT Bhopal.
+            The dispatch console for {brand.name} stores and deliveries.
           </p>
           <div className="k-reveal mt-10 flex flex-wrap gap-2" style={{ ['--i' as string]: 3 }}>
             {[...PIPELINE_ORDER, 'delivered' as const].map((key) => {
@@ -66,7 +67,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           </div>
         </div>
 
-        <p className="relative text-xs text-kraveo-g200/70">Kraveo campus network · Built for VIT Bhopal</p>
+        <p className="relative text-xs text-kraveo-g200/70">{brand.name} · Operations</p>
       </section>
 
       {/* Form panel */}
@@ -134,7 +135,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             </form>
           </div>
 
-          <p className="mt-6 text-center text-xs text-kraveo-ink3 lg:hidden">Kraveo campus network · Built for VIT Bhopal</p>
+          <p className="mt-6 text-center text-xs text-kraveo-ink3 lg:hidden">{brand.name} · Operations</p>
         </div>
       </main>
     </div>

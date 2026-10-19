@@ -4,6 +4,10 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+val marketBrand = java.util.Properties().apply {
+    rootProject.file("../../../branding/android.properties").inputStream().use { load(it) }
+}
+
 android {
     namespace = "site.kraveo.vendor"
     compileSdk = flutter.compileSdkVersion
@@ -17,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "site.kraveo.vendor"
+        applicationId = marketBrand.getProperty("vendor.applicationId")
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

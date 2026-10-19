@@ -74,7 +74,7 @@ class _KraveoDriverAppState extends State<KraveoDriverApp> {
       child: PushScope(
         controller: widget.push,
         child: MaterialApp(
-          title: 'Kraveo Delivery Partner',
+          title: BrandConfig.driverName,
           debugShowCheckedModeBanner: false,
           theme: KraveoTheme.driver(),
           home: AuthGate(session: _session, riderServices: widget.riderServices, payoutApi: widget.payoutApi),

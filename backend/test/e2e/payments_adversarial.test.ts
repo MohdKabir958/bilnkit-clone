@@ -749,7 +749,7 @@ describe('Payments adversarial audit', () => {
   // 4. FORGERY AND REPLAY
   // =============================================================================================
   describe('4. forgery and replay', () => {
-    const SECRET = 'test_webhook_secret';
+    const SECRET = process.env.RAZORPAY_WEBHOOK_SECRET!;
     const signedPost = (raw: string, sig: string) => request.post('/api/payments/webhook').set('content-type', 'application/json').set('x-razorpay-signature', sig).send(raw);
 
     test('PROVE: real HMAC over the exact raw bytes is accepted; any change to the bytes (whitespace, key order, one char) or a signature of another body is refused and nothing changes', async () => {

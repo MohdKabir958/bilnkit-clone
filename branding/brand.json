@@ -1,0 +1,14 @@
+{
+  "name": "DailyMarket",
+  "customerName": "DailyMarket",
+  "vendorName": "DailyMarket Vendor",
+  "driverName": "DailyMarket Delivery",
+  "primary": "#075219",
+  "accent": "#FFD600",
+  "logoAsset": "",
+  "applicationIds": {
+    "customer": "in.dailymarket.customer",
+    "vendor": "in.dailymarket.vendor",
+    "driver": "in.dailymarket.driver"
+  }
+}

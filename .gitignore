@@ -14,6 +14,7 @@ build/
 # Environment & Secrets
 .env
 .env.*
+!.env.example
 firebase-key.json
 *firebase-adminsdk*.json
 *.pem

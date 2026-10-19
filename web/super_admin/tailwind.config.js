@@ -1,3 +1,4 @@
+import brand from '../../branding/brand.json' with { type: 'json' };
 /** @type {import('tailwindcss').Config} */
 // Kraveo design tokens. Hex values mirror packages/kraveo_ui (KraveoPalette / KStatus / KraveoTokens.driver).
 // Keep in sync with src/lib/tokens.ts (used where a raw hex is required, e.g. Recharts).
@@ -19,17 +20,17 @@ export default {
           g500: '#23913A',
           g600: '#147A2C',
           g700: '#0C6423',
-          g800: '#075219', // brand
+          g800: brand.primary,
           g900: '#063D14',
           g950: '#032309',
-          brand: '#075219',
+          brand: brand.primary,
           brandSoft: '#12281A',
           // Electric yellow (accent, brand = 400)
-          yellow: '#FFD600',
+          yellow: brand.accent,
           y100: '#FFF6C2',
           y200: '#FFEC85',
           y300: '#FFE24D',
-          y400: '#FFD600',
+          y400: brand.accent,
           y500: '#E6BE00',
           y700: '#8A6D00',
           // Cream (used only on the logo badge)

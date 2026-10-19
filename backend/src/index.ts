@@ -9,6 +9,7 @@ import { startOrderMaintenance } from './services/orderMaintenance';
 import { securityHeaders } from './middleware/securityHeaders';
 import { globalErrorHandler } from './middleware/errorHandler';
 import { assertRuntimeConfig } from './config/runtimeConfig';
+import { brand } from './config/brand';
 import { installProcessGuards } from './processGuards';
 import { initPushProvider, getPushProvider } from './services/push/provider';
 import { mountUploads } from './routes/uploads';
@@ -93,7 +94,7 @@ app.use('/api', apiRouter);
 app.get('/health', (req, res) => {
   res.json({
     status: 'online',
-    service: 'Kraveo Campus Delivery Backend Engine',
+    service: `${brand.name} Delivery API`,
     timestamp: new Date().toISOString(),
   });
 });

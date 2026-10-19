@@ -1,0 +1,12 @@
+# Development setup
+
+Use the existing isolated checkout. Do not create an extra worktree. Node 24.19.0/npm 11.9.0 were used; the lockfiles, not the old README badges, determine actual package versions. Flutter 3.44.9 is the selected SDK, compatible with the app locks' Flutter >=3.44/Dart >=3.12 requirement.
+
+1. Install PostgreSQL 16+ or start `docker compose up -d postgres`. Compose publishes only loopback and uses trust auth for a disposable local volume. It is not a production database configuration.
+2. `node scripts/init_dev_env.mjs` creates `backend/.env` once with unique local authentication secrets and disabled payments. Supply `DATABASE_URL` to that command if the database user/path differs. An existing `.env` is never overwritten. Inspect the file locally for admin login; never paste values into chat or commit it.
+3. In backend: `npm ci`, `npx prisma generate`, `npm run db:deploy`, `npm run build`, then `npm run dev`. This uses the real database. Payments are unavailable until real Razorpay sandbox settings replace disabled mode. Google login and push require configured projects.
+4. In each web folder: `npm ci`, `npm run build`, `npm run dev`. Admin port is 3000; landing defaults to 5173. `web/super_admin/.env.example` documents API/socket overrides.
+5. Flutter: export `PUB_CACHE=/workspace/.pub-cache`, `XDG_CONFIG_HOME=/workspace/.config`, `XDG_CACHE_HOME=/workspace/.cache`, `ANALYZER_STATE_LOCATION_OVERRIDE=/workspace/.dartServer` on this cloud machine; add `/workspace/.tools/flutter/bin` to PATH. In each app run `flutter pub get --enforce-lockfile`, `flutter analyze`, `flutter test`, and `flutter build bundle --debug --target-platform=linux-x64`. Use an emulator/device for platform features; Android APKs need Android SDK and valid app-specific Firebase configuration.
+6. Test with a separate empty `market_test` database, `DATABASE_URL=.../market_test npm run db:deploy`, then set that URL explicitly when running backend `npm test`. Never point destructive tests at the development or production database.
+
+Brand changes: edit `branding/brand.json`, run `python3 scripts/configure_brand.py`, then rebuild clients. App names/IDs, shared palette, native labels/icons/splash, API service name and admin identity are centralized. Firebase package IDs, Maps restrictions, release signing and store listings must match the new app IDs; the upstream project's client config must not be treated as your production project.

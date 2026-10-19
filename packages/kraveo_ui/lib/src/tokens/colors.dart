@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../brand_config.dart';
 
 /// Raw brand palette. Derived from the Kraveo bowl logo (forest green + electric yellow).
 /// Screens should NOT use these directly - read semantic roles via `context.k`.
@@ -14,7 +15,7 @@ class KraveoPalette {
   static const g500 = Color(0xFF23913A);
   static const g600 = Color(0xFF147A2C);
   static const g700 = Color(0xFF0C6423);
-  static const g800 = Color(0xFF075219); // brand
+  static const g800 = Color(BrandConfig.primary);
   static const g900 = Color(0xFF063D14);
   static const g950 = Color(0xFF032309);
 
@@ -22,7 +23,7 @@ class KraveoPalette {
   static const y100 = Color(0xFFFFF6C2);
   static const y200 = Color(0xFFFFEC85);
   static const y300 = Color(0xFFFFE24D);
-  static const y400 = Color(0xFFFFD600); // brand
+  static const y400 = Color(BrandConfig.accent);
   static const y500 = Color(0xFFE6BE00);
   static const y700 = Color(0xFF8A6D00);
 

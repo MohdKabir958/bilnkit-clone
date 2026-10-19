@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_USER: market
+      POSTGRES_DB: market_dev
+      # Disposable loopback development only. Use managed credentials in production.
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - market_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U market -d market_dev"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  market_pg:

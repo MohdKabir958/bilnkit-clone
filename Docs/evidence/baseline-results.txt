@@ -1,0 +1,35 @@
+Local verification, feature/india-grocery-platform, 2026-10-19.
+
+Backend:
+DATABASE_URL=postgresql://agent@127.0.0.1:5432/market_test NODE_ENV=test npm test -- --runTestsByPath test/e2e/lifecycle_journeys.test.ts test/e2e/auth_pipeline.test.ts test/e2e/hardening.test.ts test/e2e/payments_adversarial.test.ts test/unit/runtime_config.test.ts test/unit/payout_crypto.test.ts test/unit/pricing_engine.test.ts test/unit/image_probe.test.ts test/unit/order_groups_money.test.ts --verbose
+Test Suites: 9 passed, 9 total
+Tests:       280 passed, 280 total
+
+Admin: npm run build && npm test
+Test Files  45 passed (45)
+Tests       790 passed (790)
+
+Flutter (PUB_CACHE/XDG_CONFIG_HOME/XDG_CACHE_HOME/ANALYZER_STATE_LOCATION_OVERRIDE set to writable cloud locations):
+flutter pub get --enforce-lockfile: passed in all three apps; app lockfiles unchanged.
+flutter analyze: No issues found in customer, vendor and driver.
+flutter test --no-pub --concurrency=2 --reporter expanded:
+customer: +433 All tests passed!
+vendor:   +514 All tests passed!
+rider:    +394 All tests passed! (rerun after neutral wordmark constraint fix)
+
+flutter build bundle --debug --no-pub: customer exit 0; driver exit 0.
+Vendor Android-target bundle failed: Android SDK could not be found by native-assets hook.
+flutter build bundle --debug --target-platform=linux-x64 --no-pub: vendor exit 0.
+No Android emulator or physical-device test was run. No signed release APK is verified.
+
+Backend/admin/landing builds: exit 0.
+Fresh db:deploy, repeat no-op deploy, schema drift comparison: passed, no difference.
+Migration safety: untracked table with value 42 refused automatic bootstrap, value stayed 42.
+Backend runtime smoke: health, unauthorized admin rejection, real admin login, authenticated partner query, vendor query passed.
+Admin/landing local HTTP and transformed JS module requests: passed.
+Backend production npm audit after proxy-addr/busboy update: zero reported vulnerabilities.
+Admin production npm audit: zero reported vulnerabilities.
+Docker Compose config syntax: passed; service not launched through Compose here.
+Brand generator --check: passed. Environment generator repeated: existing local file preserved.
+
+No Google OAuth, FCM send, gateway sandbox/live transaction, payout, production deployment or CI execution was claimed.

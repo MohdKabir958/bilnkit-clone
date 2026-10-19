@@ -39,12 +39,7 @@ Monorepo architecture serving 10,000 students at VIT Bhopal:
 
 ## Mobile App Identity and Build Naming
 
-Use these fixed product identities in Android labels, launcher icons, and release artifacts:
+The current implementation brief replaces the inherited fixed Kraveo identities with the neutral brand in `branding/brand.json`.
+Run `python3 scripts/configure_brand.py` after editing it. This generates shared Flutter/API/admin names and Android IDs, labels, icons and splash resources. Keep internal package/class names for compatibility. Use an owned Firebase configuration matching the generated Android IDs.
 
-| App | Installed name | Logo source | Release APK prefix |
-|---|---|---|---|
-| Customer | `Kraveo` | `logo-customer-app.png` | `Kraveo-Customer` |
-| Vendor | `Kraveo Restaurant Partner` | `Restaurant-Partner-Logo.png` | `Kraveo-Restaurant-Partner` |
-| Driver | `Kraveo Delivery Partner` | `delivery-logo-bgremove.png` | `Kraveo-Delivery-Partner` |
-
-Never distribute three files all named `app-release.apk`; use the role-specific names above with the semantic version and build number.
+`scripts/build_mobile_apks.sh` emits role-specific, versioned artifact names using the configured brand. Do not distribute indistinguishable `app-release.apk` files. Production signing, external services and device verification remain required.

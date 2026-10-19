@@ -1,0 +1,62 @@
+[
+  {
+    "name": "20260904_align_legacy_schema",
+    "sha256": "2b4fe0775a37a3527a699bbb7242e1a8679f972b45d3b3dc842be2168471abfb"
+  },
+  {
+    "name": "20260904_clear_legacy_gate_otps",
+    "sha256": "80711a1cf08e83a1554993e2035166a7eb05b8f69489cc886cbb32acfc9b7752"
+  },
+  {
+    "name": "20260904_make_order_otp_nullable",
+    "sha256": "3827b0b0dbb821a15884c44335d7917d99fb1719d7083f8bb0084ee6e8108e1c"
+  },
+  {
+    "name": "20260930_auth_v2_and_indexes",
+    "sha256": "168c4fe228a1417151e727fe9f1fd3ec4cfd671e86197c50d3cdf390ce355ca2"
+  },
+  {
+    "name": "20261001_partner_approval",
+    "sha256": "5df81b0ccc5d424fe7cb81a90119bed123651422209066f78a0c17a802a94235"
+  },
+  {
+    "name": "20261002_order_flow",
+    "sha256": "62786245382cc142449ca449af4710bc86328efcb88cded12ffd5b64986d01c2"
+  },
+  {
+    "name": "20261003_hardening",
+    "sha256": "8558d2bf3afc07bae22ec20bd9b423671f8499cbdefc08f2cee1773e2fda1757"
+  },
+  {
+    "name": "20261005_push_notifications",
+    "sha256": "6d79307cbffdd0c3b1a369a526db1a1d9d800dbc3a09751ff8f07b8b0073aed1"
+  },
+  {
+    "name": "20261006_campus_dropoints",
+    "sha256": "2b7f71e0574126c0f2e68d2957da1b85c663e258f570a3532c1a5a329a64b504"
+  },
+  {
+    "name": "20261007_user_hostel_no_default",
+    "sha256": "07f1bd1253648e35197746226297951273b531eb1931558dd7d0a88493bc6a8e"
+  },
+  {
+    "name": "20261008_vendor_location_source",
+    "sha256": "8ba0989e2e69a207aa6b06a9538804436cb3f1d8649d47b4a720167a285783bc"
+  },
+  {
+    "name": "20261009_pricing_catalog",
+    "sha256": "0fd7d66ca66c5f30fe17afc64f02d4f6e4d102c82c56c4fa41837c1bd77ccd89"
+  },
+  {
+    "name": "20261010_settlements_payouts",
+    "sha256": "a5b744a63db5ba25b8c03ce21b347da51dadb01d1b840cc293799f30df68033a"
+  },
+  {
+    "name": "20261011_order_groups",
+    "sha256": "582a79b062664fc3f087918683592e4121084fedafcbf1c2eb6acc52109f5806"
+  },
+  {
+    "name": "20261012_categories",
+    "sha256": "9d8926a422491001cc9dd7f836c8e79f02e04cc6a5466a8ac6c11966065acdf4"
+  }
+]

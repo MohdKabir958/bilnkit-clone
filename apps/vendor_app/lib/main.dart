@@ -75,7 +75,7 @@ class _KraveoVendorAppState extends State<KraveoVendorApp> {
   @override
   Widget build(BuildContext context) {
     final app = MaterialApp(
-        title: 'Kraveo Restaurant Partner',
+        title: BrandConfig.vendorName,
         debugShowCheckedModeBanner: false,
         theme: KraveoTheme.vendor(),
         // The vendor theme already renders type ~12% larger; cap the system font scale so

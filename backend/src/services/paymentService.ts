@@ -13,6 +13,7 @@ export const razorpayPublicKeyId = () => razorpayKeyId;
 
 let razorpayClient: Razorpay | undefined;
 const getRazorpayClient = () => {
+  if (process.env.PAYMENT_PROVIDER === 'disabled') return undefined;
   if (!razorpayKeyId || !razorpayKeySecret) return undefined;
   razorpayClient ||= new Razorpay({ key_id: razorpayKeyId, key_secret: razorpayKeySecret });
   return razorpayClient;
@@ -291,6 +292,7 @@ export const verifyRazorpayPaymentSignature = (
   razorpayPaymentId: string,
   signature: string
 ): boolean => {
+  if (process.env.PAYMENT_PROVIDER === 'disabled') return false;
   if (process.env.NODE_ENV === 'test' && razorpayOrderId.startsWith('rzp_order_sim_')) {
     return true; // Auto-pass simulation signatures in development mode
   }
@@ -314,6 +316,7 @@ export const verifyRazorpayWebhookSignature = (
   rawBody: Buffer | string,
   signature: string
 ): boolean => {
+  if (process.env.PAYMENT_PROVIDER === 'disabled') return false;
   if (!signature || typeof signature !== 'string') return false;
 
   if (process.env.NODE_ENV === 'test' && signature === 'valid_test_wh_signature') {

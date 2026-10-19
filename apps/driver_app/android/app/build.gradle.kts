@@ -10,6 +10,10 @@ plugins {
 fun nonBlank(value: Any?): String? = value?.toString()?.trim()?.takeIf { it.isNotEmpty() }
 val mapsApiKey: String = nonBlank(project.findProperty("MAPS_API_KEY")) ?: nonBlank(System.getenv("KRAVEO_MAPS_API_KEY")) ?: ""
 
+val marketBrand = java.util.Properties().apply {
+    rootProject.file("../../../branding/android.properties").inputStream().use { load(it) }
+}
+
 android {
     namespace = "site.kraveo.driver"
     compileSdk = flutter.compileSdkVersion
@@ -23,7 +27,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "site.kraveo.driver"
+        applicationId = marketBrand.getProperty("driver.applicationId")
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

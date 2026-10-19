@@ -5,6 +5,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUTPUT_DIR="$ROOT_DIR/build/apks"
 mkdir -p "$OUTPUT_DIR"
+python3 "$ROOT_DIR/scripts/configure_brand.py" --check
+BRAND_NAME="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["name"])' "$ROOT_DIR/branding/brand.json")"
 
 build_app() {
   local app_dir="$1"
@@ -30,6 +32,6 @@ build_app() {
   printf 'Created %s\n' "$target_apk"
 }
 
-build_app "apps/customer_app" "Kraveo-Customer"
-build_app "apps/vendor_app" "Kraveo-Restaurant-Partner"
-build_app "apps/driver_app" "Kraveo-Delivery-Partner"
+build_app "apps/customer_app" "$BRAND_NAME-Customer"
+build_app "apps/vendor_app" "$BRAND_NAME-Vendor"
+build_app "apps/driver_app" "$BRAND_NAME-Delivery"

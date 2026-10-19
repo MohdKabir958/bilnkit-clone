@@ -52,7 +52,7 @@ class KraveoCustomerApp extends StatelessWidget {
         if (push != null) ChangeNotifierProvider<PushService>.value(value: push!),
       ],
       child: MaterialApp(
-        title: 'Kraveo',
+        title: BrandConfig.customerName,
         debugShowCheckedModeBanner: false,
         theme: KraveoTheme.customer(),
         home: const AuthGate(),

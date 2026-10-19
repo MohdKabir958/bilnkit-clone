@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Bike, ClipboardCheck, Landmark, MapPinned, PanelLeftClose, PanelLeftOpen, ShoppingBag, SlidersHorizontal, Store, Tags, TrendingUp, TriangleAlert, Users, UtensilsCrossed, X } from 'lucide-react';
 import { TabType } from '../types';
 import { LogoBadge, LogoMark } from './ui/Logo';
+import { brand } from '../config/brand';
 
 interface SidebarProps {
   activeTab: TabType;
@@ -133,8 +134,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isLiv
             <div className="flex min-w-0 items-center gap-3">
               <LogoMark size={44} />
               <div className="min-w-0">
-                <p className="truncate font-display text-base font-extrabold leading-tight tracking-tight text-kraveo-ink">Kraveo</p>
-                <p className="truncate text-[11px] font-semibold text-kraveo-ink3">Ops console · VIT Bhopal</p>
+                <p className="truncate font-display text-base font-extrabold leading-tight tracking-tight text-kraveo-ink">{brand.name}</p>
+                <p className="truncate text-[11px] font-semibold text-kraveo-ink3">Operations console</p>
               </div>
             </div>
           )}
