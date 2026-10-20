@@ -14,4 +14,12 @@ Open the download in your phone browser, then open the downloaded APK. If Androi
 
 `SHA256SUMS.txt` records the exact file hashes. `manifest.json` records package labels, sizes and signer fingerprints. The original MIT notice is included in LICENSE; Flutter package notices are bundled in each APK. No private signing key or backend credential is included.
 
-The application source is on [feature/india-grocery-platform](https://github.com/MohdKabir958/bilnkit-clone/tree/feature/india-grocery-platform), with Grozo mobile branding from commit 2821c37. The [hosted deployment guide](https://github.com/MohdKabir958/bilnkit-clone/blob/feature/india-grocery-platform/Docs/11_hosted_deployment_and_apk_handover.md) describes how to build new phone previews with the real deployed HTTPS API address. That connected build will replace these UI-only snapshots after hosting and client configuration are available.
+The application source is on [feature/india-grocery-platform](https://github.com/MohdKabir958/bilnkit-clone/tree/feature/india-grocery-platform), with the Grozo UI redesign from commit 64941d0. The [hosted deployment guide](https://github.com/MohdKabir958/bilnkit-clone/blob/feature/india-grocery-platform/Docs/11_hosted_deployment_and_apk_handover.md) describes how to build new phone previews with the real deployed HTTPS API address. That connected build will replace these UI-only snapshots after hosting and client configuration are available.
+
+## Updated UI build — 20 October 2026
+
+These files include the implemented Grozo redesign. Customer is 48.1 MB, Vendor 46.1 MB and Delivery 45.7 MB. Package IDs, APK ZIP integrity and development signatures were verified. Physical installation has not been tested in this cloud workspace.
+
+For the authenticated screens, review the [actual screenshot gallery](https://github.com/MohdKabir958/bilnkit-clone/tree/feature/india-grocery-platform/Docs/ui-ux/client-demo) and [before/after PDF](https://github.com/MohdKabir958/bilnkit-clone/blob/feature/india-grocery-platform/Docs/ui-ux/client-demo/Grozo-before-after.pdf). Flutter images use explicitly isolated service fixtures; admin browser images use the local backend. These APKs contain no login bypass or embedded fake catalog.
+
+If an older chat artifact says “could not download artifact”, use the direct APK links above. These files live on a Git branch and do not depend on expiring chat or Actions artifacts. If GitHub asks you to sign in, use an account with access to the repository. If a browser opens a file page, select Download raw file.
