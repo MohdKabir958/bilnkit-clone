@@ -47,3 +47,6 @@ KRAVEO_CHATGPT_CODEX_FULL_CHAT_TRANSCRIPT.md
 *.local.md
 *.local.txt
 DEMO_ACCOUNTS*
+
+# Local Android Kotlin compiler state
+**/.kotlin/
