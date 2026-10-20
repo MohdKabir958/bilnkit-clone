@@ -55,10 +55,15 @@ enum OrderStatus {
         OrderStatus.unknown => 'UNKNOWN',
       };
 
-  bool get isTerminal => this == OrderStatus.delivered || this == OrderStatus.cancelled;
+  bool get isTerminal =>
+      this == OrderStatus.delivered || this == OrderStatus.cancelled;
 
   /// Before the rider has the food: the job can still be released back to the pool.
-  bool get isBeforePickup => this == OrderStatus.accepted || this == OrderStatus.preparing || this == OrderStatus.readyForPickup || this == OrderStatus.placed;
+  bool get isBeforePickup =>
+      this == OrderStatus.accepted ||
+      this == OrderStatus.preparing ||
+      this == OrderStatus.readyForPickup ||
+      this == OrderStatus.placed;
 
   /// Position in the happy path, used only as a tie-breaker when two copies carry the same `updatedAt`.
   int get rank => switch (this) {
@@ -82,7 +87,13 @@ class OrderItemView {
 }
 
 class VendorView {
-  const VendorView({this.id, required this.name, this.address, this.lat, this.lng, this.hasLocation = false});
+  const VendorView(
+      {this.id,
+      required this.name,
+      this.address,
+      this.lat,
+      this.lng,
+      this.hasLocation = false});
   final String? id;
   final String name;
   final String? address;
@@ -156,7 +167,9 @@ class GroupStopView {
   }
 
   /// The restaurant already gave the food to the rider (or the order is closed).
-  bool get pickedUp => status.rank >= OrderStatus.pickedUp.rank && status != OrderStatus.cancelled;
+  bool get pickedUp =>
+      status.rank >= OrderStatus.pickedUp.rank &&
+      status != OrderStatus.cancelled;
 
   GroupStopView copyWith({OrderStatus? status}) => GroupStopView(
         orderId: orderId,
@@ -173,7 +186,12 @@ class GroupStopView {
 
 /// `OrderView.group` for a rider (Docs/22 section 10.4). Absent on a single-restaurant order.
 class GroupInfo {
-  const GroupInfo({required this.id, required this.index, required this.size, required this.primary, this.stops = const []});
+  const GroupInfo(
+      {required this.id,
+      required this.index,
+      required this.size,
+      required this.primary,
+      this.stops = const []});
 
   final String id;
   final int index;
@@ -190,7 +208,8 @@ class OrderView {
     required this.status,
     this.group,
     this.groupParts = const [],
-    this.offerId, this.offerExpiresAt,
+    this.offerId,
+    this.offerExpiresAt,
     this.paymentStatus,
     this.totalAmount,
     this.deliveryFee,
@@ -233,7 +252,13 @@ class OrderView {
   /// The server's drop point with coordinates (additive; null for an older server or a stored
   /// value it could not recognise).
   final DropoffView? dropoff;
-  final DateTime? createdAt, updatedAt, paidAt, acceptedAt, pickedUpAt, deliveredAt, cancelledAt;
+  final DateTime? createdAt,
+      updatedAt,
+      paidAt,
+      acceptedAt,
+      pickedUpAt,
+      deliveredAt,
+      cancelledAt;
 
   /// `CUSTOMER | VENDOR | ADMIN | SYSTEM`.
   final String? cancelledBy;
@@ -255,16 +280,23 @@ class OrderView {
   List<GroupStopView> get stops => group?.stops ?? const [];
 
   /// "Combined order - 2 restaurants" for a combined order, else the restaurant's name.
-  String get headlineName => isGroup ? 'Combined order - ${group!.size} restaurants' : restaurantName;
+  String get headlineName =>
+      isGroup ? 'Combined order - ${group!.size} stores' : restaurantName;
 
   /// The restaurant names of a combined order joined with " + ", else the restaurant's name.
-  String get pickupLabel => isGroup && stops.isNotEmpty ? stops.map((s) => s.name).join(' + ') : restaurantName;
+  String get pickupLabel => isGroup && stops.isNotEmpty
+      ? stops.map((s) => s.name).join(' + ')
+      : restaurantName;
 
   /// Every restaurant of a combined order handed over its food.
-  bool get allStopsPickedUp => isGroup ? stops.isNotEmpty && stops.every((s) => s.pickedUp) : status.rank >= OrderStatus.pickedUp.rank;
+  bool get allStopsPickedUp => isGroup
+      ? stops.isNotEmpty && stops.every((s) => s.pickedUp)
+      : status.rank >= OrderStatus.pickedUp.rank;
 
   /// Release is allowed only before the first pickup (a combined order: before ANY stop was picked up).
-  bool get canRelease => isGroup ? stops.every((s) => s.status.isBeforePickup) : status.isBeforePickup;
+  bool get canRelease => isGroup
+      ? stops.every((s) => s.status.isBeforePickup)
+      : status.isBeforePickup;
 
   /// Folds the copies of ONE combined order (the rider's `GET /orders?scope=active` returns each child as its own
   /// OrderView, every one carrying the same `group`) into ONE delivery. Returns null when no copy has a `group`.
@@ -291,7 +323,10 @@ class OrderView {
   OrderView? mergedWith(Iterable<OrderView> incoming) {
     final g = group;
     if (g == null) return null;
-    return mergeGroup([...(groupParts.isEmpty ? [this] : groupParts), ...incoming.where((o) => o.group?.id == g.id)]);
+    return mergeGroup([
+      ...(groupParts.isEmpty ? [this] : groupParts),
+      ...incoming.where((o) => o.group?.id == g.id)
+    ]);
   }
 
   static OrderView _build(List<OrderView> parts) {
@@ -320,11 +355,15 @@ class OrderView {
         orderId: id,
         index: ref?.index ?? ownIndex ?? 0,
         status: status,
-        name: own != null && own.vendor != null ? own.restaurantName : (ref?.name ?? 'Restaurant'),
+        name: own != null && own.vendor != null
+            ? own.restaurantName
+            : (ref?.name ?? 'Store'),
         address: own?.vendor?.address ?? ref?.address,
         lat: own?.vendor?.lat ?? ref?.lat,
         lng: own?.vendor?.lng ?? ref?.lng,
-        itemCount: own != null && own.items.isNotEmpty ? own.itemCount : (ref?.itemCount ?? 0),
+        itemCount: own != null && own.items.isNotEmpty
+            ? own.itemCount
+            : (ref?.itemCount ?? 0),
         locationVouched: own?.vendor?.hasLocation ?? false,
       ));
     }
@@ -338,7 +377,8 @@ class OrderView {
     } else if (stops.any((s) => s.status == OrderStatus.delivered)) {
       status = OrderStatus.delivered;
     } else {
-      status = stops.map((s) => s.status).reduce((a, b) => a.rank <= b.rank ? a : b);
+      status =
+          stops.map((s) => s.status).reduce((a, b) => a.rank <= b.rank ? a : b);
     }
 
     T? firstOf<T>(T? Function(OrderView) pick) {
@@ -371,12 +411,22 @@ class OrderView {
     }
 
     final cancelled = parts.where((p) => p.status == OrderStatus.cancelled);
-    final trigger = cancelled.where((p) => p.cancelledBy != null && p.cancelledBy != 'SYSTEM').firstOrNull ?? cancelled.firstOrNull ?? base;
+    final trigger = cancelled
+            .where((p) => p.cancelledBy != null && p.cancelledBy != 'SYSTEM')
+            .firstOrNull ??
+        cancelled.firstOrNull ??
+        base;
 
     return OrderView(
       id: leadId,
       status: status,
-      group: GroupInfo(id: base.group!.id, index: base.group!.index, size: stops.length > base.group!.size ? stops.length : base.group!.size, primary: base.group!.primary, stops: stops),
+      group: GroupInfo(
+          id: base.group!.id,
+          index: base.group!.index,
+          size:
+              stops.length > base.group!.size ? stops.length : base.group!.size,
+          primary: base.group!.primary,
+          stops: stops),
       groupParts: List.unmodifiable(parts),
       paymentStatus: base.paymentStatus,
       totalAmount: sum((p) => p.totalAmount),
@@ -418,7 +468,8 @@ class OrderView {
 
   int get itemCount => items.fold(0, (sum, i) => sum + i.quantity);
 
-  String get restaurantName => (vendor?.name.trim().isNotEmpty ?? false) ? vendor!.name.trim() : 'Restaurant';
+  String get restaurantName =>
+      (vendor?.name.trim().isNotEmpty ?? false) ? vendor!.name.trim() : 'Store';
 
   String get dropLabel {
     final d = dropoffHostel?.trim();
@@ -435,15 +486,19 @@ class OrderView {
   DropoffView? get dropPlace {
     final d = dropoff;
     if (d != null && d.point.isValid) return d;
-    final byName = dropPointByName(dropoffHostel) ?? dropPointByName(customer?.hostelBlock);
-    return byName == null ? null : DropoffView(name: byName.name, lat: byName.lat, lng: byName.lng);
+    final byName = dropPointByName(dropoffHostel) ??
+        dropPointByName(customer?.hostelBlock);
+    return byName == null
+        ? null
+        : DropoffView(name: byName.name, lat: byName.lat, lng: byName.lng);
   }
 
   /// When the order entered the pool (paid), for "x min ago".
   DateTime? get offeredAt => paidAt ?? createdAt;
 
   /// When the rider finished it (for earnings and trip logs).
-  DateTime? get finishedAt => deliveredAt ?? cancelledAt ?? updatedAt ?? createdAt;
+  DateTime? get finishedAt =>
+      deliveredAt ?? cancelledAt ?? updatedAt ?? createdAt;
 
   /// Merge rule from the contract (section 3): keep whichever copy is newer by `updatedAt`.
   /// Equal timestamps (or missing ones) fall back to the status order so a stale copy can never
@@ -466,12 +521,18 @@ class OrderView {
       id: id,
       status: OrderStatus.parse(raw['status']),
       group: _group(raw['group']),
-      offerId: raw['dispatchOffer'] is Map ? _str(raw['dispatchOffer']['id']) : null,
-      offerExpiresAt: raw['dispatchOffer'] is Map ? _date(raw['dispatchOffer']['expiresAt']) : null,
+      offerId:
+          raw['dispatchOffer'] is Map ? _str(raw['dispatchOffer']['id']) : null,
+      offerExpiresAt: raw['dispatchOffer'] is Map
+          ? _date(raw['dispatchOffer']['expiresAt'])
+          : null,
       paymentStatus: raw['paymentStatus']?.toString().toUpperCase(),
       totalAmount: _num(raw['totalAmount']),
       deliveryFee: _num(raw['deliveryFee']),
-      dropoffHostel: _str(raw['deliveryAddress'] is Map ? raw['deliveryAddress']['formatted'] : null) ?? _str(raw['dropoffHostel']),
+      dropoffHostel: _str(raw['deliveryAddress'] is Map
+              ? raw['deliveryAddress']['formatted']
+              : null) ??
+          _str(raw['dropoffHostel']),
       dropoffNotes: _str(raw['dropoffNotes']),
       dropoff: _dropoff(raw['dropoff']),
       createdAt: _date(raw['createdAt']),
@@ -517,9 +578,15 @@ class OrderView {
     final out = <OrderItemView>[];
     for (final e in raw) {
       if (e is! Map) continue;
-      final name = _str(e['name']) ?? _str(e['menuItem'] is Map ? (e['menuItem'] as Map)['name'] : null) ?? 'Item';
+      final name = _str(e['name']) ??
+          _str(e['menuItem'] is Map ? (e['menuItem'] as Map)['name'] : null) ??
+          'Item';
       final q = e['quantity'];
-      out.add(OrderItemView(name: '$name${e['productSnapshot'] is Map && e['productSnapshot']['sku'] != null ? ' · ${e['productSnapshot']['packSize']} ${e['productSnapshot']['unit']}' : ''}', quantity: q is num ? q.toInt() : int.tryParse('$q') ?? 1, price: _num(e['price'])));
+      out.add(OrderItemView(
+          name:
+              '$name${e['productSnapshot'] is Map && e['productSnapshot']['sku'] != null ? ' · ${e['productSnapshot']['packSize']} ${e['productSnapshot']['unit']}' : ''}',
+          quantity: q is num ? q.toInt() : int.tryParse('$q') ?? 1,
+          price: _num(e['price'])));
     }
     return out;
   }
@@ -528,7 +595,7 @@ class OrderView {
     if (raw is! Map) return null;
     return VendorView(
       id: _str(raw['id']),
-      name: _str(raw['name']) ?? 'Restaurant',
+      name: _str(raw['name']) ?? 'Store',
       address: _str(raw['address']),
       lat: _num(raw['lat']),
       lng: _num(raw['lng']),
@@ -554,7 +621,7 @@ class OrderView {
           orderId: orderId,
           index: _int(e['index']) ?? stops.length,
           status: OrderStatus.parse(e['status']),
-          name: _str(vm['name']) ?? 'Restaurant',
+          name: _str(vm['name']) ?? 'Store',
           address: _str(vm['address']),
           lat: _num(vm['lat']),
           lng: _num(vm['lng']),

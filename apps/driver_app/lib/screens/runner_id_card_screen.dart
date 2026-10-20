@@ -25,7 +25,8 @@ class RunnerIdCardScreen extends StatelessWidget {
   bool get _hasCode => runnerId.trim().isNotEmpty && runnerId.trim() != '-';
 
   String get _initials {
-    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parts =
+        name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return 'R';
     if (parts.length == 1) return parts.first[0].toUpperCase();
     return (parts.first[0] + parts.last[0]).toUpperCase();
@@ -37,12 +38,18 @@ class RunnerIdCardScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 32),
+          padding:
+              const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 32),
           children: [
             Row(children: [
-              KIconButton(icon: LucideIcons.arrowLeft, semanticLabel: 'Back', onTap: () => Navigator.of(context).maybePop()),
+              KIconButton(
+                  icon: LucideIcons.arrowLeft,
+                  semanticLabel: 'Back',
+                  onTap: () => Navigator.of(context).maybePop()),
               const SizedBox(width: 14),
-              Expanded(child: Text('Runner pass', style: KraveoType.headline.copyWith(color: k.ink))),
+              Expanded(
+                  child: Text('Delivery partner pass',
+                      style: KraveoType.headline.copyWith(color: k.ink))),
             ]),
             const SizedBox(height: 20),
             KReveal(
@@ -55,8 +62,12 @@ class RunnerIdCardScreen extends StatelessWidget {
                     colors: [k.brandSoft, k.surface, k.bg],
                     stops: const [0, 0.55, 1],
                   ),
-                  border: Border.all(color: k.brand.withValues(alpha: 0.6), width: 1.5),
-                  boxShadow: KShadow.glow(k.brand).map((s) => s.copyWith(color: s.color.withValues(alpha: 0.18))).toList(),
+                  border: Border.all(
+                      color: k.brand.withValues(alpha: 0.6), width: 1.5),
+                  boxShadow: KShadow.glow(k.brand)
+                      .map((s) =>
+                          s.copyWith(color: s.color.withValues(alpha: 0.18)))
+                      .toList(),
                 ),
                 child: Column(
                   children: [
@@ -65,14 +76,21 @@ class RunnerIdCardScreen extends StatelessWidget {
                       margin: const EdgeInsets.only(top: 14),
                       width: 64,
                       height: 8,
-                      decoration: BoxDecoration(color: k.bg, borderRadius: BorderRadius.circular(4), border: Border.all(color: k.line)),
+                      decoration: BoxDecoration(
+                          color: k.bg,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: k.line)),
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(22, 16, 22, 0),
                       child: Row(children: [
                         const KBrandMark(height: 34),
                         const Spacer(),
-                        Text('DELIVERY PARTNER', style: KraveoType.label.copyWith(color: k.inkMuted, letterSpacing: 1.4, fontSize: 11)),
+                        Text('DELIVERY PARTNER',
+                            style: KraveoType.label.copyWith(
+                                color: k.inkMuted,
+                                letterSpacing: 1.4,
+                                fontSize: 11)),
                       ]),
                     ),
                     const SizedBox(height: 22),
@@ -80,22 +98,35 @@ class RunnerIdCardScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 22),
-                      child: Text(name, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.displayMd.copyWith(color: k.ink)),
+                      child: Text(name,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: KraveoType.displayMd.copyWith(color: k.ink)),
                     ),
                     const SizedBox(height: 22),
-                    Text('RUNNER ID', style: KraveoType.label.copyWith(color: k.inkFaint, letterSpacing: 1.6)),
+                    Text('Delivery partner ID',
+                        style: KraveoType.label
+                            .copyWith(color: k.inkFaint, letterSpacing: 1.6)),
                     FittedBox(
                       fit: BoxFit.scaleDown,
-                      child: Text(runnerId, style: KraveoType.displayLg.copyWith(color: k.accent, fontSize: 46, letterSpacing: 2)),
+                      child: Text(runnerId,
+                          style: KraveoType.displayLg.copyWith(
+                              color: k.accent, fontSize: 46, letterSpacing: 2)),
                     ),
                     Container(
                       key: const ValueKey('pass-guard-note'),
                       margin: const EdgeInsets.fromLTRB(22, 18, 22, 22),
                       padding: const EdgeInsets.all(16),
                       width: double.infinity,
-                      decoration: BoxDecoration(color: k.surface, borderRadius: BorderRadius.circular(KRadius.xl), border: Border.all(color: k.line)),
+                      decoration: BoxDecoration(
+                          color: k.surface,
+                          borderRadius: BorderRadius.circular(KRadius.xl),
+                          border: Border.all(color: k.line)),
                       child: Text(
-                        _hasCode ? 'Show this pass; the guard checks the code $runnerId' : 'Show this pass to the guard.',
+                        _hasCode
+                            ? 'Show this pass; the guard checks the code $runnerId'
+                            : 'Show this pass to the guard.',
                         textAlign: TextAlign.center,
                         style: KraveoType.titleMd.copyWith(color: k.ink),
                       ),
@@ -119,7 +150,9 @@ class _Avatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final k = context.k;
-    final fallback = Center(child: Text(initials, style: KraveoType.displayMd.copyWith(color: k.ink, fontSize: 40)));
+    final fallback = Center(
+        child: Text(initials,
+            style: KraveoType.displayMd.copyWith(color: k.ink, fontSize: 40)));
     return Container(
       width: 124,
       height: 124,
@@ -129,11 +162,15 @@ class _Avatar extends StatelessWidget {
         gradient: SweepGradient(colors: [k.brand, k.accent, k.brand]),
       ),
       child: Container(
-        decoration: BoxDecoration(shape: BoxShape.circle, color: k.surfaceAlt, border: Border.all(color: k.bg, width: 4)),
+        decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: k.surfaceAlt,
+            border: Border.all(color: k.bg, width: 4)),
         clipBehavior: Clip.antiAlias,
         child: photoUrl == null
             ? fallback
-            : Image.network(photoUrl!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => fallback),
+            : Image.network(photoUrl!,
+                fit: BoxFit.cover, errorBuilder: (_, __, ___) => fallback),
       ),
     );
   }

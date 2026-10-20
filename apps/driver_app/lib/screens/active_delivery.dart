@@ -19,7 +19,12 @@ import '../widgets/ui/screen_header.dart';
 /// Arrived -> enter the customer's code -> delivered. Also shows how a delivery ended
 /// (delivered / cancelled / moved by Grozo) until the rider acknowledges it.
 class ActiveDeliveryScreen extends StatelessWidget {
-  const ActiveDeliveryScreen({super.key, required this.controller, required this.onGoHome, this.mapFactory, this.navigationLauncher});
+  const ActiveDeliveryScreen(
+      {super.key,
+      required this.controller,
+      required this.onGoHome,
+      this.mapFactory,
+      this.navigationLauncher});
 
   final RiderController controller;
   final VoidCallback onGoHome;
@@ -45,11 +50,18 @@ class ActiveDeliveryScreen extends StatelessWidget {
             },
           );
         } else if (order != null) {
-          body = _DeliveryView(controller: controller, order: order, mapFactory: mapFactory, navigationLauncher: navigationLauncher);
+          body = _DeliveryView(
+              controller: controller,
+              order: order,
+              mapFactory: mapFactory,
+              navigationLauncher: navigationLauncher);
         } else if (!controller.activeChecked) {
           body = const Center(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 3)),
+              SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(strokeWidth: 3)),
               SizedBox(height: 16),
               Text('Checking for a delivery in progress…'),
             ]),
@@ -58,8 +70,14 @@ class ActiveDeliveryScreen extends StatelessWidget {
           body = KEmptyState(
             icon: LucideIcons.bike,
             title: 'No active delivery',
-            message: 'Accept an order from Home to start step-by-step guidance.',
-            action: KButton(label: 'Go to home', icon: LucideIcons.house, large: true, expand: false, onPressed: onGoHome),
+            message:
+                'Accept an order from Home to start step-by-step guidance.',
+            action: KButton(
+                label: 'Go to home',
+                icon: LucideIcons.house,
+                large: true,
+                expand: false,
+                onPressed: onGoHome),
           );
         }
         return Scaffold(body: SafeArea(bottom: false, child: body));
@@ -69,7 +87,11 @@ class ActiveDeliveryScreen extends StatelessWidget {
 }
 
 class _DeliveryView extends StatefulWidget {
-  const _DeliveryView({required this.controller, required this.order, this.mapFactory, this.navigationLauncher});
+  const _DeliveryView(
+      {required this.controller,
+      required this.order,
+      this.mapFactory,
+      this.navigationLauncher});
   final RiderController controller;
   final OrderView order;
   final MapViewFactory? mapFactory;
@@ -99,8 +121,11 @@ class _DeliveryViewState extends State<_DeliveryView> {
       final ctx = dialogContext;
       if (ctx == null || !ctx.mounted) return;
       final cur = c.active;
-      final gone = cur == null || cur.id != orderId || cur.status != OrderStatus.arrivedAtGate;
-      final delivered = c.notice?.kind == NoticeKind.delivered && c.notice?.order.id == orderId;
+      final gone = cur == null ||
+          cur.id != orderId ||
+          cur.status != OrderStatus.arrivedAtGate;
+      final delivered = c.notice?.kind == NoticeKind.delivered &&
+          c.notice?.order.id == orderId;
       if (gone && !delivered) {
         dialogContext = null;
         Navigator.of(ctx).pop(false);
@@ -132,11 +157,15 @@ class _DeliveryViewState extends State<_DeliveryView> {
   /// Opens Google Maps navigation to [point]; says so when no maps app or browser can.
   Future<void> _navigate(GeoPoint point, String label) async {
     final messenger = ScaffoldMessenger.maybeOf(context);
-    final opened = await openNavigation(point, label: label, launcher: widget.navigationLauncher ?? const UrlNavigationLauncher());
+    final opened = await openNavigation(point,
+        label: label,
+        launcher: widget.navigationLauncher ?? const UrlNavigationLauncher());
     if (!opened && mounted) {
       messenger
         ?..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(content: Text('Could not open Google Maps. Install it, or follow the address on this screen.')));
+        ..showSnackBar(const SnackBar(
+            content: Text(
+                'Could not open Google Maps. Install it, or follow the address on this screen.')));
     }
   }
 
@@ -152,15 +181,18 @@ class _DeliveryViewState extends State<_DeliveryView> {
       return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         KButton(
           key: const ValueKey('navigate-restaurant'),
-          label: 'Navigate to restaurant',
+          label: 'Navigate to store',
           icon: LucideIcons.navigation,
           kind: KButtonKind.tonal,
-          onPressed: pin == null ? null : () => _navigate(pin, o.restaurantName),
+          onPressed:
+              pin == null ? null : () => _navigate(pin, o.restaurantName),
         ),
         if (pin == null)
           Padding(
             padding: const EdgeInsets.only(top: 6),
-            child: Text('Restaurant location not set - call the restaurant', key: const ValueKey('restaurant-location-missing'), style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+            child: Text('Store location not set - call the store',
+                key: const ValueKey('restaurant-location-missing'),
+                style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
           ),
       ]);
     }
@@ -181,18 +213,25 @@ class _DeliveryViewState extends State<_DeliveryView> {
       builder: (ctx) {
         final k = ctx.k;
         return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 24),
+          padding:
+              const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 24),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text('Release this job?', textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
+            Text('Release this job?',
+                textAlign: TextAlign.center,
+                style: KraveoType.headline.copyWith(color: k.ink)),
             const SizedBox(height: 8),
             Text(
                 o.isGroup
-                    ? 'This combined order (${o.stops.map((s) => s.name).join(' + ')}) goes back to other riders. You will not collect from any of the ${o.stops.length} restaurants. Only do this if you cannot pick it up.'
+                    ? 'This combined order (${o.stops.map((s) => s.name).join(' + ')}) goes back to other riders. You will not collect from any of the ${o.stops.length} stores. Only do this if you cannot pick it up.'
                     : 'Order ${o.shortRef} goes back to other riders. Only do this if you cannot pick it up.',
                 textAlign: TextAlign.center,
-                style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
+                style:
+                    KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
             const SizedBox(height: 24),
-            KButton(label: 'Keep the job', large: true, onPressed: () => Navigator.of(ctx).pop(false)),
+            KButton(
+                label: 'Keep the job',
+                large: true,
+                onPressed: () => Navigator.of(ctx).pop(false)),
             const SizedBox(height: 12),
             KButton(
               key: const ValueKey('confirm-release-button'),
@@ -218,11 +257,24 @@ class _DeliveryViewState extends State<_DeliveryView> {
     final phone = o.customer?.phone;
 
     final pickedCount = o.stops.where((s) => s.pickedUp).length;
-    final (String headline, String where, IconData whereIcon) = switch (status) {
-      OrderStatus.pickedUp => ('Ride to the drop point', o.dropLabel, LucideIcons.mapPin),
-      OrderStatus.arrivedAtGate => ('Hand over the order', o.dropLabel, LucideIcons.mapPin),
-      _ when o.isGroup => ('Collect from ${o.stops.length} restaurants', '$pickedCount of ${o.stops.length} picked up', LucideIcons.store),
-      _ => ('Go to the restaurant', o.restaurantName, LucideIcons.store),
+    final (String headline, String where, IconData whereIcon) =
+        switch (status) {
+      OrderStatus.pickedUp => (
+          'Ride to the drop point',
+          o.dropLabel,
+          LucideIcons.mapPin
+        ),
+      OrderStatus.arrivedAtGate => (
+          'Hand over the order',
+          o.dropLabel,
+          LucideIcons.mapPin
+        ),
+      _ when o.isGroup => (
+          'Collect from ${o.stops.length} stores',
+          '$pickedCount of ${o.stops.length} picked up',
+          LucideIcons.store
+        ),
+      _ => ('Go to the store', o.restaurantName, LucideIcons.store),
     };
 
     final Widget? banner = switch (status) {
@@ -230,24 +282,26 @@ class _DeliveryViewState extends State<_DeliveryView> {
           icon: LucideIcons.lock,
           color: KraveoPalette.danger,
           title: RiderController.supportMessage,
-          message: 'Too many wrong codes. Do not hand over the food until ${BrandConfig.name} support unlocks it.',
+          message:
+              'Too many wrong codes. Do not hand over the groceries until ${BrandConfig.name} support unlocks it.',
         ),
       _ when o.isGroup && status.isBeforePickup => _Banner(
           icon: LucideIcons.store,
           color: KStatus.preparing.color,
-          title: 'One rider, ${o.stops.length} restaurants',
-          message: 'Mark each restaurant picked up once its food is ready. You can only ride to the drop point after all of them.',
+          title: 'One rider, ${o.stops.length} stores',
+          message:
+              'Mark each store picked up once its order is ready. You can only ride to the drop point after all of them.',
         ),
       OrderStatus.accepted || OrderStatus.preparing => _Banner(
-          icon: LucideIcons.chefHat,
+          icon: LucideIcons.package,
           color: KStatus.preparing.color,
-          title: 'Restaurant is still preparing',
-          message: 'You can mark it picked up once the restaurant marks it ready.',
+          title: 'Store is packing your order',
+          message: 'You can mark it picked up once the store marks it ready.',
         ),
       OrderStatus.readyForPickup => _Banner(
           icon: LucideIcons.packageCheck,
           color: KStatus.ready.color,
-          title: 'Food is ready',
+          title: 'Order is ready',
           message: 'Collect it from the counter and check the items.',
         ),
       OrderStatus.pickedUp => _Banner(
@@ -260,7 +314,8 @@ class _DeliveryViewState extends State<_DeliveryView> {
           icon: LucideIcons.hash,
           color: KStatus.atGate.color,
           title: 'Ask the customer for their 4-digit code',
-          message: 'Only the customer has it. Type it in to finish the delivery.',
+          message:
+              'Only the customer has it. Type it in to finish the delivery.',
         ),
       _ => null,
     };
@@ -269,15 +324,19 @@ class _DeliveryViewState extends State<_DeliveryView> {
     if (c.actionBusy) {
       action = const KButton(label: 'Saving…', large: true, loading: true);
     } else if (locked) {
-      action = Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      action =
+          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         KButton(
           key: const ValueKey('locked-support-button'),
           label: 'Help and requests',
           icon: LucideIcons.mail,
           kind: KButtonKind.danger,
           large: true,
-          onPressed: () => showSupportSheet(context, orderId: o.id,
-              note: 'Delivery ${o.shortRef} is locked after too many wrong codes.', subject: 'Locked delivery ${o.shortRef}'),
+          onPressed: () => showSupportSheet(context,
+              orderId: o.id,
+              note:
+                  'Delivery ${o.shortRef} is locked after too many wrong codes.',
+              subject: 'Locked delivery ${o.shortRef}'),
         ),
         const SizedBox(height: 10),
         // A wrong guess here costs nothing: Grozo answers a locked order without counting an attempt,
@@ -295,7 +354,7 @@ class _DeliveryViewState extends State<_DeliveryView> {
       action = switch (status) {
         _ when o.isGroup && status.isBeforePickup => const KButton(
             key: ValueKey('group-pickup-pending'),
-            label: 'Pick up every restaurant first',
+            label: 'Pick up every store first',
             icon: LucideIcons.package,
             large: true,
             onPressed: null,
@@ -305,14 +364,22 @@ class _DeliveryViewState extends State<_DeliveryView> {
             button: true,
             excludeSemantics: true,
             onTap: () => c.advance(OrderStatus.pickedUp),
-            child: KSlideToConfirm(key: const ValueKey('slide-picked-up'), label: 'Slide · picked up', icon: LucideIcons.package, onConfirmed: () => c.advance(OrderStatus.pickedUp)),
+            child: KSlideToConfirm(
+                key: const ValueKey('slide-picked-up'),
+                label: 'Slide · picked up',
+                icon: LucideIcons.package,
+                onConfirmed: () => c.advance(OrderStatus.pickedUp)),
           ),
         OrderStatus.pickedUp => Semantics(
             label: 'Slide to confirm arrived at the drop point',
             button: true,
             excludeSemantics: true,
             onTap: () => c.advance(OrderStatus.arrivedAtGate),
-            child: KSlideToConfirm(key: const ValueKey('slide-arrived'), label: 'Slide · arrived', icon: LucideIcons.mapPin, onConfirmed: () => c.advance(OrderStatus.arrivedAtGate)),
+            child: KSlideToConfirm(
+                key: const ValueKey('slide-arrived'),
+                label: 'Slide · arrived',
+                icon: LucideIcons.mapPin,
+                onConfirmed: () => c.advance(OrderStatus.arrivedAtGate)),
           ),
         OrderStatus.arrivedAtGate => KButton(
             key: const ValueKey('enter-code-button'),
@@ -322,12 +389,19 @@ class _DeliveryViewState extends State<_DeliveryView> {
             large: true,
             onPressed: _openCodeEntry,
           ),
-        _ => const KButton(key: ValueKey('picked-up-disabled'), label: 'Picked up', icon: LucideIcons.package, large: true, onPressed: null),
+        _ => const KButton(
+            key: ValueKey('picked-up-disabled'),
+            label: 'Picked up',
+            icon: LucideIcons.package,
+            large: true,
+            onPressed: null),
       };
     }
 
     final navigateButton = _navigateButton(context);
-    final showMap = o.isGroup ? (o.stops.any((s) => s.point != null) || o.dropPlace != null) : (o.vendor?.point != null || o.dropPlace != null);
+    final showMap = o.isGroup
+        ? (o.stops.any((s) => s.point != null) || o.dropPlace != null)
+        : (o.vendor?.point != null || o.dropPlace != null);
 
     return RefreshIndicator(
       onRefresh: c.pollNow,
@@ -336,88 +410,175 @@ class _DeliveryViewState extends State<_DeliveryView> {
         children: [
           ScreenHeader(
             title: 'Delivery',
-            subtitle: o.isGroup ? 'Combined order ${o.shortRef}' : 'Order ${o.shortRef}',
+            subtitle: o.isGroup
+                ? 'Combined order ${o.shortRef}'
+                : 'Order ${o.shortRef}',
             trailing: Semantics(
               label: 'Delivery fee ${OfferCard.rupees(o.deliveryFee)}',
               excludeSemantics: true,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(color: k.brandSoft, borderRadius: BorderRadius.circular(KRadius.pill), border: Border.all(color: k.brand.withValues(alpha: 0.5))),
-                child: Text(OfferCard.rupees(o.deliveryFee), style: KraveoType.headlineSm.copyWith(color: k.brand)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                    color: k.brandSoft,
+                    borderRadius: BorderRadius.circular(KRadius.pill),
+                    border: Border.all(color: k.brand.withValues(alpha: 0.5))),
+                child: Text(OfferCard.rupees(o.deliveryFee),
+                    style: KraveoType.headlineSm.copyWith(color: k.brand)),
               ),
             ),
           ),
           if (c.activeStale)
-            const _Inline(icon: LucideIcons.wifiOff, text: 'Can\'t reach ${BrandConfig.name} – showing the last known status. Retrying…'),
+            const _Inline(
+                icon: LucideIcons.wifiOff,
+                text:
+                    'Can\'t reach ${BrandConfig.name} – showing the last known status. Retrying…'),
           if (c.otherActiveCount > 0)
-            _Inline(icon: LucideIcons.info, text: '${BrandConfig.name} gave you ${c.otherActiveCount} more order(s). They appear after this one.'),
+            _Inline(
+                icon: LucideIcons.info,
+                text:
+                    '${BrandConfig.name} gave you ${c.otherActiveCount} more order(s). They appear after this one.'),
           Padding(
-            padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 0),
+            padding:
+                const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 0),
             child: PipelineStepper(currentStep: step),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(KSpace.gutter, 24, KSpace.gutter, 0),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('STEP ${step + 1} OF 4', style: KraveoType.label.copyWith(color: k.brand, letterSpacing: 1.2)),
+            padding:
+                const EdgeInsets.fromLTRB(KSpace.gutter, 24, KSpace.gutter, 0),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('STEP ${step + 1} OF 4',
+                  style: KraveoType.label
+                      .copyWith(color: k.brand, letterSpacing: 1.2)),
               const SizedBox(height: 4),
-              Text(headline, style: KraveoType.displayMd.copyWith(color: k.ink)),
+              Text(headline,
+                  style: KraveoType.displayMd.copyWith(color: k.ink)),
               const SizedBox(height: 4),
               Row(children: [
                 Icon(whereIcon, size: 18, color: k.inkMuted),
                 const SizedBox(width: 8),
-                Expanded(child: Text(where, maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.titleMd.copyWith(color: k.inkMuted))),
+                Expanded(
+                    child: Text(where,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: KraveoType.titleMd.copyWith(color: k.inkMuted))),
               ]),
-              if (!o.isGroup && status.isBeforePickup && (o.vendor?.address ?? '').isNotEmpty)
+              if (!o.isGroup &&
+                  status.isBeforePickup &&
+                  (o.vendor?.address ?? '').isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(left: 26, top: 2),
-                  child: Text(o.vendor!.address!, maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.bodySm.copyWith(color: k.inkFaint)),
+                  child: Text(o.vendor!.address!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: KraveoType.bodySm.copyWith(color: k.inkFaint)),
                 ),
               if (!status.isBeforePickup && (o.dropoffNotes ?? '').isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(left: 26, top: 2),
-                  child: Text(o.dropoffNotes!, maxLines: 3, overflow: TextOverflow.ellipsis, style: KraveoType.bodySm.copyWith(color: k.inkFaint)),
+                  child: Text(o.dropoffNotes!,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: KraveoType.bodySm.copyWith(color: k.inkFaint)),
                 ),
             ]),
           ),
           if (status.isBeforePickup)
-            Padding(padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 0), child: TextButton.icon(
-              icon: const Icon(Icons.store), label: const Text('Confirm arrival at pickup'),
-              onPressed: c.actionBusy ? null : () async {
-                try { await SupportApi.call('POST','/v1/orders/${o.id}/arrive-pickup'); if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pickup arrival confirmed. The store has been notified.'))); }
-                catch(e) { if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e'))); }
-              },
-            )),
-          if (banner != null) Padding(padding: const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0), child: banner),
-          Padding(padding: const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0), child: action),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    KSpace.gutter, 12, KSpace.gutter, 0),
+                child: TextButton.icon(
+                  icon: const Icon(Icons.store),
+                  label: const Text('Confirm arrival at pickup'),
+                  onPressed: c.actionBusy
+                      ? null
+                      : () async {
+                          try {
+                            await SupportApi.call(
+                                'POST', '/v1/orders/${o.id}/arrive-pickup');
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Pickup arrival confirmed. The store has been notified.')));
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(content: Text('$e')));
+                            }
+                          }
+                        },
+                )),
+          if (banner != null)
+            Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    KSpace.gutter, 16, KSpace.gutter, 0),
+                child: banner),
+          Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  KSpace.gutter, 16, KSpace.gutter, 0),
+              child: action),
           if (c.actionError != null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(KSpace.gutter, 10, KSpace.gutter, 0),
-              child: Text(c.actionError!, key: const ValueKey('action-error'), style: KraveoType.titleMd.copyWith(color: KraveoPalette.danger)),
+              padding: const EdgeInsets.fromLTRB(
+                  KSpace.gutter, 10, KSpace.gutter, 0),
+              child: Text(c.actionError!,
+                  key: const ValueKey('action-error'),
+                  style:
+                      KraveoType.titleMd.copyWith(color: KraveoPalette.danger)),
             ),
           if (o.isGroup)
             Padding(
-              padding: const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0),
-              child: _StopList(order: o, busy: c.actionBusy, onPickUp: c.pickUpStop, onNavigate: _navigate),
+              padding: const EdgeInsets.fromLTRB(
+                  KSpace.gutter, 16, KSpace.gutter, 0),
+              child: _StopList(
+                  order: o,
+                  busy: c.actionBusy,
+                  onPickUp: c.pickUpStop,
+                  onNavigate: _navigate),
             ),
-          if (navigateButton != null) Padding(padding: const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0), child: navigateButton),
+          if (navigateButton != null)
+            Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    KSpace.gutter, 16, KSpace.gutter, 0),
+                child: navigateButton),
           if (showMap)
             Padding(
-              padding: const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0),
-              child: DeliveryMapCard(key: const ValueKey('delivery-map-card'), order: o, rider: c.myPosition, factory: widget.mapFactory),
+              padding: const EdgeInsets.fromLTRB(
+                  KSpace.gutter, 16, KSpace.gutter, 0),
+              child: DeliveryMapCard(
+                  key: const ValueKey('delivery-map-card'),
+                  order: o,
+                  rider: c.myPosition,
+                  factory: widget.mapFactory),
             ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0),
+            padding:
+                const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0),
             child: phone != null
                 ? KCard(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 12),
                     child: Row(children: [
                       Icon(LucideIcons.user, size: 22, color: k.inkMuted),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(o.customer?.name ?? 'Customer', maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.titleMd.copyWith(color: k.ink)),
-                          Text(phone, maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
-                        ]),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(o.customer?.name ?? 'Customer',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: KraveoType.titleMd
+                                      .copyWith(color: k.ink)),
+                              Text(phone,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: KraveoType.bodySm
+                                      .copyWith(color: k.inkMuted)),
+                            ]),
                       ),
                       const SizedBox(width: 8),
                       KButton(
@@ -430,16 +591,22 @@ class _DeliveryViewState extends State<_DeliveryView> {
                       ),
                     ]),
                   )
-                : Text('The customer\'s number appears here when ${BrandConfig.name} shares it (at the drop point at the latest).',
+                : Text(
+                    'The customer\'s number appears here when ${BrandConfig.name} shares it (at the drop point at the latest).',
                     style: KraveoType.bodySm.copyWith(color: k.inkFaint)),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0),
-            child: _OrderDetails(open: _detailsOpen, onToggle: () => setState(() => _detailsOpen = !_detailsOpen), order: o),
+            padding:
+                const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0),
+            child: _OrderDetails(
+                open: _detailsOpen,
+                onToggle: () => setState(() => _detailsOpen = !_detailsOpen),
+                order: o),
           ),
           if (o.canRelease && !c.actionBusy)
             Padding(
-              padding: const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0),
+              padding: const EdgeInsets.fromLTRB(
+                  KSpace.gutter, 16, KSpace.gutter, 0),
               child: KButton(
                 key: const ValueKey('release-button'),
                 label: 'Release this job',
@@ -451,8 +618,10 @@ class _DeliveryViewState extends State<_DeliveryView> {
             ),
           if (c.lastSync != null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(KSpace.gutter, 14, KSpace.gutter, 0),
-              child: Text('Status from ${BrandConfig.name} · updated ${OfferCard.ago(c.lastSync, c.services.now())}',
+              padding: const EdgeInsets.fromLTRB(
+                  KSpace.gutter, 14, KSpace.gutter, 0),
+              child: Text(
+                  'Status from ${BrandConfig.name} · updated ${OfferCard.ago(c.lastSync, c.services.now())}',
                   style: KraveoType.caption.copyWith(color: k.inkFaint)),
             ),
         ],
@@ -471,7 +640,13 @@ class _NoticeView extends StatelessWidget {
     final k = context.k;
     final o = notice.order;
     final what = o.isGroup ? 'Combined order' : 'Order';
-    final (IconData icon, Color color, String title, String message, String button) = switch (notice.kind) {
+    final (
+      IconData icon,
+      Color color,
+      String title,
+      String message,
+      String button
+    ) = switch (notice.kind) {
       NoticeKind.delivered => (
           LucideIcons.check,
           k.brand,
@@ -488,8 +663,10 @@ class _NoticeView extends StatelessWidget {
             if (o.cancelReason != null) 'Reason: ${o.cancelReason}.',
             if (o.isRefunded) 'The customer has been refunded.',
             o.pickedUpAt != null
-                ? 'Do not hand over the food. Email ${BrandConfig.name} support to ask what to do with it.'
-                : (o.isGroup ? 'Do not go to the restaurants for this order.' : 'Do not go to the restaurant for this order.'),
+                ? 'Do not hand over the groceries. Email ${BrandConfig.name} support to ask what to do with it.'
+                : (o.isGroup
+                    ? 'Do not go to the stores for this order.'
+                    : 'Do not go to the store for this order.'),
           ].join(' '),
           'OK, got it',
         ),
@@ -508,16 +685,25 @@ class _NoticeView extends StatelessWidget {
           child: Container(
             width: 88,
             height: 88,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.16), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.16), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 46),
           ),
         ),
         const SizedBox(height: 18),
-        Text(title, textAlign: TextAlign.center, style: KraveoType.displayMd.copyWith(color: k.ink)),
+        Text(title,
+            textAlign: TextAlign.center,
+            style: KraveoType.displayMd.copyWith(color: k.ink)),
         const SizedBox(height: 10),
-        Text(message, textAlign: TextAlign.center, style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
+        Text(message,
+            textAlign: TextAlign.center,
+            style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
         const SizedBox(height: 24),
-        KButton(key: const ValueKey('notice-done'), label: button, large: true, onPressed: onDone),
+        KButton(
+            key: const ValueKey('notice-done'),
+            label: button,
+            large: true,
+            onPressed: onDone),
         if (notice.kind == NoticeKind.cancelled) ...[
           const SizedBox(height: 12),
           KButton(
@@ -526,7 +712,8 @@ class _NoticeView extends StatelessWidget {
             icon: LucideIcons.mail,
             kind: KButtonKind.ghost,
             large: true,
-            onPressed: () => showSupportSheet(context, orderId: o.id, subject: 'Cancelled delivery ${o.shortRef}'),
+            onPressed: () => showSupportSheet(context,
+                orderId: o.id, subject: 'Cancelled delivery ${o.shortRef}'),
           ),
         ],
       ],
@@ -535,7 +722,7 @@ class _NoticeView extends StatelessWidget {
 
   static String _by(String? who) => switch (who) {
         'CUSTOMER' => ' by the customer',
-        'VENDOR' => ' by the restaurant',
+        'VENDOR' => ' by the store',
         'ADMIN' => ' by ${BrandConfig.name}',
         'SYSTEM' => ' automatically',
         _ => '',
@@ -545,7 +732,11 @@ class _NoticeView extends StatelessWidget {
 /// The restaurants of a combined order: name, address, item count, status, and for each one its own Navigate and
 /// "Picked up" (enabled only while THAT restaurant's order is READY_FOR_PICKUP).
 class _StopList extends StatelessWidget {
-  const _StopList({required this.order, required this.busy, required this.onPickUp, required this.onNavigate});
+  const _StopList(
+      {required this.order,
+      required this.busy,
+      required this.onPickUp,
+      required this.onNavigate});
 
   final OrderView order;
   final bool busy;
@@ -563,12 +754,20 @@ class _StopList extends StatelessWidget {
         Row(children: [
           Icon(LucideIcons.store, size: 20, color: k.inkMuted),
           const SizedBox(width: 10),
-          Expanded(child: Text('Restaurants (${stops.where((s) => s.pickedUp).length} of ${stops.length} picked up)', style: KraveoType.titleLg.copyWith(color: k.ink))),
+          Expanded(
+              child: Text(
+                  'Stores (${stops.where((s) => s.pickedUp).length} of ${stops.length} picked up)',
+                  style: KraveoType.titleLg.copyWith(color: k.ink))),
         ]),
         for (var i = 0; i < stops.length; i++) ...[
           if (i > 0) Divider(color: k.line, height: 24),
           if (i == 0) const SizedBox(height: 10),
-          _StopRow(stop: stops[i], number: i + 1, busy: busy, onPickUp: onPickUp, onNavigate: onNavigate),
+          _StopRow(
+              stop: stops[i],
+              number: i + 1,
+              busy: busy,
+              onPickUp: onPickUp,
+              onNavigate: onNavigate),
         ],
       ]),
     );
@@ -576,7 +775,12 @@ class _StopList extends StatelessWidget {
 }
 
 class _StopRow extends StatelessWidget {
-  const _StopRow({required this.stop, required this.number, required this.busy, required this.onPickUp, required this.onNavigate});
+  const _StopRow(
+      {required this.stop,
+      required this.number,
+      required this.busy,
+      required this.onPickUp,
+      required this.onNavigate});
 
   final GroupStopView stop;
   final int number;
@@ -596,24 +800,41 @@ class _StopRow extends StatelessWidget {
       action = Row(key: ValueKey('stop-picked-$id'), children: [
         Icon(LucideIcons.circleCheck, size: 20, color: k.brand),
         const SizedBox(width: 8),
-        Expanded(child: Text('Picked up', style: KraveoType.titleMd.copyWith(color: k.brand))),
+        Expanded(
+            child: Text('Picked up',
+                style: KraveoType.titleMd.copyWith(color: k.brand))),
       ]);
     } else if (stop.status == OrderStatus.readyForPickup) {
       action = busy
-          ? const KButton(key: ValueKey('stop-saving'), label: 'Saving…', loading: true)
+          ? const KButton(
+              key: ValueKey('stop-saving'), label: 'Saving…', loading: true)
           : Semantics(
               label: 'Slide to confirm picked up from ${stop.name}',
               button: true,
               excludeSemantics: true,
               onTap: () => onPickUp(id),
-              child: KSlideToConfirm(key: ValueKey('slide-pickup-$id'), label: 'Slide · picked up', icon: LucideIcons.package, onConfirmed: () => onPickUp(id)),
+              child: KSlideToConfirm(
+                  key: ValueKey('slide-pickup-$id'),
+                  label: 'Slide · picked up',
+                  icon: LucideIcons.package,
+                  onConfirmed: () => onPickUp(id)),
             );
     } else {
-      final waiting = stop.status == OrderStatus.placed || stop.status == OrderStatus.unknown ? 'Waiting for restaurant to accept' : 'Waiting for kitchen';
+      final waiting = stop.status == OrderStatus.placed ||
+              stop.status == OrderStatus.unknown
+          ? 'Waiting for store to accept'
+          : 'Waiting for store';
       action = Row(key: ValueKey('stop-waiting-$id'), children: [
-        Icon(stop.status == OrderStatus.placed ? LucideIcons.clock : LucideIcons.chefHat, size: 20, color: k.inkMuted),
+        Icon(
+            stop.status == OrderStatus.placed
+                ? LucideIcons.clock
+                : LucideIcons.package,
+            size: 20,
+            color: k.inkMuted),
         const SizedBox(width: 8),
-        Expanded(child: Text(waiting, style: KraveoType.titleMd.copyWith(color: k.inkMuted))),
+        Expanded(
+            child: Text(waiting,
+                style: KraveoType.titleMd.copyWith(color: k.inkMuted))),
       ]);
     }
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -623,13 +844,19 @@ class _StopRow extends StatelessWidget {
           height: 32,
           alignment: Alignment.center,
           decoration: BoxDecoration(color: k.brandSoft, shape: BoxShape.circle),
-          child: Text('$number', style: KraveoType.label.copyWith(color: k.brand)),
+          child:
+              Text('$number', style: KraveoType.label.copyWith(color: k.brand)),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(stop.name, key: ValueKey('stop-name-$id'), style: KraveoType.titleLg.copyWith(color: k.ink)),
-            if ((stop.address ?? '').isNotEmpty) Text(stop.address!, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(stop.name,
+                key: ValueKey('stop-name-$id'),
+                style: KraveoType.titleLg.copyWith(color: k.ink)),
+            if ((stop.address ?? '').isNotEmpty)
+              Text(stop.address!,
+                  style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
             Text(items, style: KraveoType.bodySm.copyWith(color: k.inkFaint)),
           ]),
         ),
@@ -648,7 +875,9 @@ class _StopRow extends StatelessWidget {
         if (pin == null)
           Padding(
             padding: const EdgeInsets.only(top: 6),
-            child: Text('Restaurant location not set - follow the address', key: ValueKey('stop-location-missing-$id'), style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+            child: Text('Store location not set - follow the address',
+                key: ValueKey('stop-location-missing-$id'),
+                style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
           ),
       ],
     ]);
@@ -656,7 +885,11 @@ class _StopRow extends StatelessWidget {
 }
 
 class _Banner extends StatelessWidget {
-  const _Banner({required this.icon, required this.color, required this.title, required this.message});
+  const _Banner(
+      {required this.icon,
+      required this.color,
+      required this.title,
+      required this.message});
   final IconData icon;
   final Color color;
   final String title, message;
@@ -675,7 +908,8 @@ class _Banner extends StatelessWidget {
         Icon(icon, color: color, size: 24),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(title, style: KraveoType.titleMd.copyWith(color: k.ink)),
             const SizedBox(height: 2),
             Text(message, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
@@ -699,14 +933,17 @@ class _Inline extends StatelessWidget {
       child: Row(children: [
         Icon(icon, size: 18, color: k.inkMuted),
         const SizedBox(width: 8),
-        Expanded(child: Text(text, style: KraveoType.bodySm.copyWith(color: k.inkMuted))),
+        Expanded(
+            child: Text(text,
+                style: KraveoType.bodySm.copyWith(color: k.inkMuted))),
       ]),
     );
   }
 }
 
 class _OrderDetails extends StatelessWidget {
-  const _OrderDetails({required this.open, required this.onToggle, required this.order});
+  const _OrderDetails(
+      {required this.open, required this.onToggle, required this.order});
 
   final bool open;
   final VoidCallback onToggle;
@@ -732,10 +969,14 @@ class _OrderDetails extends StatelessWidget {
                 child: Row(children: [
                   Icon(LucideIcons.receipt, size: 22, color: k.inkMuted),
                   const SizedBox(width: 12),
-                  Expanded(child: Text('Order details', style: KraveoType.titleLg.copyWith(color: k.ink))),
-                  Text('${o.itemCount} items', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+                  Expanded(
+                      child: Text('Order details',
+                          style: KraveoType.titleLg.copyWith(color: k.ink))),
+                  Text('${o.itemCount} items',
+                      style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
                   const SizedBox(width: 8),
-                  Icon(open ? LucideIcons.chevronUp : LucideIcons.chevronDown, size: 22, color: k.inkFaint),
+                  Icon(open ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+                      size: 22, color: k.inkFaint),
                 ]),
               ),
             ),
@@ -751,14 +992,39 @@ class _OrderDetails extends StatelessWidget {
                       Divider(color: k.line, height: 1),
                       const SizedBox(height: 12),
                       if (o.isGroup)
-                        for (final stop in o.stops) _Line(icon: LucideIcons.store, label: 'Restaurant ${stop.index + 1}', value: stop.name)
+                        for (final stop in o.stops)
+                          _Line(
+                              icon: LucideIcons.store,
+                              label: 'Store ${stop.index + 1}',
+                              value: stop.name)
                       else
-                        _Line(icon: LucideIcons.store, label: 'Restaurant', value: o.restaurantName),
-                      if (o.customer?.name != null) _Line(icon: LucideIcons.user, label: 'Customer', value: o.customer!.name!),
-                      _Line(icon: LucideIcons.mapPin, label: 'Drop', value: o.dropLabel),
-                      for (final item in o.items) _Line(icon: LucideIcons.package, label: '${item.quantity} ×', value: item.name),
-                      _Line(icon: LucideIcons.wallet, label: 'Delivery fee', value: OfferCard.rupees(o.deliveryFee)),
-                      _Line(icon: LucideIcons.receipt, label: 'Order total', value: '${OfferCard.rupees(o.totalAmount)} (prepaid)'),
+                        _Line(
+                            icon: LucideIcons.store,
+                            label: 'Store',
+                            value: o.restaurantName),
+                      if (o.customer?.name != null)
+                        _Line(
+                            icon: LucideIcons.user,
+                            label: 'Customer',
+                            value: o.customer!.name!),
+                      _Line(
+                          icon: LucideIcons.mapPin,
+                          label: 'Drop',
+                          value: o.dropLabel),
+                      for (final item in o.items)
+                        _Line(
+                            icon: LucideIcons.package,
+                            label: '${item.quantity} ×',
+                            value: item.name),
+                      _Line(
+                          icon: LucideIcons.wallet,
+                          label: 'Delivery fee',
+                          value: OfferCard.rupees(o.deliveryFee)),
+                      _Line(
+                          icon: LucideIcons.receipt,
+                          label: 'Order total',
+                          value:
+                              '${OfferCard.rupees(o.totalAmount)} (prepaid)'),
                     ]),
                   )
                 : const SizedBox(width: double.infinity),
@@ -784,7 +1050,10 @@ class _Line extends StatelessWidget {
         const SizedBox(width: 10),
         Text(label, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
         const SizedBox(width: 12),
-        Expanded(child: Text(value, textAlign: TextAlign.right, style: KraveoType.titleMd.copyWith(color: k.ink))),
+        Expanded(
+            child: Text(value,
+                textAlign: TextAlign.right,
+                style: KraveoType.titleMd.copyWith(color: k.ink))),
       ]),
     );
   }

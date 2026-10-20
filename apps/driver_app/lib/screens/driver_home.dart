@@ -42,7 +42,9 @@ class DriverHomeScreen extends StatefulWidget {
   State<DriverHomeScreen> createState() => _DriverHomeScreenState();
 }
 
-class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBindingObserver implements PushUiHandler {
+class _DriverHomeScreenState extends State<DriverHomeScreen>
+    with WidgetsBindingObserver
+    implements PushUiHandler {
   late final RiderController _rider;
   PayoutController? _payout;
   PushController? _push;
@@ -55,16 +57,23 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
   @override
   void initState() {
     super.initState();
-    final partner = context.getInheritedWidgetOfExactType<SessionScope>()?.notifier?.session;
+    final partner = context
+        .getInheritedWidgetOfExactType<SessionScope>()
+        ?.notifier
+        ?.session;
     _rider = RiderController(
       widget.services ?? RiderServices.real(),
-      myIds: {if (partner != null) partner.userId, if (partner?.driverId != null) partner!.driverId!},
+      myIds: {
+        if (partner != null) partner.userId,
+        if (partner?.driverId != null) partner!.driverId!
+      },
     );
     _messages = _rider.messages.listen(_showMessage);
     WidgetsBinding.instance.addObserver(this);
     // Grozo's own idea of this rider's duty (second phone, logout elsewhere, a restore that failed on a weak
     // network) is mirrored once the controller has started and whenever a fresh profile answer arrives.
-    _sessionCtl = context.getInheritedWidgetOfExactType<SessionScope>()?.notifier;
+    _sessionCtl =
+        context.getInheritedWidgetOfExactType<SessionScope>()?.notifier;
     _sessionCtl?.dutyReading.addListener(_syncDutyFromSession);
     unawaited(_rider.start().then((_) => _syncDutyFromSession()));
     // Push is optional: null when the app runs without it (tests, or Firebase unavailable).
@@ -79,7 +88,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
 
   void _syncDutyFromSession() {
     final reading = _sessionCtl?.dutyReading.value;
-    if (!mounted || reading == null || identical(reading, _lastDutyReading)) return;
+    if (!mounted || reading == null || identical(reading, _lastDutyReading)) {
+      return;
+    }
     _lastDutyReading = reading;
     unawaited(_rider.reconcileDuty(reading.status, asOf: reading.asOf));
   }
@@ -100,9 +111,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
       builder: (ctx) {
         final k = ctx.k;
         return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 24),
+          padding:
+              const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 24),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text('Stay on duty?', textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
+            Text('Stay on duty?',
+                textAlign: TextAlign.center,
+                style: KraveoType.headline.copyWith(color: k.ink)),
             const SizedBox(height: 8),
             Text(
               'You are carrying an order. Going off duty stops new orders, but your live location keeps going to the customer until this delivery is finished or released. Stay on duty?',
@@ -110,7 +124,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
               style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16),
             ),
             const SizedBox(height: 24),
-            KButton(key: const ValueKey('stay-on-duty-button'), label: 'Stay on duty', large: true, onPressed: () => Navigator.of(ctx).pop(true)),
+            KButton(
+                key: const ValueKey('stay-on-duty-button'),
+                label: 'Stay on duty',
+                large: true,
+                onPressed: () => Navigator.of(ctx).pop(true)),
             const SizedBox(height: 12),
             KButton(
               key: const ValueKey('go-off-duty-anyway-button'),
@@ -139,7 +157,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
   void onPushTap(PushPayload payload) {
     if (!mounted) return;
     // Close pushed pages (runner pass, ...) but leave any open dialog alone.
-    Navigator.of(context).popUntil((route) => route.isFirst || route is! PageRoute);
+    Navigator.of(context)
+        .popUntil((route) => route.isFirst || route is! PageRoute);
     switch (payload.event) {
       case PushEvent.newDelivery:
         _goTab(0);
@@ -159,7 +178,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
   /// Explain-then-ask, once per phone, right after an approved rider is signed in.
   Future<void> _maybeExplainNotifications() async {
     final push = _push;
-    if (push == null || !mounted || _explaining || !push.needsExplanation) return;
+    if (push == null || !mounted || _explaining || !push.needsExplanation) {
+      return;
+    }
     _explaining = true;
     try {
       final agreed = await showNotificationsExplainSheet(context);
@@ -196,7 +217,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(text), duration: const Duration(seconds: 3)));
+      ..showSnackBar(
+          SnackBar(content: Text(text), duration: const Duration(seconds: 3)));
   }
 
   Future<void> _claim(OrderView offer) async {
@@ -209,8 +231,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => RunnerIdCardScreen(
-          name: (partner == null || partner.name.isEmpty) ? 'Runner' : partner.name,
-          runnerId: (partner?.runnerCode ?? '').isEmpty ? '-' : partner!.runnerCode!,
+          name: (partner == null || partner.name.isEmpty)
+              ? 'Delivery partner'
+              : partner.name,
+          runnerId:
+              (partner?.runnerCode ?? '').isEmpty ? '-' : partner!.runnerCode!,
         ),
       ),
     );
@@ -219,16 +244,22 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
   /// "Payout details": one controller for the life of this home screen, so reopening shows what was just saved.
   void _openPayoutDetails() {
     final partner = SessionScope.maybeOf(context)?.session;
-    final controller = _payout ??= PayoutController(api: widget.payoutApi ?? HttpPayoutApi());
+    final controller =
+        _payout ??= PayoutController(api: widget.payoutApi ?? HttpPayoutApi());
     Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (_) => PayoutDetailsScreen(controller: controller, suggestedUpi: partner?.upiId),
+      builder: (_) => PayoutDetailsScreen(
+          controller: controller, suggestedUpi: partner?.upiId),
     ));
   }
 
   void _openAccountSheet() {
     final partner = SessionScope.maybeOf(context)?.session;
     if (partner == null) return;
-    showAccountSheet(context, partner: partner, onOpenPass: _openRunnerPass, onLogout: _confirmLogout, onOpenPayout: _openPayoutDetails);
+    showAccountSheet(context,
+        partner: partner,
+        onOpenPass: _openRunnerPass,
+        onLogout: _confirmLogout,
+        onOpenPayout: _openPayoutDetails);
   }
 
   /// Asks first, then signs out. Going off duty on the server is part of the sign-out, so a
@@ -237,14 +268,17 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
   Future<void> _confirmLogout() async {
     final controller = SessionScope.maybeOf(context);
     if (controller == null) return;
-    final confirmed = await showLogoutConfirm(context, hasActiveJob: _rider.active != null);
+    final confirmed =
+        await showLogoutConfirm(context, hasActiveJob: _rider.active != null);
     if (!confirmed || !mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Logging out...'), duration: Duration(seconds: 6)));
+      ..showSnackBar(const SnackBar(
+          content: Text('Logging out...'), duration: Duration(seconds: 6)));
     await _rider.stopForLogout();
-    await controller.logout(beforeClear: () => DriverApiService.toggleDutyStatus(false));
+    await controller.logout(
+        beforeClear: () => DriverApiService.toggleDutyStatus(false));
     messenger.hideCurrentSnackBar();
   }
 
@@ -270,7 +304,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
           onChanged: _goTab,
           items: [
             const KNavItem(LucideIcons.house, 'Home'),
-            KNavItem(LucideIcons.bike, 'Active', badge: (_rider.active != null || _rider.notice != null) ? 1 : 0),
+            KNavItem(LucideIcons.bike, 'Active',
+                badge:
+                    (_rider.active != null || _rider.notice != null) ? 1 : 0),
             const KNavItem(LucideIcons.wallet, 'Earnings'),
             const KNavItem(LucideIcons.history, 'Trips'),
           ],
@@ -293,16 +329,24 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
         return RefreshIndicator(
           onRefresh: r.pollNow,
           child: ListView(
-            padding: EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, bottomInset + 24),
+            padding: EdgeInsets.fromLTRB(
+                KSpace.gutter, 12, KSpace.gutter, bottomInset + 24),
             children: [
               // Header: brand + ID pass + support
               Row(
                 children: [
                   const KBrandMark(height: 40),
                   const Spacer(),
-                  KIconButton(icon: LucideIcons.badgeCheck, semanticLabel: 'Open runner ID pass', onTap: _openRunnerPass),
+                  KIconButton(
+                      icon: LucideIcons.badgeCheck,
+                      semanticLabel: 'Open delivery partner ID pass',
+                      onTap: _openRunnerPass),
                   const SizedBox(width: 10),
-                  KIconButton(icon: LucideIcons.siren, semanticLabel: 'Contact ${BrandConfig.name} support', tint: KraveoPalette.danger, onTap: () => showSupportSheet(context)),
+                  KIconButton(
+                      icon: LucideIcons.siren,
+                      semanticLabel: 'Contact ${BrandConfig.name} support',
+                      tint: KraveoPalette.danger,
+                      onTap: () => showSupportSheet(context)),
                 ],
               ),
               if (partner != null) ...[
@@ -322,8 +366,16 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
               ],
 
               // Hero duty control (truthful: ON only after Grozo confirmed it)
-              DutyToggle(isOnline: r.onDuty, busy: r.dutyBusy, alertsOff: _push?.showBlockedBanner ?? false, onChanged: _onDutyChanged),
-              if (r.sharingLocation) _LocationLine(state: r.location, postFailed: r.lastLocationPostFailed, onFix: r.fixLocation),
+              DutyToggle(
+                  isOnline: r.onDuty,
+                  busy: r.dutyBusy,
+                  alertsOff: _push?.showBlockedBanner ?? false,
+                  onChanged: _onDutyChanged),
+              if (r.sharingLocation)
+                _LocationLine(
+                    state: r.location,
+                    postFailed: r.lastLocationPostFailed,
+                    onFix: r.fixLocation),
               const SizedBox(height: 16),
 
               KReveal(
@@ -340,22 +392,33 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
 
               // Job area
               if (notice != null) ...[
-                const SectionLabel('Update', padding: EdgeInsets.fromLTRB(4, 16, 4, 8)),
+                const SectionLabel('Update',
+                    padding: EdgeInsets.fromLTRB(4, 16, 4, 8)),
                 KCard(
                   key: const ValueKey('home-notice'),
                   onTap: () => _goTab(1),
-                  borderColor: notice.kind == NoticeKind.cancelled ? KraveoPalette.danger : k.brand.withValues(alpha: 0.55),
+                  borderColor: notice.kind == NoticeKind.cancelled
+                      ? KraveoPalette.danger
+                      : k.brand.withValues(alpha: 0.55),
                   padding: const EdgeInsets.all(18),
                   child: Row(children: [
-                    Icon(notice.kind == NoticeKind.delivered ? LucideIcons.circleCheck : LucideIcons.triangleAlert,
-                        color: notice.kind == NoticeKind.cancelled ? KraveoPalette.danger : k.brand),
+                    Icon(
+                        notice.kind == NoticeKind.delivered
+                            ? LucideIcons.circleCheck
+                            : LucideIcons.triangleAlert,
+                        color: notice.kind == NoticeKind.cancelled
+                            ? KraveoPalette.danger
+                            : k.brand),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         switch (notice.kind) {
-                          NoticeKind.delivered => 'Order ${notice.order.shortRef} delivered',
-                          NoticeKind.cancelled => 'Stop – order ${notice.order.shortRef} was cancelled',
-                          NoticeKind.reassigned => 'Order ${notice.order.shortRef} was moved away from you',
+                          NoticeKind.delivered =>
+                            'Order ${notice.order.shortRef} delivered',
+                          NoticeKind.cancelled =>
+                            'Stop – order ${notice.order.shortRef} was cancelled',
+                          NoticeKind.reassigned =>
+                            'Order ${notice.order.shortRef} was moved away from you',
                         },
                         style: KraveoType.titleLg.copyWith(color: k.ink),
                       ),
@@ -365,7 +428,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                 ),
               ],
               if (active != null) ...[
-                const SectionLabel('In progress', padding: EdgeInsets.fromLTRB(4, 16, 4, 8)),
+                const SectionLabel('In progress',
+                    padding: EdgeInsets.fromLTRB(4, 16, 4, 8)),
                 KCard(
                   padding: const EdgeInsets.all(20),
                   borderColor: k.brand.withValues(alpha: 0.55),
@@ -373,9 +437,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Order ${active.shortRef} · ${active.headlineName}',
-                          maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.headlineSm.copyWith(color: k.ink)),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: KraveoType.headlineSm.copyWith(color: k.ink)),
                       const SizedBox(height: 16),
-                      PipelineStepper(currentStep: PipelineStepper.stepFor(active.status)),
+                      PipelineStepper(
+                          currentStep: PipelineStepper.stepFor(active.status)),
                       const SizedBox(height: 20),
                       KButton(
                         label: 'Open active delivery',
@@ -388,12 +455,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                   ),
                 ),
               ] else if (!r.onDuty) ...[
-                const SectionLabel('Orders', padding: EdgeInsets.fromLTRB(4, 16, 4, 8)),
+                const SectionLabel('Orders',
+                    padding: EdgeInsets.fromLTRB(4, 16, 4, 8)),
                 KCard(
                   child: KEmptyState(
                     icon: LucideIcons.wifiOff,
                     title: 'You are off duty',
-                    message: 'Go on duty to start receiving campus orders.',
+                    message: 'Go on duty to start receiving local area orders.',
                     action: KButton(
                       label: 'Go on duty',
                       icon: LucideIcons.power,
@@ -405,21 +473,34 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                   ),
                 ),
               ] else ...[
-                SectionLabel(r.offers.isEmpty ? 'Orders' : 'New orders (${r.offers.length})', padding: const EdgeInsets.fromLTRB(4, 16, 4, 8)),
+                SectionLabel(
+                    r.offers.isEmpty
+                        ? 'Orders'
+                        : 'New orders (${r.offers.length})',
+                    padding: const EdgeInsets.fromLTRB(4, 16, 4, 8)),
                 if (r.offersStale)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: Row(children: [
                       Icon(LucideIcons.wifiOff, size: 18, color: k.inkMuted),
                       const SizedBox(width: 8),
-                      Expanded(child: Text('Can\'t reach ${BrandConfig.name} – retrying. Orders below may be out of date.', style: KraveoType.bodySm.copyWith(color: k.inkMuted))),
+                      Expanded(
+                          child: Text(
+                              'Can\'t reach ${BrandConfig.name} – retrying. Orders below may be out of date.',
+                              style: KraveoType.bodySm
+                                  .copyWith(color: k.inkMuted))),
                     ]),
                   ),
                 if (!r.offersLoaded)
                   const KCard(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 24),
-                      child: Center(child: SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 3))),
+                      child: Center(
+                          child: SizedBox(
+                              width: 28,
+                              height: 28,
+                              child:
+                                  CircularProgressIndicator(strokeWidth: 3))),
                     ),
                   )
                 else if (r.offers.isEmpty)
@@ -431,11 +512,16 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                       alignment: Alignment.topCenter,
                       children: [
                         // Radar rings are centred on the KEmptyState icon circle (32px padding + 42px radius).
-                        Positioned(top: 74 - 130, left: 0, right: 0, child: Center(child: RadarPulse(size: 260))),
+                        Positioned(
+                            top: 74 - 130,
+                            left: 0,
+                            right: 0,
+                            child: Center(child: RadarPulse(size: 260))),
                         KEmptyState(
                           icon: LucideIcons.radar,
                           title: 'You\'re online - waiting for orders',
-                          message: 'Offers from your configured delivery area appear here. Ask operations if your area needs setup.',
+                          message:
+                              'Offers from your configured delivery area appear here. Ask operations if your area needs setup.',
                         ),
                       ],
                     ),
@@ -449,7 +535,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                         order: offer,
                         now: now,
                         claiming: r.claimingId == offer.id,
-                        disabled: r.claimingId != null && r.claimingId != offer.id,
+                        disabled:
+                            r.claimingId != null && r.claimingId != offer.id,
                         onAccepted: () => _claim(offer),
                         onDeclined: () => r.dismissOffer(offer.id),
                       ),
@@ -460,22 +547,29 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
               const SizedBox(height: 16),
               KCard(
                 onTap: _openRunnerPass,
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                 child: Row(
                   children: [
                     Container(
                       width: 44,
                       height: 44,
-                      decoration: BoxDecoration(color: k.brandSoft, borderRadius: BorderRadius.circular(KRadius.md)),
-                      child: Icon(LucideIcons.badgeCheck, color: k.brand, size: 24),
+                      decoration: BoxDecoration(
+                          color: k.brandSoft,
+                          borderRadius: BorderRadius.circular(KRadius.md)),
+                      child: Icon(LucideIcons.badgeCheck,
+                          color: k.brand, size: 24),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Runner ID pass', style: KraveoType.titleLg.copyWith(color: k.ink)),
-                          Text('Show at the hostel gate', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+                          Text('Delivery partner ID pass',
+                              style: KraveoType.titleLg.copyWith(color: k.ink)),
+                          Text('Show at the delivery address',
+                              style: KraveoType.bodySm
+                                  .copyWith(color: k.inkMuted)),
                         ],
                       ),
                     ),
@@ -488,7 +582,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                 KCard(
                   key: const ValueKey('logout-card'),
                   onTap: _confirmLogout,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   child: Semantics(
                     label: 'Log out',
                     excludeSemantics: true,
@@ -497,16 +592,24 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                         Container(
                           width: 44,
                           height: 44,
-                          decoration: BoxDecoration(color: KraveoPalette.danger.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(KRadius.md)),
-                          child: const Icon(LucideIcons.logOut, color: KraveoPalette.danger, size: 24),
+                          decoration: BoxDecoration(
+                              color:
+                                  KraveoPalette.danger.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(KRadius.md)),
+                          child: const Icon(LucideIcons.logOut,
+                              color: KraveoPalette.danger, size: 24),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Log out', style: KraveoType.titleLg.copyWith(color: k.ink)),
-                              Text('End your shift on this phone', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+                              Text('Log out',
+                                  style: KraveoType.titleLg
+                                      .copyWith(color: k.ink)),
+                              Text('End your shift on this phone',
+                                  style: KraveoType.bodySm
+                                      .copyWith(color: k.inkMuted)),
                             ],
                           ),
                         ),
@@ -526,7 +629,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
 
 /// GPS state under the duty switch. Never shows a made-up position: problems are named, with a fix.
 class _LocationLine extends StatelessWidget {
-  const _LocationLine({required this.state, required this.postFailed, required this.onFix});
+  const _LocationLine(
+      {required this.state, required this.postFailed, required this.onFix});
   final LocationState state;
   final bool postFailed;
   final Future<void> Function() onFix;
@@ -534,18 +638,46 @@ class _LocationLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final k = context.k;
-    final (IconData icon, Color color, String text, String? action) = switch (state) {
+    final (IconData icon, Color color, String text, String? action) =
+        switch (state) {
       LocationState.ok => (
           LucideIcons.locateFixed,
           k.brand,
-          postFailed ? 'GPS on – could not send it to ${BrandConfig.name}, retrying' : 'Live location is being shared',
+          postFailed
+              ? 'GPS on – could not send it to ${BrandConfig.name}, retrying'
+              : 'Live location is being shared',
           null,
         ),
-      LocationState.waiting || LocationState.off => (LucideIcons.locate, k.inkMuted, 'Finding your location…', null),
-      LocationState.serviceOff => (LucideIcons.mapPinOff, KraveoPalette.danger, 'Location unavailable: GPS is turned off', 'Turn on GPS'),
-      LocationState.permissionDenied => (LucideIcons.mapPinOff, KraveoPalette.danger, 'Location unavailable: ${BrandConfig.name} is not allowed to use it', 'Allow location'),
-      LocationState.permissionDeniedForever => (LucideIcons.mapPinOff, KraveoPalette.danger, 'Location blocked for ${BrandConfig.name} in phone settings', 'Open settings'),
-      LocationState.unavailable => (LucideIcons.mapPinOff, KStatus.placed.color, 'Location unavailable – no GPS signal. Still trying…', null),
+      LocationState.waiting || LocationState.off => (
+          LucideIcons.locate,
+          k.inkMuted,
+          'Finding your location…',
+          null
+        ),
+      LocationState.serviceOff => (
+          LucideIcons.mapPinOff,
+          KraveoPalette.danger,
+          'Location unavailable: GPS is turned off',
+          'Turn on GPS'
+        ),
+      LocationState.permissionDenied => (
+          LucideIcons.mapPinOff,
+          KraveoPalette.danger,
+          'Location unavailable: ${BrandConfig.name} is not allowed to use it',
+          'Allow location'
+        ),
+      LocationState.permissionDeniedForever => (
+          LucideIcons.mapPinOff,
+          KraveoPalette.danger,
+          'Location blocked for ${BrandConfig.name} in phone settings',
+          'Open settings'
+        ),
+      LocationState.unavailable => (
+          LucideIcons.mapPinOff,
+          KStatus.placed.color,
+          'Location unavailable – no GPS signal. Still trying…',
+          null
+        ),
     };
     return Padding(
       key: const ValueKey('location-line'),
@@ -553,10 +685,17 @@ class _LocationLine extends StatelessWidget {
       child: Row(children: [
         Icon(icon, size: 18, color: color),
         const SizedBox(width: 8),
-        Expanded(child: Text(text, style: KraveoType.bodySm.copyWith(color: color == k.inkMuted ? k.inkMuted : k.ink))),
+        Expanded(
+            child: Text(text,
+                style: KraveoType.bodySm.copyWith(
+                    color: color == k.inkMuted ? k.inkMuted : k.ink))),
         if (action != null) ...[
           const SizedBox(width: 8),
-          KButton(label: action, kind: KButtonKind.tonal, expand: false, onPressed: onFix),
+          KButton(
+              label: action,
+              kind: KButtonKind.tonal,
+              expand: false,
+              onPressed: onFix),
         ],
       ]),
     );
@@ -583,9 +722,18 @@ class _GreetingRow extends StatelessWidget {
           KAvatar(id: partner.avatarId, size: 48),
           const SizedBox(width: 14),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Hi, ${partner.firstName}', maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.titleLg.copyWith(color: k.ink)),
-              if (code.isNotEmpty) Text(code, maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.bodySm.copyWith(color: k.inkMuted, letterSpacing: 0.8)),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Hi, ${partner.firstName}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: KraveoType.titleLg.copyWith(color: k.ink)),
+              if (code.isNotEmpty)
+                Text(code,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: KraveoType.bodySm
+                        .copyWith(color: k.inkMuted, letterSpacing: 0.8)),
             ]),
           ),
           Icon(LucideIcons.chevronRight, color: k.inkFaint),

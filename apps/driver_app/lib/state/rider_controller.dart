@@ -29,7 +29,10 @@ class RiderServices {
     return () => watch.elapsed;
   }
 
-  factory RiderServices.real() => RiderServices(api: HttpRiderOrdersApi(), socket: IoRiderSocket(), location: GeolocatorLocationSource());
+  factory RiderServices.real() => RiderServices(
+      api: HttpRiderOrdersApi(),
+      socket: IoRiderSocket(),
+      location: GeolocatorLocationSource());
 
   final RiderOrdersApi api;
   final RiderSocket socket;
@@ -48,7 +51,15 @@ class RiderServices {
 }
 
 /// What the GPS line on screen says. "ok" is the only state in which a position is sent.
-enum LocationState { off, waiting, ok, serviceOff, permissionDenied, permissionDeniedForever, unavailable }
+enum LocationState {
+  off,
+  waiting,
+  ok,
+  serviceOff,
+  permissionDenied,
+  permissionDeniedForever,
+  unavailable
+}
 
 enum NoticeKind { delivered, cancelled, reassigned }
 
@@ -78,10 +89,12 @@ class OtpOutcome {
 /// * A failed poll never wipes what is on screen; it only marks the data as stale.
 /// * Copies of the same order are merged by `updatedAt`.
 class RiderController extends ChangeNotifier {
-  RiderController(this.services, {Set<String> myIds = const {}}) : _myIds = myIds.where((e) => e.isNotEmpty).toSet();
+  RiderController(this.services, {Set<String> myIds = const {}})
+      : _myIds = myIds.where((e) => e.isNotEmpty).toSet();
 
   static const String dutyPrefKey = 'kraveo_driver_duty_online';
-  static const supportMessage = 'Contact ${BrandConfig.name} support – this delivery is locked.';
+  static const supportMessage =
+      'Contact ${BrandConfig.name} support – this delivery is locked.';
 
   final RiderServices services;
   final Set<String> _myIds;
@@ -129,6 +142,7 @@ class RiderController extends ChangeNotifier {
   bool _activeStale = false;
   bool _actionBusy = false;
   String? _actionError;
+
   /// Orders whose gate code Grozo locked (5 wrong codes). The value is the `updatedAt` of the first copy of the
   /// order seen after the lock (null until that copy arrives); a copy newer than that means someone (an admin
   /// resetting the lock) changed the order, so the lock is lifted. The 5th wrong code itself also bumps
@@ -147,7 +161,8 @@ class RiderController extends ChangeNotifier {
   bool get activeStale => _activeStale;
   bool get actionBusy => _actionBusy;
   String? get actionError => _actionError;
-  bool get activeLocked => _active != null && _lockedAt.containsKey(_active!.id);
+  bool get activeLocked =>
+      _active != null && _lockedAt.containsKey(_active!.id);
   DeliveryNotice? get notice => _notice;
   DateTime? get lastSync => _lastSync;
   bool get socketConnected => services.socket.isConnected;
@@ -261,7 +276,8 @@ class RiderController extends ChangeNotifier {
   }
 
   /// A combined delivery listens to the order room of EVERY stop (each restaurant's order is its own room).
-  static Iterable<String> _roomIds(OrderView o) => o.isGroup ? {o.id, for (final s in o.stops) s.orderId} : [o.id];
+  static Iterable<String> _roomIds(OrderView o) =>
+      o.isGroup ? {o.id, for (final s in o.stops) s.orderId} : [o.id];
 
   void _watch(OrderView o) {
     for (final id in _roomIds(o)) {
@@ -335,9 +351,12 @@ class RiderController extends ChangeNotifier {
         _dutyOffInFlight = false;
       }
       if (_disposed) return;
-      if (!r.ok && r.failure != ApiFailure.unauthorized && r.failure != ApiFailure.notApproved) {
+      if (!r.ok &&
+          r.failure != ApiFailure.unauthorized &&
+          r.failure != ApiFailure.notApproved) {
         _pendingOffSync = true;
-        _say('You are off duty on this phone. ${BrandConfig.name} will be told when the internet is back.');
+        _say(
+            'You are off duty on this phone. ${BrandConfig.name} will be told when the internet is back.');
       } else {
         _pendingOffSync = false;
         if (wasOn) {
@@ -364,7 +383,10 @@ class RiderController extends ChangeNotifier {
       _startLocation();
       _updateConnection();
       _notify();
-      if (!restoring) _say('You are on duty. Location sharing starts when you accept a delivery.');
+      if (!restoring) {
+        _say(
+            'You are on duty. Location sharing starts when you accept a delivery.');
+      }
       if (_active == null) await refreshOffers();
       return;
     }
@@ -380,7 +402,8 @@ class RiderController extends ChangeNotifier {
         _say('Too many tries. Wait a moment and try again.');
       case ApiFailure.server:
       case ApiFailure.badResponse:
-        _say('Could not go on duty – ${BrandConfig.name} is having trouble. Try again.');
+        _say(
+            'Could not go on duty – ${BrandConfig.name} is having trouble. Try again.');
       default:
         _say('Could not go on duty – check internet');
     }
@@ -448,7 +471,8 @@ class RiderController extends ChangeNotifier {
     } else {
       _goOffLocally();
       unawaited(_saveDutyPref(false));
-      _say('${BrandConfig.name} has you off duty. Go on duty again to receive orders.');
+      _say(
+          '${BrandConfig.name} has you off duty. Go on duty again to receive orders.');
     }
   }
 
@@ -456,14 +480,22 @@ class RiderController extends ChangeNotifier {
   /// keep the customer's live map alive.
   void _resumeSharingForActive() {
     if (_disposed || _active == null) return;
-    if (_location != LocationState.off || _trackSub != null || _locTimer != null) return;
+    if (_location != LocationState.off ||
+        _trackSub != null ||
+        _locTimer != null) {
+      return;
+    }
     _startLocation();
   }
 
   /// A delivery ended (finished or released) while the duty switch is off: location sharing stops now.
   void _stopSharingIfIdle() {
     if (_active != null) return;
-    if (_location == LocationState.off && _trackSub == null && _locTimer == null) return;
+    if (_location == LocationState.off &&
+        _trackSub == null &&
+        _locTimer == null) {
+      return;
+    }
     _stopLocation();
   }
 
@@ -476,8 +508,11 @@ class RiderController extends ChangeNotifier {
   /// position stream (updates continue with the screen off); otherwise, and whenever the stream
   /// cannot run, the original 10 s timer polls `read()`.
   void _startLocation() {
-    if (!sharingLocation) { _stopLocation(); return; }
-    if(_locBusy||_trackSub!=null||_locTimer!=null)return;
+    if (!sharingLocation) {
+      _stopLocation();
+      return;
+    }
+    if (_locBusy || _trackSub != null || _locTimer != null) return;
     _cancelTracking();
     _locTimer?.cancel();
     _locTimer = null;
@@ -509,7 +544,10 @@ class RiderController extends ChangeNotifier {
   void _cancelTracking() {
     final sub = _trackSub;
     _trackSub = null;
-    if (sub != null) unawaited(sub.cancel()); // stops the foreground service and its notification
+    if (sub != null) {
+      unawaited(
+          sub.cancel()); // stops the foreground service and its notification
+    }
   }
 
   /// Streams when it can (and has not failed repeatedly), polls otherwise.
@@ -525,7 +563,10 @@ class RiderController extends ChangeNotifier {
       if (stream != null) {
         _locTimer?.cancel();
         _locTimer = null;
-        _trackSub = stream.listen(_onTracked, onError: (_) => _trackLost(), onDone: _trackLost, cancelOnError: false);
+        _trackSub = stream.listen(_onTracked,
+            onError: (_) => _trackLost(),
+            onDone: _trackLost,
+            cancelOnError: false);
         return;
       }
     }
@@ -533,7 +574,8 @@ class RiderController extends ChangeNotifier {
   }
 
   void _startGpsTimer() {
-    _locTimer ??= Timer.periodic(services.locationInterval, (_) => _locationTick());
+    _locTimer ??=
+        Timer.periodic(services.locationInterval, (_) => _locationTick());
   }
 
   static const int _maxTrackFailures = 3;
@@ -574,7 +616,8 @@ class RiderController extends ChangeNotifier {
     _posting = true;
     _lastPostAt = services.uptime();
     try {
-      final r = await _api.postLocation(reading.lat!, reading.lng!, heading: reading.heading);
+      final r = await _api.postLocation(reading.lat!, reading.lng!,
+          heading: reading.heading);
       if (_disposed) return;
       _lastLocationPostFailed = !r.ok;
       _notify();
@@ -587,7 +630,8 @@ class RiderController extends ChangeNotifier {
     _location = switch (problem) {
       LocationProblem.serviceOff => LocationState.serviceOff,
       LocationProblem.permissionDenied => LocationState.permissionDenied,
-      LocationProblem.permissionDeniedForever => LocationState.permissionDeniedForever,
+      LocationProblem.permissionDeniedForever =>
+        LocationState.permissionDeniedForever,
       LocationProblem.unavailable => LocationState.unavailable,
     };
     _position.value = null;
@@ -608,7 +652,8 @@ class RiderController extends ChangeNotifier {
         _lastFixAt = _now();
         _position.value = GeoPoint(reading.lat!, reading.lng!);
         _lastPostAt = services.uptime();
-        final r = await _api.postLocation(reading.lat!, reading.lng!, heading: reading.heading);
+        final r = await _api.postLocation(reading.lat!, reading.lng!,
+            heading: reading.heading);
         _lastLocationPostFailed = !r.ok;
       } else {
         _applyProblem(reading.problem!);
@@ -618,7 +663,12 @@ class RiderController extends ChangeNotifier {
       _locBusy = false;
     }
     // A reading worked while only the timer is running: (re)start the position stream.
-    if (sharingLocation && !_disposed && _trackSub == null && _location == LocationState.ok) _ensureSharing();
+    if (sharingLocation &&
+        !_disposed &&
+        _trackSub == null &&
+        _location == LocationState.ok) {
+      _ensureSharing();
+    }
   }
 
   /// The "Allow location" / "Turn on GPS" buttons.
@@ -628,7 +678,8 @@ class RiderController extends ChangeNotifier {
       case LocationState.permissionDenied:
         await services.location.requestPermission();
       case LocationState.permissionDeniedForever:
-        await services.location.openSettingsFor(LocationProblem.permissionDeniedForever);
+        await services.location
+            .openSettingsFor(LocationProblem.permissionDeniedForever);
       case LocationState.serviceOff:
         await services.location.openSettingsFor(LocationProblem.serviceOff);
       default:
@@ -642,10 +693,12 @@ class RiderController extends ChangeNotifier {
   // =====================================================================================
 
   bool _poolable(OrderView o) =>
-      (o.offerExpiresAt==null||o.offerExpiresAt!.isAfter(_now())) &&
+      (o.offerExpiresAt == null || o.offerExpiresAt!.isAfter(_now())) &&
       (o.paymentStatus == null || o.paymentStatus == 'PAID') &&
       o.driver == null &&
-      (o.status == OrderStatus.accepted || o.status == OrderStatus.preparing || o.status == OrderStatus.readyForPickup);
+      (o.status == OrderStatus.accepted ||
+          o.status == OrderStatus.preparing ||
+          o.status == OrderStatus.readyForPickup);
 
   Future<void> refreshOffers() async {
     if (!_onDuty || _disposed) return;
@@ -660,7 +713,8 @@ class RiderController extends ChangeNotifier {
     }
     _offersStale = false;
     _offersLoaded = true;
-    _removedAt.removeWhere((_, t) => _now().difference(t) > const Duration(minutes: 2));
+    _removedAt.removeWhere(
+        (_, t) => _now().difference(t) > const Duration(minutes: 2));
     _offers = r.value!.where((o) {
       if (!_poolable(o) || _dismissed.contains(o.offerId ?? o.id)) return false;
       // Gone over the socket after this request left: the poll answer is older than that news.
@@ -679,20 +733,36 @@ class RiderController extends ChangeNotifier {
 
   /// "Not for me": hides an offer on this phone only.
   Future<void> dismissOffer(String id) async {
-    final matches=_offers.where((o)=>o.id==id);if(matches.isEmpty) return;
-    final offer=matches.first,key=offer.offerId??id;
-    _dismissed.add(key);_offers=_offers.where((o)=>o.id!=id).toList();_notify();
-    if(offer.offerId==null) return;
-    final error=await services.dispatchApi.decline(offer.offerId!);
-    if(_disposed) return;
-    if(error!=null) { _dismissed.remove(key);if(_active==null&&!_offers.any((o)=>o.id==id)) _offers=[..._offers,offer];_say(error);_notify(); }
-    else {await refreshOffers();}
+    final matches = _offers.where((o) => o.id == id);
+    if (matches.isEmpty) return;
+    final offer = matches.first, key = offer.offerId ?? id;
+    _dismissed.add(key);
+    _offers = _offers.where((o) => o.id != id).toList();
+    _notify();
+    if (offer.offerId == null) return;
+    final error = await services.dispatchApi.decline(offer.offerId!);
+    if (_disposed) return;
+    if (error != null) {
+      _dismissed.remove(key);
+      if (_active == null && !_offers.any((o) => o.id == id)) {
+        _offers = [..._offers, offer];
+      }
+      _say(error);
+      _notify();
+    } else {
+      await refreshOffers();
+    }
   }
 
   /// Atomic claim. Returns true only when the server confirmed this rider now has the order.
   Future<bool> claim(OrderView offer) async {
     if (_disposed || _claimingId != null) return false;
-    if(offer.offerExpiresAt!=null&&!offer.offerExpiresAt!.isAfter(_now())) {_say('This delivery offer expired. Refresh your offers.');unawaited(refreshOffers());return false;}
+    if (offer.offerExpiresAt != null &&
+        !offer.offerExpiresAt!.isAfter(_now())) {
+      _say('This delivery offer expired. Refresh your offers.');
+      unawaited(refreshOffers());
+      return false;
+    }
     if (_active != null) {
       _say('You already have an active delivery. Finish it first.');
       return false;
@@ -718,10 +788,13 @@ class RiderController extends ChangeNotifier {
         await refreshActive();
       }
       if (_active?.id == offer.id) {
-        _say(_active!.isGroup ? 'Order accepted. Collect it from ${_active!.stops.length} restaurants.' : 'Order accepted. Go to ${_active!.restaurantName}.');
+        _say(_active!.isGroup
+            ? 'Order accepted. Collect it from ${_active!.stops.length} stores.'
+            : 'Order accepted. Go to ${_active!.restaurantName}.');
         return true;
       }
-      _say('Accepted, but the order details did not load yet. They will appear in a moment.');
+      _say(
+          'Accepted, but the order details did not load yet. They will appear in a moment.');
       _notify();
       return false;
     }
@@ -738,7 +811,8 @@ class RiderController extends ChangeNotifier {
           case 'RIDER_OFFLINE':
             // Grozo has this rider off duty (e.g. logged out elsewhere): show the truth, stop offers and GPS.
             _goOffLocally();
-            _say('${BrandConfig.name} has you off duty. Go on duty again to accept orders.');
+            _say(
+                '${BrandConfig.name} has you off duty. Go on duty again to accept orders.');
           case 'ORDER_NOT_AVAILABLE':
             _removeOffer(offer.id);
             _say('This order is no longer available.');
@@ -757,7 +831,8 @@ class RiderController extends ChangeNotifier {
       case ApiFailure.forbidden:
         _say(r.code == 'RIDER_PROFILE_MISSING'
             ? 'Your rider profile is not set up. Contact ${BrandConfig.name} support.'
-            : (r.message ?? '${BrandConfig.name} did not let you take this order.'));
+            : (r.message ??
+                '${BrandConfig.name} did not let you take this order.'));
       case ApiFailure.rateLimited:
         _say('Too many tries. Wait a few seconds.');
       case ApiFailure.offline:
@@ -765,7 +840,9 @@ class RiderController extends ChangeNotifier {
         // The request may have reached Grozo. Ask before saying anything.
         await refreshActive();
         if (_active?.id == offer.id) {
-          _say(_active!.isGroup ? 'Order accepted. Collect it from ${_active!.stops.length} restaurants.' : 'Order accepted. Go to ${_active!.restaurantName}.');
+          _say(_active!.isGroup
+              ? 'Order accepted. Collect it from ${_active!.stops.length} stores.'
+              : 'Order accepted. Go to ${_active!.restaurantName}.');
           return true;
         }
         _say('No internet – the order was not accepted. Try again.');
@@ -789,7 +866,10 @@ class RiderController extends ChangeNotifier {
     // A "delivered" / "moved away" notice for the previous job must not hide the new one. A cancelled order
     // with the food already picked up stays: the rider must read what to do with it.
     final n = _notice;
-    if (n != null && !(n.kind == NoticeKind.cancelled && n.order.pickedUpAt != null)) _notice = null;
+    if (n != null &&
+        !(n.kind == NoticeKind.cancelled && n.order.pickedUpAt != null)) {
+      _notice = null;
+    }
     _watch(o);
     _updateConnection();
     _resumeSharingForActive();
@@ -824,7 +904,8 @@ class RiderController extends ChangeNotifier {
         if (OrderView.mergeGroup(copies) case final merged?) merged,
     ];
     final live = jobs.where((o) => !o.status.isTerminal).toList()
-      ..sort((a, b) => (a.createdAt ?? DateTime(2000)).compareTo(b.createdAt ?? DateTime(2000)));
+      ..sort((a, b) => (a.createdAt ?? DateTime(2000))
+          .compareTo(b.createdAt ?? DateTime(2000)));
 
     final current = _active;
     if (current != null) {
@@ -845,7 +926,8 @@ class RiderController extends ChangeNotifier {
       }
     }
     if (_active == null && live.isNotEmpty) _setActive(live.first);
-    _otherActive = _active == null ? 0 : live.where((o) => o.id != _active!.id).length;
+    _otherActive =
+        _active == null ? 0 : live.where((o) => o.id != _active!.id).length;
     _notify();
   }
 
@@ -903,7 +985,8 @@ class RiderController extends ChangeNotifier {
       _lockedAt[incoming.id] = seen;
     } else if (seen.isAfter(base)) {
       _lockedAt.remove(incoming.id);
-      _say('${BrandConfig.name} unlocked this delivery. You can enter the customer\'s code again.');
+      _say(
+          '${BrandConfig.name} unlocked this delivery. You can enter the customer\'s code again.');
     }
   }
 
@@ -915,7 +998,13 @@ class RiderController extends ChangeNotifier {
       final o = r.value!;
       if (o.status.isTerminal) {
         _apply(o);
-        if (_active?.id == cur.id) _finish(cur.isGroup ? (cur.mergedWith([o]) ?? o) : o, o.status == OrderStatus.delivered ? NoticeKind.delivered : NoticeKind.cancelled);
+        if (_active?.id == cur.id) {
+          _finish(
+              cur.isGroup ? (cur.mergedWith([o]) ?? o) : o,
+              o.status == OrderStatus.delivered
+                  ? NoticeKind.delivered
+                  : NoticeKind.cancelled);
+        }
       } else if (_isMine(o)) {
         _apply(o);
       } else {
@@ -946,7 +1035,8 @@ class RiderController extends ChangeNotifier {
         // Looks like it is no longer ours: confirm against the rider's own list first.
         await refreshActive();
       }
-    } else if (r.failure == ApiFailure.notFound || r.failure == ApiFailure.forbidden) {
+    } else if (r.failure == ApiFailure.notFound ||
+        r.failure == ApiFailure.forbidden) {
       _finish(cur, NoticeKind.reassigned);
     }
   }
@@ -966,7 +1056,11 @@ class RiderController extends ChangeNotifier {
       _notice = DeliveryNotice(kind, o);
     }
     if (kind == NoticeKind.delivered) {
-      _history = [o, ..._history.where((h) => h.id != o.id && (o.group == null || h.group?.id != o.group!.id))];
+      _history = [
+        o,
+        ..._history.where((h) =>
+            h.id != o.id && (o.group == null || h.group?.id != o.group!.id))
+      ];
     }
     _updateConnection();
     _stopSharingIfIdle();
@@ -986,13 +1080,19 @@ class RiderController extends ChangeNotifier {
   Future<void> advance(OrderStatus target) async {
     final cur = _active;
     if (cur == null || _actionBusy || _disposed) return;
-    if (cur.isGroup && target == OrderStatus.pickedUp) return; // per stop only: see pickUpStop
-    final allowed = (target == OrderStatus.pickedUp && cur.status == OrderStatus.readyForPickup) ||
-        (target == OrderStatus.arrivedAtGate && cur.status == OrderStatus.pickedUp);
+    if (cur.isGroup && target == OrderStatus.pickedUp) {
+      return; // per stop only: see pickUpStop
+    }
+    final allowed = (target == OrderStatus.pickedUp &&
+            cur.status == OrderStatus.readyForPickup) ||
+        (target == OrderStatus.arrivedAtGate &&
+            cur.status == OrderStatus.pickedUp);
     if (!allowed) {
       _actionError = target == OrderStatus.pickedUp
-          ? 'Restaurant is still preparing. Wait until it is marked ready.'
-          : (cur.isGroup ? 'Pick up the food from every restaurant first.' : 'Mark the order as picked up first.');
+          ? 'Store is still preparing. Wait until it is marked ready.'
+          : (cur.isGroup
+              ? 'Pick up the groceries from every store first.'
+              : 'Mark the order as picked up first.');
       _notify();
       return;
     }
@@ -1006,7 +1106,8 @@ class RiderController extends ChangeNotifier {
     final stop = cur.stops.where((s) => s.orderId == orderId).firstOrNull;
     if (stop == null || stop.pickedUp) return;
     if (stop.status != OrderStatus.readyForPickup) {
-      _actionError = '${stop.name} is still preparing. Wait until it is marked ready.';
+      _actionError =
+          '${stop.name} is still preparing. Wait until it is marked ready.';
       _notify();
       return;
     }
@@ -1016,7 +1117,9 @@ class RiderController extends ChangeNotifier {
   OrderStatus? _statusNow(OrderStatus target, String id) {
     final a = _active;
     if (a == null) return null;
-    if (a.isGroup && target == OrderStatus.pickedUp) return a.stops.where((s) => s.orderId == id).firstOrNull?.status;
+    if (a.isGroup && target == OrderStatus.pickedUp) {
+      return a.stops.where((s) => s.orderId == id).firstOrNull?.status;
+    }
     return a.status;
   }
 
@@ -1049,15 +1152,17 @@ class RiderController extends ChangeNotifier {
         // INVALID_TRANSITION / ORDER_CLOSED / INVALID_STATUS: the server's status differs from ours. Re-read it.
         _actionError = switch (r.code) {
           'INVALID_TRANSITION' => target == OrderStatus.pickedUp
-              ? 'The restaurant has not marked this order ready yet.'
+              ? 'The store has not marked this order ready yet.'
               : '${BrandConfig.name} did not accept this step. Showing the latest status.',
-          'GROUP_NOT_PICKED_UP' => 'Pick up the food from every restaurant first.',
+          'GROUP_NOT_PICKED_UP' =>
+            'Pick up the groceries from every store first.',
           'ORDER_CLOSED' => 'This order is already closed.',
           _ => r.message ?? '${BrandConfig.name} did not accept this step.',
         };
         await _refreshOne(id);
       case ApiFailure.forbidden when r.code == 'ROLE_NOT_ALLOWED':
-        _actionError = r.message ?? '${BrandConfig.name} did not allow this step.';
+        _actionError =
+            r.message ?? '${BrandConfig.name} did not allow this step.';
       case ApiFailure.notFound:
       case ApiFailure.forbidden:
         await _resolveMissing(cur);
@@ -1074,9 +1179,13 @@ class RiderController extends ChangeNotifier {
   /// Checks the code the customer reads out. The app never knows the right code; only Grozo does.
   Future<OtpOutcome> verifyOtp(String code) async {
     final cur = _active;
-    if (cur == null) return const OtpOutcome(OtpOutcomeKind.error, message: 'This delivery is no longer on your phone.');
+    if (cur == null) {
+      return const OtpOutcome(OtpOutcomeKind.error,
+          message: 'This delivery is no longer on your phone.');
+    }
     if (cur.status != OrderStatus.arrivedAtGate) {
-      return const OtpOutcome(OtpOutcomeKind.error, message: 'Mark "Arrived at the drop point" first.');
+      return const OtpOutcome(OtpOutcomeKind.error,
+          message: 'Mark "Arrived at the drop point" first.');
     }
     final r = await _api.verifyGateOtp(cur.id, code);
     if (_disposed) return const OtpOutcome(OtpOutcomeKind.error);
@@ -1087,7 +1196,9 @@ class RiderController extends ChangeNotifier {
       } else {
         await _refreshOne(cur.id);
         // Grozo answered 2xx for the code: the delivery is done even if the copy is not.
-        if (_active?.id == cur.id) _finish(cur.isGroup ? cur : (o ?? cur), NoticeKind.delivered);
+        if (_active?.id == cur.id) {
+          _finish(cur.isGroup ? cur : (o ?? cur), NoticeKind.delivered);
+        }
       }
       return const OtpOutcome(OtpOutcomeKind.delivered);
     }
@@ -1113,32 +1224,46 @@ class RiderController extends ChangeNotifier {
       case ApiFailure.conflict:
         // NOT_AT_GATE / ORDER_CLOSED / PAYMENT_NOT_CONFIRMED...: the order is not where we think. Re-read it.
         await _refreshOne(cur.id);
-        if (_notice?.kind == NoticeKind.delivered && _notice?.order.id == cur.id) return const OtpOutcome(OtpOutcomeKind.delivered);
-        if (_active?.id != cur.id) return const OtpOutcome(OtpOutcomeKind.error, message: 'This delivery changed. Check the screen.');
+        if (_notice?.kind == NoticeKind.delivered &&
+            _notice?.order.id == cur.id) {
+          return const OtpOutcome(OtpOutcomeKind.delivered);
+        }
+        if (_active?.id != cur.id) {
+          return const OtpOutcome(OtpOutcomeKind.error,
+              message: 'This delivery changed. Check the screen.');
+        }
         return OtpOutcome(OtpOutcomeKind.error,
             message: switch (r.code) {
-              'NOT_AT_GATE' => '${BrandConfig.name} does not have you at the drop point yet. Mark "Arrived" first.',
+              'NOT_AT_GATE' =>
+                '${BrandConfig.name} does not have you at the drop point yet. Mark "Arrived" first.',
               'ORDER_CLOSED' => 'This order is already closed.',
-              _ => r.message ?? '${BrandConfig.name} could not check the code right now.',
+              _ => r.message ??
+                  '${BrandConfig.name} could not check the code right now.',
             });
       case ApiFailure.offline:
       case ApiFailure.timeout:
         // The code may have been accepted just before the connection dropped. Ask Grozo.
         await _refreshOne(cur.id);
-        if (_active == null && _notice?.kind == NoticeKind.delivered && _notice?.order.id == cur.id) {
+        if (_active == null &&
+            _notice?.kind == NoticeKind.delivered &&
+            _notice?.order.id == cur.id) {
           return const OtpOutcome(OtpOutcomeKind.delivered);
         }
         return const OtpOutcome(OtpOutcomeKind.network);
       case ApiFailure.notFound:
       case ApiFailure.forbidden:
         await _resolveMissing(cur);
-        return const OtpOutcome(OtpOutcomeKind.error, message: 'This delivery is no longer assigned to you.');
+        return const OtpOutcome(OtpOutcomeKind.error,
+            message: 'This delivery is no longer assigned to you.');
       case ApiFailure.notApproved:
-        return const OtpOutcome(OtpOutcomeKind.error, message: 'Your account is not active right now.');
+        return const OtpOutcome(OtpOutcomeKind.error,
+            message: 'Your account is not active right now.');
       case ApiFailure.rateLimited:
-        return const OtpOutcome(OtpOutcomeKind.error, message: 'Too many tries. Wait a moment.');
+        return const OtpOutcome(OtpOutcomeKind.error,
+            message: 'Too many tries. Wait a moment.');
       default:
-        return const OtpOutcome(OtpOutcomeKind.error, message: '${BrandConfig.name} is having trouble. Try again.');
+        return const OtpOutcome(OtpOutcomeKind.error,
+            message: '${BrandConfig.name} is having trouble. Try again.');
     }
   }
 
@@ -1148,8 +1273,8 @@ class RiderController extends ChangeNotifier {
     if (cur == null || _actionBusy || _disposed) return;
     if (!cur.canRelease) {
       _actionError = cur.isGroup
-          ? 'You already have food from one of the restaurants. Only ${BrandConfig.name} support can move this delivery now.'
-          : 'You already have the food. Only ${BrandConfig.name} support can move this delivery now.';
+          ? 'You already have groceries from one of the stores. Only ${BrandConfig.name} support can move this delivery now.'
+          : 'You already have the groceries. Only ${BrandConfig.name} support can move this delivery now.';
       _notify();
       return;
     }
@@ -1177,13 +1302,14 @@ class RiderController extends ChangeNotifier {
       case ApiFailure.offline:
       case ApiFailure.timeout:
         _actionError = 'No internet – the job was NOT released. Try again.';
-        await _refreshOne(cur.id); // if it did go through, the order is no longer ours
+        await _refreshOne(
+            cur.id); // if it did go through, the order is no longer ours
       case ApiFailure.conflict:
       case ApiFailure.badRequest:
         _actionError = r.code == 'CANNOT_RELEASE'
             ? (cur.isGroup
-                ? 'This combined order can no longer be released (food from one restaurant was already picked up). Contact ${BrandConfig.name} support.'
-                : 'This job can no longer be released (the food was already picked up). Contact ${BrandConfig.name} support.')
+                ? 'This combined order can no longer be released (groceries from one store was already picked up). Contact ${BrandConfig.name} support.'
+                : 'This job can no longer be released (the groceries was already picked up). Contact ${BrandConfig.name} support.')
             : (r.message ?? 'This job can no longer be released.');
         await _refreshOne(cur.id);
       case ApiFailure.notFound:
@@ -1209,11 +1335,18 @@ class RiderController extends ChangeNotifier {
     if (_disposed) return;
     switch (e) {
       case OfferAvailable(:final order):
-        if (!_onDuty || _active != null || !_poolable(order) || _dismissed.contains(order.offerId ?? order.id)) return;
+        if (!_onDuty ||
+            _active != null ||
+            !_poolable(order) ||
+            _dismissed.contains(order.offerId ?? order.id)) {
+          return;
+        }
         _removedAt.remove(order.id);
         final existing = _offers.indexWhere((o) => o.id == order.id);
         if (existing >= 0) {
-          if (order.isAtLeastAsNewAs(_offers[existing])) _offers = [..._offers]..[existing] = order;
+          if (order.isAtLeastAsNewAs(_offers[existing])) {
+            _offers = [..._offers]..[existing] = order;
+          }
         } else {
           _offers = [order, ..._offers];
         }
@@ -1226,13 +1359,15 @@ class RiderController extends ChangeNotifier {
           if (order.status.isTerminal || _isMine(order)) {
             _applyGroup(cur, [order]);
           } else {
-            unawaited(refreshActive()); // confirm with the REST list before removing anything
+            unawaited(
+                refreshActive()); // confirm with the REST list before removing anything
           }
         } else if (cur != null && cur.id == order.id) {
           if (order.status.isTerminal || _isMine(order)) {
             _apply(order);
           } else {
-            unawaited(refreshActive()); // confirm with the REST list before removing anything
+            unawaited(
+                refreshActive()); // confirm with the REST list before removing anything
           }
         } else {
           final i = _offers.indexWhere((o) => o.id == order.id);
@@ -1246,7 +1381,10 @@ class RiderController extends ChangeNotifier {
           }
         }
       case SocketConnectionChanged(:final connected):
-        if (connected) unawaited(pollNow()); // catch up on anything missed while disconnected
+        if (connected) {
+          unawaited(
+              pollNow()); // catch up on anything missed while disconnected
+        }
         _notify();
     }
   }
@@ -1275,7 +1413,8 @@ class RiderController extends ChangeNotifier {
       collected.addAll(r.value!.orders);
       cursor = r.value!.nextCursor;
       hasMore = cursor != null;
-      final oldest = r.value!.orders.isEmpty ? null : r.value!.orders.last.finishedAt;
+      final oldest =
+          r.value!.orders.isEmpty ? null : r.value!.orders.last.finishedAt;
       if (!hasMore || oldest == null || oldest.isBefore(weekAgo)) break;
     }
     _historyLoading = false;
@@ -1337,7 +1476,8 @@ class RiderController extends ChangeNotifier {
   }
 
   /// Orders this rider delivered (the only ones that count for fees).
-  List<OrderView> get delivered => _history.where((o) => o.status == OrderStatus.delivered).toList();
+  List<OrderView> get delivered =>
+      _history.where((o) => o.status == OrderStatus.delivered).toList();
 
   static DateTime _day(DateTime t) {
     final l = t.toLocal();
@@ -1347,10 +1487,13 @@ class RiderController extends ChangeNotifier {
   /// Delivered orders on the local calendar day of [day].
   List<OrderView> deliveredOn(DateTime day) {
     final d = _day(day);
-    return delivered.where((o) => o.finishedAt != null && _day(o.finishedAt!) == d).toList();
+    return delivered
+        .where((o) => o.finishedAt != null && _day(o.finishedAt!) == d)
+        .toList();
   }
 
-  static double feesOf(Iterable<OrderView> orders) => orders.fold(0.0, (s, o) => s + (o.deliveryFee ?? 0));
+  static double feesOf(Iterable<OrderView> orders) =>
+      orders.fold(0.0, (s, o) => s + (o.deliveryFee ?? 0));
 
   List<OrderView> get deliveredToday => deliveredOn(_now());
 
@@ -1362,6 +1505,9 @@ class RiderController extends ChangeNotifier {
 
   List<OrderView> get deliveredThisWeek {
     final from = last7Days.first;
-    return delivered.where((o) => o.finishedAt != null && !_day(o.finishedAt!).isBefore(from)).toList();
+    return delivered
+        .where(
+            (o) => o.finishedAt != null && !_day(o.finishedAt!).isBefore(from))
+        .toList();
   }
 }

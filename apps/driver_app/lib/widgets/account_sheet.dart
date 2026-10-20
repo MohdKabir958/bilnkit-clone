@@ -17,59 +17,76 @@ Future<void> showAccountSheet(
       final k = sheetContext.k;
       final phone = partner.phone?.trim() ?? '';
       return SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 24),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Row(children: [
-            KAvatar(id: partner.avatarId, size: 64),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(partner.name.isEmpty ? 'Runner' : partner.name,
-                    maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.headlineSm.copyWith(color: k.ink)),
-                if ((partner.runnerCode ?? '').isNotEmpty)
-                  Text(partner.runnerCode!, style: KraveoType.titleMd.copyWith(color: k.accent, letterSpacing: 1)),
-                if (phone.isNotEmpty) Text(phone, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+        padding:
+            const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 24),
+        child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(children: [
+                KAvatar(id: partner.avatarId, size: 64),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                            partner.name.isEmpty
+                                ? 'Delivery partner'
+                                : partner.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style:
+                                KraveoType.headlineSm.copyWith(color: k.ink)),
+                        if ((partner.runnerCode ?? '').isNotEmpty)
+                          Text(partner.runnerCode!,
+                              style: KraveoType.titleMd
+                                  .copyWith(color: k.accent, letterSpacing: 1)),
+                        if (phone.isNotEmpty)
+                          Text(phone,
+                              style: KraveoType.bodySm
+                                  .copyWith(color: k.inkMuted)),
+                      ]),
+                ),
               ]),
-            ),
-          ]),
-          const SizedBox(height: 20),
-          KButton(
-            label: 'Runner ID pass',
-            icon: LucideIcons.badgeCheck,
-            kind: KButtonKind.tonal,
-            large: true,
-            onPressed: () {
-              Navigator.of(sheetContext).pop();
-              onOpenPass();
-            },
-          ),
-          if (onOpenPayout != null) ...[
-            const SizedBox(height: 12),
-            KButton(
-              key: const ValueKey('account-payout-button'),
-              label: 'Payout details',
-              icon: LucideIcons.landmark,
-              kind: KButtonKind.tonal,
-              large: true,
-              onPressed: () {
-                Navigator.of(sheetContext).pop();
-                onOpenPayout();
-              },
-            ),
-          ],
-          const SizedBox(height: 12),
-          KButton(
-            key: const ValueKey('account-logout-button'),
-            label: 'Log out',
-            icon: LucideIcons.logOut,
-            kind: KButtonKind.ghost,
-            large: true,
-            onPressed: () {
-              Navigator.of(sheetContext).pop();
-              onLogout();
-            },
-          ),
-        ]),
+              const SizedBox(height: 20),
+              KButton(
+                label: 'Delivery partner ID pass',
+                icon: LucideIcons.badgeCheck,
+                kind: KButtonKind.tonal,
+                large: true,
+                onPressed: () {
+                  Navigator.of(sheetContext).pop();
+                  onOpenPass();
+                },
+              ),
+              if (onOpenPayout != null) ...[
+                const SizedBox(height: 12),
+                KButton(
+                  key: const ValueKey('account-payout-button'),
+                  label: 'Payout details',
+                  icon: LucideIcons.landmark,
+                  kind: KButtonKind.tonal,
+                  large: true,
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    onOpenPayout();
+                  },
+                ),
+              ],
+              const SizedBox(height: 12),
+              KButton(
+                key: const ValueKey('account-logout-button'),
+                label: 'Log out',
+                icon: LucideIcons.logOut,
+                kind: KButtonKind.ghost,
+                large: true,
+                onPressed: () {
+                  Navigator.of(sheetContext).pop();
+                  onLogout();
+                },
+              ),
+            ]),
       );
     },
   );
@@ -77,22 +94,29 @@ Future<void> showAccountSheet(
 
 /// Confirms before signing out. The safe choice is the dominant button. Resolves to true
 /// only when the rider confirms.
-Future<bool> showLogoutConfirm(BuildContext context, {bool hasActiveJob = false}) async {
+Future<bool> showLogoutConfirm(BuildContext context,
+    {bool hasActiveJob = false}) async {
   final result = await showKSheet<bool>(
     context,
     builder: (ctx) {
       final k = ctx.k;
       return SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 24),
+        padding:
+            const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 24),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Container(
             width: 72,
             height: 72,
-            decoration: BoxDecoration(color: KraveoPalette.danger.withValues(alpha: 0.14), shape: BoxShape.circle),
-            child: const Icon(LucideIcons.logOut, size: 34, color: KraveoPalette.danger),
+            decoration: BoxDecoration(
+                color: KraveoPalette.danger.withValues(alpha: 0.14),
+                shape: BoxShape.circle),
+            child: const Icon(LucideIcons.logOut,
+                size: 34, color: KraveoPalette.danger),
           ),
           const SizedBox(height: 16),
-          Text('Log out?', textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
+          Text('Log out?',
+              textAlign: TextAlign.center,
+              style: KraveoType.headline.copyWith(color: k.ink)),
           const SizedBox(height: 8),
           Text(
             hasActiveJob
@@ -102,7 +126,10 @@ Future<bool> showLogoutConfirm(BuildContext context, {bool hasActiveJob = false}
             style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16),
           ),
           const SizedBox(height: 24),
-          KButton(label: 'Stay logged in', large: true, onPressed: () => Navigator.of(ctx).pop(false)),
+          KButton(
+              label: 'Stay logged in',
+              large: true,
+              onPressed: () => Navigator.of(ctx).pop(false)),
           const SizedBox(height: 12),
           KButton(
             key: const ValueKey('confirm-logout-button'),

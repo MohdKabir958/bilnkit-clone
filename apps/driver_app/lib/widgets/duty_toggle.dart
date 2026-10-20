@@ -1,103 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:kraveo_ui/kraveo_ui.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-/// Hero duty control: one giant, glowing ON DUTY / OFF DUTY switch. Tap anywhere to flip.
 class DutyToggle extends StatelessWidget {
-  final bool isOnline;
+  const DutyToggle(
+      {super.key,
+      required this.isOnline,
+      required this.onChanged,
+      this.busy = false,
+      this.alertsOff = false});
+  final bool isOnline, busy, alertsOff;
   final ValueChanged<bool> onChanged;
-
-  /// Waiting for Grozo to confirm "on duty": the switch stays OFF until the server says yes.
-  final bool busy;
-
-  /// Notifications are blocked: say so under the switch so a rider does not go on duty unaware.
-  final bool alertsOff;
-
-  const DutyToggle({
-    super.key,
-    required this.isOnline,
-    required this.onChanged,
-    this.busy = false,
-    this.alertsOff = false,
-  });
-
-  static const double _height = 96;
-  static const double _thumb = 76;
-
   @override
   Widget build(BuildContext context) {
     final k = context.k;
-    final on = isOnline;
-    return KPressable(
-      semanticLabel: busy
-          ? 'Going on duty, waiting for ${BrandConfig.name}.'
-          : on
-              ? 'You are on duty. Double tap to go off duty.'
-              : 'You are off duty. Double tap to go on duty.',
-      scale: 0.98,
-      onTap: busy ? null : () => onChanged(!isOnline),
-      child: ExcludeSemantics(
-        child: AnimatedContainer(
-          duration: KMotion.base,
-          curve: KMotion.emphasized,
-          height: _height,
-          decoration: BoxDecoration(
-            color: on ? k.brand.withValues(alpha: 0.14) : k.surface,
-            borderRadius: BorderRadius.circular(KRadius.pill),
-            border: Border.all(color: on ? k.brand : k.line, width: 2),
-            boxShadow: on ? KShadow.glow(k.brand) : null,
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Positioned.fill(
-                child: AnimatedPadding(
-                  duration: KMotion.base,
-                  curve: KMotion.emphasized,
-                  padding: EdgeInsets.only(left: on ? 30 : _thumb + 24, right: on ? _thumb + 24 : 30),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Column(
+    return Semantics(
+        toggled: isOnline,
+        child: KPressable(
+          semanticLabel: busy
+              ? 'Going on duty, waiting for ${BrandConfig.name}.'
+              : isOnline
+                  ? 'You are on duty. Double tap to go off duty.'
+                  : 'You are off duty. Double tap to go on duty.',
+          onTap: busy ? null : () => onChanged(!isOnline),
+          child: Container(
+              constraints: const BoxConstraints(minHeight: 104),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                  color: isOnline ? k.brandSoft : k.surface,
+                  borderRadius: KRadius.card,
+                  border: Border.all(color: isOnline ? k.brand : k.line)),
+              child: Row(children: [
+                Expanded(
+                    child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(busy ? 'CONNECTING' : (on ? 'ON DUTY' : 'OFF DUTY'),
-                              style: KraveoType.displayMd.copyWith(color: on ? k.brand : k.inkMuted, fontSize: 32, letterSpacing: 0.4)),
-                          Text(busy ? 'Asking ${BrandConfig.name}…' : (on ? (alertsOff ? 'Alerts are off - you may miss orders' : 'Receiving orders') : 'Tap to go online'),
-                              style: KraveoType.bodySm.copyWith(color: on ? k.inkMuted : k.inkFaint)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              AnimatedAlign(
-                duration: KMotion.base,
-                curve: KMotion.spring,
-                alignment: on ? Alignment.centerRight : Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.all((_height - _thumb) / 2),
-                  child: AnimatedContainer(
-                    duration: KMotion.base,
-                    width: _thumb,
-                    height: _thumb,
+                      Text(
+                          busy
+                              ? 'CONNECTING'
+                              : isOnline
+                                  ? 'ON DUTY'
+                                  : 'OFF DUTY',
+                          style: KraveoType.headline
+                              .copyWith(color: isOnline ? k.brand : k.ink)),
+                      const SizedBox(height: 6),
+                      Text(
+                          busy
+                              ? 'Waiting for server confirmation…'
+                              : isOnline
+                                  ? alertsOff
+                                      ? 'Alerts are off - you may miss orders'
+                                      : 'Ready for nearby delivery offers'
+                                  : 'Go online when you are ready',
+                          style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+                    ])),
+                const SizedBox(width: 12),
+                Container(
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: on ? k.brand : k.surfaceAlt,
-                      border: Border.all(color: on ? k.brand : k.line, width: 1.5),
-                      boxShadow: on ? KShadow.glow(k.brand) : null,
-                    ),
-                    child: Icon(LucideIcons.power, size: 34, color: on ? k.onBrand : k.inkFaint),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+                        color: isOnline ? k.brand : k.surfaceAlt,
+                        borderRadius: BorderRadius.circular(16)),
+                    child: busy
+                        ? Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: k.brand))
+                        : Icon(Icons.power_settings_new,
+                            color: isOnline ? k.onBrand : k.inkMuted,
+                            size: 28)),
+              ])),
+        ));
   }
 }

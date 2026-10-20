@@ -28,7 +28,8 @@ class EarningsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final k = context.k;
-    final avg = completedTrips > 0 ? (todayEarnings / completedTrips).round() : 0;
+    final avg =
+        completedTrips > 0 ? (todayEarnings / completedTrips).round() : 0;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -43,25 +44,36 @@ class EarningsCard extends StatelessWidget {
               Row(children: [
                 Icon(LucideIcons.wallet, size: 18, color: k.inkMuted),
                 const SizedBox(width: 8),
-                Expanded(child: Text('DELIVERY FEES TODAY', maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.label.copyWith(color: k.inkMuted, letterSpacing: 1.2))),
-                if (onTap != null) Icon(LucideIcons.chevronRight, size: 22, color: k.inkFaint),
+                Expanded(
+                    child: Text('DELIVERY FEES TODAY',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: KraveoType.label
+                            .copyWith(color: k.inkMuted, letterSpacing: 1.2))),
+                if (onTap != null)
+                  Icon(LucideIcons.chevronRight, size: 22, color: k.inkFaint),
               ]),
               const SizedBox(height: 4),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: unavailable
-                    ? Text('—', key: const ValueKey('earnings-unavailable'), style: KraveoType.displayLg.copyWith(fontSize: 60, height: 1.05, color: k.inkFaint))
+                    ? Text('—',
+                        key: const ValueKey('earnings-unavailable'),
+                        style: KraveoType.numeric.copyWith(
+                            fontSize: 40, height: 1.05, color: k.inkFaint))
                     : KAnimatedNumber(
                         value: todayEarnings,
                         prefix: '₹',
-                        style: KraveoType.displayLg.copyWith(fontSize: 60, height: 1.05, color: k.ink),
+                        style: KraveoType.numeric
+                            .copyWith(fontSize: 40, height: 1.05, color: k.ink),
                       ),
               ),
               if (unavailable)
                 KPressable(
                   key: const ValueKey('earnings-retry'),
-                  semanticLabel: 'Could not load your fees. Double tap to retry.',
+                  semanticLabel:
+                      'Could not load your fees. Double tap to retry.',
                   onTap: onRetry,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),
@@ -69,16 +81,25 @@ class EarningsCard extends StatelessWidget {
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
                         Icon(LucideIcons.rotateCcw, size: 16, color: k.brand),
                         const SizedBox(width: 6),
-                        Flexible(child: Text('Could not load. Tap to retry', style: KraveoType.bodySm.copyWith(color: k.brand))),
+                        Flexible(
+                            child: Text('Could not load. Tap to retry',
+                                style: KraveoType.bodySm
+                                    .copyWith(color: k.brand))),
                       ]),
                     ),
                   ),
                 )
               else if (completedTrips > 0)
-                Text('Avg ₹$avg per trip', style: KraveoType.bodySm.copyWith(color: k.inkFaint)),
+                Text('Avg ₹$avg per trip',
+                    style: KraveoType.bodySm.copyWith(color: k.inkFaint)),
             ],
           ),
         ),
+        Padding(
+            padding: const EdgeInsets.fromLTRB(4, 8, 4, 4),
+            child: Text(
+                'Delivery fees from completed trips. Final payouts may include adjustments.',
+                style: KraveoType.caption.copyWith(color: k.inkMuted))),
         const SizedBox(height: 10),
         Row(children: [
           Expanded(
@@ -87,8 +108,13 @@ class EarningsCard extends StatelessWidget {
               tint: KStatus.pickedUp.color,
               label: 'Trips today',
               value: unavailable
-                  ? Text('—', style: KraveoType.numericSm.copyWith(color: k.inkFaint, fontSize: 28))
-                  : KAnimatedNumber(value: completedTrips, style: KraveoType.numericSm.copyWith(color: k.ink, fontSize: 28)),
+                  ? Text('—',
+                      style: KraveoType.numericSm
+                          .copyWith(color: k.inkFaint, fontSize: 24))
+                  : KAnimatedNumber(
+                      value: completedTrips,
+                      style: KraveoType.numericSm
+                          .copyWith(color: k.ink, fontSize: 24)),
             ),
           ),
           const SizedBox(width: 10),
@@ -98,8 +124,14 @@ class EarningsCard extends StatelessWidget {
               tint: k.brand,
               label: 'Fees, 7 days',
               value: unavailable
-                  ? Text('—', style: KraveoType.numericSm.copyWith(color: k.inkFaint, fontSize: 28))
-                  : KAnimatedNumber(value: weekFees, prefix: '₹', style: KraveoType.numericSm.copyWith(color: k.ink, fontSize: 28)),
+                  ? Text('—',
+                      style: KraveoType.numericSm
+                          .copyWith(color: k.inkFaint, fontSize: 24))
+                  : KAnimatedNumber(
+                      value: weekFees,
+                      prefix: '₹',
+                      style: KraveoType.numericSm
+                          .copyWith(color: k.ink, fontSize: 24)),
             ),
           ),
         ]),
@@ -110,7 +142,11 @@ class EarningsCard extends StatelessWidget {
 
 /// Compact stat tile: icon, big value, small label. Roughly 72dp tall.
 class _MiniStat extends StatelessWidget {
-  const _MiniStat({required this.icon, required this.tint, required this.label, required this.value});
+  const _MiniStat(
+      {required this.icon,
+      required this.tint,
+      required this.label,
+      required this.value});
 
   final IconData icon;
   final Color tint;
@@ -132,7 +168,8 @@ class _MiniStat extends StatelessWidget {
         Container(
           width: 36,
           height: 36,
-          decoration: BoxDecoration(color: tint.withValues(alpha: 0.16), shape: BoxShape.circle),
+          decoration: BoxDecoration(
+              color: tint.withValues(alpha: 0.16), shape: BoxShape.circle),
           child: Icon(icon, size: 18, color: tint),
         ),
         const SizedBox(width: 10),
@@ -141,8 +178,14 @@ class _MiniStat extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: value),
-              Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.caption.copyWith(color: k.inkMuted)),
+              FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: value),
+              Text(label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: KraveoType.caption.copyWith(color: k.inkMuted)),
             ],
           ),
         ),

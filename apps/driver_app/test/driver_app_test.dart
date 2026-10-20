@@ -28,7 +28,8 @@ Future<void> _smallPhone(WidgetTester tester, {double textScale = 1.3}) async {
   addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 }
 
-Widget _app(Widget home) => MaterialApp(theme: KraveoTheme.driver(), home: home);
+Widget _app(Widget home) =>
+    MaterialApp(theme: KraveoTheme.driver(), home: home);
 
 Future<void> _tapKey(WidgetTester tester, String d) async {
   await tester.tap(find.byKey(ValueKey('otp-key-$d')));
@@ -44,7 +45,8 @@ Future<void> _enterPin(WidgetTester tester, String pin) async {
 /// Real fonts, so text metrics match a device (the default test font is far wider).
 Future<void> _loadFonts() async {
   Future<void> load(String family, String asset) async {
-    final loader = FontLoader('packages/kraveo_ui/$family')..addFont(rootBundle.load('packages/kraveo_ui/assets/fonts/$asset'));
+    final loader = FontLoader('packages/kraveo_ui/$family')
+      ..addFont(rootBundle.load('packages/kraveo_ui/assets/fonts/$asset'));
     await loader.load();
   }
 
@@ -54,8 +56,11 @@ Future<void> _loadFonts() async {
 
 /// Drags the slide-to-confirm thumb the full width in small steps.
 Future<void> _slide(WidgetTester tester) async {
-  await tester.ensureVisible(find.byType(KSlideToConfirm));await tester.pump(const Duration(milliseconds:400));
-  final thumb = find.descendant(of: find.byType(KSlideToConfirm), matching: find.byType(Icon)).first;
+  await tester.ensureVisible(find.byType(KSlideToConfirm));
+  await tester.pump(const Duration(milliseconds: 400));
+  final thumb = find
+      .descendant(of: find.byType(KSlideToConfirm), matching: find.byType(Icon))
+      .first;
   final g = await tester.startGesture(tester.getCenter(thumb));
   for (var i = 0; i < 12; i++) {
     await g.moveBy(const Offset(30, 0));
@@ -74,7 +79,8 @@ Future<void> _settle(WidgetTester tester) async {
 /// Lazily built list rows only exist once scrolled near: scroll until [f] is built.
 Future<void> _reveal(WidgetTester tester, Finder f) async {
   if (f.evaluate().isEmpty) {
-    await tester.scrollUntilVisible(f, 150, scrollable: find.byType(Scrollable).first);
+    await tester.scrollUntilVisible(f, 150,
+        scrollable: find.byType(Scrollable).first);
   }
 }
 
@@ -93,14 +99,17 @@ Future<void> _tapVisible(WidgetTester tester, Finder f) async {
 }
 
 /// A started controller over fakes. The caller must dispose it before the test ends.
-Future<RiderController> _rider(FakeRider f, {List<OrderView> active = const []}) async {
+Future<RiderController> _rider(FakeRider f,
+    {List<OrderView> active = const []}) async {
   f.api.active = ApiResult.ok(active);
   final c = RiderController(f.services, myIds: {'u-rider'});
   await c.start();
   return c;
 }
 
-Future<void> _openDialog(WidgetTester tester, Future<OtpOutcome> Function(String) onSubmit, {bool locked = false, List<bool?>? result}) async {
+Future<void> _openDialog(
+    WidgetTester tester, Future<OtpOutcome> Function(String) onSubmit,
+    {bool locked = false, List<bool?>? result}) async {
   await tester.pumpWidget(_app(Builder(
     builder: (context) => Scaffold(
       body: Center(
@@ -108,7 +117,12 @@ Future<void> _openDialog(WidgetTester tester, Future<OtpOutcome> Function(String
           onPressed: () async {
             final r = await showDialog<bool>(
               context: context,
-              builder: (_) => GateOtpDialog(orderRef: '#A1B2C3', customerName: 'Rahul', gateName: 'Block 2', onSubmit: onSubmit, initiallyLocked: locked),
+              builder: (_) => GateOtpDialog(
+                  orderRef: '#A1B2C3',
+                  customerName: 'Rahul',
+                  gateName: 'Block 2',
+                  onSubmit: onSubmit,
+                  initiallyLocked: locked),
             );
             result?.add(r);
           },
@@ -128,7 +142,9 @@ void main() {
   });
 
   group('GateOtpDialog (server-verified)', () {
-    testWidgets('incomplete, wrong with tries left, offline keeps digits, then delivered', (tester) async {
+    testWidgets(
+        'incomplete, wrong with tries left, offline keeps digits, then delivered',
+        (tester) async {
       await _smallPhone(tester);
       final sent = <String>[];
       final answers = <OtpOutcome>[
@@ -163,8 +179,10 @@ void main() {
       await _enterPin(tester, '821');
       await tester.tap(find.text('Verify & deliver'));
       await tester.pump();
-      expect(find.text('No internet – the code was not checked. Try again.'), findsOneWidget);
-      expect(find.text('4'), findsWidgets, reason: 'digits are kept for a safe retry');
+      expect(find.text('No internet – the code was not checked. Try again.'),
+          findsOneWidget);
+      expect(find.text('4'), findsWidgets,
+          reason: 'digits are kept for a safe retry');
 
       await tester.tap(find.text('Verify & deliver'));
       await tester.pump();
@@ -176,7 +194,9 @@ void main() {
       expect(find.text('Customer code'), findsNothing);
     });
 
-    testWidgets('locked: tells the rider to call support and disables the keypad', (tester) async {
+    testWidgets(
+        'locked: tells the rider to call support and disables the keypad',
+        (tester) async {
       await _smallPhone(tester);
       final sent = <String>[];
       await _openDialog(tester, (code) async {
@@ -195,11 +215,18 @@ void main() {
   });
 
   group('OfferCard (real pool order)', () {
-    testWidgets('shows restaurant, drop, fee and age; never a customer; one tap accepts', (tester) async {
+    testWidgets(
+        'shows restaurant, drop, fee and age; never a customer; one tap accepts',
+        (tester) async {
       await _smallPhone(tester);
       var accepted = 0;
       await tester.pumpWidget(_app(Scaffold(
-          body: SingleChildScrollView(child: OfferCard(order: offer(), now: testNow, onAccepted: () => accepted++, onDeclined: () {})))));
+          body: SingleChildScrollView(
+              child: OfferCard(
+                  order: offer(),
+                  now: testNow,
+                  onAccepted: () => accepted++,
+                  onDeclined: () {})))));
       expect(find.text('₹30'), findsOneWidget);
       expect(find.text('Underdoggs Cafe'), findsOneWidget);
       expect(find.text('Block 4'), findsOneWidget);
@@ -211,23 +238,45 @@ void main() {
       expect(accepted, 1);
     });
 
-    testWidgets('slide-to-accept fires once; claiming shows progress and no accept controls', (tester) async {
+    testWidgets(
+        'slide-to-accept fires once; claiming shows progress and no accept controls',
+        (tester) async {
       await _smallPhone(tester, textScale: 1.0);
       var accepted = 0;
-      await tester.pumpWidget(_app(Scaffold(body: SingleChildScrollView(child: OfferCard(order: offer(), now: testNow, onAccepted: () => accepted++)))));
+      await tester.pumpWidget(_app(Scaffold(
+          body: SingleChildScrollView(
+              child: OfferCard(
+                  order: offer(),
+                  now: testNow,
+                  onAccepted: () => accepted++)))));
       await _slide(tester);
       expect(accepted, 1);
-      await tester.pumpWidget(_app(Scaffold(body: SingleChildScrollView(child: OfferCard(order: offer(), now: testNow, claiming: true, onAccepted: () => accepted++)))));
+      await tester.pumpWidget(_app(Scaffold(
+          body: SingleChildScrollView(
+              child: OfferCard(
+                  order: offer(),
+                  now: testNow,
+                  claiming: true,
+                  onAccepted: () => accepted++)))));
       expect(find.text('Accepting…'), findsOneWidget);
       expect(find.byType(KSlideToConfirm), findsNothing);
     });
   });
 
   group('PipelineStepper', () {
-    testWidgets('shows the four steps; the step comes from the server status', (tester) async {
+    testWidgets('shows the four steps; the step comes from the server status',
+        (tester) async {
       await _smallPhone(tester);
-      await tester.pumpWidget(_app(const Scaffold(body: Padding(padding: EdgeInsets.all(20), child: PipelineStepper(currentStep: 1)))));
-      for (final label in ['Go to\nrestaurant', 'Ride to\ndrop', 'At drop\npoint', 'Delivered']) {
+      await tester.pumpWidget(_app(const Scaffold(
+          body: Padding(
+              padding: EdgeInsets.all(20),
+              child: PipelineStepper(currentStep: 1)))));
+      for (final label in [
+        'Pickup',
+        'On the way',
+        'At doorstep',
+        'Delivered'
+      ]) {
         expect(find.text(label), findsOneWidget);
       }
       expect(tester.takeException(), isNull);
@@ -240,35 +289,58 @@ void main() {
   });
 
   group('ActiveDeliveryScreen at 360x640 and 1.3x text', () {
-    for (final status in ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'PICKED_UP', 'ARRIVED_AT_GATE']) {
-      testWidgets('$status renders without overflow and offers only the allowed action', (tester) async {
+    for (final status in [
+      'ACCEPTED',
+      'PREPARING',
+      'READY_FOR_PICKUP',
+      'PICKED_UP',
+      'ARRIVED_AT_GATE'
+    ]) {
+      testWidgets(
+          '$status renders without overflow and offers only the allowed action',
+          (tester) async {
         await _smallPhone(tester);
         final f = FakeRider();
-        final c = await _rider(f, active: [order(status: status, phone: status == 'ARRIVED_AT_GATE' ? '+91 9876500000' : null)]);
-        await tester.pumpWidget(_app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
+        final c = await _rider(f, active: [
+          order(
+              status: status,
+              phone: status == 'ARRIVED_AT_GATE' ? '+91 9876500000' : null)
+        ]);
+        await tester.pumpWidget(
+            _app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
         await tester.pump(const Duration(milliseconds: 600));
         expect(tester.takeException(), isNull);
         switch (status) {
           case 'ACCEPTED' || 'PREPARING':
-            expect(find.text('Restaurant is still preparing'), findsOneWidget);
-            expect(tester.widget<KButton>(find.byKey(const ValueKey('picked-up-disabled'))).onPressed, isNull);
+            expect(find.text('Store is packing your order'), findsOneWidget);
+            expect(
+                tester
+                    .widget<KButton>(
+                        find.byKey(const ValueKey('picked-up-disabled')))
+                    .onPressed,
+                isNull);
             expect(find.byType(KSlideToConfirm), findsNothing);
             await _reveal(tester, find.byKey(const ValueKey('release-button')));
-            expect(find.byKey(const ValueKey('release-button')), findsOneWidget);
+            expect(
+                find.byKey(const ValueKey('release-button')), findsOneWidget);
           case 'READY_FOR_PICKUP':
-            expect(find.text('Food is ready'), findsOneWidget);
+            expect(find.text('Order is ready'), findsOneWidget);
             await _slide(tester);
             await tester.pump();
             expect(f.api.calls, contains('status:ord-1:PICKED_UP'));
             await tester.pump(const Duration(milliseconds: 400));
-            await tester.drag(find.byType(Scrollable).first,const Offset(0,3000));await tester.pump(const Duration(milliseconds:500));expect(find.text('Ride to the drop point'), findsOneWidget);
+            await tester.drag(
+                find.byType(Scrollable).first, const Offset(0, 3000));
+            await tester.pump(const Duration(milliseconds: 500));
+            expect(find.text('Ride to the drop point'), findsOneWidget);
           case 'PICKED_UP':
             expect(find.text('Prepaid order'), findsOneWidget);
             await _scrollToEnd(tester);
             expect(find.byKey(const ValueKey('release-button')), findsNothing);
             expect(find.textContaining('+91'), findsNothing);
           case 'ARRIVED_AT_GATE':
-            expect(find.byKey(const ValueKey('enter-code-button')), findsOneWidget);
+            expect(find.byKey(const ValueKey('enter-code-button')),
+                findsOneWidget);
             await _reveal(tester, find.text('+91 9876500000'));
             expect(find.text('+91 9876500000'), findsOneWidget);
             expect(find.textContaining('4821'), findsNothing);
@@ -278,13 +350,18 @@ void main() {
       });
     }
 
-    testWidgets('code entry delivers through the server and shows the delivered notice', (tester) async {
+    testWidgets(
+        'code entry delivers through the server and shows the delivered notice',
+        (tester) async {
       await _smallPhone(tester);
       final f = FakeRider();
-      final c = await _rider(f, active: [order(status: 'ARRIVED_AT_GATE', phone: '+91 9876500000')]);
-      await tester.pumpWidget(_app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
+      final c = await _rider(f,
+          active: [order(status: 'ARRIVED_AT_GATE', phone: '+91 9876500000')]);
+      await tester.pumpWidget(
+          _app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
       await tester.pump(const Duration(milliseconds: 600));
-      await _tapVisible(tester, find.byKey(const ValueKey('enter-code-button')));
+      await _tapVisible(
+          tester, find.byKey(const ValueKey('enter-code-button')));
       await tester.pumpAndSettle();
       await _enterPin(tester, '4821');
       await tester.tap(find.text('Verify & deliver'));
@@ -298,13 +375,17 @@ void main() {
       c.dispose();
     });
 
-    testWidgets('locked delivery shows the support message and a support button', (tester) async {
+    testWidgets(
+        'locked delivery shows the support message and a support button',
+        (tester) async {
       await _smallPhone(tester);
       final f = FakeRider();
-      f.api.onOtp = (_, __) => const ApiResult.fail(ApiFailure.locked, statusCode: 423, code: 'OTP_LOCKED');
+      f.api.onOtp = (_, __) => const ApiResult.fail(ApiFailure.locked,
+          statusCode: 423, code: 'OTP_LOCKED');
       final c = await _rider(f, active: [order(status: 'ARRIVED_AT_GATE')]);
       await c.verifyOtp('0000');
-      await tester.pumpWidget(_app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
+      await tester.pumpWidget(
+          _app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
       await tester.pump(const Duration(milliseconds: 600));
       expect(find.text(RiderController.supportMessage), findsOneWidget);
       expect(find.text('Help and requests'), findsOneWidget);
@@ -317,7 +398,8 @@ void main() {
       await _smallPhone(tester);
       final f = FakeRider();
       final c = await _rider(f, active: [order(status: 'ACCEPTED')]);
-      await tester.pumpWidget(_app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
+      await tester.pumpWidget(
+          _app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
       await tester.pump(const Duration(milliseconds: 600));
       await _tapVisible(tester, find.byKey(const ValueKey('release-button')));
       await tester.pumpAndSettle();
@@ -336,18 +418,30 @@ void main() {
         final f = FakeRider();
         final c = await _rider(f, active: [order(status: 'PICKED_UP')]);
         if (kind == 'cancelled') {
-          f.api.active = ApiResult.ok([order(status: 'CANCELLED', paymentStatus: 'REFUNDED', cancelledBy: 'ADMIN', cancelReason: 'Restaurant closed early', pickedUpAt: testNow, updatedAt: testNow)]);
+          f.api.active = ApiResult.ok([
+            order(
+                status: 'CANCELLED',
+                paymentStatus: 'REFUNDED',
+                cancelledBy: 'ADMIN',
+                cancelReason: 'Restaurant closed early',
+                pickedUpAt: testNow,
+                updatedAt: testNow)
+          ]);
         } else {
           f.api.active = const ApiResult.ok([]);
-          f.api.orders['ord-1'] = const ApiResult.fail(ApiFailure.notFound, statusCode: 404, code: 'NOT_FOUND');
+          f.api.orders['ord-1'] = const ApiResult.fail(ApiFailure.notFound,
+              statusCode: 404, code: 'NOT_FOUND');
         }
         await c.pollNow();
-        await tester.pumpWidget(_app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
+        await tester.pumpWidget(
+            _app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
         await tester.pump(const Duration(milliseconds: 600));
         if (kind == 'cancelled') {
           expect(find.text('Stop – this order was cancelled'), findsOneWidget);
-          expect(find.textContaining('Restaurant closed early'), findsOneWidget);
-          expect(find.textContaining('Do not hand over the food'), findsOneWidget);
+          expect(
+              find.textContaining('Restaurant closed early'), findsOneWidget);
+          expect(find.textContaining('Do not hand over the groceries'),
+              findsOneWidget);
         } else {
           expect(find.text('This delivery was moved'), findsOneWidget);
         }
@@ -362,12 +456,27 @@ void main() {
 
   group('Earnings and trips from real history', () {
     List<OrderView> history() => [
-          order(id: 'h1', status: 'DELIVERED', fee: 25, deliveredAt: testNow.subtract(const Duration(hours: 1)), vendorName: 'A very long restaurant name that keeps going'),
-          order(id: 'h2', status: 'DELIVERED', fee: 30, deliveredAt: testNow.subtract(const Duration(days: 2))),
-          order(id: 'h3', status: 'CANCELLED', fee: 40, cancelReason: 'Customer cancelled'),
+          order(
+              id: 'h1',
+              status: 'DELIVERED',
+              fee: 25,
+              deliveredAt: testNow.subtract(const Duration(hours: 1)),
+              vendorName: 'A very long restaurant name that keeps going'),
+          order(
+              id: 'h2',
+              status: 'DELIVERED',
+              fee: 30,
+              deliveredAt: testNow.subtract(const Duration(days: 2))),
+          order(
+              id: 'h3',
+              status: 'CANCELLED',
+              fee: 40,
+              cancelReason: 'Customer cancelled'),
         ];
 
-    testWidgets('earnings shows delivery fees (not payouts), today and 7 days, no overflow', (tester) async {
+    testWidgets(
+        'earnings shows delivery fees (not payouts), today and 7 days, no overflow',
+        (tester) async {
       await _smallPhone(tester);
       final f = FakeRider();
       f.api.onHistory = (_) => ApiResult.ok(OrderPage(history(), null));
@@ -385,7 +494,8 @@ void main() {
       c.dispose();
     });
 
-    testWidgets('trips list real orders; empty and error states', (tester) async {
+    testWidgets('trips list real orders; empty and error states',
+        (tester) async {
       await _smallPhone(tester);
       final f = FakeRider();
       f.api.onHistory = (_) => ApiResult.ok(OrderPage(history(), 'next'));
@@ -418,23 +528,29 @@ void main() {
   });
 
   group('RunnerIdCardScreen', () {
-    testWidgets('shows the rider\'s name and runner code, with no fake QR and no "ID verified" claim', (tester) async {
+    testWidgets(
+        'shows the rider\'s name and runner code, with no fake QR and no "ID verified" claim',
+        (tester) async {
       await _smallPhone(tester);
-      await tester.pumpWidget(_app(const RunnerIdCardScreen(name: 'Vikram Singh', runnerId: 'RUN-8042')));
+      await tester.pumpWidget(_app(const RunnerIdCardScreen(
+          name: 'Vikram Singh', runnerId: 'RUN-8042')));
       await tester.pump(const Duration(milliseconds: 700));
       expect(find.text('Vikram Singh'), findsOneWidget);
       expect(find.text('VS'), findsOneWidget);
       expect(find.text('RUN-8042'), findsOneWidget);
-      expect(find.text('Show this pass; the guard checks the code RUN-8042'), findsOneWidget);
+      expect(find.text('Show this pass; the guard checks the code RUN-8042'),
+          findsOneWidget);
       expect(find.text('ID verified'), findsNothing);
       expect(find.textContaining('SCAN AT'), findsNothing);
       expect(find.textContaining('scan', findRichText: true), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a rider without a runner code is not shown a made-up one', (tester) async {
+    testWidgets('a rider without a runner code is not shown a made-up one',
+        (tester) async {
       await _smallPhone(tester);
-      await tester.pumpWidget(_app(const RunnerIdCardScreen(name: 'Runner', runnerId: '-')));
+      await tester.pumpWidget(
+          _app(const RunnerIdCardScreen(name: 'Runner', runnerId: '-')));
       await tester.pump(const Duration(milliseconds: 700));
       expect(find.textContaining('the guard checks the code'), findsNothing);
       expect(find.text('Show this pass to the guard.'), findsOneWidget);
@@ -443,7 +559,8 @@ void main() {
   });
 
   group('DriverHomeScreen with a fake Grozo', () {
-    Future<FakeRider> pumpHome(WidgetTester tester, {void Function(FakeRider f)? setup}) async {
+    Future<FakeRider> pumpHome(WidgetTester tester,
+        {void Function(FakeRider f)? setup}) async {
       final f = FakeRider();
       setup?.call(f);
       await tester.pumpWidget(_app(DriverHomeScreen(services: f.services)));
@@ -452,7 +569,9 @@ void main() {
       return f;
     }
 
-    testWidgets('starts off duty with no offers; a failed "go on duty" rolls back', (tester) async {
+    testWidgets(
+        'starts off duty with no offers; a failed "go on duty" rolls back',
+        (tester) async {
       await _smallPhone(tester);
       final f = await pumpHome(tester, setup: (f) {
         f.api.available = ApiResult.ok([offer()]);
@@ -466,23 +585,31 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.text('OFF DUTY'), findsOneWidget);
-      expect(find.text('Could not go on duty – check internet'), findsOneWidget);
+      expect(
+          find.text('Could not go on duty – check internet'), findsOneWidget);
       expect(f.api.calls, isNot(contains('available')));
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
       expect(f.socket.disposed, isTrue);
     });
 
-    testWidgets('on duty: real offers appear and vanish on order_unavailable; GPS problem is named', (tester) async {
+    testWidgets(
+        'on duty: real offers appear and vanish on order_unavailable; GPS problem is named',
+        (tester) async {
       await _smallPhone(tester);
       final f = await pumpHome(tester, setup: (f) {
-        f.api.available = ApiResult.ok([offer(id: 'a'), offer(id: 'b', vendorName: 'Southern Spice', drop: 'Girls Gate 1')]);
-        f.location.reading = const LocationReading.problem(LocationProblem.permissionDenied);
+        f.api.available = ApiResult.ok([
+          offer(id: 'a'),
+          offer(id: 'b', vendorName: 'Southern Spice', drop: 'Girls Gate 1')
+        ]);
+        f.location.reading =
+            const LocationReading.problem(LocationProblem.permissionDenied);
       });
       await tester.tap(find.text('OFF DUTY'));
       await _settle(tester);
       expect(find.text('ON DUTY'), findsOneWidget);
-      expect(find.text('Allow location'), findsNothing); // Idle riders do not request GPS.
+      expect(find.text('Allow location'),
+          findsNothing); // Idle riders do not request GPS.
       await _reveal(tester, find.text('NEW ORDERS (2)'));
       await _reveal(tester, find.text('Southern Spice'));
       expect(find.text('Southern Spice'), findsOneWidget);
@@ -500,12 +627,15 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('accept: server-confirmed claim opens the active delivery; ALREADY_TAKEN explains', (tester) async {
+    testWidgets(
+        'accept: server-confirmed claim opens the active delivery; ALREADY_TAKEN explains',
+        (tester) async {
       await _smallPhone(tester);
       final f = await pumpHome(tester, setup: (f) {
         f.api.available = ApiResult.ok([offer(id: 'a'), offer(id: 'b')]);
         f.api.onClaim = (id) => id == 'a'
-            ? const ApiResult.fail(ApiFailure.conflict, statusCode: 409, code: 'ALREADY_TAKEN')
+            ? const ApiResult.fail(ApiFailure.conflict,
+                statusCode: 409, code: 'ALREADY_TAKEN')
             : ApiResult.ok(order(id: id, status: 'PREPARING'));
       });
       await tester.tap(find.text('OFF DUTY'));
@@ -518,28 +648,40 @@ void main() {
 
       await _tapVisible(tester, find.byKey(const ValueKey('accept-b')));
       await tester.pump(const Duration(milliseconds: 600));
-      expect(find.text('Go to the restaurant'), findsOneWidget);
-      expect(find.text('Restaurant is still preparing'), findsOneWidget);
+      expect(find.text('Go to the store'), findsOneWidget);
+      expect(find.text('Store is packing your order'), findsOneWidget);
       expect(tester.takeException(), isNull);
 
       // Every tab still renders.
-      for (final tab in [LucideIcons.wallet, LucideIcons.history, LucideIcons.house]) {
-        await tester.tap(find.descendant(of: find.byType(KGlassNav), matching: find.byIcon(tab)));
+      for (final tab in [
+        LucideIcons.wallet,
+        LucideIcons.history,
+        LucideIcons.house
+      ]) {
+        await tester.tap(find.descendant(
+            of: find.byType(KGlassNav), matching: find.byIcon(tab)));
         await tester.pump(const Duration(milliseconds: 600));
         expect(tester.takeException(), isNull, reason: 'tab $tab');
       }
       expect(find.text('IN PROGRESS'), findsOneWidget);
-      expect(f.api.calls.where((x) => x.startsWith('claim')), ['claim:a', 'claim:b']);
+      expect(f.api.calls.where((x) => x.startsWith('claim')),
+          ['claim:a', 'claim:b']);
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('restores a delivery in progress after a restart', (tester) async {
+    testWidgets('restores a delivery in progress after a restart',
+        (tester) async {
       await _smallPhone(tester);
-      await pumpHome(tester, setup: (f) => f.api.active = ApiResult.ok([order(status: 'PICKED_UP')]));
+      await pumpHome(tester,
+          setup: (f) =>
+              f.api.active = ApiResult.ok([order(status: 'PICKED_UP')]));
       expect(find.text('IN PROGRESS'), findsOneWidget);
-      await tester.tap(find.descendant(of: find.byType(KGlassNav), matching: find.byIcon(LucideIcons.bike)));
+      await tester.tap(find.descendant(
+          of: find.byType(KGlassNav), matching: find.byIcon(LucideIcons.bike)));
       await tester.pump(const Duration(milliseconds: 600));
-      await tester.drag(find.byType(Scrollable).first,const Offset(0,3000));await tester.pump(const Duration(milliseconds:500));expect(find.text('Ride to the drop point'), findsOneWidget);
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, 3000));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('Ride to the drop point'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     });

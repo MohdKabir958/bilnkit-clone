@@ -17,9 +17,9 @@ class PipelineStepper extends StatelessWidget {
   });
 
   static const List<({String label, IconData icon})> steps = [
-    (label: 'Go to\nrestaurant', icon: LucideIcons.store),
-    (label: 'Ride to\ndrop', icon: LucideIcons.package),
-    (label: 'At drop\npoint', icon: LucideIcons.mapPin),
+    (label: 'Pickup', icon: LucideIcons.store),
+    (label: 'On the way', icon: LucideIcons.package),
+    (label: 'At doorstep', icon: LucideIcons.mapPin),
     (label: 'Delivered', icon: LucideIcons.packageCheck),
   ];
 
@@ -91,7 +91,9 @@ class _StepNode extends StatelessWidget {
                       height: 3,
                       color: isFirst ? Colors.transparent : lineLeft)),
               AnimatedContainer(
-                duration: KMotion.base,
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : KMotion.base,
                 curve: KMotion.spring,
                 width: size,
                 height: size,
@@ -126,20 +128,16 @@ class _StepNode extends StatelessWidget {
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              softWrap: false,
-              style: KraveoType.caption.copyWith(
-                color: current ? k.ink : (done ? k.inkMuted : k.inkFaint),
-                fontWeight: current ? FontWeight.w800 : FontWeight.w600,
-                fontVariations: [FontVariation('wght', current ? 800 : 600)],
-                fontSize: 12,
-                height: 1.2,
-              ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            softWrap: true,
+            style: KraveoType.caption.copyWith(
+              color: current ? k.ink : (done ? k.inkMuted : k.inkFaint),
+              fontWeight: current ? FontWeight.w800 : FontWeight.w600,
+              fontVariations: [FontVariation('wght', current ? 800 : 600)],
+              fontSize: 12,
+              height: 1.2,
             ),
           ),
         ),
