@@ -793,7 +793,7 @@ describe('Pricing and catalog (phase 1)', () => {
       expect((await adminPost('/api/admin/catalog/recalculate', { vendorId: 'bad id' })).status).toBe(400);
     });
 
-    test('rounding steps and large / paise values through the API (rounding goes up, to Kraveo)', async () => {
+    test('rounding steps and large / paise values through the API (rounding goes up, to Grozo)', async () => {
       await setCommission('PERCENT', 10);
       await setRounding(5);
       const cases: [number, number][] = [[100, 110], [101, 115], [33.33, 40], [0.01, 5], [9999.99, 11000], [10000, 11000]];

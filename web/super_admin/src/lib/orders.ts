@@ -170,7 +170,7 @@ export const reassignBlockedReason = (order: Order): string | null => {
 
 /** What the cancel confirmation must say about money. */
 export const cancelMoneyNote = (order: Order): { refunds: boolean; text: string } => {
-  if (order.paymentStatus === 'PAID') return { refunds: true, text: 'The customer has paid, so Kraveo refunds the full amount to their original payment method automatically.' };
+  if (order.paymentStatus === 'PAID') return { refunds: true, text: 'The customer has paid, so Grozo refunds the full amount to their original payment method automatically.' };
   if (order.paymentStatus === 'REFUNDED') return { refunds: false, text: 'This order was already refunded. Nothing more is refunded.' };
   return { refunds: false, text: 'No payment has been captured, so nothing is refunded. If a payment still arrives later, the server refunds it automatically.' };
 };

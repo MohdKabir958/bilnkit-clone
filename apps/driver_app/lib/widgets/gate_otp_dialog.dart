@@ -9,8 +9,8 @@ import 'ui/keypad.dart';
 
 /// Full-screen keypad for the 4-digit code the customer reads out at the drop point.
 ///
-/// The app never knows the right code: every check is done by Kraveo (`POST /orders/:id/verify-gate-otp`)
-/// through [onSubmit]. Wrong codes show the tries left (when Kraveo says), and a locked delivery
+/// The app never knows the right code: every check is done by Grozo (`POST /orders/:id/verify-gate-otp`)
+/// through [onSubmit]. Wrong codes show the tries left (when Grozo says), and a locked delivery
 /// tells the rider to call support.
 class GateOtpDialog extends StatefulWidget {
   final String orderRef;
@@ -18,7 +18,7 @@ class GateOtpDialog extends StatefulWidget {
   final String gateName;
   final Future<OtpOutcome> Function(String code) onSubmit;
 
-  /// Start in the locked state (Kraveo already refused this delivery's code 5 times).
+  /// Start in the locked state (Grozo already refused this delivery's code 5 times).
   final bool initiallyLocked;
 
   const GateOtpDialog({

@@ -122,7 +122,7 @@ class SessionProvider with ChangeNotifier {
   /// Validates the saved token at app start.
   Future<void> restore() async {
     if (_status != SessionStatus.checking) {
-      // A retry from the "can't reach Kraveo" screen. (The first call starts as `checking`,
+      // A retry from the "can't reach Grozo" screen. (The first call starts as `checking`,
       // and notifying from initState would rebuild the tree mid-build.)
       _status = SessionStatus.checking;
       notifyListeners();
@@ -136,7 +136,7 @@ class SessionProvider with ChangeNotifier {
     }
     if (!result.success || result.user == null) {
       // Only an answer that says "this token / account is no good" ends the session. Anything else
-      // (429, 5xx, an HTML error page from a proxy, an unparseable body) means Kraveo is having
+      // (429, 5xx, an HTML error page from a proxy, an unparseable body) means Grozo is having
       // trouble, not that the student is signed out: keep the token and offer a retry.
       final code = result.statusCode;
       if (code != 401 && code != 403 && code != 404) {

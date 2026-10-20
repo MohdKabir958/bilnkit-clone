@@ -5,7 +5,7 @@ import '../tokens/foundation.dart';
 import '../tokens/typography.dart';
 import 'tokens.dart';
 
-/// Builds a full Material 3 ThemeData from Kraveo tokens.
+/// Builds a full Material 3 ThemeData from Grozo tokens.
 /// `KraveoTheme.customer()`, `.vendor()`, `.driver()` share one DNA, differ in personality.
 class KraveoTheme {
   KraveoTheme._();

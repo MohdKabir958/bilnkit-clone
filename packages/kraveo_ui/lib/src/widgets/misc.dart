@@ -194,7 +194,7 @@ class KOtpDisplay extends StatelessWidget {
   }
 }
 
-/// Bottom sheet with drag handle + Kraveo shape.
+/// Bottom sheet with drag handle + Grozo shape.
 Future<T?> showKSheet<T>(BuildContext context, {required WidgetBuilder builder, bool scroll = true}) {
   return showModalBottomSheet<T>(
     context: context,

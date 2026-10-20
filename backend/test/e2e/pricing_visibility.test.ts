@@ -49,7 +49,7 @@ const until = async (fn: () => boolean | Promise<boolean>, ms = 4000) => {
  *   dish A: restaurant Rs 100, commission 20%  -> customer Rs 120
  *   dish B: restaurant Rs 33.33, commission 12.5% -> 37.50 -> rounded up to Rs 38
  *   fee Rs 37, coupon WELCOME20 (20% capped at Rs 50)
- * order of A x2 + B x1: subtotal 278, discount 50, fee 37, total 265, restaurant earns 233.33, Kraveo keeps 44.67
+ * order of A x2 + B x1: subtotal 278, discount 50, fee 37, total 265, restaurant earns 233.33, Grozo keeps 44.67
  */
 const LEAKY = [120, 38, 240, 278, 265, 37, 50, 44.67, 55.6, 20, 12.5, 228, 315, 87];
 
@@ -206,7 +206,7 @@ describe('Pricing: money and visibility', () => {
       expect(row).toMatchObject({ subtotal: 278, vendorSubtotal: 233.33, commissionTotal: 44.67, deliveryFee: 37, taxAndPackaging: 0, discount: 50, totalAmount: 265, couponCode: 'WELCOME20' });
       expect(row.feeBreakdown).toEqual({ version: 1, total: 37, baseFee: 37, baseWaived: false, smallOrderFee: 0, restaurants: 1, extraRestaurantFee: 0, extraRestaurants: 0, lines: [] });
       expect(row.items.map((i) => [i.name, i.quantity, i.price, i.vendorUnitPrice, i.commissionUnit])).toEqual([['Dish A', 2, 120, 100, 20], ['Dish B', 1, 38, 33.33, 4.67]]);
-      // the money invariant in paise: customer total = food + fee - discount; food = restaurant + Kraveo's part
+      // the money invariant in paise: customer total = food + fee - discount; food = restaurant + Grozo's part
       const p = (n: number) => Math.round(n * 100);
       expect(p(row.totalAmount)).toBe(p(row.subtotal) + p(row.deliveryFee) + p(row.taxAndPackaging) - p(row.discount));
       expect(p(row.subtotal)).toBe(p(row.vendorSubtotal) + p(row.commissionTotal));

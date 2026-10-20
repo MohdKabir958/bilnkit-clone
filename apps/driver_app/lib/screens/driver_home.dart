@@ -35,7 +35,7 @@ class DriverHomeScreen extends StatefulWidget {
 
   final RiderServices? services;
 
-  /// Payout details; tests pass a fake. Null = the real Kraveo API.
+  /// Payout details; tests pass a fake. Null = the real Grozo API.
   final PayoutApi? payoutApi;
 
   @override
@@ -62,7 +62,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
     );
     _messages = _rider.messages.listen(_showMessage);
     WidgetsBinding.instance.addObserver(this);
-    // Kraveo's own idea of this rider's duty (second phone, logout elsewhere, a restore that failed on a weak
+    // Grozo's own idea of this rider's duty (second phone, logout elsewhere, a restore that failed on a weak
     // network) is mirrored once the controller has started and whenever a fresh profile answer arrives.
     _sessionCtl = context.getInheritedWidgetOfExactType<SessionScope>()?.notifier;
     _sessionCtl?.dutyReading.addListener(_syncDutyFromSession);
@@ -321,7 +321,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                 const SizedBox(height: 16),
               ],
 
-              // Hero duty control (truthful: ON only after Kraveo confirmed it)
+              // Hero duty control (truthful: ON only after Grozo confirmed it)
               DutyToggle(isOnline: r.onDuty, busy: r.dutyBusy, alertsOff: _push?.showBlockedBanner ?? false, onChanged: _onDutyChanged),
               if (r.sharingLocation) _LocationLine(state: r.location, postFailed: r.lastLocationPostFailed, onFix: r.fixLocation),
               const SizedBox(height: 16),

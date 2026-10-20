@@ -126,7 +126,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
     final ok = await showKConfirm(
       context,
       title: 'Cancel this order?',
-      message: '$whole${order.isPaid ? '${order.isGroup ? 'None of the restaurants has accepted yet. ' : 'The restaurant has not accepted it yet. '}Your ${rupee(order.totalAmount)} will be refunded to your account.' : 'You have not completed a payment for this order, so nothing is charged. If your bank did take money, Kraveo refunds it automatically.'}',
+      message: '$whole${order.isPaid ? '${order.isGroup ? 'None of the restaurants has accepted yet. ' : 'The restaurant has not accepted it yet. '}Your ${rupee(order.totalAmount)} will be refunded to your account.' : 'You have not completed a payment for this order, so nothing is charged. If your bank did take money, Grozo refunds it automatically.'}',
       confirmLabel: 'Cancel order',
       cancelLabel: 'Keep it',
       danger: true,
@@ -701,7 +701,7 @@ class _CancelledCard extends StatelessWidget {
         Text(_why, style: KraveoType.body.copyWith(color: k.ink)),
         const SizedBox(height: 6),
         Text(_money, style: KraveoType.body.copyWith(color: k.inkMuted)),
-        // A paid order that is not refunded yet (or whose refund failed), or one Kraveo cancelled:
+        // A paid order that is not refunded yet (or whose refund failed), or one Grozo cancelled:
         // tell the student how to reach a person.
         if (order.isPaid || order.refundStatus == RefundStatus.failed || order.cancelledBy == CancelledBy.admin)
           TextButton.icon(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SupportCenter(call: SupportApi.call, orderId: order.id))), icon: const Icon(Icons.support_agent), label: const Text('Help with this order')),

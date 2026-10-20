@@ -12,7 +12,7 @@ import 'vendor_ui.dart';
       DishStatus.rejected => (english: 'Rejected', hindi: 'मंज़ूर नहीं हुआ'),
     };
 
-/// Small status chip for a dish: amber while Kraveo has not decided, green when live, red when rejected.
+/// Small status chip for a dish: amber while Grozo has not decided, green when live, red when rejected.
 /// Text stays in the normal ink colour so it reads on every tint; only the icon and the tint carry the colour.
 class VDishStatusChip extends StatelessWidget {
   const VDishStatusChip({super.key, required this.status});

@@ -116,7 +116,7 @@ export const resetWorldState = async (w: World) => {
 export interface Ledger {
   provider: PaymentProvider;
   sim: ReturnType<typeof createSimulatedProvider>;
-  /** The customer paid at Razorpay (money captured), whatever Kraveo's server later does with it. */
+  /** The customer paid at Razorpay (money captured), whatever Grozo's server later does with it. */
   capture(rzpOrderId: string, paymentId: string, amountPaise: number): void;
   captured: Map<string, { rzpOrderId: string; amountPaise: number }>;
   totalCaptured(): number;

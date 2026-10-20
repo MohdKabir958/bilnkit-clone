@@ -515,11 +515,11 @@ void main() {
       expect(tester.widget<TextField>(find.byKey(kPayoutIfscFieldKey)).controller!.text, 'HDFC0001234'); // non-secret fields are prefilled
     });
 
-    testWidgets('saved + verified: "Verified by DailyMarket"; Change details warns that verification restarts; Cancel returns without saving', (tester) async {
+    testWidgets('saved + verified: "Verified by Grozo"; Change details warns that verification restarts; Cancel returns without saving', (tester) async {
       api.account = PayoutAccount.fromJson(payoutFixtures()['account_bank_verified']['data']);
       await open(tester);
       expect(find.byKey(kPayoutSavedCardKey), findsOneWidget);
-      expect(find.textContaining('Verified by DailyMarket'), findsOneWidget);
+      expect(find.textContaining('Verified by Grozo'), findsOneWidget);
       expect(find.textContaining('Not verified yet'), findsNothing);
       expect(find.text('Account ending 7890'), findsOneWidget);
       await tapKey(tester, kPayoutEditKey);
@@ -537,7 +537,7 @@ void main() {
       await tapKey(tester, kPayoutEditKey);
       await tapKey(tester, kPayoutSaveKey); // identical details
       expect(find.textContaining('already saved'), findsOneWidget);
-      expect(find.textContaining('Verified by DailyMarket'), findsOneWidget);
+      expect(find.textContaining('Verified by Grozo'), findsOneWidget);
       await tapKey(tester, kPayoutEditKey);
       await type(tester, kPayoutUpiFieldKey, 'ram@ybl');
       await tapKey(tester, kPayoutSaveKey);
@@ -667,7 +667,7 @@ void main() {
 
     testWidgets('the account sheet has "Payout details" between the runner pass and Log out, and it opens the screen', (tester) async {
       await launch(tester);
-      expect(api.calls, isEmpty); // nothing is asked of DailyMarket until the rider opens the screen
+      expect(api.calls, isEmpty); // nothing is asked of Grozo until the rider opens the screen
       await tester.tap(find.text('Hi, Test'));
       await frames(tester);
       expect(find.byKey(const ValueKey('account-payout-button')), findsOneWidget);

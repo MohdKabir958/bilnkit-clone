@@ -66,7 +66,7 @@ export interface ProviderRefund {
   status: string; // pending | processed | failed
 }
 
-/** The few fields of a Razorpay payment entity Kraveo needs (no card / contact data). */
+/** The few fields of a Razorpay payment entity Grozo needs (no card / contact data). */
 export interface ProviderPayment {
   id: string;
   orderId: string | null;
@@ -183,7 +183,7 @@ export const createSimulatedProvider = (): SimulatedProvider => {
     async refundPayment({ paymentId, amountPaise }) {
       const existing = refunds.get(paymentId) ?? [];
       const already = existing.filter((r) => r.status !== 'failed').reduce((s, r) => s + r.amountPaise, 0);
-      // Kraveo only does full refunds, and Razorpay refuses to refund more than was captured: a second
+      // Grozo only does full refunds, and Razorpay refuses to refund more than was captured: a second
       // full refund of the same payment fails. Mirror that so a double refund would show up in tests.
       if (already > 0) throw new PaymentProviderError('The total refund amount is greater than the refund payment amount', 400, false, 'BAD_REQUEST_ERROR');
       const refund = { id: `rfnd_sim_${crypto.randomBytes(7).toString('hex')}`, amountPaise, status: 'processed' };
@@ -277,7 +277,7 @@ export const createRazorpayOrder = async (orderId: string, amountInRupees: numbe
     const rzpOrder = await withProviderTimeout(getPaymentProvider().createOrder({
       amountPaise: amountInPaise,
       receipt: `rcpt_${orderId}`.slice(0, 40),
-      notes: { orderId, platform: 'Kraveo VIT Bhopal Campus Delivery' },
+      notes: { orderId, platform: 'Grozo Grocery Delivery' },
     }));
     return { success: true, razorpayOrderId: rzpOrder.id, amountInPaise, currency: 'INR', keyId: razorpayKeyId };
   } catch (err: any) {

@@ -117,13 +117,13 @@ void main() {
       final raw = File('android/app/src/main/res/raw/new_order_alarm.ogg');
       expect(raw.existsSync(), isTrue);
       expect(raw.lengthSync(), lessThan(700 * 1024));
-      expect(File('android/app/src/main/res/drawable/ic_stat_kraveo.xml').existsSync(), isTrue);
+      expect(File('android/app/src/main/res/drawable/ic_stat_grozo.xml').existsSync(), isTrue);
       final manifest = File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
       for (final needle in [
         'android.permission.POST_NOTIFICATIONS',
         'android.permission.USE_FULL_SCREEN_INTENT',
         'default_notification_channel_id',
-        '@drawable/ic_stat_kraveo',
+        '@drawable/ic_stat_grozo',
       ]) {
         expect(manifest, contains(needle));
       }

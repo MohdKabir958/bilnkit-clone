@@ -5,7 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/partner_session.dart';
 import '../widgets/support_sheet.dart';
 
-/// What a rider sees after creating an account until Kraveo approves it, or when the application was
+/// What a rider sees after creating an account until Grozo approves it, or when the application was
 /// rejected or the account suspended. Pending applications are re-checked every [pollEvery] and when the
 /// app comes back to the foreground, so approval shows up without the rider doing anything.
 class ApplicationStatusScreen extends StatefulWidget {
@@ -20,7 +20,7 @@ class ApplicationStatusScreen extends StatefulWidget {
 
   final PartnerSession session;
 
-  /// Re-checks the application with Kraveo; resolves to true when something changed.
+  /// Re-checks the application with Grozo; resolves to true when something changed.
   final Future<bool> Function() onRefresh;
   final VoidCallback onEdit;
   final Future<void> Function() onLogout;
@@ -148,7 +148,7 @@ class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> with 
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text('REASON FROM KRAVEO', style: KraveoType.label.copyWith(color: k.inkMuted, fontSize: 12)),
+                            Text('REASON FROM GROZO', style: KraveoType.label.copyWith(color: k.inkMuted, fontSize: 12)),
                             const SizedBox(height: 4),
                             Text(reason, style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 18)),
                           ]),

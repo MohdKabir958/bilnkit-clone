@@ -454,7 +454,7 @@ export const settlementCsv = async (id: string): Promise<{ filename: string; bod
   const common = (): string[] => [csvText(s.id), csvText(s.vendor.name), csvText(s.batchKey), csvText(s.status), csvText(s.paymentReference)];
   for (const o of orders) lines.push(csvLine(['ORDER', ...common(), csvText(o.id), csvText(istStamp(o.deliveredAt)), csvNum(o.subtotal), csvNum(o.vendorSubtotal), csvNum(o.commissionTotal), '']));
   for (const a of adjustments) lines.push(csvLine(['ADJUSTMENT', ...common(), '', csvText(istStamp(a.createdAt)), '', csvNum(a.amount), '', csvText(a.reason)]));
-  return { filename: `kraveo-settlement-${s.id.slice(0, 8)}.csv`, body: lines.join('\r\n') + '\r\n' };
+  return { filename: `grozo-settlement-${s.id.slice(0, 8)}.csv`, body: lines.join('\r\n') + '\r\n' };
 };
 
 /** One row per settlement created in the range (IST days). */
@@ -470,7 +470,7 @@ export const settlementsCsv = async (range: IstRange): Promise<{ filename: strin
       csvText(istStamp(s.paidAt)), csvText(s.paymentReference), csvText(snap?.method ?? ''), csvText(snap?.destination ?? ''), csvText(s.createdBy),
     ]));
   }
-  return { filename: `kraveo-settlements-${range.from}_${range.to}.csv`, body: lines.join('\r\n') + '\r\n' };
+  return { filename: `grozo-settlements-${range.from}_${range.to}.csv`, body: lines.join('\r\n') + '\r\n' };
 };
 
 // ---------------------------------------------------------------------------------------------------------------------

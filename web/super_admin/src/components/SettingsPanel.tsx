@@ -307,7 +307,7 @@ const RoundingCard: React.FC<{ raw: Raw; onSaved: (raw: Raw, outcome: Outcome) =
         ))}
       </div>
       {step === null && <p className="text-xs text-kraveo-danger">The server did not report a rounding step. Pick one and save.</p>}
-      <p className="text-xs text-kraveo-ink3">The customer price is rounded up to this step. The extra rupees count as Kraveo commission.</p>
+      <p className="text-xs text-kraveo-ink3">The customer price is rounded up to this step. The extra rupees count as Grozo commission.</p>
       <SaveBar dirty={dirty} saving={saving} error={error} onSave={save} onUndo={() => { setStep(baseline); setError(''); }} />
     </div>
   );
@@ -511,7 +511,7 @@ export const SettingsPanel: React.FC<Props> = ({ onAuthError }) => {
       <Card title="Fees" description="What the customer pays on top of the food. All amounts come from here, not from the app code.">
         <Loading load={fees.load} onRetry={fees.retry}>{(raw) => <FeesCard raw={raw} onSaved={fees.saved} onDirty={dirtyFees} onAuthError={onAuthError} />}</Loading>
       </Card>
-      <Card title="Default commission" description="Kraveo's share on top of the restaurant's price, unless the restaurant or the dish has its own.">
+      <Card title="Default commission" description="Grozo's share on top of the restaurant's price, unless the restaurant or the dish has its own.">
         <Loading load={commission.load} onRetry={commission.retry}>{(raw) => <CommissionCard raw={raw} onSaved={onPricingSaved(commission.saved)} onDirty={dirtyCommission} onAuthError={onAuthError} />}</Loading>
       </Card>
       <Card title="Price rounding" description="Customer prices are rounded up to a tidy number.">

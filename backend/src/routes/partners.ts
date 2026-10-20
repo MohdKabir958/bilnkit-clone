@@ -62,9 +62,9 @@ const io_disconnect = (req: Request, userId: string) => {
 
 const notApprovedMessage = (status: ApprovalStatus): string => {
   switch (status) {
-    case 'PENDING': return 'Your account is waiting for Kraveo approval.';
+    case 'PENDING': return 'Your account is waiting for Grozo approval.';
     case 'REJECTED': return 'Your application was not approved.';
-    case 'SUSPENDED': return 'Your account is suspended. Please contact Kraveo support.';
+    case 'SUSPENDED': return 'Your account is suspended. Please contact Grozo support.';
     default: return 'Your account is not active.';
   }
 };

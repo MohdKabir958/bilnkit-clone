@@ -1,4 +1,4 @@
-/// Where this rider stands with Kraveo. New accounts are [pending] until an admin decides.
+/// Where this rider stands with Grozo. New accounts are [pending] until an admin decides.
 enum PartnerApproval {
   pending,
   approved,
@@ -61,7 +61,7 @@ class PartnerSession {
   final String? emergencyPhone;
   final String? upiId;
 
-  /// What Kraveo holds for this rider's duty (`ONLINE`, `IN_TRANSIT`, `OFFLINE`) as of the login / profile answer.
+  /// What Grozo holds for this rider's duty (`ONLINE`, `IN_TRANSIT`, `OFFLINE`) as of the login / profile answer.
   /// Null when the server did not say (older server). Never stored: it is only meaningful right after an answer.
   final String? dutyStatus;
 

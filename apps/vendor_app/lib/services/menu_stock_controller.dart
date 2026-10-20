@@ -9,7 +9,7 @@ import 'vendor_backend.dart';
 /// or `GET /menus/:vendorId` on an old server, where every dish is live). Stock switches (live dishes only) and
 /// price changes show at once and roll back to the last value the server confirmed if saving fails.
 ///
-/// Approval (Docs/21): a new dish is PENDING until Kraveo approves it; a new price on a LIVE dish is a request
+/// Approval (Docs/21): a new dish is PENDING until Grozo approves it; a new price on a LIVE dish is a request
 /// (the dish stays live at the old price and shows the new one as "sent for approval"); a REJECTED dish can be sent
 /// again. A restaurant only ever handles its own price.
 class MenuStockController extends ChangeNotifier {
@@ -40,10 +40,10 @@ class MenuStockController extends ChangeNotifier {
   /// Set by [addDish] to the dish the server just created, so the screen can say "sent for approval".
   DishModel? lastAdded;
 
-  /// Dishes waiting for Kraveo (new, or a price change).
+  /// Dishes waiting for Grozo (new, or a price change).
   int get waitingCount => dishes.where((d) => d.status == DishStatus.pending || d.status == DishStatus.changePending).length;
 
-  /// Dishes Kraveo did not approve.
+  /// Dishes Grozo did not approve.
   int get rejectedCount => dishes.where((d) => d.status == DishStatus.rejected).length;
 
   void _notify() {
@@ -129,7 +129,7 @@ class MenuStockController extends ChangeNotifier {
     _notify();
   }
 
-  /// A rejected dish is sent to Kraveo again, with [price] (the same price when the owner changed nothing).
+  /// A rejected dish is sent to Grozo again, with [price] (the same price when the owner changed nothing).
   Future<void> resubmit(DishModel d, double price) async {
     if (d.status != DishStatus.rejected || price <= 0) return;
     final before = _Saved.of(d);

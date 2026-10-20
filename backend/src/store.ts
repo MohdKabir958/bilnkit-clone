@@ -1,6 +1,6 @@
 import { Vendor, MenuItem, Order, DriverLocation, User, DriverPartner, ReviewRecord } from './types';
 
-// Initial Mock Users (with Kraveo Coins balances)
+// Initial Mock Users (with Grozo Coins balances)
 export const users: User[] = [
   { id: 'usr-1', name: 'Rahul Sharma', phone: '+91 9876543210', role: 'STUDENT', hostelBlock: 'Boys Hostel Block 3', kraveoCoins: 30, createdAt: new Date().toISOString() },
   { id: 'usr-2', name: 'Ananya Verma', phone: '+91 9876543211', role: 'STUDENT', hostelBlock: 'Girls Hostel Gate 1', kraveoCoins: 40, createdAt: new Date().toISOString() },

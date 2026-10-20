@@ -874,7 +874,7 @@ describe('Payments adversarial audit', () => {
       expect((await db(o.id)).paymentStatus).toBe('REFUNDED');
     });
 
-    test('PROVE: a webhook for a payment whose Kraveo order id is unknown is recorded in the admin audit log (not silently dropped)', async () => {
+    test('PROVE: a webhook for a payment whose Grozo order id is unknown is recorded in the admin audit log (not silently dropped)', async () => {
       await prisma.adminAuditLog.deleteMany({ where: { action: 'PAYMENT_UNKNOWN' } });
       await webhook(captured('order_never_seen_1', 20500, 'pay_unknown_1'));
       const rows = await prisma.adminAuditLog.findMany({ where: { action: 'PAYMENT_UNKNOWN' } });

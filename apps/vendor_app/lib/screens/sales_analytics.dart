@@ -5,7 +5,7 @@ import '../models/order_model.dart';
 import '../widgets/ui/ui.dart';
 
 /// Earnings, kept honest and simple: everything below is computed from real orders the app has loaded from
-/// Kraveo (the active queue plus the history pages). Nothing is invented; when today's history could not be
+/// Grozo (the active queue plus the history pages). Nothing is invented; when today's history could not be
 /// loaded completely the screen says so instead of showing a confident number.
 class SalesAnalyticsScreen extends StatelessWidget {
   final List<OrderModel> orders;

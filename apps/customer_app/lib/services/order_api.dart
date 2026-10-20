@@ -96,7 +96,7 @@ class OrdersPage {
 class PaymentSession {
   const PaymentSession({required this.orderId, required this.keyId, required this.razorpayOrderId, required this.amountPaise, this.currency = 'INR'});
 
-  /// Kraveo order id.
+  /// Grozo order id.
   final String orderId;
   final String keyId;
   final String razorpayOrderId;

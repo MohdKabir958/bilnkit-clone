@@ -10,7 +10,7 @@ import { computeFees, FeesSettings, FeeBreakdown, splitGroupMoney, toPaise, from
 // when its paise sum matches the configured geographic rate.
 const zoneFee=(fees:FeesSettings,subtotal:number,ratePaise:number)=>computeFees({...fees,baseFee:fromPaise(ratePaise),extraRestaurantFee:0,lines:fees.lines.reduce((sum,l)=>sum+toPaise(l.amount),0)===ratePaise?fees.lines:[]},subtotal);
 
-/** What the restaurant earns and Kraveo keeps for one line, copied from the dish at order time (Docs/21 section 2). */
+/** What the restaurant earns and Grozo keeps for one line, copied from the dish at order time (Docs/21 section 2). */
 export type PricedItem = OrderItem & { vendorUnitPrice: number; commissionUnit: number; productSnapshot: Prisma.InputJsonValue };
 
 export interface OrderValidationResult {
@@ -24,7 +24,7 @@ export interface OrderValidationResult {
   calculatedTaxAndPackaging: number;
   /** sum(vendorUnitPrice x qty): what the restaurant earns. */
   calculatedVendorSubtotal: number;
-  /** subtotal - vendorSubtotal: what Kraveo keeps (commission and rounding). */
+  /** subtotal - vendorSubtotal: what Grozo keeps (commission and rounding). */
   calculatedCommissionTotal: number;
   feeBreakdown: FeeBreakdown | null;
   calculatedDiscount: number;
@@ -38,7 +38,7 @@ export interface OrderValidationResult {
 // ----------------------------------------------------------------------------
 // Coupons. Rules (single use per customer; a CANCELLED order releases its code again):
 //   WELCOME20  20% off up to Rs 50, cart >= Rs 100, only for a customer with no earlier non-cancelled order.
-//   KRAVEO20  Rs 20 off, cart >= Rs 80. Paid for with 50 Kraveo Coins (POST /coupons/redeem-coins): each
+//   KRAVEO20  Rs 20 off, cart >= Rs 80. Paid for with 50 Grozo Coins (POST /coupons/redeem-coins): each
 //             redemption is one use; the code is refused when the customer has no unused redemption.
 //   KRAVEO50  Rs 50 off, cart >= Rs 150, once per customer.
 // ----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ export const couponEligibilityProblem = async (tx: Prisma.TransactionClient, cus
   const usedBefore = await tx.order.count({ where: { customerId, couponCode: code, status: { not: 'CANCELLED' } } });
   if (code === 'KRAVEO20') {
     const user = await tx.user.findUnique({ where: { id: customerId }, select: { kraveo20Redeemed: true } });
-    if ((user?.kraveo20Redeemed ?? 0) - usedBefore <= 0) return 'KRAVEO20 needs 50 Kraveo Coins: redeem them first, then use the code.';
+    if ((user?.kraveo20Redeemed ?? 0) - usedBefore <= 0) return 'KRAVEO20 needs 50 Grozo Coins: redeem them first, then use the code.';
     return null;
   }
   if (usedBefore > 0) return `You have already used ${code}.`;
@@ -133,7 +133,7 @@ export const priceVendorCart = async (vendorId: string, items: { itemId: string;
       quantity: rawItem.quantity,
       price: menuItem.price,
       vendorUnitPrice: menuItem.vendorPrice,
-      // What Kraveo keeps per unit: the stored customer price minus the restaurant's price (commission and rounding).
+      // What Grozo keeps per unit: the stored customer price minus the restaurant's price (commission and rounding).
       commissionUnit: fromPaise(customerPaise - vendorPaise),
     });
   }

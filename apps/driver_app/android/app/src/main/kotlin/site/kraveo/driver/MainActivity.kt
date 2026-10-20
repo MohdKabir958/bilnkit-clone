@@ -22,7 +22,7 @@ class MainActivity : FlutterActivity() {
             val manager = getSystemService(NotificationManager::class.java) ?: return
             if (manager.getNotificationChannel(dutyChannelId) == null) {
                 val channel = NotificationChannel(dutyChannelId, "On duty - location sharing", NotificationManager.IMPORTANCE_LOW)
-                channel.description = "Shown while you are on duty and Kraveo is sharing your location."
+                channel.description = "Shown while you are on duty and Grozo is sharing your location."
                 channel.setShowBadge(false)
                 manager.createNotificationChannel(channel)
             }

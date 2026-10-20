@@ -190,7 +190,7 @@ class OrderQueueController extends ChangeNotifier {
   /// Every order the app knows about (for the earnings screen).
   List<OrderModel> get allOrders => _all.toList();
 
-  /// Kitchen orders cancelled by Kraveo (or the system) since the last call; the list is cleared by reading it.
+  /// Kitchen orders cancelled by Grozo (or the system) since the last call; the list is cleared by reading it.
   List<OrderModel> takeKitchenCancellations() {
     if (_kitchenCancellations.isEmpty) return const [];
     final out = List<OrderModel>.of(_kitchenCancellations);

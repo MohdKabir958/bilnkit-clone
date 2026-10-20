@@ -1,5 +1,5 @@
 /**
- * Campus time. Kraveo runs in Asia/Kolkata (UTC+05:30, no daylight saving), but the server may run in UTC, so anything a
+ * Campus time. Grozo runs in Asia/Kolkata (UTC+05:30, no daylight saving), but the server may run in UTC, so anything a
  * human reads as "today" or "14:00" is computed with this fixed offset instead of the server's local time zone.
  */
 export const IST_OFFSET_MS = 330 * 60 * 1000;

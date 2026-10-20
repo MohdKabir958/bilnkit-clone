@@ -5,7 +5,7 @@ import '../../config/api_config.dart';
 import '../vendor_api_service.dart';
 import 'push_ports.dart';
 
-/// Talks to the Kraveo API with the partner's JWT, like the rest of the app.
+/// Talks to the Grozo API with the partner's JWT, like the rest of the app.
 class HttpDeviceRegistry implements DeviceRegistry {
   const HttpDeviceRegistry({this.timeout = const Duration(seconds: 10)});
 

@@ -1,4 +1,4 @@
-# DailyMarket — Kraveo-based marketplace fork
+# Grozo — Kraveo-based marketplace fork
 
 This fork is being adapted into an India-wide multi-vendor grocery and delivery platform. It retains Kraveo's Node/Prisma backend, React operations website, three Flutter apps, Socket.io, FCM and Razorpay integrations. The implemented local pilot includes enabled-city delivery areas, grocery SKUs/inventory, private rider dispatch, doorstep OTP, support and operations. **External service/device and operator launch gates remain open; this is not a production-certified release.**
 
@@ -8,12 +8,12 @@ See [implementation progress](Docs/04_implementation_progress.md), [test evidenc
 |---|---|
 | `backend/` | Express/TypeScript, Prisma/PostgreSQL, payments, dispatch and role authorization |
 | `web/super_admin/` | Responsive operations website |
-| `web/landing/` | Neutral pilot information and draft legal pages |
+| `web/landing/` | Grozo pilot information and draft legal pages |
 | `apps/customer_app/` | Flutter customer app |
 | `apps/vendor_app/` | Flutter vendor app |
 | `apps/driver_app/` | Flutter delivery partner app |
 | `packages/kraveo_ui/` | Shared Flutter design system and brand configuration |
-| `branding/` | Central neutral identity, palette and Android application IDs |
+| `branding/` | Grozo identity, shared logo, palette and Android application IDs |
 | `Docs/` | Source audit, architecture, test evidence and operational documentation |
 
 ## Local development
@@ -47,7 +47,7 @@ Backend tests delete records. Always use a separate database ending in `_test`; 
 
 ## Rebranding
 
-Edit `branding/brand.json`, run `python3 scripts/configure_brand.py`, then rebuild. Names, Android IDs/labels/icons/splash, shared palette, API service name and admin/mobile identity come from that configuration. Remaining inherited text/assets are listed in the audit. Register the generated IDs in your own Firebase/Google projects; upstream service configuration is not an entitlement to use those projects.
+The application is branded **Grozo**, **Grozo Vendor** and **Grozo Delivery**, using the user-supplied green wordmark across Flutter, Android launchers/splash screens and the websites. Configuration lives in `branding/brand.json`; run `python3 scripts/configure_brand.py` after changing it. Artwork exports are committed and can be regenerated with `bash scripts/export_brand_assets.sh` (ImageMagick 7). See [branding instructions](branding/README.md). Register `in.grozo.customer`, `in.grozo.vendor` and `in.grozo.driver` in your own Firebase/Google projects before a configured release.
 
 ## License and attribution
 

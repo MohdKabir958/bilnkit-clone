@@ -181,7 +181,7 @@ describe('Settlements (phase 2)', () => {
       // S1: float-hostile amounts. subtotal 3 x 33.33 = 99.99 ... vendor 3 x 29.99, commission 3 x 3.34 (+ a second order)
       const ok1 = await mkOrder({ lines: [{ name: 'Dal', qty: 3, price: 33.33, vendorUnit: 29.99, commUnit: 3.34 }] });
       const ok2 = await mkOrder({ lines: [{ name: 'Roti', qty: 1, price: 0.1, vendorUnit: 0.07, commUnit: 0.03 }, { name: 'Dal', qty: 2, price: 0.2, vendorUnit: 0.14, commUnit: 0.06 }] });
-      const ok3 = await mkOrder({ discount: 20 }); // a coupon: Kraveo bears it, the restaurant still earns 90
+      const ok3 = await mkOrder({ discount: 20 }); // a coupon: Grozo bears it, the restaurant still earns 90
       const cancelledRefunded = await mkOrder({ status: 'CANCELLED', paymentStatus: 'REFUNDED', deliveredAt: null, cancelledAt: ago(3) });
       const deliveredThenRefunded = await mkOrder({ paymentStatus: 'REFUNDED' });
       const refundPending = await mkOrder({ refundStatus: 'PENDING' });
@@ -615,7 +615,7 @@ describe('Settlements (phase 2)', () => {
         const r = await adminGet(`/api/admin/settlements/${s.id}/export.csv`);
         expect(r.status).toBe(200);
         expect(r.headers['content-type']).toBe('text/csv; charset=utf-8');
-        expect(r.headers['content-disposition']).toBe(`attachment; filename="kraveo-settlement-${s.id.slice(0, 8)}.csv"`);
+        expect(r.headers['content-disposition']).toBe(`attachment; filename="grozo-settlement-${s.id.slice(0, 8)}.csv"`);
         expect(r.headers['cache-control']).toBe('no-store');
         const rows = parseCsv(r.text);
         expect(rows[0]).toEqual(['row_type', 'settlement_id', 'restaurant', 'batch', 'status', 'payment_reference', 'order_id', 'delivered_at_ist', 'customer_food_total', 'restaurant_amount', 'commission', 'note']);
@@ -654,7 +654,7 @@ describe('Settlements (phase 2)', () => {
       const r = await adminGet(`/api/admin/settlements/export.csv?from=${today}&to=${today}`);
       expect(r.status).toBe(200);
       expect(r.headers['content-type']).toBe('text/csv; charset=utf-8');
-      expect(r.headers['content-disposition']).toBe(`attachment; filename="kraveo-settlements-${today}_${today}.csv"`);
+      expect(r.headers['content-disposition']).toBe(`attachment; filename="grozo-settlements-${today}_${today}.csv"`);
       const rows = parseCsv(r.text).filter((x) => x.length > 1);
       expect(rows[0].slice(0, 7)).toEqual(['settlement_id', 'restaurant', 'batch', 'created_at_ist', 'period_start_ist', 'period_end_ist', 'status']);
       expect(rows).toHaveLength(3);

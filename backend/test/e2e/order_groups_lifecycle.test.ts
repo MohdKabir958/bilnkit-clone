@@ -146,7 +146,7 @@ describe('Order groups: lifecycle', () => {
       expect((await api.setStatus(v1, pg2.g.orders[0].id, 'ACCEPTED')).status).toBe(200);
       const no = await api.cancel(c, pg2.g.orders[1].id);
       expect([no.status, no.body.code]).toEqual([409, 'CANNOT_CANCEL']);
-      expect(no.body.message).toBe('The restaurant has already accepted this order, so it can no longer be cancelled in the app. Please contact Kraveo support.');
+      expect(no.body.message).toBe('The restaurant has already accepted this order, so it can no longer be cancelled in the app. Please contact Grozo support.');
       k = await kids(pg2.g.id);
       expect(k.map((o) => o.status)).toEqual(['ACCEPTED', 'PLACED']);
       expect(ledger.refundsOf(pg2.payId)).toHaveLength(0);

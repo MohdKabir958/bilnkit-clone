@@ -114,7 +114,7 @@ class PushController extends ChangeNotifier {
   bool get isActive => _active;
   NotificationAccess? get notificationAccess => _access;
 
-  /// The FCM token currently registered with Kraveo for this login (null until the server accepted it).
+  /// The FCM token currently registered with Grozo for this login (null until the server accepted it).
   String? get registeredToken => _registeredToken;
 
   PushBanner get banner {

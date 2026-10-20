@@ -8,7 +8,7 @@ import '../models/dish_model.dart';
 import '../models/order_model.dart';
 import 'vendor_api_service.dart';
 
-/// Why a call to Kraveo did not succeed. Every screen turns one of these into a clear,
+/// Why a call to Grozo did not succeed. Every screen turns one of these into a clear,
 /// bilingual message (see `failureMessage`), so no failure is ever silent.
 enum ApiFailure {
   /// No internet / DNS / connection refused.
@@ -84,7 +84,7 @@ class OrdersPage {
   final int skipped;
 }
 
-/// Everything the restaurant app asks of the Kraveo server. The screens and the order controller
+/// Everything the restaurant app asks of the Grozo server. The screens and the order controller
 /// only talk to this interface, so tests can drive every state with a fake.
 abstract class VendorBackend {
   /// `GET /orders?scope=active|history&limit&cursor` (only PAID orders of this restaurant).
@@ -172,7 +172,7 @@ class HttpVendorBackend implements VendorBackend, DishCategorySource {
     } on TimeoutException {
       return const ApiResult.failure(ApiFailure.timeout);
     } catch (_) {
-      // SocketException, ClientException, HandshakeException ... all mean "could not reach Kraveo".
+      // SocketException, ClientException, HandshakeException ... all mean "could not reach Grozo".
       return const ApiResult.failure(ApiFailure.offline);
     }
 

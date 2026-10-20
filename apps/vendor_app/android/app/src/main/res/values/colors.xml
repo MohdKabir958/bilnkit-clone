@@ -1,4 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="kraveo_notification_accent">#FF075219</color>
-</resources>
+<resources><color name="kraveo_notification_accent">#005A26</color></resources>

@@ -118,7 +118,7 @@ export const requireAuth = async (req: AuthenticatedRequest, res: Response, next
       // it may be told WHY it ended when the admin paused the partner. Anyone without a validly signed token never gets here.
       const suspended = await partnerIsSuspended(decoded.id, decoded.role);
       if (suspended) {
-        return res.status(401).json({ success: false, code: 'TOKEN_REVOKED', reason: 'ACCOUNT_SUSPENDED', message: 'Your Kraveo account is paused. Log in to see why, or ask Kraveo support.' });
+        return res.status(401).json({ success: false, code: 'TOKEN_REVOKED', reason: 'ACCOUNT_SUSPENDED', message: 'Your Grozo account is paused. Log in to see why, or ask Grozo support.' });
       }
       return res.status(401).json({ success: false, code: 'TOKEN_REVOKED', message: 'This session is no longer valid. Please sign in again.' });
     }

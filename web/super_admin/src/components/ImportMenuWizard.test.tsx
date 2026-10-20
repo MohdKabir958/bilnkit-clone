@@ -54,7 +54,7 @@ describe('step 1: the file', () => {
     await setup();
     await click(byText('button', 'Download the template', dialog()));
     expect(saved).toHaveLength(1);
-    expect(saved[0].filename).toBe('kraveo-menu-template.csv');
+    expect(saved[0].filename).toBe('grozo-menu-template.csv');
     expect(saved[0].blob.type).toBe('text/csv;charset=utf-8');
     const bytes = new Uint8Array(await new Promise<ArrayBuffer>((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result as ArrayBuffer); reader.readAsArrayBuffer(saved[0].blob); }));
     expect(Array.from(bytes.slice(0, 3))).toEqual([0xef, 0xbb, 0xbf]);

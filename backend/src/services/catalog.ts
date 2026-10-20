@@ -77,7 +77,7 @@ export const adminDishView = (item: DishRow, settings: SettingsMap) => {
     priceIsStale: toPaise(now.price) !== toPaise(item.price),
     /** The customer price the dish would get if the pending change were accepted. */
     pendingPrice: pending ? pending.price : null,
-    /** price - vendorPrice: what Kraveo keeps per unit (commission and rounding). */
+    /** price - vendorPrice: what Grozo keeps per unit (commission and rounding). */
     effectiveCommission: round2(item.price - item.vendorPrice),
     /** The rule that applies and where it comes from. */
     commission: { type: now.rule.type, value: now.rule.value, source: now.source },
@@ -160,7 +160,7 @@ export const createDish = async (
     if (!byAdmin) {
       const pending = await tx.menuItem.count({ where: { vendorId, approvalStatus: 'PENDING', deletedAt: null } });
       if (pending >= MAX_PENDING_DISHES_PER_RESTAURANT) {
-        throw new AppError(409, 'TOO_MANY_PENDING', `You already have ${pending} dishes waiting for approval. Wait for Kraveo to review them before adding more.`);
+        throw new AppError(409, 'TOO_MANY_PENDING', `You already have ${pending} dishes waiting for approval. Wait for Grozo to review them before adding more.`);
       }
     }
     const rules: Rules = { dish: input.commission ?? null, vendor: ruleFromColumns(vendor.commissionType, vendor.commissionValue) };

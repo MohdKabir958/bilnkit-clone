@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../tokens/foundation.dart';
 
-/// Every tappable surface in Kraveo: springy scale-down + haptic tick.
+/// Every tappable surface in Grozo: springy scale-down + haptic tick.
 class KPressable extends StatefulWidget {
   const KPressable({super.key, required this.child, this.onTap, this.onLongPress, this.scale = 0.96, this.haptic = true, this.semanticLabel});
   final Widget child;

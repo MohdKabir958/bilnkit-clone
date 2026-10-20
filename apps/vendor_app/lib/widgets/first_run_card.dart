@@ -10,7 +10,7 @@ class FirstRunCard extends StatelessWidget {
   final bool hasDishes;
   final bool isOpen;
 
-  /// Dishes were added but none is live yet: customers see no menu until Kraveo approves one.
+  /// Dishes were added but none is live yet: customers see no menu until Grozo approves one.
   final bool waitingApproval;
   final VoidCallback onAddDish;
   final VoidCallback onOpenStore;

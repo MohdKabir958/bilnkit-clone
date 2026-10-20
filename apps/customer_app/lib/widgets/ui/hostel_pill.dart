@@ -4,7 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../models/drop_point.dart';
 import 'sheet_chrome.dart';
 
-/// Drop-off points offered by Kraveo on campus: the 11 canonical names, in contract order.
+/// Drop-off points offered by Grozo on campus: the 11 canonical names, in contract order.
 /// (Coordinates live in `kDropPoints`, lib/models/drop_point.dart.)
 final List<String> kHostelBlocks = kDropPointNames;
 

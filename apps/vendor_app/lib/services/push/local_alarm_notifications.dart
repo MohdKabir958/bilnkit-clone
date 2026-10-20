@@ -4,8 +4,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'push_message.dart';
 import 'push_ports.dart';
 
-/// Android small icon (res/drawable/ic_stat_kraveo.xml).
-const String kStatusIcon = 'ic_stat_kraveo';
+/// Android small icon (res/drawable/ic_stat_grozo.xml).
+const String kStatusIcon = 'ic_stat_grozo';
 
 /// Same id for the same order, in every isolate and every run, so a repeat replaces the notification instead of stacking.
 int notificationIdFor(String orderId) {

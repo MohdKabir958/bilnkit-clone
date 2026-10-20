@@ -34,10 +34,10 @@ import '../widgets/ui/support_email_link.dart';
 import '../widgets/ui/ui.dart';
 
 class VendorHomeScreen extends StatefulWidget {
-  /// Network layer; tests pass a fake. Defaults to the real Kraveo API.
+  /// Network layer; tests pass a fake. Defaults to the real Grozo API.
   final VendorBackend? backend;
 
-  /// Payout details and settlements; tests pass a fake. Defaults to the real Kraveo API.
+  /// Payout details and settlements; tests pass a fake. Defaults to the real Grozo API.
   final PayoutApi? payoutApi;
 
   /// Live order events; tests pass a fake. Defaults to Socket.io. Pass a factory returning null-free fakes.
@@ -82,7 +82,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
   DateTime? _lastBackPress;
   static const Duration _exitWindow = Duration(seconds: 2);
 
-  /// Orders the kitchen was working on that Kraveo cancelled, waiting for the cook to acknowledge.
+  /// Orders the kitchen was working on that Grozo cancelled, waiting for the cook to acknowledge.
   final List<OrderModel> _cancelNotices = [];
   bool _noticeOpen = false;
 
@@ -162,7 +162,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
     } catch (_) {}
   }
 
-  /// Kitchen orders that Kraveo cancelled: remove their tray notification and tell the cook to stop (the one short
+  /// Kitchen orders that Grozo cancelled: remove their tray notification and tell the cook to stop (the one short
   /// sound is played by the controller).
   void _collectKitchenCancellations(OrderQueueController c) {
     final cancelled = c.takeKitchenCancellations();
@@ -259,7 +259,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
   bool _pushSettled(PushController? push) =>
       push == null || (!_explainerOpen && !push.shouldExplain && (!push.isActive || push.notificationAccess != null));
 
-  /// Once per app start / login, when Kraveo says this restaurant has no map location: offer the detect sheet.
+  /// Once per app start / login, when Grozo says this restaurant has no map location: offer the detect sheet.
   /// It waits for the notification explainer (one thing at a time, notifications first); the banner stays either way.
   void _maybeLocationPrompt(PushController? push) {
     if (_locationPromptOpen || !_pushSettled(push)) return;
@@ -363,7 +363,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
     }
   }
 
-  /// True when Kraveo's menu for this restaurant loaded and has no dishes. Unknown (not loaded / failed) is not "empty".
+  /// True when Grozo's menu for this restaurant loaded and has no dishes. Unknown (not loaded / failed) is not "empty".
   Future<bool> _menuIsEmpty() async {
     final menu = _menu;
     if (menu == null) return false;

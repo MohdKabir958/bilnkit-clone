@@ -9,9 +9,9 @@ import '../widgets/ui/ui.dart';
 import '../services/failure_messages.dart';
 import '../services/menu_stock_controller.dart';
 
-/// The Menu tab: the restaurant's real menu from Kraveo, each dish with its approval status and the restaurant's OWN
+/// The Menu tab: the restaurant's real menu from Grozo, each dish with its approval status and the restaurant's OWN
 /// price (never a customer price). Sold-out switches (live dishes only) save at once; a new dish and a price change on a
-/// live dish go to Kraveo for approval. Failed saves roll back with a message.
+/// live dish go to Grozo for approval. Failed saves roll back with a message.
 class StockManagerScreen extends StatefulWidget {
   final MenuStockController controller;
 

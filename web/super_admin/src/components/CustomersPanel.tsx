@@ -102,7 +102,7 @@ export const CustomersPanel: React.FC<Props> = ({ query, onClearQuery, onAuthErr
 
       {empty && (
         <div className="k-card">
-          <EmptyState icon={query ? SearchX : Users} title={query ? 'No customers match' : 'No customers yet'} description={query ? 'Try a name, email, phone number or hostel block.' : 'Customers appear here after they sign in to the Kraveo app.'}
+          <EmptyState icon={query ? SearchX : Users} title={query ? 'No customers match' : 'No customers yet'} description={query ? 'Try a name, email, phone number or hostel block.' : 'Customers appear here after they sign in to the Grozo app.'}
             action={query ? <button className="k-btn-ghost" onClick={onClearQuery}>Clear search</button> : undefined} />
         </div>
       )}
@@ -242,7 +242,7 @@ const CustomerDrawer: React.FC<{ id: string | null; onClose: () => void; onAuthE
             <div className="k-inset px-3 py-2.5"><p className="k-label !text-[10px]">Delivered</p><p className="k-num text-xl text-kraveo-ink">{detail.stats.deliveredCount}</p></div>
             <div className="k-inset px-3 py-2.5"><p className="k-label !text-[10px]">Cancelled</p><p className="k-num text-xl text-kraveo-ink">{detail.stats.cancelledCount}</p></div>
             <div className="k-inset px-3 py-2.5"><p className="k-label !text-[10px]">In progress</p><p className="k-num text-xl text-kraveo-ink">{detail.stats.activeCount}</p></div>
-            <div className="k-inset px-3 py-2.5"><p className="k-label !text-[10px]">Kraveo coins</p><p className="k-num flex items-center gap-1 text-xl text-kraveo-ink"><Coins className="h-4 w-4 text-kraveo-yellow" aria-hidden="true" />{detail.kraveoCoins}</p></div>
+            <div className="k-inset px-3 py-2.5"><p className="k-label !text-[10px]">Grozo coins</p><p className="k-num flex items-center gap-1 text-xl text-kraveo-ink"><Coins className="h-4 w-4 text-kraveo-yellow" aria-hidden="true" />{detail.kraveoCoins}</p></div>
           </div>
 
           <div className="space-y-2.5">

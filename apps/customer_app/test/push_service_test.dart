@@ -394,7 +394,7 @@ void main() {
       push.onOrderEvent = (_) {};
       await push.onSessionStarted('u1');
 
-      fcm.foreground.add(PushMessage(data: pushData('RIDER_AT_GATE', orderId: 'o-1'), title: 'Your rider is at the gate', body: 'Open DailyMarket to see your code.'));
+      fcm.foreground.add(PushMessage(data: pushData('RIDER_AT_GATE', orderId: 'o-1'), title: 'Your rider is at the gate', body: 'Open Grozo to see your code.'));
       await pumpEventQueue();
       expect(local.shown, hasLength(1));
       expect(local.shown.single.channelId, PushChannels.orderAttention);

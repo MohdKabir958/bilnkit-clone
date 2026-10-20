@@ -102,7 +102,7 @@ export const AddPartnerDrawer: React.FC<Props> = ({ open, kind, onClose, onCreat
     } finally { setSaving(false); }
   };
 
-  const loginText = created ? `Kraveo ${isVendor ? 'Restaurant Partner' : 'Delivery Partner'} login\nPhone: ${created.phone}\nPassword: ${created.password}` : '';
+  const loginText = created ? `Grozo ${isVendor ? 'Restaurant Partner' : 'Delivery Partner'} login\nPhone: ${created.phone}\nPassword: ${created.password}` : '';
   const copyLogin = async () => { setCopied(await copyText(loginText)); };
 
   return (

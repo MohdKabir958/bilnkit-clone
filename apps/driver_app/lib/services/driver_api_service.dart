@@ -35,7 +35,7 @@ class DriverApiService {
   /// [onUnauthorized] gets the call as before.
   static void Function()? onSuspended;
 
-  /// Set by the session gate. Called when Kraveo answers 403 PARTNER_NOT_APPROVED, i.e. an admin suspended
+  /// Set by the session gate. Called when Grozo answers 403 PARTNER_NOT_APPROVED, i.e. an admin suspended
   /// this account while the app was open, so the app can re-check its status and move to the status screen.
   static void Function()? onNotApproved;
 

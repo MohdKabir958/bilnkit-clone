@@ -134,7 +134,7 @@ void main() {
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(find.text('Restaurant partner login'), findsOneWidget);
       expect(find.text('रेस्टोरेंट लॉगिन'), findsOneWidget);
-      expect(find.textContaining('Forgot password? Ask DailyMarket support'), findsOneWidget);
+      expect(find.textContaining('Forgot password? Ask Grozo support'), findsOneWidget);
       expect(auth.profileTokens, isEmpty);
       // Nothing is pre-filled: the app never holds or shows a default password.
       final password = tester.widget<TextField>(find.byKey(const ValueKey('password-field')));
@@ -286,13 +286,13 @@ void main() {
       auth.onLogin = (_, __) => const LoginResult.failure(LoginFailure.offline);
       await _tapLogin(tester);
       await _settle(tester);
-      expect(find.textContaining('Can\'t reach DailyMarket'), findsOneWidget);
+      expect(find.textContaining('Can\'t reach Grozo'), findsOneWidget);
       expect(find.text('This number belongs to a delivery partner.'), findsNothing);
 
       auth.onLogin = (_, __) => const LoginResult.failure(LoginFailure.server);
       await _tapLogin(tester);
       await _settle(tester);
-      expect(find.textContaining('DailyMarket is having trouble'), findsOneWidget);
+      expect(find.textContaining('Grozo is having trouble'), findsOneWidget);
       expect(find.byType(LoginScreen), findsOneWidget);
       await _unmount(tester);
     });
@@ -339,7 +339,7 @@ void main() {
       final auth = FakeAuth()..profile = const ProfileResult(ProfileOutcome.unreachable);
       await _pumpApp(tester, auth);
 
-      expect(find.text('Can\'t reach DailyMarket'), findsOneWidget);
+      expect(find.text('Can\'t reach Grozo'), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
       expect(find.byType(LoginScreen), findsNothing);
       expect(await VendorApiService.getSavedToken(), 'stored-jwt');
@@ -348,7 +348,7 @@ void main() {
       await tester.tap(find.text('Retry'));
       await _settle(tester);
       expect(auth.profileTokens.length, 2);
-      expect(find.text('Can\'t reach DailyMarket'), findsNothing);
+      expect(find.text('Can\'t reach Grozo'), findsNothing);
       expect(find.text('Sharma Dhaba'), findsOneWidget); // vendor details survive from the stored login
       await _unmount(tester);
     });

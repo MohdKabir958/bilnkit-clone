@@ -36,7 +36,7 @@ class _IfscFormatter extends TextInputFormatter {
   }
 }
 
-/// "Payout details": where Kraveo sends this rider's money. UPI id or a bank account. After saving, only the masked view
+/// "Payout details": where Grozo sends this rider's money. UPI id or a bank account. After saving, only the masked view
 /// is shown ("Account ending 7890"); the full account number is never shown again and never kept in state.
 ///
 /// [suggestedUpi] is the UPI id the rider gave at sign-up (the older `upiId` field). It only pre-fills the empty form; it is
@@ -443,7 +443,7 @@ class _PayoutDetailsScreenState extends State<PayoutDetailsScreen> {
       ];
 }
 
-/// The saved details, masked, with whether Kraveo has verified them.
+/// The saved details, masked, with whether Grozo has verified them.
 class _SavedCard extends StatelessWidget {
   const _SavedCard({required this.account});
 

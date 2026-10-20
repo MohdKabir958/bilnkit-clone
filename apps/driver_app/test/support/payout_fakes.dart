@@ -8,7 +8,7 @@ import 'package:driver_app/services/rider_orders_api.dart';
 /// The real-shape fixtures (test/fixtures/payout_samples.json, copied from the backend e2e tests).
 Map<String, dynamic> payoutFixtures() => (jsonDecode(File('test/fixtures/payout_samples.json').readAsStringSync()) as Map).cast<String, dynamic>();
 
-/// A scriptable DailyMarket for payout details. It behaves like the server: a save masks the account number (keeps the last 4
+/// A scriptable Grozo for payout details. It behaves like the server: a save masks the account number (keeps the last 4
 /// only), changed details clear `verifiedAt`, identical details answer `changed: false`.
 class FakePayoutApi implements PayoutApi {
   PayoutAccount? account;

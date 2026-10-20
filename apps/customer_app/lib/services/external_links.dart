@@ -2,8 +2,8 @@ import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Where students write to Kraveo (decided by the owner; shown wherever the app says "contact
-/// Kraveo support").
+/// Where students write to Grozo (decided by the owner; shown wherever the app says "contact
+/// Grozo support").
 const String kSupportEmail = BrandConfig.supportEmail;
 
 /// Opens `tel:` and `mailto:` links through the phone's own apps. Every method answers

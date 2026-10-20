@@ -3,7 +3,7 @@ import 'package:kraveo_ui/kraveo_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Home hero: today's delivery fees (summed from the rider's real delivered orders) + two tiles.
-/// These are the orders' delivery fees, not a payout statement: Kraveo has no payout API yet.
+/// These are the orders' delivery fees, not a payout statement: Grozo has no payout API yet.
 class EarningsCard extends StatelessWidget {
   final double todayEarnings;
   final int completedTrips;

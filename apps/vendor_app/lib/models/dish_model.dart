@@ -1,15 +1,15 @@
-/// Where a dish is in Kraveo's approval flow (Docs/21 section 4). A restaurant only ever sees its OWN price.
+/// Where a dish is in Grozo's approval flow (Docs/21 section 4). A restaurant only ever sees its OWN price.
 enum DishStatus {
-  /// New dish, waiting for Kraveo to approve it. Customers cannot see it yet.
+  /// New dish, waiting for Grozo to approve it. Customers cannot see it yet.
   pending,
 
   /// Approved and visible to customers.
   live,
 
-  /// Live at the old price; a new price was asked for and is waiting for Kraveo.
+  /// Live at the old price; a new price was asked for and is waiting for Grozo.
   changePending,
 
-  /// Kraveo did not approve it (the reason is in [DishModel.rejectionReason]). It can be sent again.
+  /// Grozo did not approve it (the reason is in [DishModel.rejectionReason]). It can be sent again.
   rejected;
 
   /// `PENDING|LIVE|REJECTED|CHANGE_PENDING` (also the database word `APPROVED`). A server that sends no status
@@ -48,7 +48,7 @@ class DishModel {
   /// A requested new price waiting for approval (only while [status] is `changePending`).
   double? pendingPrice;
 
-  /// Why Kraveo did not approve the dish (only while [status] is `rejected`).
+  /// Why Grozo did not approve the dish (only while [status] is `rejected`).
   String? rejectionReason;
 
   /// True when the server told us this dish's approval status. An OLD server never does, so for those dishes a price

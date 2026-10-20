@@ -9,7 +9,7 @@
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"
-        android:icon="@drawable/market_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules">
 
@@ -44,7 +44,7 @@
             android:value="order_updates"/>
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/ic_stat_kraveo"/>
+            android:resource="@drawable/ic_stat_grozo"/>
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/kraveo_notification_color"/>

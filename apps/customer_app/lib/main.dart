@@ -234,7 +234,7 @@ class _SplashScreen extends StatelessWidget {
   }
 }
 
-/// Shown when a saved session exists but Kraveo cannot be reached. We keep the token so the
+/// Shown when a saved session exists but Grozo cannot be reached. We keep the token so the
 /// student is not logged out just because the network dropped.
 class _SessionUnreachable extends StatefulWidget {
   const _SessionUnreachable({required this.onRetry, required this.onUseAnotherAccount});

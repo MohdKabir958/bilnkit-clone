@@ -43,7 +43,7 @@ const String kDutyNotificationText = 'Sharing your location with ${BrandConfig.n
 
 /// Android notification channel of the duty notification. The plugin creates a channel with this
 /// id as "importance none" (an invisible notification); MainActivity creates it first with low
-/// importance so the rider can see why the phone says Kraveo is using location.
+/// importance so the rider can see why the phone says Grozo is using location.
 const String kDutyNotificationChannelName = 'On duty - location sharing';
 
 /// Position settings while on duty: a foreground service (so updates continue with the screen
@@ -61,7 +61,7 @@ LocationSettings? dutyLocationSettings({TargetPlatform? platform}) {
       notificationTitle: kDutyNotificationTitle,
       notificationText: kDutyNotificationText,
       notificationChannelName: kDutyNotificationChannelName,
-      notificationIcon: AndroidResource(name: 'ic_stat_kraveo', defType: 'drawable'),
+      notificationIcon: AndroidResource(name: 'ic_stat_grozo', defType: 'drawable'),
       setOngoing: true,
       enableWakeLock: false,
       enableWifiLock: false,

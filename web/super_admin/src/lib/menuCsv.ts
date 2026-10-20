@@ -254,4 +254,4 @@ export const menuTemplateCsv = (): string => {
   return `${lines.map((line) => line.map(quoteCell).join(',')).join('\r\n')}\r\n`;
 };
 
-export const TEMPLATE_FILENAME = 'kraveo-menu-template.csv';
+export const TEMPLATE_FILENAME = 'grozo-menu-template.csv';

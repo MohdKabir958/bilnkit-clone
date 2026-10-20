@@ -84,7 +84,7 @@ class _KraveoDriverAppState extends State<KraveoDriverApp> {
   }
 }
 
-/// Decides between splash, login, the "can't reach Kraveo" retry state and the app, and wires
+/// Decides between splash, login, the "can't reach Grozo" retry state and the app, and wires
 /// session expiry (HTTP 401 on any authenticated call) to the login screen.
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key, required this.session, this.riderServices, this.payoutApi});
@@ -132,7 +132,7 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
   }
 
   /// An admin suspended this account while the app was open (the server answered 403 PARTNER_NOT_APPROVED), or
-  /// the app has just come back to the foreground: ask Kraveo, and the gate swaps in the status screen if needed.
+  /// the app has just come back to the foreground: ask Grozo, and the gate swaps in the status screen if needed.
   void _handleNotApproved() {
     if (!mounted || _session.status != SessionStatus.signedIn) return;
     Navigator.of(context).popUntil((route) => route.isFirst);
@@ -237,7 +237,7 @@ class _SplashScreen extends StatelessWidget {
   }
 }
 
-/// A saved login exists but Kraveo cannot be reached. The token is kept, so a dropped network
+/// A saved login exists but Grozo cannot be reached. The token is kept, so a dropped network
 /// never logs a rider out mid-shift.
 class _SessionUnreachable extends StatefulWidget {
   const _SessionUnreachable({required this.onRetry});

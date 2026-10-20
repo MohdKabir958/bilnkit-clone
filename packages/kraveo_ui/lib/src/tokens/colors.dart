@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../brand_config.dart';
 
-/// Raw brand palette. Derived from the Kraveo bowl logo (forest green + electric yellow).
+/// Raw brand palette. Uses the Grozo forest-green wordmark and leaf-green accent.
 /// Screens should NOT use these directly - read semantic roles via `context.k`.
 class KraveoPalette {
   KraveoPalette._();
@@ -19,7 +19,7 @@ class KraveoPalette {
   static const g900 = Color(0xFF063D14);
   static const g950 = Color(0xFF032309);
 
-  // Electric yellow ramp (brand = 400)
+  // Accent ramp (brand = 400 is configured from the Grozo artwork)
   static const y100 = Color(0xFFFFF6C2);
   static const y200 = Color(0xFFFFEC85);
   static const y300 = Color(0xFFFFE24D);
@@ -52,7 +52,7 @@ class KraveoPalette {
   static const info = Color(0xFF3B82F6);
 }
 
-/// One status colour language shared by every Kraveo surface (apps + dashboard).
+/// One status colour language shared by every Grozo surface (apps + dashboard).
 enum KStatus { placed, accepted, preparing, ready, pickedUp, atGate, delivered, cancelled }
 
 extension KStatusX on KStatus {

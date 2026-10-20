@@ -442,7 +442,7 @@ void main() {
     });
   });
 
-  group('DriverHomeScreen with a fake DailyMarket', () {
+  group('DriverHomeScreen with a fake Grozo', () {
     Future<FakeRider> pumpHome(WidgetTester tester, {void Function(FakeRider f)? setup}) async {
       final f = FakeRider();
       setup?.call(f);

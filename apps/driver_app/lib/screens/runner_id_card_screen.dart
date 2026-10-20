@@ -3,13 +3,13 @@ import 'package:kraveo_ui/kraveo_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../widgets/ui/icon_action.dart';
 
-/// The rider's staff pass, shown to hostel-gate security. It carries only what Kraveo really knows: the
+/// The rider's staff pass, shown to hostel-gate security. It carries only what Grozo really knows: the
 /// rider's name and runner code. There is no scannable code and no "verified" badge: the guard reads the
-/// code (RUN-xxxx) and checks it with Kraveo.
+/// code (RUN-xxxx) and checks it with Grozo.
 class RunnerIdCardScreen extends StatelessWidget {
   final String name;
 
-  /// The rider's runner code, e.g. "RUN-8042". "-" when Kraveo has not given one.
+  /// The rider's runner code, e.g. "RUN-8042". "-" when Grozo has not given one.
   final String runnerId;
 
   /// Optional profile photo. Falls back to initials when null or when it fails to load.

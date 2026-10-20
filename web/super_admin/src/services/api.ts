@@ -168,7 +168,7 @@ async function download(path: string): Promise<{ blob: Blob; filename: string }>
   }
   const disposition = response.headers.get('Content-Disposition') || '';
   const match = /filename="?([^";]+)"?/i.exec(disposition);
-  return { blob: await response.blob(), filename: match ? match[1] : 'kraveo-export.csv' };
+  return { blob: await response.blob(), filename: match ? match[1] : 'grozo-export.csv' };
 }
 
 /** What the catalog API accepts to create or change a dish (only fields that changed are sent on an update). */

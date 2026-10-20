@@ -3,7 +3,7 @@ import 'package:kraveo_ui/kraveo_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../providers/cart_provider.dart';
 
-/// Kraveo Coins balance. Read-only: the order API has no way to redeem coins yet, so offering a
+/// Grozo Coins balance. Read-only: the order API has no way to redeem coins yet, so offering a
 /// coin discount here would show a total that the server never charges.
 class CoinsBalance extends StatelessWidget {
   const CoinsBalance({super.key, required this.cart});

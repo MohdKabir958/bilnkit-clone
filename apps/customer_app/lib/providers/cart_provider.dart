@@ -42,7 +42,7 @@ class CartProvider with ChangeNotifier {
   double _couponDiscountAmount = 0.0;
   String? _couponError;
 
-  // Kraveo Coins balance (from the server). Coins are not redeemable on orders yet: POST /orders
+  // Grozo Coins balance (from the server). Coins are not redeemable on orders yet: POST /orders
   // has no coins field, so a local coin discount would show a total the server never charges.
   int _userKraveoCoins = 0;
 

@@ -292,7 +292,7 @@ void main() {
       expect(c.active!.canRelease, isFalse);
       await c.release();
       expect(f.api.calls.where((x) => x.startsWith('release:')), isEmpty);
-      expect(c.actionError, 'You already have food from one of the restaurants. Only DailyMarket support can move this delivery now.');
+      expect(c.actionError, 'You already have food from one of the restaurants. Only Grozo support can move this delivery now.');
       expect(c.active, isNotNull);
     });
 
@@ -313,7 +313,7 @@ void main() {
       f.api.onRelease = (_) => const ApiResult.fail(ApiFailure.conflict, statusCode: 409, code: 'CANNOT_RELEASE');
       f.api.fetchOrderStub(w);
       await c.release();
-      expect(c.actionError, 'This combined order can no longer be released (food from one restaurant was already picked up). Contact DailyMarket support.');
+      expect(c.actionError, 'This combined order can no longer be released (food from one restaurant was already picked up). Contact Grozo support.');
     });
 
     test('cancelled: ONE notice for the whole order with the real reason, rooms left, nothing delivered', () async {
@@ -347,7 +347,7 @@ void main() {
       expect(c.active, isNull);
     });
 
-    test('moved away by DailyMarket (the children vanish from the list and the order is not ours): reassigned notice once', () async {
+    test('moved away by Grozo (the children vanish from the list and the order is not ours): reassigned notice once', () async {
       w = GroupWorld(f, start: ['READY_FOR_PICKUP', 'READY_FOR_PICKUP']);
       await boot();
       f.api.active = const ApiResult.ok([]);

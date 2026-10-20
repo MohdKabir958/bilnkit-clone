@@ -7,7 +7,7 @@
   "account_upi": {
     "success": true,
     "changed": true,
-    "message": "Payout details saved. Kraveo will check them before the first payout.",
+    "message": "Payout details saved. Grozo will check them before the first payout.",
     "data": {
       "method": "UPI",
       "upiId": "ram@okhdfcbank",

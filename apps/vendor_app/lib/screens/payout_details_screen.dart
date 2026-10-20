@@ -38,7 +38,7 @@ class _IfscFormatter extends TextInputFormatter {
   }
 }
 
-/// "Payout details": where Kraveo sends this restaurant's money. UPI id or a bank account. After saving, only the masked
+/// "Payout details": where Grozo sends this restaurant's money. UPI id or a bank account. After saving, only the masked
 /// view is shown ("Account ending 7890"); the full account number is never shown again and never kept in state.
 class PayoutDetailsScreen extends StatefulWidget {
   const PayoutDetailsScreen({super.key, required this.controller});
@@ -502,7 +502,7 @@ class _PayoutDetailsScreenState extends State<PayoutDetailsScreen> {
       ];
 }
 
-/// The saved details, masked, with whether Kraveo has verified them.
+/// The saved details, masked, with whether Grozo has verified them.
 class _SavedCard extends StatelessWidget {
   const _SavedCard({required this.account});
 

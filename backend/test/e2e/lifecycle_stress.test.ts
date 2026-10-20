@@ -291,7 +291,7 @@ describe(`Lifecycle stress (seed ${SEED})`, () => {
     const pays = await prisma.payment.findMany({ where: { order: mine() } });
     const orderOfRzp = new Map(pays.map((p) => [p.razorpayOrderId, p.orderId]));
     const capturedByOrder = new Map<string, string[]>();
-    for (const [payId, c] of ledger.captured) { const oid = orderOfRzp.get(c.rzpOrderId); if (oid) capturedByOrder.set(oid, [...(capturedByOrder.get(oid) ?? []), payId]); else viol(`[I3 ${label}] captured payment ${payId} has no Kraveo payment row`); }
+    for (const [payId, c] of ledger.captured) { const oid = orderOfRzp.get(c.rzpOrderId); if (oid) capturedByOrder.set(oid, [...(capturedByOrder.get(oid) ?? []), payId]); else viol(`[I3 ${label}] captured payment ${payId} has no Grozo payment row`); }
     for (const [payId, list] of ledger.sim.refunds) {
       const real = list.filter((r) => r.status !== 'failed');
       const c = ledger.captured.get(payId);

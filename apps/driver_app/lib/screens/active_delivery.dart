@@ -17,7 +17,7 @@ import '../widgets/ui/screen_header.dart';
 /// The delivery the rider is carrying, driven only by the order's real status on the server:
 /// go to restaurant -> wait for READY_FOR_PICKUP -> Picked up -> ride to the drop point ->
 /// Arrived -> enter the customer's code -> delivered. Also shows how a delivery ended
-/// (delivered / cancelled / moved by Kraveo) until the rider acknowledges it.
+/// (delivered / cancelled / moved by Grozo) until the rider acknowledges it.
 class ActiveDeliveryScreen extends StatelessWidget {
   const ActiveDeliveryScreen({super.key, required this.controller, required this.onGoHome, this.mapFactory, this.navigationLauncher});
 
@@ -280,7 +280,7 @@ class _DeliveryViewState extends State<_DeliveryView> {
               note: 'Delivery ${o.shortRef} is locked after too many wrong codes.', subject: 'Locked delivery ${o.shortRef}'),
         ),
         const SizedBox(height: 10),
-        // A wrong guess here costs nothing: Kraveo answers a locked order without counting an attempt,
+        // A wrong guess here costs nothing: Grozo answers a locked order without counting an attempt,
         // and after support unlocks it the same button finishes the delivery.
         KButton(
           key: const ValueKey('retry-code-button'),

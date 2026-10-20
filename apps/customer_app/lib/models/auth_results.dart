@@ -28,7 +28,7 @@ abstract class ApiOutcome {
   bool get unavailable => statusCode == 502 || statusCode == 503;
 }
 
-/// POST /auth/google: exchanges a Google ID token for a Kraveo session.
+/// POST /auth/google: exchanges a Google ID token for a Grozo session.
 class GoogleLoginResult extends ApiOutcome {
   const GoogleLoginResult({
     required super.success,

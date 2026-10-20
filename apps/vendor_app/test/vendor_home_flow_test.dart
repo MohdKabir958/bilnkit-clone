@@ -9,7 +9,7 @@ import 'package:vendor_app/widgets/incoming_order_dialog.dart';
 import 'support/fakes.dart';
 import 'support/signed_in.dart';
 
-/// The whole restaurant app (session gate + home) against a fake DailyMarket server and socket.
+/// The whole restaurant app (session gate + home) against a fake Grozo server and socket.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 

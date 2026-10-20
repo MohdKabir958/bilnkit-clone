@@ -166,7 +166,7 @@ void main() {
       expect(cart.canAddMore(dummyItem1.id), isTrue);
     });
 
-    test('DailyMarket Coins are a balance only: they never lower the estimate (the server cannot redeem them)', () {
+    test('Grozo Coins are a balance only: they never lower the estimate (the server cannot redeem them)', () {
       cart.setKraveoCoins(120);
       cart.addItem(item: dummyItem1, dhabaId: 'ven-1', dhabaName: 'Sharma Dhaba'); // ₹180 subtotal
       expect(cart.userKraveoCoins, 120);

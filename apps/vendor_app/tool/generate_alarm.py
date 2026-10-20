@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates the Kraveo new-order alarm tone (20 s, mono, 44.1 kHz) as WAV, then ogg if ffmpeg exists.
+"""Generates the Grozo new-order alarm tone (20 s, mono, 44.1 kHz) as WAV, then ogg if ffmpeg exists.
 
 Pattern per 2 s cycle: a rising three-note chime (C6-E6-G6), a short gap, the same chime again, then silence.
 Ten cycles = 20 s, and the file ends in silence so it also loops cleanly in the app.

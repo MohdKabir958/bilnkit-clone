@@ -197,20 +197,20 @@ apiRouter.post('/auth/google', async (req: Request, res: Response) => {
     if (!user) {
       const byEmail = await prisma.user.findFirst({ where: { email: identity.email, deletedAt: null } });
       if (byEmail && byEmail.googleSub && byEmail.googleSub !== identity.sub) {
-        return res.status(409).json({ success: false, code: 'ACCOUNT_CONFLICT', message: 'This email is already linked to a different Google account. Contact Kraveo support.' });
+        return res.status(409).json({ success: false, code: 'ACCOUNT_CONFLICT', message: 'This email is already linked to a different Google account. Contact Grozo support.' });
       }
       user = byEmail;
     }
 
     if (user) {
       if (user.role !== Role.STUDENT) {
-        return res.status(403).json({ success: false, message: 'This Google account belongs to a Kraveo partner. Use the partner app.' });
+        return res.status(403).json({ success: false, message: 'This Google account belongs to a Grozo partner. Use the partner app.' });
       }
       if (user.googleSub !== identity.sub || user.email !== identity.email) {
         try {
           user = await prisma.user.update({ where: { id: user.id }, data: { googleSub: identity.sub, email: identity.email } });
         } catch (err: any) {
-          if (err?.code === 'P2002') return res.status(409).json({ success: false, code: 'ACCOUNT_CONFLICT', message: 'This Google account is already linked to another Kraveo account. Contact Kraveo support.' });
+          if (err?.code === 'P2002') return res.status(409).json({ success: false, code: 'ACCOUNT_CONFLICT', message: 'This Google account is already linked to another Grozo account. Contact Grozo support.' });
           throw err;
         }
       }
@@ -222,14 +222,14 @@ apiRouter.post('/auth/google', async (req: Request, res: Response) => {
     }
 
     const token = generateToken({ id: user.id, phone: user.phone, role: user.role, tokenVersion: user.tokenVersion });
-    return res.json({ success: true, message: isNewUser ? 'Welcome to Kraveo!' : 'Welcome back!', token, user: publicUser(user), isNewUser, needsProfile: needsProfile(user) });
+    return res.json({ success: true, message: isNewUser ? 'Welcome to Grozo!' : 'Welcome back!', token, user: publicUser(user), isNewUser, needsProfile: needsProfile(user) });
   } catch (err: any) {
     console.error('google sign-in failed:', errSummary(err));
     return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
   }
 });
 
-// Partners (vendor / driver): phone + password. Accounts are created by Kraveo only.
+// Partners (vendor / driver): phone + password. Accounts are created by Grozo only.
 apiRouter.post('/auth/partner-login', async (req: Request, res: Response) => {
   try {
     const phone = canonicalPhone(req.body?.phone);
@@ -328,7 +328,7 @@ apiRouter.post('/auth/admin-login', async (req: Request, res: Response) => {
     if (!adminUser) {
       adminUser = await prisma.user.create({
         data: {
-          name: username || 'Kraveo Super Admin',
+          name: username || 'Grozo Super Admin',
           phone: '9999999999',
           role: Role.ADMIN,
           hostelBlock: 'Operations Command Center',
@@ -482,7 +482,7 @@ apiRouter.delete('/auth/account', requireAuth, requireRole('STUDENT'), async (re
 });
 
 // ----------------------------------------------------
-// ADMIN: partner accounts (vendor / driver). Kraveo creates these; there is no self sign-up.
+// ADMIN: partner accounts (vendor / driver). Grozo creates these; there is no self sign-up.
 // ----------------------------------------------------
 apiRouter.post('/admin/partners', requireAuth, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -880,7 +880,7 @@ apiRouter.patch('/vendors/items/:itemId', requireAuth, requireRole('VENDOR', 'AD
     if (!(await canManageVendor(item.vendorId, req.user))) return res.status(403).json({ success: false, message: 'Forbidden. You do not own this vendor.' });
     const out = await vendorEditDish(req.params.itemId, { id: req.user!.id, role: req.user!.role }, { isAvailable, price });
     const message =
-      out.kind === 'CHANGE_REQUESTED' ? 'Price change sent for approval. Customers keep the old price until Kraveo approves it.'
+      out.kind === 'CHANGE_REQUESTED' ? 'Price change sent for approval. Customers keep the old price until Grozo approves it.'
       : out.kind === 'RESUBMITTED' ? 'Dish sent for approval again.'
       : out.kind === 'CHANGE_WITHDRAWN' ? 'Price change request withdrawn.'
       : out.kind === 'EDITED_IN_PLACE' ? 'Menu item updated. It is still waiting for approval.'
@@ -895,7 +895,7 @@ apiRouter.patch('/vendors/items/:itemId', requireAuth, requireRole('VENDOR', 'AD
 // REVIEWS & KRAVEO COIN LOYALTY REWARDS ENDPOINTS
 // ----------------------------------------------------
 
-// Submit Order & Dish Review (Earns +10 Kraveo Coins & Updates Dhaba Rating)
+// Submit Order & Dish Review (Earns +10 Grozo Coins & Updates Dhaba Rating)
 const COUPON_COIN_COST = 50;
 const MAX_REVIEW_TEXT = 300;
 const MAX_DISH_REVIEWS = 30;
@@ -972,7 +972,7 @@ apiRouter.post('/reviews', requireAuth, requireRole('STUDENT'), async (req: Auth
       const firstOfDelivery = !order.groupId || (await tx.order.count({ where: { groupId: order.groupId, isReviewed: true } })) === 0;
       const coins = firstOfDelivery ? 10 : 0;
 
-      // 1. Update User's Kraveo Coins (+10 per review, once per delivery)
+      // 1. Update User's Grozo Coins (+10 per review, once per delivery)
       const updatedUser = coins > 0
         ? await tx.user.update({ where: { id: customerId }, data: { kraveoCoins: { increment: coins } } })
         : await tx.user.findUniqueOrThrow({ where: { id: customerId } });
@@ -1014,11 +1014,11 @@ apiRouter.post('/reviews', requireAuth, requireRole('STUDENT'), async (req: Auth
       return { updatedUser, updatedVendor, newReview, coins };
     });
 
-    if (result.coins > 0) console.log(`🪙 [Kraveo Coins Loyalty] User (${result.updatedUser.id}) earned +${result.coins} Kraveo Coins! Total Balance: ${result.updatedUser.kraveoCoins}`);
+    if (result.coins > 0) console.log(`🪙 [Grozo Coins Loyalty] User (${result.updatedUser.id}) earned +${result.coins} Grozo Coins! Total Balance: ${result.updatedUser.kraveoCoins}`);
 
     return res.json({
       success: true,
-      message: result.coins > 0 ? '🎉 Review submitted successfully! You earned +10 Kraveo Coins!' : 'Review submitted successfully! The coins for this combined order were already given for the first review.',
+      message: result.coins > 0 ? '🎉 Review submitted successfully! You earned +10 Grozo Coins!' : 'Review submitted successfully! The coins for this combined order were already given for the first review.',
       coinsEarned: result.coins,
       totalCoins: result.updatedUser.kraveoCoins,
       newVendorRating: result.updatedVendor?.rating,
@@ -1041,7 +1041,7 @@ apiRouter.post('/reviews', requireAuth, requireRole('STUDENT'), async (req: Auth
   }
 });
 
-// Redeem 50 Kraveo Coins for the KRAVEO20 coupon (Flat ₹20 OFF, minimum order ₹80). The coins are taken here,
+// Redeem 50 Grozo Coins for the KRAVEO20 coupon (Flat ₹20 OFF, minimum order ₹80). The coins are taken here,
 // atomically, and the redemption is recorded on the account: KRAVEO20 only works at checkout while the customer
 // holds an unused redemption (see utils/validation.ts + services/orderFlow.ts), so the public code is worth nothing alone.
 apiRouter.post('/coupons/redeem-coins', requireAuth, requireRole('STUDENT'), async (req: AuthenticatedRequest, res: Response) => {
@@ -1060,7 +1060,7 @@ apiRouter.post('/coupons/redeem-coins', requireAuth, requireRole('STUDENT'), asy
       return res.status(400).json({
         success: false,
         code: 'INSUFFICIENT_COINS',
-        message: `Insufficient Kraveo Coins. You have ${currentCoins} coins, but need ${COUPON_COIN_COST} coins to redeem ₹20 OFF.`
+        message: `Insufficient Grozo Coins. You have ${currentCoins} coins, but need ${COUPON_COIN_COST} coins to redeem ₹20 OFF.`
       });
     }
 
@@ -1068,7 +1068,7 @@ apiRouter.post('/coupons/redeem-coins', requireAuth, requireRole('STUDENT'), asy
 
     return res.json({
       success: true,
-      message: '🎉 Redeemed 50 Kraveo Coins for Flat ₹20 OFF!',
+      message: '🎉 Redeemed 50 Grozo Coins for Flat ₹20 OFF!',
       couponCode: 'KRAVEO20',
       discountAmount: 20,
       remainingCoins: updatedUser?.kraveoCoins || 0

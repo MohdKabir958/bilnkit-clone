@@ -219,7 +219,7 @@ void main() {
       await _tapKey(tester, 'signup-button');
       await _settle(tester);
       expect(find.byType(SignupScreen), findsOneWidget);
-      expect(find.textContaining('already registered in another DailyMarket app'), findsOneWidget);
+      expect(find.textContaining('already registered in another Grozo app'), findsOneWidget);
       await _unmount(tester);
     });
 
@@ -232,7 +232,7 @@ void main() {
       await _tapKey(tester, 'signup-button');
       await _settle(tester);
       expect(find.byKey(const ValueKey('signup-problem')), findsOneWidget);
-      expect(find.textContaining("Can't reach DailyMarket"), findsOneWidget);
+      expect(find.textContaining("Can't reach Grozo"), findsOneWidget);
       expect(find.text('Shiv Shakti Dhaba'), findsOneWidget);
 
       auth.onSignUp = (_) => const SignupResult.failure(SignupFailure.rateLimited);
@@ -273,7 +273,7 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('"Check status" asks DailyMarket and, when still pending, says it will update by itself', (tester) async {
+    testWidgets('"Check status" asks Grozo and, when still pending, says it will update by itself', (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       final before = auth.profileCalls;

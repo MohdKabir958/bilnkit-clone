@@ -78,7 +78,7 @@ class FirebasePushMessaging implements PushMessaging {
 
 /// Real local-notification layer (channels + banners shown by the app itself).
 class PlatformLocalNotifier implements LocalNotifier {
-  static const String _icon = 'ic_stat_kraveo';
+  static const String _icon = 'ic_stat_grozo';
 
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
   final StreamController<String?> _taps = StreamController<String?>.broadcast();

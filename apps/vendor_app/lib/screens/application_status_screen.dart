@@ -7,7 +7,7 @@ import '../session/session_controller.dart';
 import '../widgets/location_flow.dart';
 import '../widgets/ui/support_email_link.dart';
 
-/// What a restaurant sees after creating an account until Kraveo approves it, or when the application was
+/// What a restaurant sees after creating an account until Grozo approves it, or when the application was
 /// rejected or the account suspended. Pending applications are re-checked every [pollEvery] and when the
 /// app comes back to the foreground, so approval shows up without the owner doing anything.
 class ApplicationStatusScreen extends StatefulWidget {
@@ -22,7 +22,7 @@ class ApplicationStatusScreen extends StatefulWidget {
 
   final PartnerSession session;
 
-  /// Re-checks the application with Kraveo; resolves to true when something changed.
+  /// Re-checks the application with Grozo; resolves to true when something changed.
   final Future<bool> Function() onRefresh;
   final VoidCallback onEdit;
   final Future<void> Function() onLogout;

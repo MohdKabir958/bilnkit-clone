@@ -32,7 +32,7 @@ class _SplitBillModalState extends State<SplitBillModal> {
   String get _splitSummaryText {
     final perPerson = _formattedPerPerson;
     final buffer = StringBuffer();
-    buffer.writeln('*KRAVEO LATE-NIGHT HOSTEL BILL SPLIT*');
+    buffer.writeln('*GROZO BILL SPLIT*');
     buffer.writeln('Kitchen: ${widget.order.vendorName}');
     buffer.writeln('Drop-off: ${widget.order.dropoffHostel}');
     buffer.writeln('--------------------------------');

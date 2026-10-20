@@ -5,7 +5,7 @@ import '../config/api_config.dart';
 import '../models/order_view.dart';
 import 'driver_api_service.dart';
 
-/// Why a call to Kraveo did not succeed. Every screen maps these to a plain-English message.
+/// Why a call to Grozo did not succeed. Every screen maps these to a plain-English message.
 enum ApiFailure {
   /// No connection at all (DNS, socket, TLS...).
   offline,
@@ -67,7 +67,7 @@ class OrderPage {
 
 /// Everything the rider app asks of the order API (contract section 2.4). Tests use a fake.
 abstract class RiderOrdersApi {
-  /// `GET /orders/available?groups=1`: the open pool (pool view: no customer name/phone). `groups=1` tells Kraveo this
+  /// `GET /orders/available?groups=1`: the open pool (pool view: no customer name/phone). `groups=1` tells Grozo this
   /// app understands combined (multi-restaurant) orders (Docs/22): each is ONE entry, carrying `group`.
   Future<ApiResult<List<OrderView>>> fetchAvailable();
 
@@ -133,7 +133,7 @@ class HttpRiderOrdersApi implements RiderOrdersApi {
     } on TimeoutException {
       return const ApiResult.fail(ApiFailure.timeout);
     } catch (_) {
-      // SocketException, ClientException, HandshakeException...: no way to reach Kraveo.
+      // SocketException, ClientException, HandshakeException...: no way to reach Grozo.
       return const ApiResult.fail(ApiFailure.offline);
     }
   }

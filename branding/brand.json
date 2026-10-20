@@ -1,15 +1,16 @@
 {
-  "name": "DailyMarket",
-  "customerName": "DailyMarket",
-  "vendorName": "DailyMarket Vendor",
-  "driverName": "DailyMarket Delivery",
-  "primary": "#075219",
-  "accent": "#FFD600",
-  "logoAsset": "",
+  "name": "Grozo",
+  "customerName": "Grozo",
+  "vendorName": "Grozo Vendor",
+  "driverName": "Grozo Delivery",
+  "primary": "#005A26",
+  "accent": "#85D900",
+  "logoAsset": "assets/brand/grozo-logo.png",
   "applicationIds": {
-    "customer": "in.dailymarket.customer",
-    "vendor": "in.dailymarket.vendor",
-    "driver": "in.dailymarket.driver"
+    "customer": "in.grozo.customer",
+    "vendor": "in.grozo.vendor",
+    "driver": "in.grozo.driver"
   },
-  "supportEmail": ""
+  "supportEmail": "",
+  "tagline": "Nearby Stores. Speedy Delivery."
 }

@@ -71,7 +71,7 @@ describe('dish price = roundUp(vendorPrice + commission, step)', () => {
     expect(price(80, { global: { type: 'FLAT', value: 12 } })).toMatchObject({ price: 92, effectiveCommission: 12 });
     expect(price(80, { global: { type: 'FLAT', value: 0 } }).price).toBe(80);
   });
-  test('rounding goes UP and the difference is Kraveo\'s (effective commission = price - vendor price)', () => {
+  test('rounding goes UP and the difference is Grozo\'s (effective commission = price - vendor price)', () => {
     const r = price(33.33, { global: { type: 'PERCENT', value: 10 }, step: 1 }); // 36.663 -> 36.67 -> 37
     expect(r.price).toBe(37);
     expect(r.nominalCommission).toBe(3.34);

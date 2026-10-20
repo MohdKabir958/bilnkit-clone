@@ -45,5 +45,5 @@ String clockLabel(DateTime d) {
   return '$hour:${l.minute.toString().padLeft(2, '0')} ${l.hour >= 12 ? 'PM' : 'AM'}';
 }
 
-/// Order display code shared by every Kraveo app: '#' + the last 6 characters of the id, uppercased.
+/// Order display code shared by every Grozo app: '#' + the last 6 characters of the id, uppercased.
 String orderRef(String id) => '#${(id.length <= 6 ? id : id.substring(id.length - 6)).toUpperCase()}';

@@ -202,7 +202,7 @@ void main() {
 
     testWidgets('denied for good: offers the app settings (and Try again), never a dead end', (tester) async {
       await detectWith(tester, LocationProblem.permissionDeniedForever);
-      expect(find.text('Location is blocked for DailyMarket'), findsOneWidget);
+      expect(find.text('Location is blocked for Grozo'), findsOneWidget);
       await tapKey(tester, kLocationSettingsKey);
       expect(capture.settingsOpened, [LocationProblem.permissionDeniedForever]);
       expect(find.byKey(kLocationRetryKey), findsOneWidget);
@@ -319,7 +319,7 @@ void main() {
       expect(tester.takeException(), isNull, reason: 'good result');
       await tapKey(tester, kLocationRetryKey); // second script entry: weak
       expect(tester.takeException(), isNull, reason: 'weak result');
-      saveAnswers = ['DailyMarket is slow to answer. Try again.  ·  जवाब नहीं आया, फिर कोशिश करें'];
+      saveAnswers = ['Grozo is slow to answer. Try again.  ·  जवाब नहीं आया, फिर कोशिश करें'];
       await tapKey(tester, kLocationAcceptWeakKey);
       await tapLabel(tester, 'Yes, save it');
       expect(find.byKey(kLocationSaveErrorKey), findsOneWidget);

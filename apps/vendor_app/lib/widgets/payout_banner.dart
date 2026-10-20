@@ -8,7 +8,7 @@ const Key kPayoutBannerKey = ValueKey('payout-banner');
 const Key kPayoutBannerActionKey = ValueKey('payout-banner-action');
 const Key kPayoutBannerDismissKey = ValueKey('payout-banner-dismiss');
 
-/// "Add payout details to get paid": shown on the Earnings tab while Kraveo has no payout details for this restaurant.
+/// "Add payout details to get paid": shown on the Earnings tab while Grozo has no payout details for this restaurant.
 /// The owner can close it; it stays closed until the app is started or the owner logs in again.
 class PayoutBanner extends StatelessWidget {
   const PayoutBanner({super.key, required this.controller, required this.onAdd});

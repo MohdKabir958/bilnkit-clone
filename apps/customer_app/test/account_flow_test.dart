@@ -32,7 +32,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// In-memory stand-in for the DailyMarket backend. Routes are "METHOD /path-after-/api".
+/// In-memory stand-in for the Grozo backend. Routes are "METHOD /path-after-/api".
 class FakeBackend {
   final List<http.Request> requests = [];
   final Map<String, http.Response Function(http.Request)> routes = {};
@@ -535,7 +535,7 @@ void main() {
 
       g = FakeGoogleAuth();
       o = await attempt((_) => throw http.ClientException('offline'), g);
-      expect(o.error, contains('couldn\'t reach DailyMarket'));
+      expect(o.error, contains('couldn\'t reach Grozo'));
 
       g = FakeGoogleAuth();
       o = await attempt((_) => reply(502, {'success': false}), g);
@@ -665,7 +665,7 @@ void main() {
       await pumpWithProviders(tester, const AuthScreen());
       await tester.tap(find.text('Continue with Google'));
       await settle(tester);
-      expect(find.textContaining('couldn\'t reach DailyMarket'), findsOneWidget);
+      expect(find.textContaining('couldn\'t reach Grozo'), findsOneWidget);
     });
 
     testWidgets('shows progress while signing in and ignores repeat taps', (tester) async {
@@ -841,8 +841,8 @@ void main() {
       expect(find.text('Delivery addresses'), findsOneWidget);
       expect(find.text('Add or select an address'), findsOneWidget);
       expect(find.text('I\'m a student'), findsNothing);
-      await tester.scrollUntilVisible(find.text('DailyMarket v$kAppVersion'), 200, scrollable: find.byType(Scrollable).first);
-      expect(find.text('DailyMarket v$kAppVersion'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Grozo v$kAppVersion'), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.text('Grozo v$kAppVersion'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -1016,7 +1016,7 @@ void main() {
       await pumpWithProviders(tester, const ProfileScreen(), session: session);
 
       await tapScrolled(tester, find.text('Log out'));
-      expect(find.text('Log out of DailyMarket?'), findsOneWidget);
+      expect(find.text('Log out of Grozo?'), findsOneWidget);
       await tester.tap(find.text('Cancel'));
       await settle(tester);
       expect(session.status, SessionStatus.signedIn);
@@ -1281,7 +1281,7 @@ void main() {
       backend.on('GET /auth/profile', (_) => online ? reply(200, {'success': true, 'user': userJson(), 'needsProfile': false}) : throw http.ClientException('offline'));
       backend.on('GET /v1/vendors/nearby', (_) => reply(500, {'success': false}));
       await launch(tester);
-      expect(find.text('Can\'t reach DailyMarket'), findsOneWidget);
+      expect(find.text('Can\'t reach Grozo'), findsOneWidget);
       expect(find.text('Use a different account'), findsOneWidget);
       expect(await CustomerApiService.getSavedToken(), 'jwt-live');
 

@@ -214,7 +214,7 @@ void main() {
       await unmount(tester);
     });
 
-    testWidgets('the pin shows in the app at once even if the profile re-read cannot reach DailyMarket', (tester) async {
+    testWidgets('the pin shows in the app at once even if the profile re-read cannot reach Grozo', (tester) async {
       await launch(tester);
       await tapKey(tester, kLocationDetectKey);
       auth.unreachable = true;
@@ -512,7 +512,7 @@ void main() {
       expect(locationSaveFailureText(r), contains('cannot save a location yet'));
       r = await save((_) async => http.Response('oops', 500));
       expect(r.failure, ApiFailure.server);
-      expect(locationSaveFailureText(r), contains('DailyMarket had a problem'));
+      expect(locationSaveFailureText(r), contains('Grozo had a problem'));
       r = await save((_) async => throw http.ClientException('down'));
       expect(r.failure, ApiFailure.offline);
       expect(locationSaveFailureText(r), contains('No internet'));

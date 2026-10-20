@@ -51,7 +51,7 @@ void main() {
         for (var i = 0; i < n; i++) {'id': 'i$i', 'name': 'Paneer Butter Masala Special Thali $i', 'quantity': i + 1, 'price': 180.0},
       ];
 
-  /// A fake DailyMarket with one order in every state the kitchen sees, plus today's finished ones.
+  /// A fake Grozo with one order in every state the kitchen sees, plus today's finished ones.
   FakeBackend busyKitchen() {
     final now = DateTime.now();
     return FakeBackend()
@@ -120,7 +120,7 @@ void main() {
         backend.serverChange('ord-1', OrderStatus.cancelled, by: CancelledBy.admin, reason: 'Customer called support to cancel this order because of a mistake');
         await c.refresh();
         await tester.pump(const Duration(milliseconds: 500));
-        expect(find.text('DailyMarket cancelled this order.'), findsOneWidget);
+        expect(find.text('Grozo cancelled this order.'), findsOneWidget);
         c.dispose();
         await tester.pumpWidget(const SizedBox());
       });

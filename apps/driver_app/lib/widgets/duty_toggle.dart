@@ -7,7 +7,7 @@ class DutyToggle extends StatelessWidget {
   final bool isOnline;
   final ValueChanged<bool> onChanged;
 
-  /// Waiting for Kraveo to confirm "on duty": the switch stays OFF until the server says yes.
+  /// Waiting for Grozo to confirm "on duty": the switch stays OFF until the server says yes.
   final bool busy;
 
   /// Notifications are blocked: say so under the switch so a rider does not go on duty unaware.

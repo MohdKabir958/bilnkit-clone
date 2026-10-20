@@ -89,3 +89,8 @@ Tests:       1058 passed, 1058 total
 Snapshots:   0 total
 Time:        439.984 s
 ```
+
+
+## Grozo branding verification
+
+The Grozo rename/logo update passed all **3,221 tests** again: backend 42 suites/1,058 tests, admin 48 files/807 tests, customer 441, vendor 519 and rider 396. All three Flutter analyses were clean. Backend/admin/landing builds passed. Three Android debug APKs were rebuilt with the explicit debug-only Firebase bypass; APK metadata confirms `in.grozo.customer` / `.vendor` / `.driver`, correct role labels and packaged logo/adaptive-launcher/splash/notification resources. Browser checks confirmed loaded Grozo artwork and no horizontal overflow on desktop admin/landing and a 390px landing viewport. See `evidence/grozo-branding-results.txt` for artifact hashes and scope. Release signing and owned Firebase/device verification remain separate launch gates.

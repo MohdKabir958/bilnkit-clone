@@ -218,7 +218,7 @@ class OrderModel {
     this.group,
   });
 
-  /// How long the restaurant has to accept a paid order before Kraveo cancels and refunds it
+  /// How long the restaurant has to accept a paid order before Grozo cancels and refunds it
   /// (`VENDOR_ACCEPT_WINDOW_MIN`). The server enforces it; the app only shows the countdown.
   static const Duration acceptWindow = Duration(minutes: 10);
 
@@ -267,7 +267,7 @@ class OrderModel {
   bool get waitingForGroup => group != null && !group!.allAccepted && !status.isTerminal;
 
   /// Short code a cook can read out ("#05EFB9"): '#' + the last 6 characters of the server id, uppercased.
-  /// The same rule is used by every Kraveo app and the dashboard, so people can match orders by voice.
+  /// The same rule is used by every Grozo app and the dashboard, so people can match orders by voice.
   String get shortCode => '#${(id.length <= 6 ? id : id.substring(id.length - 6)).toUpperCase()}';
 
   String get studentName => customerFirstName ?? 'Customer';

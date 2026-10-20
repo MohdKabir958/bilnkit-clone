@@ -104,7 +104,7 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
     }
     final o = _c.byId(widget.orderId);
     if (o != null && o.isIncoming && !_askedAfterDeadline && !_c.now().isBefore(o.acceptDeadline)) {
-      // Time is up: Kraveo cancels within about a minute. Ask now so the screen follows quickly.
+      // Time is up: Grozo cancels within about a minute. Ask now so the screen follows quickly.
       _askedAfterDeadline = true;
       _c.refresh();
     }

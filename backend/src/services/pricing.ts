@@ -8,7 +8,7 @@
  * Dish customer price = roundUp(vendorPrice + commission, step)
  *   commission: PERCENT = vendorPrice x value / 100, FLAT = value rupees
  *   resolution: the dish's own override, else the restaurant's default, else the global default (most specific wins)
- *   rounding:   UP to a multiple of `step` rupees (0 = no rounding, only up to the next paisa). The difference goes to Kraveo, so
+ *   rounding:   UP to a multiple of `step` rupees (0 = no rounding, only up to the next paisa). The difference goes to Grozo, so
  *               the EFFECTIVE commission is price - vendorPrice.
  */
 
@@ -150,7 +150,7 @@ export type DishPrice = {
   price: number;
   /** What the rule alone asks for (before rounding), rupees. */
   nominalCommission: number;
-  /** price - vendorPrice, rupees: what Kraveo really keeps per unit, rounding included. */
+  /** price - vendorPrice, rupees: what Grozo really keeps per unit, rounding included. */
   effectiveCommission: number;
   step: number;
 };
@@ -200,7 +200,7 @@ export type FeeBreakdown = {
  *   base fee            baseFee, or 0 when `freeFeeAbove` > 0 and the food subtotal is at or above it
  *   small-order fee     smallOrderFee when `smallOrderBelow` > 0 and the food subtotal is below it
  *   extra restaurants   extraRestaurantFee x (restaurants - 1), always charged (phase 3 only ever passes restaurants > 1)
- * The food subtotal is the customer food total BEFORE any coupon (coupons are paid by Kraveo, they never change the fee).
+ * The food subtotal is the customer food total BEFORE any coupon (coupons are paid by Grozo, they never change the fee).
  */
 export const computeFees = (fees: FeesSettings, subtotal: number, restaurants = 1): { total: number; breakdown: FeeBreakdown } => {
   const subtotalPaise = toPaise(subtotal);

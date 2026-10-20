@@ -53,7 +53,7 @@ async function main() {
   }
 
   const text = [
-    '# Kraveo DEMO partner accounts (local only - never commit, never share)',
+    '# Grozo DEMO partner accounts (local only - never commit, never share)',
     '',
     `Vendor app  -> phone: 9000000101   password: ${vendorPassword}   (restaurant: ${vendor?.name ?? 'none linked'})`,
     `Driver app  -> phone: 9000000102   password: ${driverPassword}   (runner code: RUN-0102)`,

@@ -35,3 +35,11 @@ Approved vendor profile management is connected under Help → Store profile (`G
 A further stress run identified connection-pool starvation: checkout opened a transaction and then read settings on the global Prisma client. Transactional pricing now reads settings through its own transaction, without populating the shared cache. A real one-connection-pool child-process regression and 61 pricing/grocery/config tests passed. Runs interrupted by disk exhaustion or mid-implementation changes are diagnostic only; the final full run uses a fresh UTF-8 disposable database.
 
 Final local Phase 4 gate: **42 backend suites / 1058 tests passed**, admin 807, customer 441, vendor 519 and rider 396 passed. All three analyses, host bundles and Android debug APKs passed; backend/web builds, nonroot read-only container readiness, migration drift and populated restore passed. See evidence/phase4-results.txt. Next action is operator-owned staging/service/device validation, not another implementation phase.
+
+## Grozo brand update
+
+Applied the user's requested Grozo identity after the four-phase pilot implementation. Shared configuration now names the apps Grozo, Grozo Vendor and Grozo Delivery, with Android IDs `in.grozo.customer`, `in.grozo.vendor` and `in.grozo.driver` and forest/leaf-green brand colors.
+
+The supplied reference was prepared as a transparent Grozo wordmark with its leaves and underline. It is used in shared Flutter branding, the admin login/sidebar, landing/legal/help pages, web favicons/touch icons, all density-specific and adaptive Android launchers, and legacy/Android 12+ light/dark splash resources. Status notifications use a flat white leaf silhouette. Obsolete standalone logos were removed; original copyright notices, historical evidence/design screenshots, database/API fields, existing coupon identifiers and session keys remain compatible.
+
+Updated public backend messages, payment-provider metadata, role notifications, shared bill text and export filenames. Added `branding/README.md` and the repeatable `scripts/export_brand_assets.sh`; existing brand configuration generation now preserves the real logo and generates modern Android splash resources. External Firebase/Google registrations must match the new IDs. Verification for this change is recorded in `Docs/evidence/grozo-branding-results.txt`.

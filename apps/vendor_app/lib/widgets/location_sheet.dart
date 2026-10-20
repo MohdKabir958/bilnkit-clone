@@ -25,9 +25,9 @@ const Key kLocationOutsideKey = ValueKey('location-outside-campus');
 
 /// The one capture screen, shown as a bottom sheet: why we ask -> looking for GPS -> the result to check -> save.
 /// Used by the create-account form (pick only), the login / app-start prompt, the banner and the account sheet
-/// (save to Kraveo).
+/// (save to Grozo).
 ///
-/// Resolves to the fix the owner accepted (and, when [onSave] is given, that Kraveo saved), or null when the sheet was
+/// Resolves to the fix the owner accepted (and, when [onSave] is given, that Grozo saved), or null when the sheet was
 /// closed / skipped. Nothing is saved without the owner seeing the coordinates and accuracy first.
 Future<LocationFix?> showLocationDetectSheet(
   BuildContext context, {

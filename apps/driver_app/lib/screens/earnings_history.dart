@@ -10,7 +10,7 @@ enum _Period { day, week }
 
 /// Delivery fees from the rider's real delivered orders (`GET /orders?scope=history`).
 ///
-/// Kraveo has no payout API yet, so this screen never shows payouts, bonuses or tips: only the sum
+/// Grozo has no payout API yet, so this screen never shows payouts, bonuses or tips: only the sum
 /// of `deliveryFee` on orders this rider delivered, labelled as such.
 class EarningsHistoryScreen extends StatefulWidget {
   const EarningsHistoryScreen({super.key, required this.controller});

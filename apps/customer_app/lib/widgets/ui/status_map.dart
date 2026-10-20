@@ -1,7 +1,7 @@
 import 'package:kraveo_ui/kraveo_ui.dart';
 import '../../models/order.dart';
 
-/// Maps the server's order statuses onto the shared Kraveo status language.
+/// Maps the server's order statuses onto the shared Grozo status language.
 extension OrderStatusUi on OrderProgressStatus {
   KStatus get kStatus => switch (this) {
         OrderProgressStatus.placed => KStatus.placed,

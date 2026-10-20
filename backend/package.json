@@ -1,7 +1,7 @@
 {
   "name": "kraveo-backend",
   "version": "1.0.0",
-  "description": "Kraveo Campus Food Delivery API & Real-time Server",
+  "description": "Grozo multi-city grocery marketplace API and real-time server",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

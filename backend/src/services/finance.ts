@@ -17,7 +17,7 @@ import { fromPaise, hasAtMostTwoDecimals } from './pricing';
  *    Rider deliveries are counted per delivery (one per combined order); everything else is per restaurant order.
  *  - foodGross = sum of Order.subtotal (customer food), vendorAmount = sum of vendorSubtotal, commission = sum of commissionTotal,
  *    feesCollected = deliveryFee + taxAndPackaging (the all-in fee; old orders keep their separate tax column), discounts = coupons
- *    (paid by Kraveo), platformRevenue = commission + feesCollected - discounts.
+ *    (paid by Grozo), platformRevenue = commission + feesCollected - discounts.
  *  - settledAmount = vendorAmount of revenue orders that belong to a settlement; unsettledAmount = those that do not;
  *    paidOutAmount = the part of settledAmount whose settlement is PAID.
  */
@@ -175,7 +175,7 @@ export const financeRiders = async (r: IstRange, limit: number) => {
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
-// Rider payout ledger (records only: Kraveo does not pay riders through the app)
+// Rider payout ledger (records only: Grozo does not pay riders through the app)
 // ---------------------------------------------------------------------------------------------------------------------
 export const RIDER_PAYOUT_METHODS = ['UPI', 'BANK', 'CASH'] as const;
 export const MAX_RIDER_PAYOUT = 100_000;

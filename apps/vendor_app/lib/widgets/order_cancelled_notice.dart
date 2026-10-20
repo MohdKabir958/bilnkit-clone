@@ -4,7 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../models/order_model.dart';
 import 'ui/ui.dart';
 
-/// "Order #ABC123 was cancelled by Kraveo. Stop cooking." The kitchen was already working on this order; the cook must
+/// "Order #ABC123 was cancelled by Grozo. Stop cooking." The kitchen was already working on this order; the cook must
 /// not miss that it will not be collected. One big button; shown until the cook taps it.
 Future<void> showKitchenOrderCancelledNotice(BuildContext context, OrderModel order) {
   return showKSheet<void>(

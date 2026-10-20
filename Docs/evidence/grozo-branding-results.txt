@@ -1,0 +1,44 @@
+Grozo branding verification
+
+Scope: customer, vendor, rider, admin, landing/help/legal pages, public backend copy and exports.
+Names: Grozo / Grozo Vendor / Grozo Delivery.
+Shared brand configuration: current (python3 scripts/configure_brand.py --check).
+Brand asset export shell syntax and Python generator compilation: passed.
+Backend TypeScript build: passed.
+Admin TypeScript/Vite build: passed.
+Landing multipage Vite build: passed.
+Admin: 48 test files / 807 tests passed.
+Flutter analysis: no issues in all three apps.
+Flutter tests: customer 441 / vendor 519 / driver 396 passed.
+Backend regression suite: 42 suites / 1,058 tests passed (647.831 seconds); isolated market_release_test database.
+Total automated tests: 3,221 passed.
+Browser checks: landing desktop 1280x900 and phone 390x844; admin login 1440x1000. All logo images loaded, correct Grozo titles/alt text, no horizontal overflow.
+Normal local API: /health identifies Grozo Delivery API.
+Runtime name scan: no DailyMarket/in.dailymarket or standalone Kraveo display labels in active application source.
+Compatibility: original licenses, historical evidence/design screenshots, internal package/API/database/session identifiers and existing coupon IDs retained.
+
+Android debug APKs: all built successfully with explicit development-only Firebase bypass; no release signing or device acceptance claimed.
+
+apps/customer_app/build/app/outputs/flutter-apk/app-debug.apk
+package: name='in.grozo.customer' versionCode='15' versionName='1.9.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+application-label:'Grozo'
+application: label='Grozo' icon='res/mipmap-anydpi-v26/ic_launcher.xml'
+sha256: a5116dc71e933a991ec90937ef205b75a8b2cc1b3425a87513fa00e4ec3ae84a
+Resource checks: logo, splash, notification leaf, adaptive launcher and Android 12 night resources present.
+
+apps/vendor_app/build/app/outputs/flutter-apk/app-debug.apk
+package: name='in.grozo.vendor' versionCode='15' versionName='1.9.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+application-label:'Grozo Vendor'
+application: label='Grozo Vendor' icon='res/mipmap-anydpi-v26/ic_launcher.xml'
+sha256: 31a91348315991bd422fcba0ab3442b8fef674c03ba2e59ed2b60d62b40075d5
+Resource checks: logo, splash, notification leaf, adaptive launcher and Android 12 night resources present.
+
+apps/driver_app/build/app/outputs/flutter-apk/app-debug.apk
+package: name='in.grozo.driver' versionCode='14' versionName='1.8.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+application-label:'Grozo Delivery'
+application: label='Grozo Delivery' icon='res/mipmap-anydpi-v26/ic_launcher.xml'
+sha256: ebba5766fdcc1291c4c516cccf7a674ef3aeeebfad6d2f5bc279b946dcab182d
+Resource checks: logo, splash, notification leaf, adaptive launcher and Android 12 night resources present.
+
+External Firebase/Google registrations must use in.grozo.customer / in.grozo.vendor / in.grozo.driver. Previous application IDs are separate installs.
+No production deployment, store publication, live payment or real-device FCM/GPS verification performed by this branding change.

@@ -273,7 +273,7 @@ export const applyRefundEvent = async (
   if (!e.paymentId) return 'IGNORED';
   const payment = await prisma.payment.findFirst({ where: { razorpayPaymentId: e.paymentId }, include: { order: true } });
   if (!payment) {
-    await writeAudit('REFUND_EVENT_UNKNOWN', 'PAYMENT', e.paymentId.slice(0, 64), `${event}: refund ${e.refundId ?? '?'} does not match any Kraveo payment`);
+    await writeAudit('REFUND_EVENT_UNKNOWN', 'PAYMENT', e.paymentId.slice(0, 64), `${event}: refund ${e.refundId ?? '?'} does not match any Grozo payment`);
     return 'UNKNOWN_PAYMENT';
   }
   const order = payment.order;

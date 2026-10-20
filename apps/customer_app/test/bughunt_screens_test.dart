@@ -545,7 +545,7 @@ void main() {
         final payRect = tester.getRect(_button('Pay ₹145'));
         expect(payRect.bottom, lessThanOrEqualTo(640 - 280 + 0.5), reason: 'the button is not hidden under the keyboard');
         expect(find.textContaining('Placing your order'), findsNothing, reason: 'the caption is dropped while typing');
-        expect(find.textContaining('Next: DailyMarket confirms'), findsNothing);
+        expect(find.textContaining('Next: Grozo confirms'), findsNothing);
         // The error moved from the footer into the list: still readable, and only once.
         expect(find.textContaining('closed for new orders'), findsWidgets);
         expect(tester.getRect(find.textContaining('closed for new orders').first).bottom, lessThanOrEqualTo(payRect.top));
@@ -604,7 +604,7 @@ void main() {
       expect(find.textContaining('· BH3'), findsOneWidget, reason: '"Block 3" is shown as BH3');
       expect(find.textContaining('Block 3'), findsNothing);
       expect(find.text('₹1,234.50'), findsOneWidget);
-      expect(find.textContaining('earn DailyMarket Coins'), findsNothing);
+      expect(find.textContaining('earn Grozo Coins'), findsNothing);
     });
 
     testWidgets('Reorder finds the kitchen even when Home has a search / filter active, and opens the cart', (tester) async {
@@ -872,7 +872,7 @@ void main() {
       await _pump(tester, Scaffold(body: Builder(builder: (context) => Center(child: ElevatedButton(onPressed: () => ReviewModal.show(context, order: order), child: const Text('open'))))));
       await tester.tap(find.text('open'));
       await _settle(tester);
-      expect(find.textContaining('Earn DailyMarket Coins'), findsNothing);
+      expect(find.textContaining('Earn Grozo Coins'), findsNothing);
       TextField field(String hintStart) => tester.widgetList<TextField>(find.byType(TextField)).firstWhere((w) => (w.decoration?.hintText ?? '').startsWith(hintStart));
       expect(field('Private note').maxLength, kReviewNoteMaxLength);
       await tester.drag(find.byType(ListView).last, const Offset(0, -900));

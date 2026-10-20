@@ -1,4 +1,4 @@
-/// Where this restaurant stands with Kraveo. New accounts are [pending] until an admin decides.
+/// Where this restaurant stands with Grozo. New accounts are [pending] until an admin decides.
 enum PartnerApproval {
   pending,
   approved,
@@ -66,7 +66,7 @@ class PartnerSession {
   final String? address;
   final String? fssaiNumber;
 
-  /// Does Kraveo have a real pin for this restaurant (riders navigate to it)? `null` = the server did not say
+  /// Does Grozo have a real pin for this restaurant (riders navigate to it)? `null` = the server did not say
   /// (an older server that cannot store a location): the app then never nags, because it could not save one anyway.
   /// `false` = the server says there is no real pin yet, which is what makes the app ask for it.
   final bool? hasLocation;

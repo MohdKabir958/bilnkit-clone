@@ -1,4 +1,4 @@
-/// The rider's view of a Kraveo order (contract `Docs/16_order_flow_contract.md`, section 2.1).
+/// The rider's view of a Grozo order (contract `Docs/16_order_flow_contract.md`, section 2.1).
 ///
 /// The server is the only source of truth: this class never invents an id, a price or a status.
 /// It deliberately has **no OTP field**: the gate code belongs to the customer, and even if a
@@ -410,7 +410,7 @@ class OrderView {
   }
 
   /// Short, human friendly reference ("#A1B2C3") built from the real id; never a made-up number.
-  /// Same rule in every Kraveo app: '#' + the last 6 characters of the id, upper case.
+  /// Same rule in every Grozo app: '#' + the last 6 characters of the id, upper case.
   String get shortRef {
     final tail = id.length <= 6 ? id : id.substring(id.length - 6);
     return '#${tail.toUpperCase()}';

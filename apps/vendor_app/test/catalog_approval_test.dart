@@ -20,7 +20,7 @@ import 'support/catalog_fakes.dart';
 import 'support/fakes.dart';
 
 /// Phase 1 of Docs/21: the restaurant sees only ITS price and each dish's approval status; new dishes and price changes
-/// go to DailyMarket for approval; orders show only what the restaurant earns. Also: an OLD server keeps working.
+/// go to Grozo for approval; orders show only what the restaurant earns. Also: an OLD server keeps working.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -431,7 +431,7 @@ void main() {
       final menu = MenuStockController(backend: CatalogBackend([dish('b', 'Pending Dal', DishStatus.pending)]), vendorId: 'ven-42');
       await tester.pumpWidget(host(StockManagerScreen(controller: menu)));
       await pumpScreen(tester);
-      expect(find.textContaining('Customers will see your menu once DailyMarket approves a dish'), findsOneWidget);
+      expect(find.textContaining('Customers will see your menu once Grozo approves a dish'), findsOneWidget);
       menu.dispose();
       await tester.pumpWidget(const SizedBox());
     });
@@ -442,12 +442,12 @@ void main() {
       await tester.pumpWidget(host(StockManagerScreen(controller: menu)));
       await pumpScreen(tester);
       expect(find.text('Your menu is empty'), findsOneWidget);
-      expect(find.textContaining('DailyMarket checks every new dish'), findsOneWidget);
+      expect(find.textContaining('Grozo checks every new dish'), findsOneWidget);
       menu.dispose();
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('adding a dish shows "Sent to DailyMarket for approval" and the dish appears as Pending approval', (tester) async {
+    testWidgets('adding a dish shows "Sent to Grozo for approval" and the dish appears as Pending approval', (tester) async {
       phone(tester, size: const Size(400, 1400), scale: 1.0);
       final backend = CatalogBackend([dish('a', 'Live Thali', DishStatus.live)]);
       final menu = MenuStockController(backend: backend, vendorId: 'ven-42');
@@ -466,7 +466,7 @@ void main() {
       await tester.tap(find.text('Add to menu'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(find.textContaining('Sent to DailyMarket for approval'), findsOneWidget);
+      expect(find.textContaining('Sent to Grozo for approval'), findsOneWidget);
       expect(backend.calls, contains('dish:add:ven-42:Masala Dosa:70.0'));
       expect(find.text('Pending approval'), findsOneWidget);
       menu.dispose();
@@ -525,9 +525,9 @@ void main() {
     phone(tester, size: const Size(360, 640));
     Widget card(bool waiting) => host(SingleChildScrollView(child: FirstRunCard(hasDishes: waiting, isOpen: true, onAddDish: () {}, onOpenStore: () {}, waitingApproval: waiting)));
     await tester.pumpWidget(card(false));
-    expect(find.textContaining('DailyMarket approves each new dish first', findRichText: true), findsOneWidget);
+    expect(find.textContaining('Grozo approves each new dish first', findRichText: true), findsOneWidget);
     await tester.pumpWidget(card(true));
-    expect(find.textContaining('Waiting for DailyMarket to approve your dish', findRichText: true), findsOneWidget);
+    expect(find.textContaining('Waiting for Grozo to approve your dish', findRichText: true), findsOneWidget);
   });
 
   // ------------------------------------------------------------------------------------------------ orders
@@ -608,7 +608,7 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
       expect(find.text('₹250'), findsOneWidget);
       expect(find.textContaining('What you earned'), findsOneWidget);
-      expect(find.textContaining('before DailyMarket fees'), findsNothing);
+      expect(find.textContaining('before Grozo fees'), findsNothing);
       await tester.pumpWidget(const SizedBox());
     });
   });

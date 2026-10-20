@@ -381,7 +381,7 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
             subtotal: priced.calculatedSubtotal,
             deliveryFee: priced.calculatedDeliveryFee,
             taxAndPackaging: priced.calculatedTaxAndPackaging,
-            // Docs/21: what the restaurant earns and what Kraveo keeps, from the dish snapshots; the fee parts for the records.
+            // Docs/21: what the restaurant earns and what Grozo keeps, from the dish snapshots; the fee parts for the records.
             vendorSubtotal: priced.calculatedVendorSubtotal,
             commissionTotal: priced.calculatedCommissionTotal,
             feeBreakdown: (priced.feeBreakdown ?? undefined) as Prisma.InputJsonValue | undefined,
@@ -431,7 +431,7 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
 // Payments
 // ----------------------------------------------------------------------------
 
-/** Razorpay checkout params for the owner's unpaid order. One Razorpay order per Kraveo order (reused on retry). */
+/** Razorpay checkout params for the owner's unpaid order. One Razorpay order per Grozo order (reused on retry). */
 export const createPaymentForOrder = async (orderId: string, actor: Actor) => {
   await preAuthorize(orderId, (o) => actor.role === 'STUDENT' && o.customerId === actor.id);
   return withOrderLock(orderId, async (tx, order, group) => {
@@ -489,7 +489,7 @@ export const markOrderPaid = async (input: {
       ? await prisma.payment.findFirst({ where: { orderId: orderIdHint }, orderBy: { createdAt: 'desc' } })
       : null;
   if (!payment) {
-    await writeAudit('PAYMENT_UNKNOWN', 'PAYMENT', String(razorpayOrderId || orderIdHint || 'none').slice(0, 64), `${source}: captured payment ${razorpayPaymentId ?? '?'} does not match any Kraveo payment`);
+    await writeAudit('PAYMENT_UNKNOWN', 'PAYMENT', String(razorpayOrderId || orderIdHint || 'none').slice(0, 64), `${source}: captured payment ${razorpayPaymentId ?? '?'} does not match any Grozo payment`);
     return { outcome: 'UNKNOWN_PAYMENT', order: null };
   }
   if (orderIdHint && payment.orderId !== orderIdHint) {
@@ -695,13 +695,13 @@ export const cancelInTx = async (
     if (actor.role !== 'STUDENT' || order.customerId !== actor.id) throw notFound();
     if (alreadyCancelled) return { order, before: order, changed: false };
     if (!repair && (order.status !== 'PLACED' || (group && group.some((c) => c.status !== 'PLACED' && c.status !== 'CANCELLED')))) {
-      throw new OrderFlowError(409, 'CANNOT_CANCEL', 'The restaurant has already accepted this order, so it can no longer be cancelled in the app. Please contact Kraveo support.');
+      throw new OrderFlowError(409, 'CANNOT_CANCEL', 'The restaurant has already accepted this order, so it can no longer be cancelled in the app. Please contact Grozo support.');
     }
   } else if (by === 'VENDOR') {
     if (order.vendor.userId !== actor.id || !isVendorVisible(order)) throw notFound();
     if (alreadyCancelled) return { order, before: order, changed: false };
     if (!repair) {
-      if (order.status !== 'PLACED') throw new OrderFlowError(409, 'CANNOT_REJECT', 'An accepted order cannot be rejected. Ask Kraveo support to cancel it.');
+      if (order.status !== 'PLACED') throw new OrderFlowError(409, 'CANNOT_REJECT', 'An accepted order cannot be rejected. Ask Grozo support to cancel it.');
       if (order.paymentStatus !== 'PAID') throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid yet.');
     }
   } else if (by === 'ADMIN') {
@@ -902,7 +902,7 @@ export const releaseOrder = async (orderId: string, riderUserId: string) => {
     if (order.driverId !== riderUserId) throw notFound();
     // Docs/22: a combined order is released as a whole, and only while NO child has been picked up.
     if (!(group ?? [order]).every((c) => (POOL_STATUSES as readonly string[]).includes(c.status))) {
-      throw new OrderFlowError(409, 'CANNOT_RELEASE', 'You can only give an order back before pickup. Contact Kraveo support.');
+      throw new OrderFlowError(409, 'CANNOT_RELEASE', 'You can only give an order back before pickup. Contact Grozo support.');
     }
     if (group) {
       await tx.order.updateMany({ where: { groupId: order.groupId! }, data: { pickupArrivalAt:null, driverId: null } });
@@ -1018,7 +1018,7 @@ export const verifyGateOtp = async (orderId: string, actor: Actor, rawOtp: unkno
       throw new OrderFlowError(409, 'ALREADY_DELIVERED', 'This order has already been delivered.');
     }
     if(order.otpExpiresAt && order.otpExpiresAt<=new Date()) throw new OrderFlowError(410,'OTP_EXPIRED','This delivery code expired. Ask operations to issue a new code.');
-    if (order.otpLocked) throw new OrderFlowError(423, 'OTP_LOCKED', 'Too many wrong codes. Kraveo support has to unlock this delivery.');
+    if (order.otpLocked) throw new OrderFlowError(423, 'OTP_LOCKED', 'Too many wrong codes. Grozo support has to unlock this delivery.');
     if (order.status !== 'ARRIVED_AT_GATE' || (group && !group.every((c) => c.status === 'ARRIVED_AT_GATE'))) {
       throw new OrderFlowError(409, 'NOT_AT_GATE', 'Gate OTP can only be verified after the runner arrives at the gate.');
     }
@@ -1055,7 +1055,7 @@ export const verifyGateOtp = async (orderId: string, actor: Actor, rawOtp: unkno
     if (result.locked) {
       await writeAudit('OTP_LOCKED', 'ORDER', orderId, `Gate OTP locked after ${result.attempts} wrong attempts (last by ${actor.role} ${actor.id}).${result.group ? ` Combined order of ${result.group.after.length} restaurants.` : ''}`);
       await finishChange(result); // admins see otpLocked at once
-      throw new OrderFlowError(423, 'OTP_LOCKED', 'Too many wrong codes. Kraveo support has to unlock this delivery.');
+      throw new OrderFlowError(423, 'OTP_LOCKED', 'Too many wrong codes. Grozo support has to unlock this delivery.');
     }
     throw new OrderFlowError(400, 'OTP_INVALID', 'Invalid or expired 4-digit Gate Handshake OTP code.', {
       error: 'Invalid Gate OTP',

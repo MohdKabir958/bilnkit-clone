@@ -1,5 +1,5 @@
 name: kraveo_gallery
-description: Visual gallery of the Kraveo design system.
+description: Visual gallery of the Grozo design system.
 publish_to: none
 environment:
   sdk: ^3.5.0

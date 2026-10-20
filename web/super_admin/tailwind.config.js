@@ -1,6 +1,6 @@
 import brand from '../../branding/brand.json' with { type: 'json' };
 /** @type {import('tailwindcss').Config} */
-// Kraveo design tokens. Hex values mirror packages/kraveo_ui (KraveoPalette / KStatus / KraveoTokens.driver).
+// Grozo design tokens. Hex values mirror packages/kraveo_ui (KraveoPalette / KStatus / KraveoTokens.driver).
 // Keep in sync with src/lib/tokens.ts (used where a raw hex is required, e.g. Recharts).
 export default {
   content: [
@@ -48,7 +48,7 @@ export default {
           warning: '#F59E0B',
           danger: '#E5484D',
           info: '#3B82F6',
-          // One status language across every Kraveo surface
+          // One status language across every Grozo surface
           status: {
             placed: '#F5A524',
             accepted: '#14B8A6',

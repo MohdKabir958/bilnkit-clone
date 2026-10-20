@@ -297,12 +297,12 @@ void main() {
       expect(a.accuracy, LocationAccuracy.high);
       expect(a.timeLimit, isNull, reason: 'a time limit would end the stream');
       final n = a.foregroundNotificationConfig!;
-      expect(n.notificationTitle, 'DailyMarket - you are on duty');
-      expect(n.notificationText, 'Sharing your location with DailyMarket');
+      expect(n.notificationTitle, 'Grozo - you are on duty');
+      expect(n.notificationText, 'Sharing your location with Grozo');
       expect(n.setOngoing, isTrue);
       expect(n.enableWakeLock, isFalse);
       expect(n.enableWifiLock, isFalse);
-      expect(n.notificationIcon.name, 'ic_stat_kraveo');
+      expect(n.notificationIcon.name, 'ic_stat_grozo');
     });
 
     test('other platforms: no foreground service, the app polls instead', () {

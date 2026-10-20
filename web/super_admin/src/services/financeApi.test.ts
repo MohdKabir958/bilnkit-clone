@@ -128,12 +128,12 @@ describe('settlement calls', () => {
 
   it('CSV downloads send the auth header and return the blob and the server file name', async () => {
     setAuthToken('tokentokentoken');
-    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => new Response('a,b\r\n1,2\r\n', { status: 200, headers: { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="kraveo-settlement-s1111111.csv"' } }));
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => new Response('a,b\r\n1,2\r\n', { status: 200, headers: { 'Content-Type': 'text/csv', 'Content-Disposition': 'attachment; filename="grozo-settlement-s1111111.csv"' } }));
     vi.stubGlobal('fetch', fetchMock);
     const one = await apiService.downloadSettlementCsv('s1');
     expect(String(fetchMock.mock.calls[0][0])).toContain('/api/admin/settlements/s1/export.csv');
     expect(((fetchMock.mock.calls[0][1] as RequestInit).headers as Record<string, string>).Authorization).toBe('Bearer tokentokentoken');
-    expect(one.filename).toBe('kraveo-settlement-s1111111.csv');
+    expect(one.filename).toBe('grozo-settlement-s1111111.csv');
     // jsdom's Blob has no text(); use the browser FileReader API and still assert the exact bytes.
     const csv = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();

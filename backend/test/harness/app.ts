@@ -52,7 +52,7 @@ export const createTestApp = (): { app: Express; server: http.Server; io: Socket
   app.get('/health', (req, res) => {
     res.json({
       status: 'online',
-      service: 'Kraveo Campus Delivery Backend Engine (Test Harness)',
+      service: 'Grozo Campus Delivery Backend Engine (Test Harness)',
       timestamp: new Date().toISOString(),
     });
   });

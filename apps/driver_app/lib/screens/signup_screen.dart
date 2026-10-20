@@ -29,7 +29,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _phoneFocus = FocusNode();
   final _passwordFocus = FocusNode();
 
-  /// New account: starts on Bike. Editing an application whose vehicle Kraveo did not tell us: nothing is
+  /// New account: starts on Bike. Editing an application whose vehicle Grozo did not tell us: nothing is
   /// pre-selected (and nothing is sent) until the rider picks one, so a Cycle rider is never silently turned into a Bike.
   late String? _vehicle = kVehicleTypes.contains(widget.existing?.vehicleType) ? widget.existing!.vehicleType! : (widget.existing == null ? 'Bike' : null);
   bool get _needsPlate => _vehicle != null && vehicleNeedsPlate(_vehicle!);
@@ -146,7 +146,7 @@ class _SignupScreenState extends State<SignupScreen> {
     });
   }
 
-  /// The fields the rider really changed (editing only). Everything else stays as Kraveo has it: the app may not
+  /// The fields the rider really changed (editing only). Everything else stays as Grozo has it: the app may not
   /// even know the stored value (older server), and an empty value must never wipe it.
   Set<String> _editedFields(String plate) {
     final old = widget.existing!;

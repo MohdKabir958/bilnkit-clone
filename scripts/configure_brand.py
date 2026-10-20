@@ -41,16 +41,29 @@ for role, key in [('customer', 'customerName'), ('vendor', 'vendorName'), ('driv
         f'<resources><string name="app_name">{escape(brand[key])}</string></resources>\n')
     generated[f'apps/{role}_app/android/app/src/main/res/drawable/market_launcher.xml'] = (
         '<?xml version="1.0" encoding="utf-8"?>\n'
-        '<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="96dp" android:height="96dp" android:viewportWidth="24" android:viewportHeight="24">\n'
-        f'  <path android:fillColor="{brand["primary"]}" android:pathData="M0,0h24v24h-24z"/>\n'
-        f'  <path android:fillColor="{brand["accent"]}" android:pathData="M5,8h14l1,13h-16zM8,8v-2a4,4 0,0 1,8 0v2h-2v-2a2,2 0,0 0,-4 0v2z"/>\n'
-        '</vector>\n')
-    generated[f'apps/{role}_app/android/app/src/main/res/drawable/launch_background.xml'] = (
+        '<layer-list xmlns:android="http://schemas.android.com/apk/res/android">'
+        '<item android:drawable="@mipmap/ic_launcher"/></layer-list>\n')
+    splash = (
         '<?xml version="1.0" encoding="utf-8"?>\n'
         '<layer-list xmlns:android="http://schemas.android.com/apk/res/android">\n'
         '  <item android:drawable="@android:color/white"/>\n'
-        '  <item android:gravity="center" android:width="96dp" android:height="96dp" android:drawable="@drawable/market_launcher"/>\n'
+        '  <item android:gravity="center" android:width="240dp" android:height="144dp" android:drawable="@drawable/brand_logo"/>\n'
         '</layer-list>\n')
+    for qualifier in ('drawable', 'drawable-v21'):
+        generated[f'apps/{role}_app/android/app/src/main/res/{qualifier}/launch_background.xml'] = splash
+    modern_splash = (
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        '<resources>\n  <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">\n'
+        '    <item name="android:windowSplashScreenBackground">@android:color/white</item>\n'
+        '    <item name="android:windowSplashScreenAnimatedIcon">@drawable/brand_splash_icon</item>\n'
+        '    <item name="android:windowBackground">@drawable/launch_background</item>\n'
+        '  </style>\n</resources>\n')
+    for qualifier in ('values-v31', 'values-night-v31'):
+        generated[f'apps/{role}_app/android/app/src/main/res/{qualifier}/styles.xml'] = modern_splash
+    color_name = 'kraveo_notification_color' if role == 'customer' else 'kraveo_notification_accent'
+    generated[f'apps/{role}_app/android/app/src/main/res/values/colors.xml'] = (
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        f'<resources><color name="{color_name}">{brand["primary"]}</color></resources>\n')
 stale = []
 for name, contents in generated.items():
     dest = root / name

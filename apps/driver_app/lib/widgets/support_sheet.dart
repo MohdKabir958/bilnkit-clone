@@ -13,7 +13,7 @@ NavigationLauncher contactLauncher = const UrlNavigationLauncher();
 /// `tel:` link for [number] (digits, spaces and a leading + are kept; anything else is dropped).
 Uri telUri(String number) => Uri(scheme: 'tel', path: number.replaceAll(RegExp(r'[^0-9+]'), ''));
 
-/// `mailto:` link to Kraveo support. The subject is encoded by hand because `Uri(queryParameters:)`
+/// `mailto:` link to Grozo support. The subject is encoded by hand because `Uri(queryParameters:)`
 /// writes spaces as `+`, which mail apps show literally.
 Uri supportMailUri({String subject = '${BrandConfig.name} rider support'}) =>
     Uri.parse('mailto:${SupportConfig.email}?subject=${Uri.encodeComponent(subject)}');
@@ -29,7 +29,7 @@ Future<void> callNumber(BuildContext context, {required String number}) async {
     ..showSnackBar(SnackBar(content: Text('Could not open the phone app. Number copied: $number'), duration: const Duration(seconds: 4)));
 }
 
-/// Opens a new email to Kraveo support. When no email app can open, the address is copied.
+/// Opens a new email to Grozo support. When no email app can open, the address is copied.
 Future<void> emailSupport(BuildContext context, {String subject = '${BrandConfig.name} rider support'}) async {
   if(SupportConfig.email.isEmpty){await Navigator.push(context,MaterialPageRoute(builder:(_)=>const SupportCenter(call:SupportApi.call)));return;}
   final messenger = ScaffoldMessenger.maybeOf(context);
@@ -41,8 +41,8 @@ Future<void> emailSupport(BuildContext context, {String subject = '${BrandConfig
     ..showSnackBar(const SnackBar(content: Text('No email app found. Address copied: ${SupportConfig.email}'), duration: Duration(seconds: 4)));
 }
 
-/// "Email Kraveo support" sheet, with a separate, clearly labelled "Emergency: call 112" action for a
-/// real emergency (Kraveo support is email only and is not an emergency service).
+/// "Email Grozo support" sheet, with a separate, clearly labelled "Emergency: call 112" action for a
+/// real emergency (Grozo support is email only and is not an emergency service).
 Future<void> showSupportSheet(BuildContext context, {String? note, String? subject, String? orderId}) {
   return showKSheet<void>(
     context,

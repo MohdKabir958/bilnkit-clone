@@ -1,5 +1,5 @@
 name: driver_app
-description: "Kraveo Delivery Partner Mobile App for Delivery Drivers"
+description: "Grozo delivery partner app"
 publish_to: 'none'
 version: 1.8.0+14
 
@@ -37,4 +37,4 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: ../../delivery-logo-bgremove.png
+  image_path: ../../branding/assets/grozo-icon.png

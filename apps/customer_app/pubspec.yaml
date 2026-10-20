@@ -1,5 +1,5 @@
 name: customer_app
-description: "Kraveo Customer Food Ordering Mobile App for VIT Bhopal Students"
+description: "Grozo customer grocery shopping app"
 publish_to: 'none'
 version: 1.9.0+15
 
@@ -39,4 +39,4 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: ../../logo-customer-app.png
+  image_path: ../../branding/assets/grozo-icon.png

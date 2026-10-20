@@ -36,7 +36,7 @@ class PayoutAccount {
   final String? ifsc;
   final String? bankName;
 
-  /// Set by Kraveo when it has checked the details. Saving different details clears it on the server.
+  /// Set by Grozo when it has checked the details. Saving different details clears it on the server.
   final DateTime? verifiedAt;
   final DateTime? updatedAt;
 

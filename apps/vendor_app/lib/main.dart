@@ -37,7 +37,7 @@ void main() {
 
 class KraveoVendorApp extends StatefulWidget {
   /// [auth] is the network layer for login / session checks; [backend], [socketFactory] and [alarm] drive the
-  /// order screens. Tests pass fakes; the app uses the real Kraveo API, Socket.io and the loud alarm.
+  /// order screens. Tests pass fakes; the app uses the real Grozo API, Socket.io and the loud alarm.
   const KraveoVendorApp({super.key, this.auth, this.backend, this.socketFactory, this.alarm, this.push, this.locationServices, this.locationApi, this.payoutApi});
 
   /// The phone's GPS + the maps link opener for "Detect my location" (tests pass fakes; null = the real ones).
@@ -94,7 +94,7 @@ class _KraveoVendorAppState extends State<KraveoVendorApp> {
   }
 }
 
-/// Decides between splash, login, the "can't reach Kraveo" retry state and the app, and wires
+/// Decides between splash, login, the "can't reach Grozo" retry state and the app, and wires
 /// session expiry (HTTP 401 on any authenticated call) and sign-out to the rest of the app.
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key, required this.session, this.push, this.backend, this.payoutApi, this.socketFactory, this.alarm});
@@ -199,7 +199,7 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
   }
 
   /// An admin suspended this account while the app was open (the server answered 403 PARTNER_NOT_APPROVED), or
-  /// the app has just come back to the foreground: ask Kraveo, and the gate swaps in the status screen if needed.
+  /// the app has just come back to the foreground: ask Grozo, and the gate swaps in the status screen if needed.
   void _handleNotApproved() {
     if (!mounted || _session.status != SessionStatus.signedIn) return;
     Navigator.of(context).popUntil((route) => route.isFirst);
@@ -297,7 +297,7 @@ class _SplashScreen extends StatelessWidget {
   }
 }
 
-/// A saved login exists but Kraveo cannot be reached. The token is kept, so a dropped network
+/// A saved login exists but Grozo cannot be reached. The token is kept, so a dropped network
 /// never logs the kitchen out.
 class _SessionUnreachable extends StatefulWidget {
   const _SessionUnreachable({required this.onRetry});

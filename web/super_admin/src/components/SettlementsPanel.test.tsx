@@ -138,13 +138,13 @@ describe('Create settlements now', () => {
 
 describe('CSV export of the list', () => {
   it('downloads with the auth-carrying fetch and saves the blob', async () => {
-    const dl = vi.spyOn(apiService, 'downloadSettlementsCsv').mockResolvedValue({ blob: new Blob(['x']), filename: 'kraveo-settlements-2026-10-01_2026-10-07.csv' });
+    const dl = vi.spyOn(apiService, 'downloadSettlementsCsv').mockResolvedValue({ blob: new Blob(['x']), filename: 'grozo-settlements-2026-10-01_2026-10-07.csv' });
     const { host } = await render();
     expect(host.textContent).toContain('Export CSV (last 31 days)');
     await click(btn(/Export CSV/, host));
     await flush();
     expect(dl).toHaveBeenCalledWith(null);
-    expect(saveBlob).toHaveBeenCalledWith(expect.any(Blob), 'kraveo-settlements-2026-10-01_2026-10-07.csv');
+    expect(saveBlob).toHaveBeenCalledWith(expect.any(Blob), 'grozo-settlements-2026-10-01_2026-10-07.csv');
     await click(btn('30 days', host));
     await flush();
     expect(host.textContent).toMatch(/Export CSV \(.* to .*\)/);
@@ -397,13 +397,13 @@ describe('cancel and CSV of one settlement', () => {
   });
 
   it('Download CSV saves the file the server named', async () => {
-    const dl = vi.spyOn(apiService, 'downloadSettlementCsv').mockResolvedValue({ blob: new Blob(['a']), filename: 'kraveo-settlement-s1111111.csv' });
+    const dl = vi.spyOn(apiService, 'downloadSettlementCsv').mockResolvedValue({ blob: new Blob(['a']), filename: 'grozo-settlement-s1111111.csv' });
     await render();
     await openFirst();
     await click(btn('Download CSV', drawer()));
     await flush();
     expect(dl).toHaveBeenCalledWith('s1111111-aaaa');
-    expect(saveBlob).toHaveBeenCalledWith(expect.any(Blob), 'kraveo-settlement-s1111111.csv');
+    expect(saveBlob).toHaveBeenCalledWith(expect.any(Blob), 'grozo-settlement-s1111111.csv');
   });
 });
 

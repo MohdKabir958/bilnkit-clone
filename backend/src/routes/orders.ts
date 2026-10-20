@@ -358,7 +358,7 @@ orderRouter.patch('/orders/:id/status', requireAuth, requireApprovedPartner, val
       }
       if (role === 'ADMIN') {
         const reason = optionalReason(req.body?.reason);
-        const r = await cancelOrder(req.params.id, actorOf(req), 'ADMIN', (typeof reason === 'string' && reason) || 'Cancelled by Kraveo support');
+        const r = await cancelOrder(req.params.id, actorOf(req), 'ADMIN', (typeof reason === 'string' && reason) || 'Cancelled by Grozo support');
         return res.json({ success: true, data: viewFor(req, r!.order) });
       }
       return res.status(403).json({ success: false, code: 'ROLE_NOT_ALLOWED', message: role === 'VENDOR' ? 'Use Reject (with a reason) to decline a new order.' : 'Riders cannot cancel orders. Release it or contact support.' });
@@ -526,7 +526,7 @@ type Problem = (typeof PROBLEM_ORDER)[number];
 
 const PROBLEM_HINTS: Record<Problem, string> = {
   PAYMENT_MISMATCH: 'Razorpay captured a different amount than the order total; it was not marked paid. Refund it in the Razorpay dashboard and cancel the order.',
-  DUPLICATE_PAYMENT: 'A second payment was captured for an order that was already paid. Kraveo refunds the extra payment automatically (it keeps retrying with backoff); if this stays, check the audit log (PAYMENT_DUPLICATE_REFUND_FAILED) and refund that payment in the Razorpay dashboard.',
+  DUPLICATE_PAYMENT: 'A second payment was captured for an order that was already paid. Grozo refunds the extra payment automatically (it keeps retrying with backoff); if this stays, check the audit log (PAYMENT_DUPLICATE_REFUND_FAILED) and refund that payment in the Razorpay dashboard.',
   REFUND_FAILED: 'The refund did not go through. If Razorpay was unreachable the job keeps retrying by itself (waiting 30 seconds, 1, 2, 4 ... up to 60 minutes between tries). If Razorpay refused it (permanent error) the job stops after 3 tries: read the reason, fix the cause, then use retry-refund, or refund by hand in Razorpay.',
   PAID_AFTER_CANCEL: 'Money arrived after the order was cancelled. The automatic refund is still running; it should clear within a minute.',
   REFUND_PENDING: 'A refund started but did not finish. The job retries it; if it stays, check the payment in Razorpay before refunding by hand.',
@@ -691,7 +691,7 @@ orderRouter.post('/payments/verify-signature', requireAuth, requireRole('STUDENT
       return res.status(409).json({ success: false, code: 'ORDER_CANCELLED', message: 'This order was cancelled before the payment arrived. The money is refunded automatically.', data });
     }
     if (outcome === 'AMOUNT_MISMATCH') {
-      return res.status(409).json({ success: false, code: 'PAYMENT_AMOUNT_MISMATCH', message: 'The amount paid does not match the order. Kraveo support will contact you.', data });
+      return res.status(409).json({ success: false, code: 'PAYMENT_AMOUNT_MISMATCH', message: 'The amount paid does not match the order. Grozo support will contact you.', data });
     }
     if (outcome === 'DUPLICATE_PAYMENT') {
       return res.status(409).json({ success: false, code: 'DUPLICATE_PAYMENT', message: 'This order was already paid. The extra payment is being refunded automatically.', data });

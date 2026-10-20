@@ -96,13 +96,13 @@ void main() {
       expect(SupportConfig.email, isEmpty);
       expect(SupportConfig.emergencyNumber, '112');
       expect(telUri('+91 98765 00000').toString(), 'tel:+919876500000');
-      expect(supportMailUri().toString(), 'mailto:?subject=DailyMarket%20rider%20support');
+      expect(supportMailUri().toString(), 'mailto:?subject=Grozo%20rider%20support');
     });
 
     testWidgets('the red siren opens the support sheet: email address, an email button, and a separate "call 112"', (tester) async {
       await _smallPhone(tester);
       await pumpHome(tester);
-      await tester.tap(find.bySemanticsLabel('Contact DailyMarket support'));
+      await tester.tap(find.bySemanticsLabel('Contact Grozo support'));
       await tester.pumpAndSettle();
       expect(find.text('Help and requests'), findsWidgets);
       expect(find.text('Delivery and account help'), findsOneWidget);
@@ -119,7 +119,7 @@ void main() {
     });
 
     testWidgets('support opens the in-app request screen without launching email', (tester) async {
-      await _smallPhone(tester);await pumpHome(tester);await tester.tap(find.bySemanticsLabel('Contact DailyMarket support'));await tester.pumpAndSettle();
+      await _smallPhone(tester);await pumpHome(tester);await tester.tap(find.bySemanticsLabel('Contact Grozo support'));await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('email-support-button')));await tester.pumpAndSettle();
       expect(find.byType(SupportCenter),findsOneWidget);await tester.scrollUntilVisible(find.text('Send request'),100,scrollable:find.byType(Scrollable).first);expect(find.text('Send request'),findsOneWidget);expect(_launcher.opened,isEmpty);await tester.pumpWidget(const SizedBox());
     });
@@ -157,7 +157,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 600));
       await tester.scrollUntilVisible(find.byKey(const ValueKey('locked-support-button')), 150, scrollable: find.byType(Scrollable).first);
       expect(find.text('Help and requests'), findsWidgets);
-      expect(find.text('Call DailyMarket support'), findsNothing);
+      expect(find.text('Call Grozo support'), findsNothing);
       await _tapVisible(tester, find.byKey(const ValueKey('locked-support-button')));
       await tester.pumpAndSettle();
       expect(find.text('Delivery and account help'), findsOneWidget);
@@ -168,7 +168,7 @@ void main() {
 
     testWidgets('the login screen offers account recovery help without an invented contact', (tester) async {
       await tester.pumpWidget(_app(LoginScreen(onSubmit:(_,__)async=>throw UnimplementedError())));await tester.pump(const Duration(seconds:2));
-      expect(find.textContaining('Forgot password? Ask DailyMarket support'),findsOneWidget);
+      expect(find.textContaining('Forgot password? Ask Grozo support'),findsOneWidget);
       expect(SupportConfig.email,isEmpty);expect(find.byKey(const ValueKey('login-support-card')),findsOneWidget);
 
     });

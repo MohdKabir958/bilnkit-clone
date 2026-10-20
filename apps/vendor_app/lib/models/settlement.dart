@@ -42,7 +42,7 @@ class Settlement {
   /// What the restaurant earned for the orders in this settlement.
   final double vendorAmount;
 
-  /// Credits (+) and debits (-) added by Kraveo.
+  /// Credits (+) and debits (-) added by Grozo.
   final double adjustmentTotal;
 
   /// What the restaurant receives: [vendorAmount] plus [adjustmentTotal].

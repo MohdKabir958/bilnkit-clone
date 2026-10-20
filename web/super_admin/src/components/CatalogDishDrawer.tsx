@@ -91,7 +91,7 @@ const PreviewCard: React.FC<{ state: PreviewState; vendorPrice: number | null; t
         <>
           <div className={`flex flex-wrap items-baseline gap-x-6 gap-y-1 ${state.status === 'loading' ? 'opacity-60' : ''}`}>
             <p><span className="k-num text-2xl text-kraveo-ink" data-testid="preview-price">{shown ? rupees(shown.price) : '…'}</span> <span className="text-xs text-kraveo-ink3">customer pays</span></p>
-            <p className="text-sm text-kraveo-ink2"><b className="tabular-nums text-kraveo-g300" data-testid="preview-commission">{shown ? rupees(shown.commission) : '…'}</b> Kraveo commission</p>
+            <p className="text-sm text-kraveo-ink2"><b className="tabular-nums text-kraveo-g300" data-testid="preview-commission">{shown ? rupees(shown.commission) : '…'}</b> Grozo commission</p>
             <p className="text-sm text-kraveo-ink2"><b className="tabular-nums text-kraveo-ink">{rupees(vendorPrice)}</b> to the restaurant</p>
           </div>
           {shown?.rule && <p className="text-xs text-kraveo-ink3" data-testid="preview-rule">Rule: {commissionLabel(shown.rule.type, shown.rule.value)} ({SOURCE_LABEL[shown.rule.source]}){shown.roundingStep ? `, price rounded up to a multiple of ₹${shown.roundingStep}` : ''}{shown.nominalCommission !== null && toPaise(shown.nominalCommission) !== toPaise(shown.commission) ? `; rounding adds ${rupees(shown.commission - shown.nominalCommission)}` : ''}.</p>}

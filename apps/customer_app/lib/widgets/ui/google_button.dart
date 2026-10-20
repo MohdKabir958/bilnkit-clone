@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:kraveo_ui/kraveo_ui.dart';
 
-// The four Google brand colours. Third-party trademark colours, not Kraveo design tokens: the
+// The four Google brand colours. Third-party trademark colours, not Grozo design tokens: the
 // "G" must keep these exact values to be a recognisable Google mark, so they live here only.
 const Color _gBlue = Color(0xFF4285F4);
 const Color _gRed = Color(0xFFEA4335);

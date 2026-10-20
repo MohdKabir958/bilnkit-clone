@@ -61,7 +61,7 @@ financeRouter.put('/partner/payout-account', requireAuth, requireRole('VENDOR', 
     return res.json({
       success: true,
       changed: out.changed,
-      message: out.changed ? 'Payout details saved. Kraveo will check them before the first payout.' : 'These payout details were already saved.',
+      message: out.changed ? 'Payout details saved. Grozo will check them before the first payout.' : 'These payout details were already saved.',
       data: partnerAccountView(out.row),
     });
   } catch (err) {

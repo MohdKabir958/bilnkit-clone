@@ -9,7 +9,7 @@ import 'ui/ui.dart';
 /// Content of the "Add dish" bottom sheet. Present it with `showKSheet` (it supplies the
 /// rounded sheet + drag handle); this widget only lays out the form.
 class AddDishModal extends StatefulWidget {
-  /// Saves the dish on Kraveo. Resolves to null on success (the sheet closes) or to what went wrong
+  /// Saves the dish on Grozo. Resolves to null on success (the sheet closes) or to what went wrong
   /// (the sheet stays open with the message, nothing typed is lost).
   final Future<FailureText?> Function(String name, String category, double price, bool inStock, {bool isVeg}) onSubmit;
 

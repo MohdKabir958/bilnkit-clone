@@ -153,7 +153,7 @@ class _SignupScreenState extends State<SignupScreen> {
           if (const {'location', 'lat', 'lng', 'locationAccuracyM'}.contains(result.field)) {
             // The server did not accept the detected spot: drop it and say why; the account can still be made without it.
             _fix = null;
-            _problem = '${result.message ?? 'Kraveo could not use this location.'}\nThe location was removed. Detect it again, or create the account without it.\nलोकेशन हटा दी गई। फिर से पता करें या बिना लोकेशन के अकाउंट बनाएं।';
+            _problem = '${result.message ?? 'Grozo could not use this location.'}\nThe location was removed. Detect it again, or create the account without it.\nलोकेशन हटा दी गई। फिर से पता करें या बिना लोकेशन के अकाउंट बनाएं।';
           } else if (result.field != null && result.message != null) {
             _errors[result.field!] = result.message!;
           } else {

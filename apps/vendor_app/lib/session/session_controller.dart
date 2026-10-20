@@ -14,7 +14,7 @@ enum SessionStatus {
   checking,
   signedOut,
 
-  /// A token is stored but Kraveo could not be reached to validate it.
+  /// A token is stored but Grozo could not be reached to validate it.
   unreachable,
   signedIn,
 }
@@ -178,7 +178,7 @@ class SessionController extends ChangeNotifier {
     return result;
   }
 
-  /// Asks Kraveo where the application stands. Returns true when something changed. Safe to call
+  /// Asks Grozo where the application stands. Returns true when something changed. Safe to call
   /// from a timer: a network problem keeps the current state.
   Future<bool> refreshApproval() async {
     if (_status != SessionStatus.signedIn) return false;
@@ -213,7 +213,7 @@ class SessionController extends ChangeNotifier {
   }
 
   /// Saves the restaurant's own pin (`PUT /partner/vendor/location`). On success the local profile shows the pin at
-  /// once and the profile is re-read from Kraveo; on failure nothing local changes (the banner stays) and the result
+  /// once and the profile is re-read from Grozo; on failure nothing local changes (the banner stays) and the result
   /// carries the server's message.
   Future<ApiResult<SavedLocation>> saveRestaurantLocation(LocationFix fix) async {
     final result = await locationApi.save(lat: fix.lat, lng: fix.lng, accuracyM: fix.accuracyM);
@@ -228,7 +228,7 @@ class SessionController extends ChangeNotifier {
       _session = updated;
       notifyListeners();
     }
-    // Ask Kraveo what it now holds; a network problem here keeps the local state.
+    // Ask Grozo what it now holds; a network problem here keeps the local state.
     try {
       await refreshApproval();
     } catch (_) {}

@@ -6,7 +6,7 @@ import '../../services/external_links.dart';
 import 'snack.dart';
 import '../../services/support_api.dart';
 
-/// Opens the mail app for a message to Kraveo support; when no mail app can be opened the address
+/// Opens the mail app for a message to Grozo support; when no mail app can be opened the address
 /// is copied instead (and the student is told).
 Future<void> emailSupport(BuildContext context, {String? subject}) async {
   if(kSupportEmail.isEmpty){await Navigator.push(context,MaterialPageRoute(builder:(_)=>const SupportCenter(call:SupportApi.call)));return;}

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:kraveo_ui/kraveo_ui.dart';
 
-/// Shared helpers for the vendor app UI. Colours come from the Kraveo tokens
+/// Shared helpers for the vendor app UI. Colours come from the Grozo tokens
 /// (`context.k`, `KraveoPalette`, `KStatus`) - never hex literals.
 
 /// Content never gets wider than this, so tablets show a readable centred column.

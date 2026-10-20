@@ -1,4 +1,4 @@
-/// What a Kraveo push tells the rider app. The server decides who gets which event (Docs/18, section 4);
+/// What a Grozo push tells the rider app. The server decides who gets which event (Docs/18, section 4);
 /// the app only understands the three rider events and ignores everything else.
 enum PushEvent {
   /// A paid order is waiting in the pool.
