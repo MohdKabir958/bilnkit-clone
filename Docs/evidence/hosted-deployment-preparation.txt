@@ -26,3 +26,13 @@ Remaining external validation:
 - Exact Render/Vercel origins, CORS/WSS/CSP/browser checks and API-based admin functionality.
 - Real Razorpay TEST credentials/webhook, owned Google OAuth and matching Firebase clients.
 - Personal-device networking/authentication/notifications/location acceptance with APKs rebuilt against the actual deployed origin.
+
+Immediate phone-preview handover:
+- Customer/vendor/driver split ARM64 profile builds passed with explicit Firebase bypass.
+- APK ZIP CRC integrity, apksigner verification and in.grozo role IDs passed.
+- Published on separate artifacts/grozo-android-preview branch, commit 6d585e36a1ef2e38ffc911660d33f46267cd0943.
+- Three direct GitHub raw download URLs checked: HTTP 206, 4-byte response, APK ZIP signature PK\x03\x04.
+- These UI-only snapshots retain the emulator API address; no connected server behavior or physical-device test is claimed.
+- Grozo-Customer-arm64-preview.apk: 37832830 bytes; sha256 04c89f3dbebd062ae8684f6efe2c3a2d31c97d114fa950c13e7ef400ff5f7c43
+- Grozo-Vendor-arm64-preview.apk: 36330072 bytes; sha256 6a2e0aed82ba81140b2ca572f3b5c64e5b0cb956584ce6ed0f51d758bbc680bd
+- Grozo-Delivery-arm64-preview.apk: 36129345 bytes; sha256 68b878380bd401753571cc82de2875c8d05241eb5819b01417d9cb137a3bf32c

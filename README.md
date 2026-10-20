@@ -49,6 +49,10 @@ Backend tests delete records. Always use a separate database ending in `_test`; 
 
 The application is branded **Grozo**, **Grozo Vendor** and **Grozo Delivery**, using the user-supplied green wordmark across Flutter, Android launchers/splash screens and the websites. Configuration lives in `branding/brand.json`; run `python3 scripts/configure_brand.py` after changing it. Artwork exports are committed and can be regenerated with `bash scripts/export_brand_assets.sh` (ImageMagick 7). See [branding instructions](branding/README.md). Register `in.grozo.customer`, `in.grozo.vendor` and `in.grozo.driver` in your own Firebase/Google projects before a configured release.
 
+## Android phone previews and hosted deployment
+
+Installable ARM64 UI-preview APKs and checksums are available on the separate [phone preview downloads branch](https://github.com/MohdKabir958/bilnkit-clone/tree/artifacts/grozo-android-preview). They retain the emulator API configuration and are for startup/sign-in screen inspection; connected testing requires deployment and a new APK build. See [Render/Neon/Vercel deployment and APK handover](Docs/11_hosted_deployment_and_apk_handover.md) for current access blockers, persistent hosting configuration and the connected phone-build workflow.
+
 ## License and attribution
 
 Based on Kraveo by Kraveo Technologies / Tribal-Chief-001. The original [MIT license and copyright](LICENSE) are retained. Third-party notices, asset provenance and commercial terms require review; see [security and license audit](Docs/09_security_and_license_audit.md). No legal compliance or production security certification is claimed.
