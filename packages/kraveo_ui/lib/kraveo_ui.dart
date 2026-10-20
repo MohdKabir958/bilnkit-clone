@@ -1,5 +1,6 @@
 /// Grozo unified design system.
 library kraveo_ui;
+
 export 'src/brand_config.dart';
 
 export 'src/tokens/colors.dart';
@@ -20,3 +21,4 @@ export 'src/widgets/avatar.dart';
 
 export 'src/security/session_tokens.dart';
 export 'src/widgets/support_center.dart';
+export 'src/widgets/product_media.dart';

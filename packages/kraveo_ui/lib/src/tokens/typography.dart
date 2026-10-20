@@ -7,10 +7,12 @@ class KraveoType {
   KraveoType._();
   static const _pkg = 'kraveo_ui';
 
-  static TextStyle _display(double size, double h, double w, {double ls = -0.5}) => TextStyle(
+  static TextStyle _display(double size, double h, double w,
+          {double ls = -0.5}) =>
+      TextStyle(
         fontFamily: 'Bricolage',
         package: _pkg,
-        fontFamilyFallback: const ['packages/kraveo_ui/NotoDevanagari'],
+        fontFamilyFallback: const ['NotoDevanagari'],
         fontSize: size,
         height: h / size,
         fontWeight: _fw(w),
@@ -18,10 +20,11 @@ class KraveoType {
         letterSpacing: ls,
       );
 
-  static TextStyle _ui(double size, double h, double w, {double ls = 0}) => TextStyle(
+  static TextStyle _ui(double size, double h, double w, {double ls = 0}) =>
+      TextStyle(
         fontFamily: 'Jakarta',
         package: _pkg,
-        fontFamilyFallback: const ['packages/kraveo_ui/NotoDevanagari'],
+        fontFamilyFallback: const ['NotoDevanagari'],
         fontSize: size,
         height: h / size,
         fontWeight: _fw(w),
@@ -29,7 +32,8 @@ class KraveoType {
         letterSpacing: ls,
       );
 
-  static FontWeight _fw(double w) => FontWeight.values[((w / 100).round().clamp(1, 9)) - 1];
+  static FontWeight _fw(double w) =>
+      FontWeight.values[((w / 100).round().clamp(1, 9)) - 1];
 
   // Display / headline - Bricolage
   static final displayLg = _display(44, 48, 800, ls: -1.2);
@@ -49,5 +53,6 @@ class KraveoType {
   static final caption = _ui(12, 17, 500);
 
   /// Scale for accessibility-first surfaces (vendor kitchen, driver on a bike).
-  static TextStyle scaled(TextStyle s, double f) => s.copyWith(fontSize: (s.fontSize ?? 14) * f);
+  static TextStyle scaled(TextStyle s, double f) =>
+      s.copyWith(fontSize: (s.fontSize ?? 14) * f);
 }
