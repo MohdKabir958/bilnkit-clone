@@ -27,10 +27,10 @@ describe('googleMapsUrl / formatAccuracy / formatSetDate', () => {
 describe('pinSourceInfo', () => {
   it('the restaurant set it: date and accuracy', () => {
     expect(pinSourceInfo({ ...PIN, hasLocation: true, locationSource: 'DEVICE', locationSetAt: '2026-10-05T10:00:00.000Z', locationAccuracyM: 12.2 }))
-      .toEqual({ kind: 'DEVICE', label: 'Set by the restaurant on 5 Oct 2026, about 12 m' });
+      .toEqual({ kind: 'DEVICE', label: "Set by the store on 5 Oct 2026, about 12 m" });
   });
   it('the restaurant set it without an accuracy or a date', () => {
-    expect(pinSourceInfo({ ...PIN, hasLocation: true, locationSource: 'DEVICE' })).toEqual({ kind: 'DEVICE', label: 'Set by the restaurant' });
+    expect(pinSourceInfo({ ...PIN, hasLocation: true, locationSource: 'DEVICE' })).toEqual({ kind: 'DEVICE', label: "Set by the store" });
   });
   it('admin set it', () => {
     expect(pinSourceInfo({ ...PIN, hasLocation: true, locationSource: 'ADMIN' })).toEqual({ kind: 'ADMIN', label: 'Set by admin' });

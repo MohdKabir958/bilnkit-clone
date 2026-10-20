@@ -100,7 +100,7 @@ export const ImportMenuWizard: React.FC<Props> = ({ vendors, initialVendorId = '
     event.target.value = '';
     if (!file) return;
     setError(''); setProblems([]);
-    if (file.size > MAX_IMPORT_FILE_BYTES) { setError(`That file is ${Math.round(file.size / 1024)} KB. A menu file can be at most ${MAX_IMPORT_FILE_BYTES / 1024} KB, which is far more than ${MAX_IMPORT_ROWS} dishes need. Check that it is the right file.`); return; }
+    if (file.size > MAX_IMPORT_FILE_BYTES) { setError(`That file is ${Math.round(file.size / 1024)} KB. A menu file can be at most ${MAX_IMPORT_FILE_BYTES / 1024} KB, which is far more than ${MAX_IMPORT_ROWS} products need. Check that it is the right file.`); return; }
     try {
       const content = await file.text();
       setText(content); setFileName(file.name);
@@ -112,7 +112,7 @@ export const ImportMenuWizard: React.FC<Props> = ({ vendors, initialVendorId = '
   /** Reads the text and asks the server for a dry run (nothing is written). */
   const check = async (policy: Duplicate = duplicate) => {
     if (busyRef.current) return;
-    if (!vendorId) { setError('Choose the restaurant this menu belongs to.'); return; }
+    if (!vendorId) { setError('Choose the store this menu belongs to.'); return; }
     const result = parseMenuCsv(text);
     setError(''); setProblems(result.fileProblems);
     if (result.fileProblems.length > 0) { setParsed(null); return; }
@@ -169,7 +169,7 @@ export const ImportMenuWizard: React.FC<Props> = ({ vendors, initialVendorId = '
 
   const shownRows = showOnly === 'problems' ? view.filter((r) => r.action === 'invalid') : view;
   const title = step === 'done' ? 'Import finished' : 'Import menu';
-  const subtitle = vendor ? vendor.name : 'Add many dishes from a spreadsheet file';
+  const subtitle = vendor ? vendor.name : 'Add many products from a spreadsheet file';
 
   const footer = step === 'file' ? (
     <div className="flex gap-3 pb-4">
@@ -184,7 +184,7 @@ export const ImportMenuWizard: React.FC<Props> = ({ vendors, initialVendorId = '
       <div className="flex gap-3">
         <button type="button" className="k-btn-ghost" onClick={() => { setStep('file'); setError(''); }} disabled={busy !== null}><ArrowLeft className="h-4 w-4" aria-hidden="true" />Back</button>
         <button type="button" className="k-btn-primary flex-1" onClick={() => void apply()} disabled={!canImport || busy !== null} aria-busy={busy === 'import'}>
-          {busy === 'import' ? <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />Importing…</> : importable > 0 ? `Import ${importable} ${importable === 1 ? 'dish' : 'dishes'}` : 'Nothing to import'}
+          {busy === 'import' ? <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />Importing…</> : importable > 0 ? `Import ${importable} ${importable === 1 ? 'product' : 'products'}` : 'Nothing to import'}
         </button>
       </div>
     </div>
@@ -203,7 +203,7 @@ export const ImportMenuWizard: React.FC<Props> = ({ vendors, initialVendorId = '
 
         {step === 'file' && (
           <>
-            <h3 ref={headingRef} tabIndex={-1} className="sr-only">Step 1 of 3: choose the restaurant and the menu file</h3>
+            <h3 ref={headingRef} tabIndex={-1} className="sr-only">Step 1 of 3: choose the store and the menu file</h3>
             {error && <p role="alert" className="break-words rounded-k-sm border border-kraveo-danger/30 bg-kraveo-danger/10 px-3 py-2 text-sm text-kraveo-ink">{error}</p>}
             {problems.length > 0 && (
               <div role="alert" className="space-y-1 rounded-k-sm border border-kraveo-danger/30 bg-kraveo-danger/10 px-3 py-2 text-sm text-kraveo-ink">
@@ -211,15 +211,15 @@ export const ImportMenuWizard: React.FC<Props> = ({ vendors, initialVendorId = '
                 <ul className="list-disc pl-5">{problems.map((p) => <li key={p} className="break-words">{p}</li>)}</ul>
               </div>
             )}
-            <Field label="Restaurant" htmlFor="import-vendor" required>
+            <Field label="Store" htmlFor="import-vendor" required>
               <select id="import-vendor" className="k-select" value={vendorId} onChange={(e) => setVendorId(e.target.value)}>
-                <option value="">Choose a restaurant…</option>
+                <option value="">Choose a store…</option>
                 {sorted.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
               </select>
             </Field>
 
             <section className="k-inset space-y-3 p-4" aria-label="The file">
-              <p className="text-sm text-kraveo-ink2">One dish per line. Columns: <b>name</b>, <b>category</b>, <b>vendorPrice</b> (what the restaurant gets), and optionally <b>isVeg</b>, <b>description</b>, <b>imageUrl</b>, <b>isAvailable</b>. At most {MAX_IMPORT_ROWS} dishes at a time. The category must already exist in the Categories tab.</p>
+              <p className="text-sm text-kraveo-ink2">One product per line. Columns: <b>name</b>, <b>category</b>, <b>vendorPrice</b> (what the store gets), and optionally <b>isVeg</b>, <b>description</b>, <b>imageUrl</b>, <b>isAvailable</b>. At most {MAX_IMPORT_ROWS} products at a time. The category must already exist in the Categories tab.</p>
               <div className="flex flex-wrap gap-2">
                 <button type="button" className="k-btn-ghost" onClick={download}><Download className="h-4 w-4" aria-hidden="true" />Download the template</button>
                 <label className="k-btn-ghost cursor-pointer focus-within:ring-2 focus-within:ring-kraveo-g400/60">
@@ -235,7 +235,7 @@ export const ImportMenuWizard: React.FC<Props> = ({ vendors, initialVendorId = '
             </section>
 
             <fieldset className="space-y-2">
-              <legend className="k-label mb-1">If a dish with the same name is already on the menu</legend>
+              <legend className="k-label mb-1">If a product with the same name is already on the menu</legend>
               <DuplicateChoice value={duplicate} onChange={changePolicy} />
             </fieldset>
           </>
@@ -244,7 +244,7 @@ export const ImportMenuWizard: React.FC<Props> = ({ vendors, initialVendorId = '
         {step === 'preview' && report && (
           <>
             <h3 ref={headingRef} tabIndex={-1} className="font-display text-base font-bold text-kraveo-ink">Step 2 of 3: check what will happen</h3>
-            <p className="text-sm text-kraveo-ink2">Nothing has been saved yet. This is a preview for <b>{vendor?.name ?? 'the restaurant'}</b>.</p>
+            <p className="text-sm text-kraveo-ink2">Nothing has been saved yet. This is a preview for <b>{vendor?.name ?? 'the store'}</b>.</p>
             {parsed && parsed.ignoredColumns.length > 0 && <p className="rounded-k-sm border border-kraveo-line bg-kraveo-surface2 px-3 py-2 text-xs text-kraveo-ink2">Columns that are not used and were ignored: {parsed.ignoredColumns.join(', ')}.</p>}
             <div className="flex flex-wrap gap-2" role="group" aria-label="Summary" data-testid="import-summary">
               <Pill label="To add" value={counts.create} tone="create" />
@@ -253,9 +253,9 @@ export const ImportMenuWizard: React.FC<Props> = ({ vendors, initialVendorId = '
               <Pill label="Not valid" value={counts.invalid} tone="invalid" />
             </div>
             {counts.invalid > 0 && <p role="alert" className="rounded-k-sm border border-kraveo-danger/30 bg-kraveo-danger/10 px-3 py-2 text-sm text-kraveo-ink">{counts.invalid} {counts.invalid === 1 ? 'row is' : 'rows are'} not valid, so nothing can be imported yet. Go back, fix the file and check again.</p>}
-            {counts.invalid === 0 && importable === 0 && <p className="rounded-k-sm border border-kraveo-line bg-kraveo-surface2 px-3 py-2 text-sm text-kraveo-ink2">Every dish is already on the menu, so there is nothing to import.</p>}
+            {counts.invalid === 0 && importable === 0 && <p className="rounded-k-sm border border-kraveo-line bg-kraveo-surface2 px-3 py-2 text-sm text-kraveo-ink2">Every product is already on the menu, so there is nothing to import.</p>}
             <fieldset className="space-y-2">
-              <legend className="k-label mb-1">If a dish with the same name is already on the menu</legend>
+              <legend className="k-label mb-1">If a product with the same name is already on the menu</legend>
               <DuplicateChoice value={duplicate} onChange={changePolicy} disabled={busy !== null} />
             </fieldset>
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1" role="group" aria-label="Show">
@@ -270,7 +270,7 @@ export const ImportMenuWizard: React.FC<Props> = ({ vendors, initialVendorId = '
                     <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-extrabold uppercase tracking-wide ${ACTION_STYLE[row.action]}`}>{ACTION_LABEL[row.action]}</span>
                   </div>
                   <p className="mt-1 break-words text-xs text-kraveo-ink2">
-                    {row.category} · restaurant price {row.vendorPrice} · customer pays <b className="tabular-nums text-kraveo-ink">{row.computedPrice === null ? '-' : rupees(row.computedPrice)}</b>
+                    {row.category} · store price {row.vendorPrice} · customer pays <b className="tabular-nums text-kraveo-ink">{row.computedPrice === null ? '-' : rupees(row.computedPrice)}</b>
                   </p>
                   {row.action === 'skip' && <p className="mt-1 text-xs text-kraveo-ink3">{skipReasonText(row.reason)}</p>}
                   {row.problems.length > 0 && <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-xs font-semibold text-kraveo-danger">{row.problems.map((p) => <li key={p} className="break-words">{p}</li>)}</ul>}
@@ -287,7 +287,7 @@ export const ImportMenuWizard: React.FC<Props> = ({ vendors, initialVendorId = '
               <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-kraveo-g400" aria-hidden="true" />
               <div className="min-w-0">
                 <p className="font-bold text-kraveo-ink">{applied.message || 'The menu was imported.'}</p>
-                <p className="mt-1 text-sm text-kraveo-ink2">{vendor?.name ?? 'The restaurant'}: {applied.summary.create} added, {applied.summary.update} updated, {applied.summary.skip} skipped. New dishes are live at once.</p>
+                <p className="mt-1 text-sm text-kraveo-ink2">{vendor?.name ?? 'The store'}: {applied.summary.create} added, {applied.summary.update} updated, {applied.summary.skip} skipped. New products are live at once.</p>
               </div>
             </div>
             <ul className="space-y-1.5" aria-label="What was imported">
@@ -308,7 +308,7 @@ const Pill: React.FC<{ label: string; value: number; tone: ImportRowReport['acti
 
 const DuplicateChoice: React.FC<{ value: Duplicate; onChange: (v: Duplicate) => void; disabled?: boolean }> = ({ value, onChange, disabled }) => (
   <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Same name already on the menu">
-    {([['SKIP', 'Skip it', 'Leave the existing dish exactly as it is.'], ['UPDATE', 'Update it', 'Change the existing dish to the values in the file (only the columns that are filled in).']] as const).map(([id, label, help]) => (
+    {([['SKIP', 'Skip it', 'Leave the existing product exactly as it is.'], ['UPDATE', 'Update it', 'Change the existing product to the values in the file (only the columns that are filled in).']] as const).map(([id, label, help]) => (
       <label key={id} className="relative cursor-pointer">
         <input type="radio" name="import-duplicate" value={id} checked={value === id} disabled={disabled} onChange={() => onChange(id)} className="peer sr-only" />
         <span className="block rounded-k-md border border-kraveo-line bg-kraveo-surface2 p-3 text-sm peer-checked:border-kraveo-g400 peer-checked:bg-kraveo-g400/10 peer-focus-visible:ring-2 peer-focus-visible:ring-kraveo-g400/60 peer-disabled:opacity-60">

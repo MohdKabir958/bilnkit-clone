@@ -134,8 +134,8 @@ export const RidersPanel: React.FC<Props> = ({ driverPartners, onAuthError }) =>
                             <Td className="whitespace-nowrap text-xs">{rider.payouts.lastAt ? istDateTime(rider.payouts.lastAt) : 'None in this range'}</Td>
                             <Td>
                               <span className="flex flex-wrap justify-end gap-2">
-                                <button type="button" className="k-btn-ghost !min-h-[32px] !px-3 text-xs" onClick={() => startPayout(rider)} aria-label={`Record payout for ${label}`}><Wallet className="h-3.5 w-3.5" aria-hidden="true" />Record payout</button>
-                                <button type="button" className="k-btn-ghost !min-h-[32px] !px-3 text-xs" aria-expanded={expanded === rider.driverUserId} onClick={() => setExpanded(expanded === rider.driverUserId ? null : rider.driverUserId)} aria-label={`Payout details of ${label}`}>
+                                <button type="button" className="k-btn-ghost !min-h-[44px] !px-3 text-xs" onClick={() => startPayout(rider)} aria-label={`Record payout for ${label}`}><Wallet className="h-3.5 w-3.5" aria-hidden="true" />Record payout</button>
+                                <button type="button" className="k-btn-ghost !min-h-[44px] !px-3 text-xs" aria-expanded={expanded === rider.driverUserId} onClick={() => setExpanded(expanded === rider.driverUserId ? null : rider.driverUserId)} aria-label={`Payout details of ${label}`}>
                                   Payout details{expanded === rider.driverUserId ? <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" /> : <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />}
                                 </button>
                               </span>

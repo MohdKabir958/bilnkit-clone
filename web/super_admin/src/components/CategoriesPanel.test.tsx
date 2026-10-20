@@ -34,8 +34,8 @@ describe('CategoriesPanel list', () => {
     expect(names()).toEqual(['Biryani', 'North Indian', 'Old Chai']);
     const biryani = rowOf('Biryani');
     expect(biryani.textContent).toContain('बिरयानी');
-    expect(biryani.textContent).toContain('1 restaurant');
-    expect(biryani.textContent).toContain('1 dish');
+    expect(biryani.textContent).toContain("1 store");
+    expect(biryani.textContent).toContain("1 product");
     expect(rowOf('North Indian').textContent).toContain('No Hindi name');
     expect(rowOf('Old Chai').textContent).toContain('Hidden');
     expect(sw('Biryani: active').getAttribute('aria-checked')).toBe('true');
@@ -50,8 +50,8 @@ describe('CategoriesPanel list', () => {
     await flush();
     const text = host.textContent ?? '';
     expect(text).toContain('What the switches mean');
-    expect(text).toContain('Can be picked as a cuisine when adding or editing a restaurant.');
-    expect(text).toContain('Can be picked as the category of a dish.');
+    expect(text).toContain("Can be picked as a cuisine when adding or editing a store.");
+    expect(text).toContain("Can be picked as the category of a product.");
     expect(text).toContain('quick filter on the customer app’s home screen');
     expect(text).toContain('Off hides it from pickers');
   });
@@ -138,13 +138,13 @@ describe('switches', () => {
 
   it('a refusal (still in use) keeps the old state, shows the server words and reloads the counts', async () => {
     const fetch = vi.spyOn(apiService, 'fetchCategories').mockResolvedValue([BIRYANI()]);
-    vi.spyOn(apiService, 'updateCategory').mockRejectedValue(new ApiError(409, '1 dish uses this category, so it cannot stop being a dish category. Merge it into another one first.', 'CATEGORY_IN_USE', 'forDishes', { dishes: 1 }));
+    vi.spyOn(apiService, 'updateCategory').mockRejectedValue(new ApiError(409, '1 product uses this category, so it cannot stop being a product category. Merge it into another one first.', 'CATEGORY_IN_USE', 'forDishes', { dishes: 1 }));
     await mount(render().element);
     await flush();
-    await click(sw('Biryani: can be a dish category'));
+    await click(sw('Biryani: can be a product category'));
     await flush();
-    expect(sw('Biryani: can be a dish category').getAttribute('aria-checked')).toBe('true');
-    expect(document.body.textContent).toContain('1 dish uses this category');
+    expect(sw("Biryani: can be a product category").getAttribute('aria-checked')).toBe('true');
+    expect(document.body.textContent).toContain("1 product uses this category");
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
@@ -247,8 +247,8 @@ describe('delete', () => {
     await flush();
     const del = btn('Delete Biryani');
     expect(del.disabled).toBe(true);
-    expect(del.title).toBe('Used by 1 restaurant and 1 dish. Hide it, or merge it into another category.');
-    expect(rowOf('Biryani').textContent).toContain('Cannot delete: used by 1 restaurant and 1 dish.');
+    expect(del.title).toBe("Used by 1 store and 1 product. Hide it, or merge it into another category.");
+    expect(rowOf('Biryani').textContent).toContain("Cannot delete: used by 1 store and 1 product.");
     expect(del.getAttribute('aria-describedby')).toBeTruthy();
   });
 
@@ -270,13 +270,13 @@ describe('delete', () => {
 
   it('a delete the server refuses shows its words and reloads', async () => {
     const fetch = vi.spyOn(apiService, 'fetchCategories').mockResolvedValue([ROLLS()]);
-    vi.spyOn(apiService, 'deleteCategory').mockRejectedValue(new ApiError(409, 'This category is used by 1 restaurant and 1 dish. Hide it, or merge it into another category.', 'CATEGORY_IN_USE', undefined, { restaurants: 1, dishes: 1 }));
+    vi.spyOn(apiService, 'deleteCategory').mockRejectedValue(new ApiError(409, 'This category is used by 1 store and 1 product. Hide it, or merge it into another category.', 'CATEGORY_IN_USE', undefined, { restaurants: 1, dishes: 1 }));
     await mount(render().element);
     await flush();
     await click(btn('Delete Rolls & Wraps'));
     await click(byText('button', 'Delete category'));
     await flush();
-    expect(document.body.textContent).toContain('This category is used by 1 restaurant and 1 dish.');
+    expect(document.body.textContent).toContain("This category is used by 1 store and 1 product.");
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 });
@@ -286,7 +286,7 @@ describe('merge', () => {
     const fetch = vi.spyOn(apiService, 'fetchCategories').mockResolvedValue([BIRYANI(), NORTH(), HIDDEN()]);
     const merge = vi.spyOn(apiService, 'mergeCategory').mockImplementation(async (_id, _into, dryRun) => (dryRun
       ? { dryRun: true, from: { id: NORTH().id, name: 'North Indian' }, into: { id: BIRYANI().id, name: 'Biryani' }, dishes: 5, restaurants: 2, message: '', category: null }
-      : { dryRun: false, from: { id: NORTH().id, name: 'North Indian' }, into: { id: BIRYANI().id, name: 'Biryani' }, dishes: 5, restaurants: 2, message: 'Merged. Moved 5 dishes and 2 restaurants.', category: BIRYANI() }));
+      : { dryRun: false, from: { id: NORTH().id, name: 'North Indian' }, into: { id: BIRYANI().id, name: 'Biryani' }, dishes: 5, restaurants: 2, message: 'Merged. Moved 5 products and 2 stores.', category: BIRYANI() }));
     const { props, element } = render();
     await mount(element);
     await flush();
@@ -301,7 +301,7 @@ describe('merge', () => {
     await flush();
     expect(merge).toHaveBeenCalledTimes(1);
     expect(merge).toHaveBeenCalledWith(NORTH().id, BIRYANI().id, true);
-    expect(document.querySelector('[data-testid="merge-preview"]')!.textContent).toContain('Moves 2 restaurants and 5 dishes.');
+    expect(document.querySelector('[data-testid="merge-preview"]')!.textContent).toContain("Moves 2 stores and 5 products.");
     expect(document.querySelector('[data-testid="merge-preview"]')!.textContent).toContain('Nothing has been changed yet.');
     await click(byText('button', 'Merge…'));
     expect(document.querySelector('[role="alertdialog"]')!.textContent).toContain('Merge “North Indian” into “Biryani”?');
@@ -311,7 +311,7 @@ describe('merge', () => {
     expect(merge).toHaveBeenLastCalledWith(NORTH().id, BIRYANI().id, false);
     expect(fetch).toHaveBeenCalledTimes(2);
     expect(props.onChanged).toHaveBeenCalled();
-    expect(document.body.textContent).toContain('Merged. Moved 5 dishes and 2 restaurants.');
+    expect(document.body.textContent).toContain('Merged. Moved 5 products and 2 stores.');
     expect(document.getElementById('merge-into')).toBeNull();
   });
 
@@ -336,7 +336,7 @@ describe('merge', () => {
     await click(btn('Merge Biryani into another category'));
     const option = Array.from((document.getElementById('merge-into') as HTMLSelectElement).options).find((o) => o.textContent?.startsWith('Dish Only'))!;
     expect(option.disabled).toBe(true);
-    expect(option.textContent).toBe('Dish Only (not a restaurant category)');
+    expect(option.textContent).toBe("Dish Only (not a store category)");
   });
 
   it('a server refusal of the dry run is shown and Merge stays off', async () => {
@@ -360,7 +360,7 @@ describe('merge', () => {
     await click(btn('Merge North Indian into another category'));
     await type(document.getElementById('merge-into'), BIRYANI().id);
     await flush();
-    expect(document.querySelector('[data-testid="merge-preview"]')!.textContent).toContain('Moves 1 restaurant.');
+    expect(document.querySelector('[data-testid="merge-preview"]')!.textContent).toContain("Moves 1 store.");
     vi.unstubAllGlobals();
   });
 });
@@ -446,7 +446,7 @@ describe('create and edit', () => {
     expect(dialog.textContent).toContain('Nothing was changed.');
     expect(update).not.toHaveBeenCalled();
     await type(nameInput(dialog), 'Biryani & Pulao');
-    expect(dialog.textContent).toContain('Renaming also updates the name shown on 1 restaurant and 1 dish.');
+    expect(dialog.textContent).toContain("Renaming also updates the name shown on 1 store and 1 product.");
     await click(byText('button', 'Save changes', dialog));
     await flush();
     expect(update).toHaveBeenCalledWith('72077a2d-9b97-48de-9956-8d0167228f34', { name: 'Biryani & Pulao' });

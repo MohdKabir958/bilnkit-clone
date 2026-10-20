@@ -44,7 +44,7 @@ const VendorPayout: React.FC<{ vendor: Vendor; onAuthError?: (error: unknown) =>
   const [open, setOpen] = useState(false);
   return (
     <div className="mt-3">
-      <button type="button" className="k-btn-ghost !min-h-[36px] w-full justify-between text-xs" aria-expanded={open} onClick={() => setOpen((v) => !v)} aria-label={`Payout details of ${vendor.name}`}>
+      <button type="button" className="k-btn-ghost !min-h-[44px] w-full justify-between text-xs" aria-expanded={open} onClick={() => setOpen((v) => !v)} aria-label={`Payout details of ${vendor.name}`}>
         <span className="flex items-center gap-2"><Landmark className="h-3.5 w-3.5" aria-hidden="true" />Payout details</span>
         {open ? <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" /> : <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />}
       </button>
@@ -81,14 +81,14 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ vendors, orders = 
   const initialLoad = loading && vendors.length === 0;
   const onboardButton = (
     <button onClick={() => setShowDrawer(true)} className="k-btn-accent">
-      <Plus className="h-4 w-4" aria-hidden="true" /> Add restaurant
+      <Plus className="h-4 w-4" aria-hidden="true" /> Add store
     </button>
   );
 
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:px-0" role="group" aria-label="Filter vendors">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:px-0" role="group" aria-label="Filter stores">
           {([['ALL', 'All'], ['OPEN', 'Open'], ['CLOSED', 'Closed']] as const).map(([id, label]) => (
             <button key={id} className="k-chip" aria-pressed={filter === id} onClick={() => setFilter(id)}>
               {label}
@@ -103,12 +103,12 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ vendors, orders = 
         {initialLoad && Array.from({ length: 6 }).map((_, index) => <SkeletonCard key={index} lines={3} />)}
         {!initialLoad && vendors.length === 0 && (
           <div className="k-card sm:col-span-2 2xl:col-span-3">
-            <EmptyState icon={Store} title="No vendors yet" description="Add a restaurant here, or approve one that applied in the Applications tab." action={onboardButton} />
+            <EmptyState icon={Store} title="No stores yet" description="Add a store here, or approve one that applied in the Applications tab." action={onboardButton} />
           </div>
         )}
         {!initialLoad && vendors.length > 0 && visible.length === 0 && (
           <div className="k-card sm:col-span-2 2xl:col-span-3">
-            <EmptyState icon={SearchX} title="No vendors match" description="Nothing matches the current filter and search." action={<button className="k-btn-ghost" onClick={() => { setFilter('ALL'); onClearQuery?.(); }}>Clear filters</button>} />
+            <EmptyState icon={SearchX} title="No stores match" description="Nothing matches the current filter and search." action={<button className="k-btn-ghost" onClick={() => { setFilter('ALL'); onClearQuery?.(); }}>Clear filters</button>} />
           </div>
         )}
         {visible.map((v, index) => (
@@ -141,8 +141,8 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ vendors, orders = 
               </div>
             </div>
 
-            <button type="button" className="k-btn-ghost mt-3 w-full" onClick={() => setEditing(v)} aria-label={`Edit restaurant ${v.name}`}>
-              <Pencil className="h-4 w-4" aria-hidden="true" />Edit restaurant
+            <button type="button" className="k-btn-ghost mt-3 w-full" onClick={() => setEditing(v)} aria-label={`Edit store ${v.name}`}>
+              <Pencil className="h-4 w-4" aria-hidden="true" />Edit store
             </button>
 
             <VendorLocationEditor id={v.id} name={v.name} pin={v} onSaved={onLocationSaved} />

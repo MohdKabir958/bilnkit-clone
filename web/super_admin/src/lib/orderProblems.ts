@@ -54,14 +54,14 @@ const CATALOGUE: Record<string, Omit<ProblemMeta, 'code'>> = {
     advice: 'Check Razorpay; cancel the order if it is really unpaid.',
   },
   STUCK_UNACCEPTED: {
-    label: 'Restaurant not responding', tone: 'warning', weight: 70, action: 'call-vendor',
-    explain: 'A paid order is still waiting for the restaurant to accept it.',
-    advice: 'Call the restaurant; otherwise cancel (the refund is automatic).',
+    label: 'Store not responding', tone: 'warning', weight: 70, action: 'call-vendor',
+    explain: 'A paid order is still waiting for the store to accept it.',
+    advice: 'Call the store; otherwise cancel (the refund is automatic).',
   },
   VENDOR_NOT_APPROVED: {
-    label: 'Restaurant suspended', tone: 'warning', weight: 68, action: 'cancel',
-    explain: 'The restaurant was suspended while this order was open.',
-    advice: 'Cancel the order (the refund is automatic) unless the restaurant can still deliver it.',
+    label: 'Store suspended', tone: 'warning', weight: 68, action: 'cancel',
+    explain: 'The store was suspended while this order was open.',
+    advice: 'Cancel the order (the refund is automatic) unless the store can still deliver it.',
   },
   RIDER_NOT_APPROVED: {
     label: 'Rider suspended', tone: 'warning', weight: 66, action: 'assign',
@@ -75,12 +75,12 @@ const CATALOGUE: Record<string, Omit<ProblemMeta, 'code'>> = {
   },
   RIDER_NOT_PICKED_UP: {
     label: 'Rider has not picked up', tone: 'warning', weight: 62, action: 'call-rider',
-    explain: 'The food is ready but the assigned rider has not collected it.',
+    explain: 'The products is ready but the assigned rider has not collected it.',
     advice: 'Call the rider; reassign if needed.',
   },
   NO_RIDER: {
     label: 'No rider assigned', tone: 'warning', weight: 60, action: 'assign',
-    explain: 'The order is paid and moving at the restaurant, but no rider has claimed it.',
+    explain: 'The order is paid and moving at the store, but no rider has claimed it.',
     advice: 'Call the riders on duty or assign one.',
   },
   REFUND_PENDING: {

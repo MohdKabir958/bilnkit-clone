@@ -102,7 +102,7 @@ export const CustomersPanel: React.FC<Props> = ({ query, onClearQuery, onAuthErr
 
       {empty && (
         <div className="k-card">
-          <EmptyState icon={query ? SearchX : Users} title={query ? 'No customers match' : 'No customers yet'} description={query ? 'Try a name, email, phone number or hostel block.' : 'Customers appear here after they sign in to the Grozo app.'}
+          <EmptyState icon={query ? SearchX : Users} title={query ? 'No customers match' : 'No customers yet'} description={query ? 'Try a name, email, phone number or address block.' : 'Customers appear here after they sign in to the Grozo app.'}
             action={query ? <button className="k-btn-ghost" onClick={onClearQuery}>Clear search</button> : undefined} />
         </div>
       )}
@@ -113,7 +113,7 @@ export const CustomersPanel: React.FC<Props> = ({ query, onClearQuery, onAuthErr
           <table className="w-full min-w-[960px] border-separate border-spacing-0 text-left text-sm">
             <thead>
               <tr className="sticky top-0 z-10 bg-kraveo-surface text-[11px] uppercase tracking-wide text-kraveo-ink3">
-                {['Customer', 'Phone', 'Hostel', 'Orders', 'Paid', 'Last order', 'Joined', ''].map((h) => <th key={h} scope="col" className="border-b border-kraveo-line px-4 py-3 font-bold">{h}</th>)}
+                {['Customer', 'Phone', 'Address', 'Orders', 'Paid', 'Last order', 'Joined', ''].map((h) => <th key={h} scope="col" className="border-b border-kraveo-line px-4 py-3 font-bold">{h}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -179,7 +179,7 @@ const OrderBlock: React.FC<{ o: CustomerOrder }> = ({ o }) => {
     <div className="k-inset">
       <button type="button" className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-kraveo-ink">{o.vendor?.name ?? 'Unknown restaurant'}</p>
+          <p className="truncate text-sm font-bold text-kraveo-ink">{o.vendor?.name ?? 'Unknown store'}</p>
           <p className="font-mono text-[11px] text-kraveo-ink3">{orderCode(o.id)} · {dateTime(o.createdAt)}</p>
           <div className="mt-2 flex flex-wrap gap-1.5"><StatusPill status={o.status} compact /><PayPill status={o.paymentStatus} /></div>
         </div>
@@ -248,7 +248,7 @@ const CustomerDrawer: React.FC<{ id: string | null; onClose: () => void; onAuthE
           <div className="space-y-2.5">
             <InfoRow icon={Mail} label="Email (Google)">{detail.email ?? '—'}</InfoRow>
             <InfoRow icon={Phone} label="Phone">{detail.phone ? <a className="text-kraveo-g300 hover:underline" href={`tel:${detail.phone}`}>{detail.phone}</a> : '—'}</InfoRow>
-            <InfoRow icon={detail.isStudent === false ? UserX : GraduationCap} label="Student status">{detail.isStudent === null ? 'Not answered yet' : detail.isStudent ? `Hosteller · ${detail.hostelBlock ?? 'block not set'}` : 'Not a hosteller — enters a drop point at checkout'}</InfoRow>
+            <InfoRow icon={detail.isStudent === false ? UserX : GraduationCap} label="Customer status">{detail.isStudent === null ? 'Not answered yet' : detail.isStudent ? `Hosteller · ${detail.hostelBlock ?? 'block not set'}` : 'Not a hosteller — enters a drop point at checkout'}</InfoRow>
             <InfoRow icon={ShoppingBag} label="First and latest order">{detail.stats.firstOrderAt ? `${dateTime(detail.stats.firstOrderAt)} → ${dateTime(detail.stats.lastOrderAt)}` : 'No orders yet'}</InfoRow>
           </div>
 

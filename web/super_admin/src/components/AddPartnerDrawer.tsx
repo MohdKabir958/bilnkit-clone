@@ -22,7 +22,7 @@ interface Props {
 const VEHICLES = ['Bike', 'Scooter', 'Cycle', 'On foot'];
 const NO_PLATE = new Set(['Cycle', 'On foot']);
 /** Only used when the managed category list cannot be loaded (older server, no network): the old free-text field with these suggestions. */
-const CATEGORIES = ['North Indian', 'South Indian', 'Chinese', 'Rolls & Wraps', 'Tea & Snacks', 'Biryani', 'Fast food', 'Desserts'];
+const CATEGORIES = ['North Indian', 'South Indian', 'Chinese', 'Rolls & Wraps', 'Tea & Snacks', 'Biryani', 'Fast products', 'Desserts'];
 
 type Form = Record<'name' | 'phone' | 'password' | 'restaurantName' | 'category' | 'address' | 'location' | 'fssaiNumber' | 'vehicleType' | 'vehicleRegNo' | 'emergencyPhone' | 'upiId', string>;
 const EMPTY: Form = { name: '', phone: '', password: '', restaurantName: '', category: '', address: '', location: '', fssaiNumber: '', vehicleType: 'Bike', vehicleRegNo: '', emergencyPhone: '', upiId: '' };
@@ -36,8 +36,8 @@ const validate = (kind: PartnerKind, f: Form): Partial<Record<keyof Form, string
   if (!/^[6-9]\d{9}$/.test(digits(f.phone))) e.phone = 'Enter a valid 10-digit mobile number.';
   if (f.password.length < 8) e.password = 'At least 8 characters. Use Generate for a strong one.';
   if (kind === 'VENDOR') {
-    if (f.restaurantName.trim().length < 2) e.restaurantName = 'Enter the restaurant name.';
-    if (f.address.trim().length < 3) e.address = 'Enter where the kitchen is.';
+    if (f.restaurantName.trim().length < 2) e.restaurantName = 'Enter the store name.';
+    if (f.address.trim().length < 3) e.address = 'Enter where the store is.';
     if (f.location.trim()) {
       const parsed = parseLocationInput(f.location);
       if (!parsed.ok) e.location = parsed.message;
@@ -82,7 +82,7 @@ export const AddPartnerDrawer: React.FC<Props> = ({ open, kind, onClose, onCreat
     if (Object.keys(errors).length > 0) return;
     setSaving(true); setError('');
     // With the managed list: send the chosen ids (Docs/23). Without it (the list failed to load): the old free-text category, as before.
-    const categoryPart = !cats.error && cuisineIds.length > 0 ? { cuisineIds } : { category: (cats.error ? form.category.trim() : '') || 'Campus kitchen' };
+    const categoryPart = !cats.error && cuisineIds.length > 0 ? { cuisineIds } : { category: (cats.error ? form.category.trim() : '') || 'Service area store' };
     const input: NewPartnerInput = {
       role: kind,
       name: form.name.trim(),
@@ -96,21 +96,21 @@ export const AddPartnerDrawer: React.FC<Props> = ({ open, kind, onClose, onCreat
       await apiService.createPartner(input);
       setCreated({ phone: digits(form.phone), password: form.password, name: isVendor ? form.restaurantName.trim() : form.name.trim() });
       onCreated();
-      toast.success(isVendor ? 'Restaurant added' : 'Rider added', 'The account is approved and ready to log in.');
+      toast.success(isVendor ? 'Store added' : 'Rider added', 'The account is approved and ready to log in.');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The account could not be created.');
     } finally { setSaving(false); }
   };
 
-  const loginText = created ? `Grozo ${isVendor ? 'Restaurant Partner' : 'Delivery Partner'} login\nPhone: ${created.phone}\nPassword: ${created.password}` : '';
+  const loginText = created ? `Grozo ${isVendor ? 'Store Partner' : 'Delivery Partner'} login\nPhone: ${created.phone}\nPassword: ${created.password}` : '';
   const copyLogin = async () => { setCopied(await copyText(loginText)); };
 
   return (
     <Drawer
       open={open}
       onClose={() => { if (!saving) onClose(); }}
-      title={created ? 'Account ready' : isVendor ? 'Add a restaurant' : 'Add a rider'}
-      subtitle={created ? 'Share the login with them now' : isVendor ? 'Creates the restaurant and its owner login' : 'Creates a rider login'}
+      title={created ? 'Account ready' : isVendor ? 'Add a store' : 'Add a rider'}
+      subtitle={created ? 'Share the login with them now' : isVendor ? 'Creates the store and its owner login' : 'Creates a rider login'}
       icon={isVendor ? Store : Bike}
       footer={created ? (
         <div className="flex gap-3"><button type="button" onClick={onClose} className="k-btn-primary flex-1">Done</button></div>
@@ -118,7 +118,7 @@ export const AddPartnerDrawer: React.FC<Props> = ({ open, kind, onClose, onCreat
         <div className="flex gap-3">
           <button type="button" onClick={onClose} disabled={saving} className="k-btn-ghost flex-1">Cancel</button>
           <button type="submit" form="add-partner-form" disabled={saving} className="k-btn-primary flex-1" aria-busy={saving}>
-            {saving ? <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />Saving…</> : isVendor ? 'Add restaurant' : 'Add rider'}
+            {saving ? <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />Saving…</> : isVendor ? 'Add store' : 'Add rider'}
           </button>
         </div>
       )}
@@ -142,11 +142,11 @@ export const AddPartnerDrawer: React.FC<Props> = ({ open, kind, onClose, onCreat
           {error && <div role="alert" className="rounded-k-md border border-kraveo-danger/30 bg-kraveo-danger/10 px-4 py-3 text-sm text-kraveo-ink">{error}</div>}
           {isVendor && (
             <>
-              <Field label="Restaurant name" htmlFor="ap-restaurant" required error={show('restaurantName')}>
-                <input id="ap-restaurant" className="k-input" value={form.restaurantName} onChange={set('restaurantName')} placeholder="Name as students know it" aria-invalid={Boolean(show('restaurantName'))} />
+              <Field label="Store name" htmlFor="ap-restaurant" required error={show('restaurantName')}>
+                <input id="ap-restaurant" className="k-input" value={form.restaurantName} onChange={set('restaurantName')} placeholder="Name as customers know it" aria-invalid={Boolean(show('restaurantName'))} />
               </Field>
               {cats.error ? (
-                <Field label="Cuisine or category" htmlFor="ap-category" hint="The category list could not be loaded, so type it for now. You can pick from the list later with Edit restaurant.">
+                <Field label="Cuisine or category" htmlFor="ap-category" hint="The category list could not be loaded, so type it for now. You can pick from the list later with Edit store.">
                   <input id="ap-category" className="k-input" list="ap-categories" value={form.category} onChange={set('category')} placeholder="For example: North Indian" />
                   <datalist id="ap-categories">{CATEGORIES.map((c) => <option key={c} value={c} />)}</datalist>
                 </Field>
@@ -162,10 +162,10 @@ export const AddPartnerDrawer: React.FC<Props> = ({ open, kind, onClose, onCreat
                   onCreated={cats.add}
                 />
               )}
-              <Field label="Where is the kitchen?" htmlFor="ap-address" required error={show('address')}>
-                <input id="ap-address" className="k-input" value={form.address} onChange={set('address')} placeholder="Area or landmark near campus" aria-invalid={Boolean(show('address'))} />
+              <Field label="Where is the store?" htmlFor="ap-address" required error={show('address')}>
+                <input id="ap-address" className="k-input" value={form.address} onChange={set('address')} placeholder="Area or landmark near service area" aria-invalid={Boolean(show('address'))} />
               </Field>
-              <Field label="Location (paste from Google Maps, e.g. 23.0745, 76.8590)" htmlFor="ap-location" hint="Optional now. Shows the kitchen on the live map and to riders. You can add it later from the Vendors tab." error={show('location')}>
+              <Field label="Location (paste from Google Maps, e.g. 23.0745, 76.8590)" htmlFor="ap-location" hint="Optional now. Shows the store on the live map and to riders. You can add it later from the Stores tab." error={show('location')}>
                 <input id="ap-location" className="k-input" inputMode="decimal" autoComplete="off" value={form.location} onChange={set('location')} placeholder="23.0745, 76.8590" aria-invalid={Boolean(show('location'))} />
               </Field>
               <Field label="FSSAI licence number" htmlFor="ap-fssai" hint="Optional now. 14 digits." error={show('fssaiNumber')}>

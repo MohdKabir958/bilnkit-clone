@@ -60,7 +60,7 @@ const realCancelReason = (o: OrderWithRelations): string => {
   return o.group.orders.find((s) => s.cancelReason && !s.cancelReason.startsWith(GROUP_CANCEL_PREFIX))?.cancelReason ?? own;
 };
 /** Riders: "Kitchen A" for a single order, "2 restaurants" for a combined one. */
-const placeLabel = (o: OrderWithRelations, vendor: string) => (o.group && o.group.orders.length > 1 ? `${o.group.orders.length} restaurants` : vendor);
+const placeLabel = (o: OrderWithRelations, vendor: string) => (o.group && o.group.orders.length > 1 ? `${o.group.orders.length} stores` : vendor);
 
 /** What the customer was refunded: the captured amount of the payment that was refunded first (the original one). */
 const refundedPaise = (o: OrderWithRelations): number => {
@@ -71,7 +71,7 @@ const refundedPaise = (o: OrderWithRelations): number => {
 };
 
 export const buildCopy = (event: PushEvent, o: OrderWithRelations): { title: string; body: string } => {
-  const vendor = safeText(o.vendor.name, 40) || 'The restaurant';
+  const vendor = safeText(o.vendor.name, 40) || 'The store';
   switch (event) {
     case 'RIDER_AT_PICKUP': return {title:'Rider at pickup',body:'The assigned delivery partner has arrived to collect this order.'};
     case 'PICKUP_READY': return {title:'Pickup ready',body:'The store has packed this order. Open the app to collect it.'};
@@ -85,11 +85,11 @@ export const buildCopy = (event: PushEvent, o: OrderWithRelations): { title: str
       return { title: 'Order waiting - accept it now', body: `${n} item${n === 1 ? '' : 's'} - You earn Rs ${rupees(vendorEarnTotal(o))}. The customer is waiting.` };
     }
     case 'GROUP_READY_TO_COOK':
-      return { title: 'Start cooking', body: 'All restaurants accepted - you can start cooking.' };
+      return { title: 'Start packing', body: 'All stores accepted - you can start packing.' };
     case 'ORDER_CANCELLED_VENDOR':
       // Docs/22: a restaurant whose part of a combined order was cancelled because ANOTHER restaurant could not take its part.
       if (o.groupId && o.cancelledBy === 'SYSTEM' && (o.cancelReason ?? '').startsWith(GROUP_CANCEL_PREFIX)) {
-        return { title: 'Order cancelled', body: `Order ${orderRef(o.id)} was cancelled: another restaurant could not take this combined order.` };
+        return { title: 'Order cancelled', body: `Order ${orderRef(o.id)} was cancelled: another store could not take this combined order.` };
       }
       return { title: 'Order cancelled', body: `Order ${orderRef(o.id)} was cancelled.` };
     case 'ORDER_PLACED': return {title:'Order created',body:'Complete payment in the app to send your order to the store.'};
@@ -113,7 +113,8 @@ export const buildCopy = (event: PushEvent, o: OrderWithRelations): { title: str
     case 'ORDER_DELIVERED':
       return { title: 'Delivered', body: 'Your order has arrived. Rate your delivery.' };
     case 'ORDER_CANCELLED': {
-      const reason = safeText(realCancelReason(o), 80).replace(/[.\s]+$/, '') || 'Your order was cancelled';
+      const rawReason = realCancelReason(o);
+      const reason = safeText(rawReason === 'Restaurant did not respond' ? 'Store did not respond' : rawReason, 80).replace(/[.\s]+$/, '') || 'Your order was cancelled';
       const paid = o.paymentStatus === 'PAID' || o.paymentStatus === 'REFUNDED';
       return { title: 'Order cancelled', body: `${reason}.${paid ? ' Your refund is on its way.' : ''}` };
     }

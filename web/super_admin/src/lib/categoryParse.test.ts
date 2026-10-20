@@ -62,17 +62,17 @@ describe('merge answers', () => {
   it('reads the real dry run', () => {
     const m = parseMergeResult(mergeDryRun)!;
     expect(m).toMatchObject({ dryRun: true, dishes: 0, restaurants: 1, from: { name: 'North Indian' }, into: { name: 'Biryani' }, category: null });
-    expect(mergeSummary(m)).toBe('Moves 1 restaurant.');
+    expect(mergeSummary(m)).toBe("Moves 1 store.");
   });
   it('reads an applied merge with the target category', () => {
-    const m = parseMergeResult({ success: true, message: 'Merged. Moved 0 dishes and 0 restaurants.', data: { dryRun: false, from: { id: 'a', name: 'Street Snacks' }, into: { id: 'b', name: 'Chai' }, dishes: 0, restaurants: 0, category: rawCategory({ id: 'b', name: 'Chai' }) } })!;
+    const m = parseMergeResult({ success: true, message: 'Merged. Moved 0 products and 0 stores.', data: { dryRun: false, from: { id: 'a', name: 'Street Snacks' }, into: { id: 'b', name: 'Chai' }, dishes: 0, restaurants: 0, category: rawCategory({ id: 'b', name: 'Chai' }) } })!;
     expect(m.dryRun).toBe(false);
     expect(m.category?.name).toBe('Chai');
     expect(mergeSummary(m)).toBe('Nothing uses it, so nothing moves.');
   });
   it('plural wording and unusable input', () => {
-    expect(mergeSummary({ dishes: 5, restaurants: 2 })).toBe('Moves 2 restaurants and 5 dishes.');
-    expect(mergeSummary({ dishes: 1, restaurants: 0 })).toBe('Moves 1 dish.');
+    expect(mergeSummary({ dishes: 5, restaurants: 2 })).toBe("Moves 2 stores and 5 products.");
+    expect(mergeSummary({ dishes: 1, restaurants: 0 })).toBe("Moves 1 product.");
     expect(parseMergeResult({ success: true })).toBeNull();
     expect(parseMergeResult(undefined)).toBeNull();
   });
@@ -80,11 +80,11 @@ describe('merge answers', () => {
 
 describe('usage text and delete reasons', () => {
   it('describes what uses a category', () => {
-    expect(usageText({ restaurants: 1, dishes: 2 })).toBe('1 restaurant and 2 dishes');
+    expect(usageText({ restaurants: 1, dishes: 2 })).toBe("1 store and 2 products");
     expect(usageText({ restaurants: 0, dishes: 0 })).toBe('');
   });
   it('a used category cannot be deleted and says why; an unused one can', () => {
-    expect(deleteBlockReason(parseCategory(rawCategory())!)).toBe('Used by 1 restaurant and 1 dish. Hide it, or merge it into another category.');
+    expect(deleteBlockReason(parseCategory(rawCategory())!)).toBe("Used by 1 store and 1 product. Hide it, or merge it into another category.");
     expect(deleteBlockReason(parseCategory(rawUnused())!)).toBeNull();
   });
 });
@@ -119,8 +119,8 @@ describe('helpers', () => {
   });
   it('icon keys: unknown or missing means the generic icon', () => {
     expect(iconKeyOf('biryani')).toBe('biryani');
-    expect(iconKeyOf('rocket')).toBe('restaurant');
-    expect(iconKeyOf(undefined)).toBe('restaurant');
+    expect(iconKeyOf('rocket')).toBe("restaurant");
+    expect(iconKeyOf(undefined)).toBe("restaurant");
   });
   it('picker lists keep only active categories of the right kind', () => {
     const all = [rawCategory(), rawCategory({ id: '2', name: 'Dish only', forRestaurants: false }), rawCategory({ id: '3', name: 'Hidden', isActive: false }), rawCategory({ id: '4', name: 'Rest only', forDishes: false })].map((r) => parseCategory(r)!);

@@ -12,7 +12,7 @@ export const GroupBadge: React.FC<{ group?: OrderGroupInfo | null; className?: s
     <span
       className={`inline-flex max-w-full flex-wrap items-center gap-x-1.5 rounded-full bg-kraveo-status-atGate/15 px-2.5 py-1 text-[11px] font-bold text-kraveo-status-atGate ${className}`}
       aria-label={groupBadgeLabel(group)}
-      title={group.stops.length ? `Restaurants: ${group.stops.map((stop) => stop.vendorName).join(', ')}` : undefined}
+      title={group.stops.length ? `Stores: ${group.stops.map((stop) => stop.vendorName).join(', ')}` : undefined}
       data-testid="group-badge"
     >
       <Layers className="h-3 w-3 shrink-0" aria-hidden="true" />

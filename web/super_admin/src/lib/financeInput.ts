@@ -68,7 +68,7 @@ export const validateAdjustment = (
   const errors: Record<string, string> = {};
   const text = form.amount.trim().replace(/^\+\s*/, '+').replace(/^-\s*/, '-');
   let amount = 0;
-  if (text === '') errors.amount = 'Enter an amount: + pays the restaurant more, - deducts.';
+  if (text === '') errors.amount = 'Enter an amount: + pays the store more, - deducts.';
   else if (/^[+-]?\d+\.\d{3,}$/.test(text)) errors.amount = 'The amount can have at most 2 decimals (paise).';
   else if (!SIGNED_AMOUNT.test(text)) errors.amount = 'The amount must be a plain number like 50 or -25.50.';
   else {

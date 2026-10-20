@@ -65,7 +65,7 @@ describe('header aliases and values', () => {
     expect(fieldForHeader('Veg / Non-veg')).toBe('isVeg');
     expect(fieldForHeader('Photo')).toBe('imageUrl');
     expect(fieldForHeader('image')).toBe('imageUrl');
-    expect(fieldForHeader('Dish name')).toBe('name');
+    expect(fieldForHeader("Product name")).toBe('name');
     expect(fieldForHeader('Available')).toBe('isAvailable');
     expect(fieldForHeader('colour')).toBeNull();
   });
@@ -172,13 +172,13 @@ describe('parseMenuCsv', () => {
     const body = (n: number) => `name,category,price\n${Array.from({ length: n }, (_, i) => `Dish ${i},Snacks,10`).join('\n')}`;
     expect(parseMenuCsv(body(MAX_IMPORT_ROWS)).fileProblems).toEqual([]);
     const over = parseMenuCsv(body(MAX_IMPORT_ROWS + 1));
-    expect(over.fileProblems[0]).toBe('This file has 201 dishes, but at most 200 can be imported at a time. Split the file into parts of 200 or fewer and import them one after another.');
+    expect(over.fileProblems[0]).toBe("This file has 201 products, but at most 200 can be imported at a time. Split the file into parts of 200 or fewer and import them one after another.");
   });
 
   it('empty text, only a header, an unclosed quote', () => {
     expect(parseMenuCsv('').fileProblems[0]).toContain('empty');
     expect(parseMenuCsv('   \n\n').fileProblems[0]).toContain('empty');
-    expect(parseMenuCsv('name,category,price\n').fileProblems[0]).toContain('no dishes');
+    expect(parseMenuCsv('name,category,price\n').fileProblems[0]).toContain("no products");
     expect(parseMenuCsv('name,category,price\n"Tea,Beverages,10\n').fileProblems.join(' ')).toContain('never closed');
   });
 

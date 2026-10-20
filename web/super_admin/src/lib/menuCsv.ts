@@ -122,7 +122,7 @@ export const tokenise = (input: string, delimiter: Delimiter): Tokenised => {
 const normalHeader = (header: string): string => header.toLowerCase().replace(/[^a-z0-9]/g, '');
 
 const ALIASES: Record<ImportField, string[]> = {
-  name: ['name', 'dish', 'dishname', 'item', 'itemname', 'title'],
+  name: ['name', 'dish', 'product', 'productname', 'dishname', 'item', 'itemname', 'title'],
   category: ['category', 'categoryname', 'dishcategory', 'section', 'cat'],
   vendorPrice: ['vendorprice', 'price', 'rate', 'cost', 'amount', 'restaurantprice', 'priceinr', 'pricers', 'baseprice'],
   isVeg: ['isveg', 'veg', 'vegetarian', 'vegnonveg', 'vegornonveg', 'foodtype', 'diet'],
@@ -171,16 +171,16 @@ const collapse = (value: string): string => value.trim().replace(/\s+/g, ' ');
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 export const tooManyRowsMessage = (count: number): string =>
-  `This file has ${plural(count, 'dish', 'dishes')}, but at most ${MAX_IMPORT_ROWS} can be imported at a time. Split the file into parts of ${MAX_IMPORT_ROWS} or fewer and import them one after another.`;
+  `This file has ${plural(count, 'product', 'products')}, but at most ${MAX_IMPORT_ROWS} can be imported at a time. Split the file into parts of ${MAX_IMPORT_ROWS} or fewer and import them one after another.`;
 
 /** Reads CSV / pasted spreadsheet text into import rows. Never throws. */
 export const parseMenuCsv = (input: string): MenuCsvResult => {
   const delimiter = detectDelimiter(input);
   const empty = (problem: string): MenuCsvResult => ({ delimiter, rows: [], ignoredColumns: [], fileProblems: [problem] });
-  if (typeof input !== 'string' || input.trim() === '') return empty('The file is empty. Add one dish per line under the header row.');
+  if (typeof input !== 'string' || input.trim() === '') return empty('The file is empty. Add one product per line under the header row.');
 
   const { records, lines, unterminatedQuote } = tokenise(input, delimiter);
-  if (records.length === 0) return empty('The file is empty. Add one dish per line under the header row.');
+  if (records.length === 0) return empty('The file is empty. Add one product per line under the header row.');
 
   const fileProblems: string[] = [];
   if (unterminatedQuote) fileProblems.push('A quoted value is never closed (a " is missing). Fix it and choose the file again.');
@@ -203,7 +203,7 @@ export const parseMenuCsv = (input: string): MenuCsvResult => {
   }
 
   const dataRecords = records.slice(1);
-  if (dataRecords.length === 0 && fileProblems.length === 0) fileProblems.push('The file has a header but no dishes. Add one dish per line under it.');
+  if (dataRecords.length === 0 && fileProblems.length === 0) fileProblems.push('The file has a header but no products. Add one product per line under it.');
   if (dataRecords.length > MAX_IMPORT_ROWS) fileProblems.push(tooManyRowsMessage(dataRecords.length));
 
   const rows: MenuCsvRow[] = dataRecords.map((cells, offset) => {

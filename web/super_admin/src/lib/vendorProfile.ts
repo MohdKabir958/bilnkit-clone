@@ -53,14 +53,14 @@ export const validateProfile = (form: ProfileForm, base: ProfileForm, maxCategor
   const errors: Partial<Record<ProfileField, string>> = {};
   const name = collapse(form.name);
   if (form.name !== base.name) {
-    if (name.length < NAME_MIN) errors.name = 'Enter the restaurant name (at least 2 letters).';
+    if (name.length < NAME_MIN) errors.name = 'Enter the store name (at least 2 letters).';
     else if (name.length > NAME_MAX) errors.name = 'Keep the name to 60 characters or fewer.';
     else if (/[<>]/.test(name)) errors.name = 'The name cannot contain < or >.';
   }
-  if (form.cuisineIds.length > maxCategories) errors.cuisineIds = `A restaurant can have at most ${maxCategories} categories.`;
+  if (form.cuisineIds.length > maxCategories) errors.cuisineIds = `A store can have at most ${maxCategories} categories.`;
   if (form.address !== base.address) {
     const address = collapse(form.address);
-    if (address.length < ADDRESS_MIN) errors.address = 'Enter where the kitchen is (at least 3 letters).';
+    if (address.length < ADDRESS_MIN) errors.address = 'Enter where the store is (at least 3 letters).';
     else if (address.length > ADDRESS_MAX) errors.address = 'Keep the address to 140 characters or fewer.';
   }
   if (!form.resetBanner && form.banner !== base.banner) {

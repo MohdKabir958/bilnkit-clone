@@ -127,7 +127,7 @@ describe('Create settlements now', () => {
     const result = host.querySelector('[data-testid="run-result"]')!;
     expect(result.textContent).toContain('Nothing to settle');
     expect(result.textContent).toContain('1 skipped');
-    expect(result.textContent).toContain('1 restaurant failed');
+    expect(result.textContent).toContain("1 store failed");
     await click(btn('Create settlements now', host));
     await click(btn('Create settlements', document.querySelector('[role="alertdialog"]')!));
     await flush();

@@ -84,7 +84,7 @@ orderRouter.post('/orders', requireAuth, requireRole('STUDENT'), async (req: Aut
     });
     return res.status(replay ? 200 : 201).json({
       success: true,
-      message: replay ? 'This order was already placed.' : 'Order placed. Complete the payment to send it to the restaurant.',
+      message: replay ? 'This order was already placed.' : 'Order placed. Complete the payment to send it to the store.',
       idempotentReplay: replay,
       data: viewFor(req, order),
     });
@@ -99,7 +99,7 @@ orderRouter.post('/orders', requireAuth, requireRole('STUDENT'), async (req: Aut
 /** `restaurants: [{ vendorId, items:[{itemId,quantity}] }]` -> typed list, or the 400 text. Prices are never read from the client. */
 const parseRestaurants = (raw: unknown): { ok: true; restaurants: GroupRestaurantInput[] } | { ok: false; message: string; field: string; code?: string } => {
   if (!Array.isArray(raw) || raw.length === 0) return { ok: false, message: 'restaurants must be a non-empty array.', field: 'restaurants' };
-  if (raw.length > MAX_GROUP_RESTAURANTS_HARD) return { ok: false, message: 'Too many restaurants in one order.', field: 'restaurants', code: 'TOO_MANY_RESTAURANTS' };
+  if (raw.length > MAX_GROUP_RESTAURANTS_HARD) return { ok: false, message: 'Too many stores in one order.', field: 'restaurants', code: 'TOO_MANY_RESTAURANTS' };
   const restaurants: GroupRestaurantInput[] = [];
   for (let i = 0; i < raw.length; i++) {
     const r = raw[i];
@@ -154,7 +154,7 @@ orderRouter.post('/order-groups', requireAuth, requireRole('STUDENT'), async (re
     });
     return res.status(placed.replay ? 200 : 201).json({
       success: true,
-      message: placed.replay ? 'This order was already placed.' : 'Order placed. Complete the payment to send it to the restaurants.',
+      message: placed.replay ? 'This order was already placed.' : 'Order placed. Complete the payment to send it to the stores.',
       idempotentReplay: placed.replay,
       data: groupView(placed, req.user!.role, req.user!.id),
     });
@@ -368,7 +368,7 @@ orderRouter.patch('/orders/:id/status', requireAuth, requireApprovedPartner, val
       // Exactly the same checks as POST /orders/:id/verify-gate-otp.
       return deliverResponse(req, res, await verifyGateOtp(req.params.id, actorOf(req), req.body?.otpCode ?? req.body?.otp));
     }
-    if (role === 'STUDENT') return res.status(403).json({ success: false, code: 'ROLE_NOT_ALLOWED', message: 'Students can only cancel orders.' });
+    if (role === 'STUDENT') return res.status(403).json({ success: false, code: 'ROLE_NOT_ALLOWED', message: 'Customers can only cancel orders.' });
 
     const r = await advanceStatus(req.params.id, actorOf(req), status);
     return res.json({ success: true, ...(r.idempotent ? { message: `Order is already ${status}.` } : {}), data: viewFor(req, r.order) });
@@ -531,12 +531,12 @@ const PROBLEM_HINTS: Record<Problem, string> = {
   PAID_AFTER_CANCEL: 'Money arrived after the order was cancelled. The automatic refund is still running; it should clear within a minute.',
   REFUND_PENDING: 'A refund started but did not finish. The job retries it; if it stays, check the payment in Razorpay before refunding by hand.',
   OTP_LOCKED: 'Five wrong gate codes. Call the customer, then reset the OTP lock (a new code is sent to the customer) or cancel the order.',
-  STUCK_UNACCEPTED: 'Paid but the restaurant has not accepted. Call the restaurant; otherwise cancel (the refund is automatic).',
+  STUCK_UNACCEPTED: 'Paid but the store has not accepted. Call the store; otherwise cancel (the refund is automatic).',
   RIDER_NOT_APPROVED: 'The assigned rider is suspended. Reassign the order or cancel it.',
-  VENDOR_NOT_APPROVED: 'The restaurant was suspended while this order is open. Cancel (refund) or let it finish.',
+  VENDOR_NOT_APPROVED: 'The store was suspended while this order is open. Cancel (refund) or let it finish.',
   DELIVERY_OVERDUE: 'Picked up long ago and still not delivered. Call the rider and the customer.',
-  RIDER_NOT_PICKED_UP: 'Food is ready and a rider has it, but has not picked it up. Call the rider or reassign.',
-  NO_RIDER: 'Food is ready and no rider has taken it. Reassign a rider or call riders on duty.',
+  RIDER_NOT_PICKED_UP: 'Products is ready and a rider has it, but has not picked it up. Call the rider or reassign.',
+  NO_RIDER: 'Products is ready and no rider has taken it. Reassign a rider or call riders on duty.',
   UNPAID_IN_PROGRESS: 'Moving without a confirmed payment (older app version?). Check Razorpay; cancel if nothing was paid.',
   PAYMENT_FAILED: 'The customer\'s payment failed. Nothing to do unless they call; the order expires on its own.',
 };
@@ -582,7 +582,7 @@ orderRouter.get('/admin/orders/needs-attention', requireAuth, requireRole('ADMIN
       // so the money problems are reported once, through the primary, with the restaurants named. The same goes for the problems of the rider and the
       // gate code, which are shared by every child (one rider, one OTP); per-restaurant problems (not accepted, no rider yet) stay per child.
       const isSibling = !!o.groupId && o.groupIndex !== 0;
-      const groupNote = o.group && o.groupIndex === 0 ? ` Combined order of ${o.group.orders.length} restaurants (${o.group.orders.map((s) => s.vendor.name).join(', ')}): this one payment covers all of them.` : '';
+      const groupNote = o.group && o.groupIndex === 0 ? ` Combined order of ${o.group.orders.length} stores (${o.group.orders.map((s) => s.vendor.name).join(', ')}): this one payment covers all of them.` : '';
       for (const p of o.payments) {
         if (p.capturedAmountPaise === null || (p.status !== 'PENDING' && p.status !== 'FAILED')) continue;
         const expected = Math.round(payableAmount(o) * 100); // the group total for the primary child of a combined order
@@ -599,10 +599,10 @@ orderRouter.get('/admin/orders/needs-attention', requireAuth, requireRole('ADMIN
       if (o.refundStatus === 'PENDING' && t(o.updatedAt) < ago(REFUND_PENDING_ALERT_MIN).getTime()) add('REFUND_PENDING', 'Refund started but not finished.', o.updatedAt);
       if (!isSibling && o.otpLocked && o.status === 'ARRIVED_AT_GATE') add('OTP_LOCKED', `${o.otpAttempts} wrong gate codes.`, o.updatedAt);
       if (o.status === 'PLACED' && o.paymentStatus === 'PAID' && (!o.paidAt || t(o.paidAt) < acceptLate.getTime())) {
-        add('STUCK_UNACCEPTED', o.paidAt ? `Paid at ${iso(o.paidAt)}, not accepted by the restaurant.` : 'Paid (before payment times were recorded) and never accepted.', o.paidAt ?? o.createdAt);
+        add('STUCK_UNACCEPTED', o.paidAt ? `Paid at ${iso(o.paidAt)}, not accepted by the store.` : 'Paid (before payment times were recorded) and never accepted.', o.paidAt ?? o.createdAt);
       }
       if (!isSibling && isOpen && o.driverId && riders.get(o.driverId) && riders.get(o.driverId) !== 'APPROVED') add('RIDER_NOT_APPROVED', `Assigned rider ${o.driver?.name ?? o.driverId} is ${riders.get(o.driverId)}.`, o.updatedAt);
-      if (isOpen && o.vendor.approvalStatus !== 'APPROVED') add('VENDOR_NOT_APPROVED', `Restaurant ${o.vendor.name} is ${o.vendor.approvalStatus}.`, o.updatedAt);
+      if (isOpen && o.vendor.approvalStatus !== 'APPROVED') add('VENDOR_NOT_APPROVED', `Store ${o.vendor.name} is ${o.vendor.approvalStatus}.`, o.updatedAt);
       // A combined order is overdue from the LAST pickup (a rider waiting at the second kitchen is not late), and only once every stop is picked up.
       const pickedSince = o.group
         ? o.group.orders.every((s) => s.status === 'PICKED_UP' || s.status === 'ARRIVED_AT_GATE')

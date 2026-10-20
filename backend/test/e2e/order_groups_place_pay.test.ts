@@ -596,7 +596,7 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       expect(await audit(g.payOrderId, 'PAYMENT_AMOUNT_MISMATCH')).toBe(3);
       const na = (await api.needsAttention(W.admin)).body.data.find((x: any) => x.order.id === g.payOrderId);
       expect(na).toMatchObject({ problem: 'PAYMENT_MISMATCH', groupId: g.id });
-      expect(na.detail).toContain('Combined order of 2 restaurants (Kitchen 1, Kitchen 2)');
+      expect(na.detail).toContain("Combined order of 2 stores (Kitchen 1, Kitchen 2)");
       expect((await api.needsAttention(W.admin)).body.data.filter((x: any) => x.groupId === g.id && x.order.id !== g.payOrderId && x.problem === 'PAYMENT_MISMATCH')).toEqual([]);
     });
 
@@ -711,7 +711,7 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       expect(ledger.refundsOf(payId)).toEqual([]);
       const na = (await api.needsAttention(W.admin)).body.data.filter((x: any) => x.groupId === g.id);
       expect(na.map((x: any) => [x.order.id, x.problem])).toEqual([[g.orders[0].id, 'REFUND_FAILED']]); // ONE row, through the primary
-      expect(na[0].detail).toContain('Combined order of 2 restaurants (Kitchen 1, Kitchen 2)');
+      expect(na[0].detail).toContain("Combined order of 2 stores (Kitchen 1, Kitchen 2)");
       // sibling rows are not flagged for money problems, and the sibling's own retry is refused
       expect((await api.retryRefund(W.admin, g.orders[1].id)).status).toBe(409);
       // the provider recovers; the maintenance retry (after the backoff) completes it

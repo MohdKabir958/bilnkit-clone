@@ -24,12 +24,12 @@ const CampusMap = lazy(() => import('./CampusMap'));
 class MapBoundary extends React.Component<{ children: React.ReactNode }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
-  componentDidCatch(error: unknown) { console.error('campus map failed:', error instanceof Error ? error.message : 'unknown error'); }
+  componentDidCatch(error: unknown) { console.error('service area map failed:', error instanceof Error ? error.message : 'unknown error'); }
   render() {
     if (!this.state.failed) return this.props.children;
     return (
       <div className="flex h-full items-center justify-center rounded-k-lg border border-kraveo-line bg-kraveo-night/60">
-        <EmptyState icon={MapPin} title="The map could not be loaded" description="Check the connection and reload the page. The runner list and the delivery pipeline are not affected." />
+        <EmptyState icon={MapPin} title="The map could not be loaded" description="Check the connection and reload the page. The delivery partner list and the delivery pipeline are not affected." />
       </div>
     );
   }
@@ -227,29 +227,29 @@ export const LiveCommandCenter: React.FC<LiveCommandCenterProps> = ({ drivers, o
       <section aria-label="Key numbers" className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <KpiTile index={0} loading={initialLoad} label="Active deliveries" icon={Bike} tone="text-kraveo-status-pickedUp" toneBg="bg-kraveo-status-pickedUp/15"
           value={<AnimatedNumber value={activeOrders.length} />} note={activeOrders.length ? 'Orders not yet delivered' : 'No open orders'} />
-        <KpiTile index={1} loading={initialLoad} label="Drivers online" icon={Users}
+        <KpiTile index={1} loading={initialLoad} label="Delivery partners online" icon={Users}
           value={<AnimatedNumber value={driverPartners.length ? runnersOnline : null} />}
-          note={driverPartners.length ? `of ${driverPartners.length} registered runners` : 'Runner roster unavailable'} />
+          note={driverPartners.length ? `of ${driverPartners.length} registered delivery partners` : 'Delivery partner roster unavailable'} />
         <KpiTile index={2} loading={initialLoad} label="Pending orders" icon={PackageCheck} tone="text-kraveo-status-placed" toneBg="bg-kraveo-status-placed/15"
-          value={<AnimatedNumber value={pendingCount} />} note={pendingCount ? `Paid, waiting for the restaurant${unpaidCount ? ` · ${unpaidCount} unpaid` : ''}` : unpaidCount ? `${unpaidCount} waiting for payment` : 'Nothing waiting'} />
+          value={<AnimatedNumber value={pendingCount} />} note={pendingCount ? `Paid, waiting for the store${unpaidCount ? ` · ${unpaidCount} unpaid` : ''}` : unpaidCount ? `${unpaidCount} waiting for payment` : 'Nothing waiting'} />
         <KpiTile index={3} loading={initialLoad} label="Avg delivery time" icon={Timer} tone="text-kraveo-status-atGate" toneBg="bg-kraveo-status-atGate/15"
           value={<AnimatedNumber value={avgDeliveryMinutes ? avgDeliveryMinutes.value : null} decimals={1} suffix={avgDeliveryMinutes ? ' min' : ''} />}
           note={avgDeliveryMinutes ? `Placed to delivered, ${avgDeliveryMinutes.count} delivered` : 'No delivered orders yet'} />
       </section>
 
       {/* Map + runners */}
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6" aria-label="Runner map">
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6" aria-label="Delivery partner map">
         <div className="k-card k-reveal flex h-[460px] min-w-0 flex-col overflow-hidden p-3 sm:h-[520px] sm:p-4 lg:col-span-2" style={{ ['--i' as string]: 4 }}>
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 px-1">
             <div className="flex items-center gap-2.5">
               <span className="flex h-8 w-8 items-center justify-center rounded-k-sm bg-kraveo-g400/15 text-kraveo-g400"><Crosshair className="h-4 w-4" aria-hidden="true" /></span>
               <div>
-                <h2 className="font-display text-base font-bold leading-tight text-kraveo-ink">Live campus map</h2>
-                <p className="text-[11px] text-kraveo-ink3">Drop points, restaurants and riders on duty</p>
+                <h2 className="font-display text-base font-bold leading-tight text-kraveo-ink">Live service area map</h2>
+                <p className="text-[11px] text-kraveo-ink3">Drop points, stores and riders on duty</p>
               </div>
             </div>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-kraveo-surface2 px-3 py-1 text-xs font-bold text-kraveo-ink2" aria-live="polite">
-              <Radio className="h-3.5 w-3.5 text-kraveo-g400" aria-hidden="true" />{plottable.length} runner{plottable.length === 1 ? '' : 's'} plotted
+              <Radio className="h-3.5 w-3.5 text-kraveo-g400" aria-hidden="true" />{plottable.length} delivery partner{plottable.length === 1 ? '' : 's'} plotted
             </span>
           </div>
 
@@ -261,7 +261,7 @@ export const LiveCommandCenter: React.FC<LiveCommandCenterProps> = ({ drivers, o
             </MapBoundary>
             {plottable.length === 0 && !initialLoad && (
               <p className="pointer-events-none absolute left-1/2 top-3 z-[500] -translate-x-1/2 rounded-full border border-kraveo-line bg-kraveo-night/90 px-3 py-1 text-[11px] text-kraveo-ink2" role="status">
-                No runner positions yet. Markers appear when a runner goes on duty.
+                No delivery partner positions yet. Markers appear when a delivery partner goes on duty.
               </p>
             )}
           </div>
@@ -280,12 +280,12 @@ export const LiveCommandCenter: React.FC<LiveCommandCenterProps> = ({ drivers, o
 
         <div className="k-card k-reveal flex max-h-[420px] min-w-0 flex-col overflow-hidden p-4 sm:max-h-[520px] sm:h-[520px]" style={{ ['--i' as string]: 5 }}>
           <div className="mb-3 flex items-center justify-between border-b border-kraveo-line pb-3">
-            <h2 className="flex items-center gap-2 font-display text-base font-bold text-kraveo-ink"><Bike className="h-4 w-4 text-kraveo-g400" aria-hidden="true" /> Tracked runners</h2>
+            <h2 className="flex items-center gap-2 font-display text-base font-bold text-kraveo-ink"><Bike className="h-4 w-4 text-kraveo-g400" aria-hidden="true" /> Tracked delivery partners</h2>
             <span className="rounded-full bg-kraveo-surface2 px-2.5 py-0.5 text-xs font-bold tabular-nums text-kraveo-ink2">{tracked.length}</span>
           </div>
-          <ul className="-mx-1 flex-1 space-y-1.5 overflow-y-auto px-1" aria-label="Tracked runners">
+          <ul className="-mx-1 flex-1 space-y-1.5 overflow-y-auto px-1" aria-label="Tracked delivery partners">
             {initialLoad && Array.from({ length: 4 }).map((_, index) => <li key={index}><Skeleton className="h-14 w-full" /></li>)}
-            {!initialLoad && tracked.length === 0 && <li><EmptyState icon={Bike} title="No runners on duty" description="Runners appear here while they are on duty and sending their location." className="py-8" /></li>}
+            {!initialLoad && tracked.length === 0 && <li><EmptyState icon={Bike} title="No delivery partners on duty" description="Delivery partners appear here while they are on duty and sending their location." className="py-8" /></li>}
             {tracked.map((driver) => {
               const order = activeByDriver.get(driver.id);
               return (

@@ -13,7 +13,7 @@ interface Props {
 }
 
 export const CategoryDrawer: React.FC<Props> = ({ category, onClose, onSaved, onAuthError }) => (
-  <Drawer open onClose={onClose} title={category ? `Edit “${category.name}”` : 'Add a category'} subtitle={category ? 'Name, icon and where it is used' : 'Available to restaurants, dishes or both'} icon={Tags} wide>
+  <Drawer open onClose={onClose} title={category ? `Edit “${category.name}”` : 'Add a category'} subtitle={category ? 'Name, icon and where it is used' : 'Available to stores, products or both'} icon={Tags} wide>
     <CategoryForm category={category} mode="full" onSaved={onSaved} onCancel={onClose} onAuthError={onAuthError} />
   </Drawer>
 );

@@ -17,7 +17,7 @@ import { StateBadge } from './CatalogStateBadge';
 import { CategoryForm } from './CategoryForm';
 import { ImageUploadField } from './ImageUploadField';
 
-const SOURCE_LABEL = { DISH: 'this dish', VENDOR: 'this restaurant', GLOBAL: 'default' } as const;
+const SOURCE_LABEL = { DISH: 'this product', VENDOR: 'this store', GLOBAL: 'default' } as const;
 
 type CommissionMode = 'INHERIT' | CommissionType;
 type Busy = null | 'save' | 'approve' | 'accept' | 'reject' | 'delete' | 'restore' | 'create';
@@ -85,14 +85,14 @@ const PreviewCard: React.FC<{ state: PreviewState; vendorPrice: number | null; t
   return (
     <div className="k-inset space-y-2 p-4" aria-live="polite" data-testid="price-preview">
       <p className="k-label">{title}</p>
-      {state.status === 'idle' && <p className="text-sm text-kraveo-ink3">Enter a valid restaurant price to see what the customer pays.</p>}
+      {state.status === 'idle' && <p className="text-sm text-kraveo-ink3">Enter a valid store price to see what the customer pays.</p>}
       {state.status === 'error' && <p role="alert" className="text-sm font-semibold text-kraveo-danger">{state.message}</p>}
       {(state.status === 'loading' || state.status === 'ready') && (
         <>
           <div className={`flex flex-wrap items-baseline gap-x-6 gap-y-1 ${state.status === 'loading' ? 'opacity-60' : ''}`}>
             <p><span className="k-num text-2xl text-kraveo-ink" data-testid="preview-price">{shown ? rupees(shown.price) : '…'}</span> <span className="text-xs text-kraveo-ink3">customer pays</span></p>
             <p className="text-sm text-kraveo-ink2"><b className="tabular-nums text-kraveo-g300" data-testid="preview-commission">{shown ? rupees(shown.commission) : '…'}</b> Grozo commission</p>
-            <p className="text-sm text-kraveo-ink2"><b className="tabular-nums text-kraveo-ink">{rupees(vendorPrice)}</b> to the restaurant</p>
+            <p className="text-sm text-kraveo-ink2"><b className="tabular-nums text-kraveo-ink">{rupees(vendorPrice)}</b> to the store</p>
           </div>
           {shown?.rule && <p className="text-xs text-kraveo-ink3" data-testid="preview-rule">Rule: {commissionLabel(shown.rule.type, shown.rule.value)} ({SOURCE_LABEL[shown.rule.source]}){shown.roundingStep ? `, price rounded up to a multiple of ₹${shown.roundingStep}` : ''}{shown.nominalCommission !== null && toPaise(shown.nominalCommission) !== toPaise(shown.commission) ? `; rounding adds ${rupees(shown.commission - shown.nominalCommission)}` : ''}.</p>}
           {state.status === 'loading' && <p className="flex items-center gap-1.5 text-xs text-kraveo-ink3"><Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />Calculating…</p>}
@@ -135,13 +135,13 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
   const price = parseVendorPrice(form.vendorPrice);
   const commission = form.mode === 'INHERIT' ? null : parseCommissionValue(form.mode, form.commissionValue);
   const errors = {
-    vendorId: creating && !form.vendorId ? 'Choose the restaurant this dish belongs to.' : '',
-    name: form.name.trim().length < 2 ? 'Enter the dish name (at least 2 letters).' : form.name.trim().length > 80 ? 'Keep the name under 80 letters.' : '',
+    vendorId: creating && !form.vendorId ? 'Choose the store this product belongs to.' : '',
+    name: form.name.trim().length < 2 ? 'Enter the product name (at least 2 letters).' : form.name.trim().length > 80 ? 'Keep the name under 80 letters.' : '',
     category: managed
       ? (form.category.trim() === '' ? 'Choose a category from the list, or create a new one.' : '')
       : form.category.trim().length < 2 ? 'Enter a category, for example Rolls or Biryani.' : form.category.trim().length > 40 ? 'Keep the category under 40 letters.' : '',
     imageUrl: form.imageUrl.trim() && !isHttpUrl(form.imageUrl) ? 'Enter a full web address starting with https://'
-      : !creating && !form.imageUrl.trim() && baseline.imageUrl.trim() ? 'A dish needs a photo. Enter a new address instead of leaving it empty.' : '',
+      : !creating && !form.imageUrl.trim() && baseline.imageUrl.trim() ? 'A product needs a photo. Enter a new address instead of leaving it empty.' : '',
     description: form.description.length > 300 ? 'Keep the description under 300 letters.' : '',
     vendorPrice: price.ok ? '' : price.message,
     commission: commission && !commission.ok ? commission.message : '',
@@ -218,7 +218,7 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
     if (!item || submitBlocked()) return;
     const changes = patchBody();
     if (Object.keys(changes).length === 0) { setError('Nothing was changed.'); return; }
-    run('save', async () => { await apiService.updateCatalogItem(item.id, changes); }, 'Dish saved');
+    run('save', async () => { await apiService.updateCatalogItem(item.id, changes); }, 'Product saved');
   };
 
   const onCreate = () => {
@@ -229,7 +229,7 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
       ...(form.imageUrl.trim() ? { imageUrl: form.imageUrl.trim() } : {}),
       ...commissionBody(),
     };
-    run('create', async () => { await apiService.createCatalogItem(body); }, 'Dish added and live');
+    run('create', async () => { await apiService.createCatalogItem(body); }, 'Product added and live');
   };
 
   const onApprove = () => {
@@ -240,7 +240,7 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
     run('approve', async () => {
       if (Object.keys(early).length > 0) await apiService.updateCatalogItem(item.id, early);
       await apiService.approveCatalogItem(item.id, { ...(priceDirty ? { vendorPrice: price.value } : {}), ...commissionBody() });
-    }, 'Dish approved and live');
+    }, 'Product approved and live');
   };
 
   const onAcceptPending = () => {
@@ -251,24 +251,24 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
   const onReject = async () => {
     if (!item) return;
     const text = reason.trim();
-    if (text.length < 3) { setError('Write a short reason the restaurant will see (at least 3 letters).'); return; }
+    if (text.length < 3) { setError('Write a short reason the store will see (at least 3 letters).'); return; }
     if (text.length > 200) { setError('Keep the reason under 200 letters.'); return; }
     if (busyRef.current) return;
     const ok = declining
-      ? await confirm({ title: `Decline the price change for ${item.name}?`, message: `${item.vendorName} will see this reason: “${text}”. The dish stays live at ${rupees(item.vendorPrice)}.`, confirmLabel: 'Decline change', danger: true })
-      : await confirm({ title: `Reject ${item.name}?`, message: `${item.vendorName} will see this reason: “${text}”. The dish stays hidden from customers.`, confirmLabel: 'Reject dish', danger: true });
+      ? await confirm({ title: `Decline the price change for ${item.name}?`, message: `${item.vendorName} will see this reason: “${text}”. The product stays live at ${rupees(item.vendorPrice)}.`, confirmLabel: 'Decline change', danger: true })
+      : await confirm({ title: `Reject ${item.name}?`, message: `${item.vendorName} will see this reason: “${text}”. The product stays hidden from customers.`, confirmLabel: 'Reject product', danger: true });
     if (!ok) return;
-    run('reject', async () => { await apiService.rejectCatalogItem(item.id, text); }, declining ? 'Price change declined' : 'Dish rejected');
+    run('reject', async () => { await apiService.rejectCatalogItem(item.id, text); }, declining ? 'Price change declined' : 'Product rejected');
   };
 
   const onDelete = async () => {
     if (!item || busyRef.current) return;
-    const ok = await confirm({ title: `Delete ${item.name}?`, message: 'Customers will no longer see this dish. Old orders keep their copy, and you can restore the dish later.', confirmLabel: 'Delete dish', danger: true });
+    const ok = await confirm({ title: `Delete ${item.name}?`, message: 'Customers will no longer see this product. Old orders keep their copy, and you can restore the product later.', confirmLabel: 'Delete product', danger: true });
     if (!ok) return;
-    run('delete', async () => { await apiService.deleteCatalogItem(item.id); }, 'Dish deleted');
+    run('delete', async () => { await apiService.deleteCatalogItem(item.id); }, 'Product deleted');
   };
 
-  const onRestore = () => { if (item) run('restore', async () => { await apiService.restoreCatalogItem(item.id); }, 'Dish restored'); };
+  const onRestore = () => { if (item) run('restore', async () => { await apiService.restoreCatalogItem(item.id); }, 'Product restored'); };
 
   // A live dish with a requested price change is declined with a reason (reject); a plain live dish cannot be rejected.
   const declining = item?.state === 'CHANGE_PENDING';
@@ -281,8 +281,8 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
     <div className="space-y-2 pb-4">
       {error && <p role="alert" className="break-words rounded-k-sm border border-kraveo-danger/30 bg-kraveo-danger/10 px-3 py-2 text-sm text-kraveo-ink">{error}</p>}
       <div className="flex flex-wrap gap-2">
-        {creating && <button type="button" className="k-btn-primary flex-1" onClick={onCreate} disabled={disabledAll} aria-busy={busy === 'create'}>{spin('create')}Add dish</button>}
-        {!creating && deleted && <button type="button" className="k-btn-primary flex-1" onClick={onRestore} disabled={disabledAll} aria-busy={busy === 'restore'}>{spin('restore')}Restore dish</button>}
+        {creating && <button type="button" className="k-btn-primary flex-1" onClick={onCreate} disabled={disabledAll} aria-busy={busy === 'create'}>{spin('create')}Add product</button>}
+        {!creating && deleted && <button type="button" className="k-btn-primary flex-1" onClick={onRestore} disabled={disabledAll} aria-busy={busy === 'restore'}>{spin('restore')}Restore product</button>}
         {!creating && !deleted && canApprove && <button type="button" className="k-btn-primary flex-1" onClick={onApprove} disabled={disabledAll} aria-busy={busy === 'approve'}>{spin('approve')}Approve{priceDirty || commissionDirty ? ' with these numbers' : ''}</button>}
         {!creating && !deleted && !rejecting && canApprove && item?.state === 'PENDING' && <button type="button" className="k-btn-danger" onClick={() => setRejecting(true)} disabled={disabledAll}>Reject…</button>}
         {!creating && !deleted && <button type="button" className={canApprove ? 'k-btn-ghost' : 'k-btn-primary flex-1'} onClick={onSave} disabled={disabledAll || dirty.length === 0} aria-busy={busy === 'save'}>{spin('save')}Save changes</button>}
@@ -295,16 +295,16 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
 
   return (
     <>
-      <Drawer open={open} onClose={onClose} title={creating ? (prefill ? 'Duplicate dish' : 'Add a dish') : item.name} subtitle={creating ? (prefill ? `Copied from ${prefill.name}. Goes live at once.` : 'Goes live at once for the restaurant you choose') : item.vendorName} icon={UtensilsCrossed} wide footer={footer} focusFirstField={creating}>
+      <Drawer open={open} onClose={onClose} title={creating ? (prefill ? 'Duplicate product' : 'Add a product') : item.name} subtitle={creating ? (prefill ? `Copied from ${prefill.name}. Goes live at once.` : 'Goes live at once for the store you choose') : item.vendorName} icon={UtensilsCrossed} wide footer={footer} focusFirstField={creating}>
         <div className="space-y-5">
-          {item && <div className="flex flex-wrap items-center gap-2"><StateBadge state={item.state} /><span className="text-xs text-kraveo-ink3">{item.createdBy === 'ADMIN' ? 'Added by an admin' : 'Added by the restaurant'}</span></div>}
+          {item && <div className="flex flex-wrap items-center gap-2"><StateBadge state={item.state} /><span className="text-xs text-kraveo-ink3">{item.createdBy === 'ADMIN' ? 'Added by an admin' : 'Added by the store'}</span></div>}
           {item?.state === 'REJECTED' && item.rejectionReason && <p className="break-words rounded-k-sm border border-kraveo-danger/30 bg-kraveo-danger/10 px-3 py-2 text-sm text-kraveo-ink"><b>Rejected:</b> {item.rejectionReason}</p>}
-          {item && item.state !== 'REJECTED' && item.state !== 'DELETED' && item.rejectionReason && <p className="break-words rounded-k-sm border border-kraveo-line bg-kraveo-surface2 px-3 py-2 text-sm text-kraveo-ink2"><b>Last note to the restaurant:</b> {item.rejectionReason}</p>}
-          {deleted && <p className="rounded-k-sm border border-kraveo-line bg-kraveo-surface2 px-3 py-2 text-sm text-kraveo-ink2">This dish is deleted and hidden from customers. Restore it to edit it again.</p>}
+          {item && item.state !== 'REJECTED' && item.state !== 'DELETED' && item.rejectionReason && <p className="break-words rounded-k-sm border border-kraveo-line bg-kraveo-surface2 px-3 py-2 text-sm text-kraveo-ink2"><b>Last note to the store:</b> {item.rejectionReason}</p>}
+          {deleted && <p className="rounded-k-sm border border-kraveo-line bg-kraveo-surface2 px-3 py-2 text-sm text-kraveo-ink2">This product is deleted and hidden from customers. Restore it to edit it again.</p>}
 
           {pendingPrice !== null && !deleted && (
             <section className="space-y-3 rounded-k-md border border-kraveo-status-placed/40 bg-kraveo-status-placed/10 p-4" aria-label="Price change request">
-              <p className="text-sm text-kraveo-ink"><b>{item?.vendorName}</b> asked to change the price from <b className="tabular-nums">{rupees(item?.vendorPrice)}</b> to <b className="tabular-nums">{rupees(pendingPrice)}</b>. The dish stays live at the old price until you accept.</p>
+              <p className="text-sm text-kraveo-ink"><b>{item?.vendorName}</b> asked to change the price from <b className="tabular-nums">{rupees(item?.vendorPrice)}</b> to <b className="tabular-nums">{rupees(pendingPrice)}</b>. The product stays live at the old price until you accept.</p>
               <PreviewCard state={pendingPreview} vendorPrice={pendingPrice} title="If you accept" />
               <div className="flex flex-wrap gap-2">
                 <button type="button" className="k-btn-primary flex-1" onClick={onAcceptPending} disabled={disabledAll || dirtyOther.length > 0 || priceDirty || commissionInvalid} aria-busy={busy === 'accept'}>{spin('accept')}Accept price change</button>
@@ -315,21 +315,21 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
           )}
 
           {creating && (
-            <Field label="Restaurant" htmlFor="dish-vendor" required error={show(errors.vendorId)}>
+            <Field label="Store" htmlFor="dish-vendor" required error={show(errors.vendorId)}>
               <select id="dish-vendor" className="k-select" value={form.vendorId} onChange={(event) => set('vendorId', event.target.value)} aria-invalid={Boolean(show(errors.vendorId))} aria-describedby={show(errors.vendorId) ? 'dish-vendor-msg' : undefined} disabled={readOnly}>
-                <option value="">Choose a restaurant…</option>
+                <option value="">Choose a store…</option>
                 {vendors.map((vendor) => <option key={vendor.id} value={vendor.id}>{vendor.name}</option>)}
               </select>
             </Field>
           )}
 
-          <Field label="Dish name" htmlFor="dish-name" required error={show(errors.name)}>
+          <Field label="Product name" htmlFor="dish-name" required error={show(errors.name)}>
             <input id="dish-name" className="k-input" value={form.name} maxLength={80} onChange={(event) => set('name', event.target.value)} aria-invalid={Boolean(show(errors.name))} aria-describedby={show(errors.name) ? 'dish-name-msg' : undefined} disabled={readOnly} autoComplete="off" />
           </Field>
 
           {managed ? (
             <div className="space-y-2">
-              <Field label="Category" htmlFor="dish-category" required error={show(errors.category)} hint="The customer app groups dishes by this.">
+              <Field label="Category" htmlFor="dish-category" required error={show(errors.category)} hint="The customer app groups products by this.">
                 <select id="dish-category" className="k-select" value={matched ? matched.name : form.category} onChange={(event) => set('category', event.target.value)} aria-invalid={Boolean(show(errors.category))} aria-describedby={`dish-category-msg`} disabled={readOnly}>
                   {form.category.trim() === '' && <option value="">{categoryState!.loading && dishList.length === 0 ? 'Loading categories…' : 'Choose a category…'}</option>}
                   {currentIsExtra && <option value={form.category}>{form.category} (not in the active list)</option>}
@@ -337,18 +337,18 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
                 </select>
               </Field>
               {!readOnly && (
-                <button type="button" className="k-btn-ghost !min-h-[36px] text-xs" onClick={() => setCreatingCategory((open) => !open)} aria-expanded={creatingCategory}><Plus className="h-3.5 w-3.5" aria-hidden="true" />Create new category</button>
+                <button type="button" className="k-btn-ghost !min-h-[44px] text-xs" onClick={() => setCreatingCategory((open) => !open)} aria-expanded={creatingCategory}><Plus className="h-3.5 w-3.5" aria-hidden="true" />Create new category</button>
               )}
               {creatingCategory && (
                 <div className="k-inset space-y-3 p-4" role="group" aria-label="Create a new category">
-                  <p className="text-sm font-bold text-kraveo-ink">New category for dishes</p>
+                  <p className="text-sm font-bold text-kraveo-ink">New category for products</p>
                   <CategoryForm
                     category={null}
                     mode="quick"
                     preset={{ forRestaurants: false, forDishes: true, showOnHome: false }}
                     canUseExisting={(existing) => existing.isActive && existing.forDishes}
                     onUseExisting={(existing) => { categoryState!.add(existing); set('category', existing.name); setCreatingCategory(false); }}
-                    onSaved={(created) => { categoryState!.add(created); set('category', created.name); setCreatingCategory(false); toast.success('Category added', `“${created.name}” was created and chosen for this dish.`); }}
+                    onSaved={(created) => { categoryState!.add(created); set('category', created.name); setCreatingCategory(false); toast.success('Category added', `“${created.name}” was created and chosen for this product.`); }}
                     onCancel={() => setCreatingCategory(false)}
                     onAuthError={onAuthError}
                   />
@@ -375,7 +375,7 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
             disabled={readOnly}
             error={show(errors.imageUrl)}
             hint="Paste a direct link starting with https://, or upload a photo."
-            previewAlt={`Photo of ${form.name || 'the dish'}`}
+            previewAlt={`Photo of ${form.name || 'the product'}`}
             hideRemove={!creating && baseline.imageUrl.trim() !== ''}
             onBusyChange={setUploading}
             onAuthError={onAuthError}
@@ -388,22 +388,22 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
               <Switch checked={form.isVeg} onChange={() => set('isVeg', !form.isVeg)} label="Vegetarian" disabled={readOnly} />
             </div>
             <div className="k-inset flex items-center justify-between gap-3 px-4 py-3">
-              <div><p className="text-sm font-bold text-kraveo-ink">{form.isAvailable ? 'Available' : 'Sold out'}</p><p className="text-[11px] text-kraveo-ink3">Sold-out dishes show greyed</p></div>
+              <div><p className="text-sm font-bold text-kraveo-ink">{form.isAvailable ? 'Available' : 'Sold out'}</p><p className="text-[11px] text-kraveo-ink3">Sold-out products show greyed</p></div>
               <Switch checked={form.isAvailable} onChange={() => set('isAvailable', !form.isAvailable)} label="Available to order" disabled={readOnly} />
             </div>
           </div>
 
           <fieldset className="space-y-3" disabled={readOnly}>
             <legend className="k-label mb-2">Pricing</legend>
-            <Field label="Restaurant price (₹)" htmlFor="dish-price" required error={show(errors.vendorPrice)} hint={`What the restaurant gets for one. Up to ${MAX_DISH_PRICE.toLocaleString('en-IN')}, at most 2 decimals.`}>
+            <Field label="Store price (₹)" htmlFor="dish-price" required error={show(errors.vendorPrice)} hint={`What the store gets for one. Up to ${MAX_DISH_PRICE.toLocaleString('en-IN')}, at most 2 decimals.`}>
               <input id="dish-price" className="k-input" inputMode="decimal" value={form.vendorPrice} onChange={(event) => set('vendorPrice', event.target.value)} aria-invalid={Boolean(show(errors.vendorPrice))} aria-describedby="dish-price-msg" autoComplete="off" />
             </Field>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field label="Commission" htmlFor="dish-commission-mode">
                 <select id="dish-commission-mode" className="k-select" value={form.mode} onChange={(event) => set('mode', event.target.value as CommissionMode)}>
-                  <option value="INHERIT">Use the restaurant / global default</option>
-                  <option value="PERCENT">Percent of the restaurant price</option>
+                  <option value="INHERIT">Use the store / global default</option>
+                  <option value="PERCENT">Percent of the store price</option>
                   <option value="FLAT">Flat rupee amount</option>
                 </select>
               </Field>
@@ -413,25 +413,25 @@ export const CatalogDishDrawer: React.FC<Props> = ({ open, item, vendors, catego
                 </Field>
               )}
             </div>
-            {item && item.commissionOverride && form.mode === 'INHERIT' && <p className="text-xs text-kraveo-ink3">This dish had its own commission ({commissionLabel(item.commissionOverride.type, item.commissionOverride.value)}); saving removes it.</p>}
+            {item && item.commissionOverride && form.mode === 'INHERIT' && <p className="text-xs text-kraveo-ink3">This product had its own commission ({commissionLabel(item.commissionOverride.type, item.commissionOverride.value)}); saving removes it.</p>}
             {item && !item.commissionOverride && form.mode === 'INHERIT' && item.commission && <p className="text-xs text-kraveo-ink3">Uses {commissionLabel(item.commission.type, item.commission.value)} ({SOURCE_LABEL[item.commission.source]}).</p>}
           </fieldset>
 
           <PreviewCard state={preview} vendorPrice={price.ok ? price.value : null} title="Customer price (live)" />
           {!creating && item?.price !== null && item?.price !== undefined && <p className="text-xs text-kraveo-ink3">Right now customers pay {rupees(item.price)}. Saving applies the new price shown above.</p>}
-          {item?.priceIsStale && item.computedPrice !== null && <p className="rounded-k-sm border border-kraveo-status-placed/40 bg-kraveo-status-placed/10 px-3 py-2 text-xs text-kraveo-ink">Today's commission and rounding rules would give {rupees(item.computedPrice)}, but customers still pay {rupees(item.price)}. Saving this dish updates it, or run Recalculate prices in Settings for every dish.</p>}
+          {item?.priceIsStale && item.computedPrice !== null && <p className="rounded-k-sm border border-kraveo-status-placed/40 bg-kraveo-status-placed/10 px-3 py-2 text-xs text-kraveo-ink">Today's commission and rounding rules would give {rupees(item.computedPrice)}, but customers still pay {rupees(item.price)}. Saving this product updates it, or run Recalculate prices in Settings for every product.</p>}
 
           {!creating && !deleted && (item?.state === 'PENDING' || declining) && (
-            <section className="space-y-2" aria-label={declining ? 'Decline the price change' : 'Reject this dish'}>
+            <section className="space-y-2" aria-label={declining ? 'Decline the price change' : 'Reject this product'}>
               {!rejecting
-                ? <p className="text-xs text-kraveo-ink3">{declining ? 'Not acceptable? Use Decline change to keep the old price and tell the restaurant why.' : 'Not suitable? Use Reject to send it back with a reason.'}</p>
+                ? <p className="text-xs text-kraveo-ink3">{declining ? 'Not acceptable? Use Decline change to keep the old price and tell the store why.' : 'Not suitable? Use Reject to send it back with a reason.'}</p>
                 : (
                   <>
-                    <Field label="Reason the restaurant will see" htmlFor="dish-reject-reason" required>
+                    <Field label="Reason the store will see" htmlFor="dish-reject-reason" required>
                       <textarea id="dish-reject-reason" className="k-input min-h-[72px] py-2" value={reason} maxLength={200} onChange={(event) => { setReason(event.target.value); setError(''); }} disabled={disabledAll} />
                     </Field>
                     <div className="flex gap-2">
-                      <button type="button" className="k-btn-danger flex-1" onClick={onReject} disabled={disabledAll} aria-busy={busy === 'reject'}>{spin('reject')}{declining ? 'Decline change' : 'Reject dish'}</button>
+                      <button type="button" className="k-btn-danger flex-1" onClick={onReject} disabled={disabledAll} aria-busy={busy === 'reject'}>{spin('reject')}{declining ? 'Decline change' : 'Reject product'}</button>
                       <button type="button" className="k-btn-ghost" onClick={() => { setRejecting(false); setReason(''); setError(''); }} disabled={disabledAll}>Never mind</button>
                     </div>
                   </>

@@ -301,7 +301,7 @@ describe('Order flow v1', () => {
       for (const st of ['PREPARING', 'READY_FOR_PICKUP']) expect((await setStatus(id, st, tVendor)).status).toBe(200);
       expect((await setStatus(id, 'PICKED_UP', tRider)).status).toBe(200);
       const custAfterPickup = (await getOrder(id, tStudent)).body.data;
-      expect(custAfterPickup.driver).toEqual({ id: RIDER.id, name: 'Vikram Singh (Runner)', phone: RIDER.phone });
+      expect(custAfterPickup.driver).toEqual({ id: RIDER.id, name: "Vikram Singh (Runner)", phone: RIDER.phone });
       expect(custAfterPickup.pickedUpAt).toBeTruthy();
 
       // 5. Live position: only the customer and admins of that order hear rider_location.

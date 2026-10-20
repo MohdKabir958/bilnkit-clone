@@ -20,16 +20,16 @@ const TITLES: Record<TabType, { title: string; subtitle: string; searchHint: str
   operations: {title: 'Operations and support', subtitle: 'Dispatch, requests and business audit', searchHint: ''},
   inventory: { title: 'Products and inventory', subtitle: 'Grocery SKUs, stock adjustments and product moderation', searchHint: '' },
   coverage: { title: 'Delivery coverage', subtitle: 'Cities, service areas and store opening hours', searchHint: '' },
-  map: { title: 'Live command center', subtitle: 'Dispatch, runners and the delivery pipeline', searchHint: 'Search orders, vendors, localities, runners' },
-  orders: { title: 'Orders', subtitle: 'Latest 100 orders, with payment and live status', searchHint: 'Search order, student, phone, restaurant, rider or payment id' },
-  attention: { title: 'Needs attention', subtitle: 'Orders and payments a human has to fix', searchHint: 'Search by order, restaurant, student or problem' },
-  applications: { title: 'Applications', subtitle: 'Restaurants and riders waiting for your approval', searchHint: 'Search by name, phone, location or plate' },
-  vendors: { title: 'Vendors', subtitle: 'Dhaba network and availability', searchHint: 'Search vendors by name, category or address' },
-  categories: { title: 'Categories', subtitle: 'One list for restaurant cuisines and dish categories', searchHint: 'Search categories by name' },
-  drivers: { title: 'Drivers', subtitle: 'Delivery partners and service areas', searchHint: 'Search runners by name, reg no or code' },
+  map: { title: 'Live command center', subtitle: 'Dispatch, delivery partners and the delivery pipeline', searchHint: 'Search orders, stores, localities, delivery partners' },
+  orders: { title: 'Orders', subtitle: 'Latest 100 orders, with payment and live status', searchHint: 'Search order, customer, phone, store, rider or payment id' },
+  attention: { title: 'Needs attention', subtitle: 'Orders and payments a human has to fix', searchHint: 'Search by order, store, customer or problem' },
+  applications: { title: 'Applications', subtitle: 'Stores and riders waiting for your approval', searchHint: 'Search by name, phone, location or plate' },
+  vendors: { title: 'Stores', subtitle: 'Store network and availability', searchHint: 'Search stores by name, category or address' },
+  categories: { title: 'Categories', subtitle: 'One list for store and product categories', searchHint: 'Search categories by name' },
+  drivers: { title: 'Delivery partners', subtitle: 'Delivery partners and service areas', searchHint: 'Search delivery partners by name, reg no or code' },
   customers: { title: 'Customers', subtitle: 'Everyone who signed in, with their order history', searchHint: 'Search name, email, phone or locality' },
-  catalog: { title: 'Catalog', subtitle: 'Approve dishes and set what customers pay', searchHint: 'Search dishes by name, category or restaurant' },
-  finance: { title: 'Finance', subtitle: 'Revenue, restaurant settlements and rider payouts', searchHint: '' },
+  catalog: { title: 'Catalog', subtitle: 'Approve products and set what customers pay', searchHint: 'Search products by name, category or store' },
+  finance: { title: 'Finance', subtitle: 'Revenue, store settlements and rider payouts', searchHint: '' },
   settings: { title: 'Settings', subtitle: 'Fees, commission, rounding and settlements', searchHint: '' },
   analytics: { title: 'Analytics', subtitle: 'Delivery statistics from real orders', searchHint: '' },
 };
@@ -45,7 +45,7 @@ const useNow = (intervalMs: number): number => {
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, isLiveConnected, isLoading, adminProfile, onRefresh, onLogout, onOpenMenu, query, onQueryChange }) => {
   const meta = TITLES[activeTab];
-  const searchEnabled = activeTab !== 'analytics' && activeTab !== 'settings' && activeTab !== 'finance' && activeTab !== 'coverage' && activeTab !== 'inventory';
+  const searchEnabled = activeTab !== 'operations' && activeTab !== 'analytics' && activeTab !== 'settings' && activeTab !== 'finance' && activeTab !== 'coverage' && activeTab !== 'inventory';
   const now = useNow(10_000);
   const [lastSynced, setLastSynced] = useState<number | null>(null);
   const wasLoading = useRef(false);
@@ -110,23 +110,23 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, isLiveConnected, isLo
   );
 
   return (
-    <header className="sticky top-0 z-30 border-b border-kraveo-line bg-kraveo-night/85 backdrop-blur-xl">
-      <div className="flex min-h-[72px] items-center gap-3 px-4 sm:px-6">
+    <header className="sticky top-0 z-30 border-b border-kraveo-line bg-kraveo-surface/95">
+      <div className="flex min-h-[72px] flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
         <button aria-label="Open navigation" onClick={onOpenMenu} className="k-icon-btn lg:hidden"><Menu className="h-5 w-5" aria-hidden="true" /></button>
 
-        <div className="min-w-0 flex-1 lg:flex-none">
+        <div className="min-w-0 flex-1 basis-48">
           <h1 className="truncate font-display text-lg font-bold leading-tight tracking-tight text-kraveo-ink sm:text-xl">{meta.title}</h1>
           <p className="hidden truncate text-xs text-kraveo-ink3 sm:block">{meta.subtitle}</p>
         </div>
 
         {searchEnabled ? searchField(desktopSearch, 'global-search', 'ml-4 hidden max-w-xl flex-1 md:block') : <div className="hidden flex-1 md:block" />}
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex min-w-0 max-w-full flex-wrap items-center gap-2">
           <div className="hidden items-center gap-3 rounded-k-sm border border-kraveo-line bg-kraveo-surface px-3 py-2 xl:flex" aria-live="off">
             <Clock className="h-4 w-4 text-kraveo-ink3" aria-hidden="true" />
             <div className="leading-tight">
               <p className="k-num text-sm text-kraveo-ink">{clock}</p>
-              <p className="text-[11px] text-kraveo-ink3">{syncLabel}</p>
+              <p className="text-xs text-kraveo-ink3">{syncLabel}</p>
             </div>
           </div>
           <span
@@ -146,10 +146,10 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, isLiveConnected, isLo
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
-              className="flex h-10 items-center gap-2 rounded-k-sm border border-kraveo-line bg-kraveo-surface2 pl-1.5 pr-2 transition-colors hover:border-kraveo-g400/40 sm:pr-3"
+              className="flex min-h-10 min-w-0 max-w-full items-center gap-2 rounded-k-sm border border-kraveo-line bg-kraveo-surface2 pl-1.5 pr-2 transition-colors hover:border-kraveo-g400/40 sm:pr-3"
             >
               <Avatar name={adminName} size="sm" />
-              <span className="hidden max-w-[9rem] truncate text-sm font-bold text-kraveo-ink sm:inline">{adminName}</span>
+              <span className="hidden max-w-[9rem] truncate text-sm font-bold text-kraveo-ink sm:inline">Administrator</span>
               <ChevronDown className={`hidden h-4 w-4 text-kraveo-ink3 transition-transform sm:block ${menuOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
             </button>
             {menuOpen && (

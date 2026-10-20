@@ -39,6 +39,9 @@ describe('Catalog sidebar badge', () => {
     document.body.appendChild(host);
     root = createRoot(host);
     await act(async () => { root!.render(<ToastProvider><App /></ToastProvider>); });
+  // Exercise dispatch explicitly from the new overview default.
+  const dispatch=host.querySelector<HTMLButtonElement>('nav button[aria-label="Live map"]');
+  if(dispatch)await act(async()=>{dispatch.click();});
     await flush(); await flush();
     expect(document.querySelector('nav button[aria-label="Catalog (5)"]')).not.toBeNull();
   });

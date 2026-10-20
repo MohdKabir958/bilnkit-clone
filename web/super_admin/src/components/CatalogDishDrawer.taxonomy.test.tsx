@@ -42,13 +42,13 @@ describe('category select', () => {
   it('create sends the chosen category by id (not typed text)', async () => {
     const create = vi.spyOn(apiService, 'createCatalogItem').mockResolvedValue(null);
     await mount(open(null).element);
-    await click(byText('button', 'Add dish'));
+    await click(byText('button', "Add product"));
     expect(document.body.textContent).toContain('Choose a category from the list, or create a new one.');
     await type(byId('dish-vendor'), 'v2');
     await type(byId('dish-name'), 'Egg Roll');
     await type(byId('dish-category'), 'Rolls');
     await type(byId('dish-price'), '40');
-    await click(byText('button', 'Add dish'));
+    await click(byText('button', "Add product"));
     await flush();
     expect(create).toHaveBeenCalledWith({ vendorId: 'v2', name: 'Egg Roll', categoryId: 'rolls-id', isVeg: true, isAvailable: true, vendorPrice: 40 });
   });
@@ -114,7 +114,7 @@ describe('category select', () => {
     await mount(open(null, { categoryState: state({ add }) }).element);
     await click(byText('button', 'Create new category'));
     const group = document.querySelector('[role="group"][aria-label="Create a new category"]') as HTMLElement;
-    expect(group.textContent).toContain('New category for dishes');
+    expect(group.textContent).toContain("New category for products");
     await type(group.querySelector('input'), 'Wraps');
     await click(byText('button', 'Add category', group));
     await flush();
@@ -148,7 +148,7 @@ describe('photo', () => {
     await mount(open(dish(), { imageEnv: env }).element);
     expect(byText('button', 'Replace photo')).toBeTruthy();
     await choose(new File([new Uint8Array(20)], 'dosa.jpg', { type: 'image/jpeg' }));
-    expect(upload).toHaveBeenCalledWith(expect.anything(), 'dish');
+    expect(upload).toHaveBeenCalledWith(expect.anything(), "dish");
     expect((byId('dish-image') as HTMLInputElement).value).toBe('https://api.kraveo.site/uploads/dish/2026/p1.webp');
     await click(byText('button', 'Save changes'));
     await flush();
@@ -160,10 +160,10 @@ describe('photo', () => {
     vi.spyOn(apiService, 'uploadImage').mockImplementation(() => new Promise((resolve) => { release = resolve; }));
     await mount(open(null, { imageEnv: env }).element);
     await choose(new File([new Uint8Array(20)], 'dosa.jpg', { type: 'image/jpeg' }));
-    expect((byText('button', 'Add dish') as HTMLButtonElement).disabled).toBe(true);
+    expect((byText('button', "Add product") as HTMLButtonElement).disabled).toBe(true);
     await act(async () => { release({ url: 'https://api.kraveo.site/uploads/dish/2026/p2.webp', width: 1, height: 1, bytes: 1 }); });
     await flush();
-    expect((byText('button', 'Add dish') as HTMLButtonElement).disabled).toBe(false);
+    expect((byText('button', "Add product") as HTMLButtonElement).disabled).toBe(false);
   });
 
   it('a new dish can remove the photo it picked; a saved dish can only replace it', async () => {
@@ -194,7 +194,7 @@ describe('duplicate', () => {
     const create = vi.spyOn(apiService, 'createCatalogItem').mockResolvedValue(null);
     await mount(open(null, { prefill: original }).element);
     const dialog = document.querySelector('[role="dialog"]')!;
-    expect(dialog.textContent).toContain('Duplicate dish');
+    expect(dialog.textContent).toContain("Duplicate product");
     expect(dialog.textContent).toContain('Copied from Paneer Roll');
     expect((byId('dish-vendor') as HTMLSelectElement).value).toBe('v1');
     expect((byId('dish-name') as HTMLInputElement).value).toBe('Paneer Roll (copy)');
@@ -203,7 +203,7 @@ describe('duplicate', () => {
     expect((byId('dish-image') as HTMLInputElement).value).toBe('https://img.example/roll.jpg');
     expect((byId('dish-description') as HTMLTextAreaElement).value).toBe('Spicy');
     expect(create).not.toHaveBeenCalled();
-    await click(byText('button', 'Add dish'));
+    await click(byText('button', "Add product"));
     await flush();
     expect(create).toHaveBeenCalledWith({ vendorId: 'v1', name: 'Paneer Roll (copy)', categoryId: 'rolls-id', description: 'Spicy', imageUrl: 'https://img.example/roll.jpg', isVeg: false, isAvailable: false, vendorPrice: 100 });
   });
@@ -220,7 +220,7 @@ describe('duplicate', () => {
     const create = vi.spyOn(apiService, 'createCatalogItem').mockResolvedValue(null);
     await mount(open(null, { prefill: original }).element);
     expect((byId('dish-commission-mode') as HTMLSelectElement).value).toBe('FLAT');
-    await click(byText('button', 'Add dish'));
+    await click(byText('button', "Add product"));
     await flush();
     expect(create.mock.calls[0][0]).toMatchObject({ commissionType: 'FLAT', commissionValue: 7 });
   });

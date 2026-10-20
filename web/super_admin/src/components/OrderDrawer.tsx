@@ -41,7 +41,7 @@ interface Props {
   fetchGroup?: GroupFetcher;
 }
 
-const QUICK_REASONS = ['Restaurant cannot prepare it', 'Customer asked to cancel', 'No rider available', 'Payment problem', 'Duplicate order', 'Cannot deliver to this drop point'];
+const QUICK_REASONS = ['Store cannot prepare it', 'Customer asked to cancel', 'No rider available', 'Payment problem', 'Duplicate order', 'Cannot deliver to this drop point'];
 
 const dateTime = (iso?: string | null) => (iso ? new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : null);
 
@@ -195,12 +195,12 @@ const OrderView: React.FC<Omit<Props, 'mode' | 'onModeChange' | 'onClose' | 'onC
 
       {isUnpaidOpen(order) && (
         <Notice tone="warning" icon={CreditCard} title={order.paymentStatus === 'FAILED' ? 'Payment failed, the customer can retry' : 'Waiting for the customer to pay'}>
-          <p>The restaurant and riders cannot see this order until it is paid.{payBy ? ` It is cancelled automatically at ${payBy} if still unpaid.` : ''}</p>
+          <p>The store and riders cannot see this order until it is paid.{payBy ? ` It is cancelled automatically at ${payBy} if still unpaid.` : ''}</p>
         </Notice>
       )}
 
       {order.status === 'PLACED' && order.paymentStatus === 'PAID' && acceptBy && (
-        <Notice tone="info" icon={Clock3} title={`Restaurant must accept by ${acceptBy}`}>
+        <Notice tone="info" icon={Clock3} title={`Store must accept by ${acceptBy}`}>
           <p>Otherwise the server cancels the order and refunds the customer automatically.</p>
         </Notice>
       )}
@@ -211,13 +211,13 @@ const OrderView: React.FC<Omit<Props, 'mode' | 'onModeChange' | 'onClose' | 'onC
             <div>
               <p className="mb-1.5 text-xs text-kraveo-ink2">Next step</p>
               <NextStepControl order={order} onAdvance={onAdvance} stacked />
-              {order.group && <p className="mt-2 text-xs text-kraveo-ink3">Combined order: "At gate" and "Delivered" apply to all {order.group.size} orders at once, and cooking can start only after every restaurant has accepted.</p>}
+              {order.group && <p className="mt-2 text-xs text-kraveo-ink3">Combined order: "At doorstep" and "Delivered" apply to all {order.group.size} orders at once, and cooking can start only after every store has accepted.</p>}
               {order.status === 'ARRIVED_AT_GATE' && order.otpCode && (
                 <p className="mt-2 text-xs text-kraveo-ink3">Customer's gate OTP (admin only): <span className="select-all font-mono text-sm font-bold tracking-[0.3em] text-kraveo-ink">{order.otpCode}</span></p>
               )}
             </div>
             <div>
-              <label className="mb-1.5 block text-xs text-kraveo-ink2" htmlFor={`assign-${order.id}`}>Rider {order.group ? `(for all ${order.group.size} orders) ` : ''}{rank >= STATUS_RANK.PICKED_UP && order.driverId ? '(the current rider already has the food)' : ''}</label>
+              <label className="mb-1.5 block text-xs text-kraveo-ink2" htmlFor={`assign-${order.id}`}>Rider {order.group ? `(for all ${order.group.size} orders) ` : ''}{rank >= STATUS_RANK.PICKED_UP && order.driverId ? '(the current rider already has the products)' : ''}</label>
               <RiderAssignSelect id={`assign-${order.id}`} order={order} riders={riders} onReassign={onReassign} />
             </div>
             {canCancel(order) && (
@@ -261,7 +261,7 @@ const OrderView: React.FC<Omit<Props, 'mode' | 'onModeChange' | 'onClose' | 'onC
             {order.taxAndPackaging !== undefined && <div className="flex justify-between"><dt>Taxes and packaging</dt><dd className="tabular-nums">{inr(order.taxAndPackaging)}</dd></div>}
             <div className="flex justify-between"><dt>Delivery fee</dt><dd className="tabular-nums">{inr(order.deliveryFee)}</dd></div>
             {order.discount ? <div className="flex justify-between text-kraveo-g300"><dt>Discount</dt><dd className="tabular-nums">−{inr(order.discount)}</dd></div> : null}
-            <div className="flex justify-between pt-1 text-sm font-bold text-kraveo-ink"><dt>{order.group ? 'This restaurant\'s share' : 'Total'}</dt><dd className="k-num">{inr(order.totalAmount)}</dd></div>
+            <div className="flex justify-between pt-1 text-sm font-bold text-kraveo-ink"><dt>{order.group ? 'This store\'s share' : 'Total'}</dt><dd className="k-num">{inr(order.totalAmount)}</dd></div>
           </dl>
         </Section>
       </div>
@@ -279,7 +279,7 @@ const OrderView: React.FC<Omit<Props, 'mode' | 'onModeChange' | 'onClose' | 'onC
           {order.driverName || order.driverId
             ? <><p className="font-bold text-kraveo-ink [overflow-wrap:anywhere]">{order.driverName ?? 'Assigned rider'}</p><CallLink phone={order.driverPhone} who={order.driverName ?? 'the rider'} /></>
             : <p className="text-sm text-kraveo-ink3">{order.paymentStatus === 'PAID' ? 'No rider has claimed this order yet.' : 'Riders see the order once it is paid.'}</p>}
-          <h3 className="k-label mb-1.5 mt-4 flex items-center gap-1.5"><Store className="h-3.5 w-3.5" aria-hidden="true" />Restaurant</h3>
+          <h3 className="k-label mb-1.5 mt-4 flex items-center gap-1.5"><Store className="h-3.5 w-3.5" aria-hidden="true" />Store</h3>
           <p className="font-bold text-kraveo-ink [overflow-wrap:anywhere]">{order.vendorName}</p>
           {order.vendorAddress && <p className="text-xs text-kraveo-ink3 [overflow-wrap:anywhere]">{order.vendorAddress}</p>}
           {order.vendorPhone && <CallLink phone={order.vendorPhone} who={order.vendorName} />}
@@ -331,7 +331,7 @@ const CancelForm: React.FC<{ order: Order; error: string; groupState: GroupState
       {group && (
         <div role="alert" className="rounded-k-md border border-kraveo-danger/40 bg-kraveo-danger/10 p-4 text-sm" data-testid="cancel-group-warning">
           <p className="font-bold text-kraveo-danger">{cancelWholeGroupText(group, order.paymentStatus === 'PAID')}</p>
-          <p className="mt-1 text-kraveo-ink2">You cannot cancel just one restaurant. These orders will all be cancelled{group.stops.length ? ':' : '.'}</p>
+          <p className="mt-1 text-kraveo-ink2">You cannot cancel just one store. These orders will all be cancelled{group.stops.length ? ':' : '.'}</p>
           {group.stops.length > 0 && (
             <ul className="mt-1 list-disc space-y-0.5 pl-5 text-kraveo-ink">
               {group.stops.map((stop) => <li key={stop.orderId} className="[overflow-wrap:anywhere]">{stop.vendorName} <span className="font-mono text-xs text-kraveo-ink3">{shortId(stop.orderId)}</span></li>)}
@@ -344,10 +344,10 @@ const CancelForm: React.FC<{ order: Order; error: string; groupState: GroupState
         <p className="mt-1 text-kraveo-ink2">{money.text}</p>
       </div>
       <ul className="list-disc space-y-1 pl-5 text-sm text-kraveo-ink2">
-        <li>{order.driverId ? 'The customer, the restaurant and the rider see' : 'The customer and the restaurant see'} the order as cancelled, with your reason.</li>
-        {group && <li>Every other restaurant in the combined order is cancelled too; the ones that already accepted are told it was cancelled.</li>}
-        {rank >= STATUS_RANK.ACCEPTED && rank < STATUS_RANK.PICKED_UP && <li>The restaurant may already be cooking.</li>}
-        {rank >= STATUS_RANK.PICKED_UP && <li>The rider already has the food. Tell them what to do with it.</li>}
+        <li>{order.driverId ? 'The customer, the store and the rider see' : 'The customer and the store see'} the order as cancelled, with your reason.</li>
+        {group && <li>Every other store in the combined order is cancelled too; the ones that already accepted are told it was cancelled.</li>}
+        {rank >= STATUS_RANK.ACCEPTED && rank < STATUS_RANK.PICKED_UP && <li>The store may already be cooking.</li>}
+        {rank >= STATUS_RANK.PICKED_UP && <li>The rider already has the products. Tell them what to do with it.</li>}
         <li>This cannot be undone.</li>
       </ul>
       <div className="flex flex-wrap gap-2" role="group" aria-label="Quick reasons">
@@ -388,7 +388,7 @@ export const OrderDrawer: React.FC<Props> = (props) => {
     if (order.group) {
       // Last chance: this cancels every restaurant and refunds the whole payment.
       const ok = await confirm({
-        title: `Cancel all ${order.group.size} restaurants?`,
+        title: `Cancel all ${order.group.size} stores?`,
         message: cancelWholeGroupText(order.group, order.paymentStatus === 'PAID'),
         confirmLabel: `Cancel all ${order.group.size} orders`,
         cancelLabel: 'Keep order',

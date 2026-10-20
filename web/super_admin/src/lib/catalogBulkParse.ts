@@ -43,8 +43,8 @@ export const BULK_ACTION_LABEL: Record<BulkAction, string> = {
 };
 
 const FAILURE_FALLBACK: Record<string, string> = {
-  ITEM_DELETED: 'This dish is deleted. Restore it first.',
-  NOT_FOUND: 'This dish no longer exists.',
+  ITEM_DELETED: 'This product is deleted. Restore it first.',
+  NOT_FOUND: 'This product no longer exists.',
 };
 
 /** Failed rows with the dish name (from the ids the admin picked) and the server's reason in plain words. */
@@ -52,7 +52,7 @@ export const bulkFailures = (result: BulkResult, nameOf: (id: string) => string)
   result.results.filter((r) => !r.ok).map((r) => ({
     id: r.id,
     name: nameOf(r.id),
-    message: r.message ?? (r.code && FAILURE_FALLBACK[r.code]) ?? 'This dish could not be changed.',
+    message: r.message ?? (r.code && FAILURE_FALLBACK[r.code]) ?? 'This product could not be changed.',
   }));
 
 // ───────────────────────────── menu import ─────────────────────────────
@@ -112,7 +112,7 @@ export const parseImportReport = (body: unknown): ImportReport | null => {
 
 export const SKIP_REASON_TEXT: Record<string, string> = {
   DUPLICATE_EXISTS: 'Already on the menu, left as it is',
-  UNCHANGED: 'Same as the current dish, nothing to change',
+  UNCHANGED: 'Same as the current product, nothing to change',
 };
 export const skipReasonText = (reason: string | null): string => (reason ? SKIP_REASON_TEXT[reason] ?? 'Skipped' : 'Skipped');
 

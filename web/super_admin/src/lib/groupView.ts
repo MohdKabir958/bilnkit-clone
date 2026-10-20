@@ -58,4 +58,4 @@ export const parseGroupView = (raw: unknown): GroupView | null => {
 };
 
 /** Wording for the derived group status. */
-export const groupStatusLabel = (status: string): string => (status === 'AWAITING_RESTAURANTS' ? 'Waiting for restaurants' : ORDER_STATUS_LABEL[status] ?? humanize(status));
+export const groupStatusLabel = (status: string): string => (status === 'AWAITING_RESTAURANTS' ? 'Waiting for stores' : ORDER_STATUS_LABEL[status] ?? humanize(status));

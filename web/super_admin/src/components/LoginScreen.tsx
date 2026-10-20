@@ -40,17 +40,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     <div className="relative min-h-screen overflow-hidden bg-kraveo-night lg:grid lg:grid-cols-[1.1fr_1fr]">
       {/* Brand panel */}
       <section className="relative hidden overflow-hidden bg-gradient-to-br from-kraveo-g800 via-kraveo-g900 to-kraveo-g950 lg:flex lg:flex-col lg:justify-between lg:p-14" aria-hidden="true">
-        <div className="pointer-events-none absolute -left-32 -top-32 h-[520px] w-[520px] rounded-full bg-kraveo-g400/25 blur-[120px]" />
-        <div className="pointer-events-none absolute -bottom-40 right-0 h-[420px] w-[420px] rounded-full bg-kraveo-yellow/10 blur-[120px]" />
-        <div className="k-map-grid pointer-events-none absolute inset-0 opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" />
 
         <div className="relative animate-fade-up">
           <LogoBadge imgClassName="h-14" />
         </div>
 
         <div className="relative max-w-xl">
-          <h2 className="k-reveal font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-kraveo-ink xl:text-6xl" style={{ ['--i' as string]: 1 }}>
-            Every order.<br />Every runner.<br /><span className="text-kraveo-g300">One calm screen.</span>
+          <h2 className="k-reveal font-display text-5xl font-extrabold leading-[1.05] tracking-tight text-white xl:text-6xl" style={{ ['--i' as string]: 1 }}>
+            Every order.<br />Every delivery.<br /><span className="text-kraveo-g100">One calm screen.</span>
           </h2>
           <p className="k-reveal mt-6 max-w-md text-base text-kraveo-g100/80" style={{ ['--i' as string]: 2 }}>
             The dispatch console for {brand.name} stores and deliveries.
@@ -72,7 +69,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
       {/* Form panel */}
       <main className="relative flex min-h-screen items-center justify-center px-5 py-10 sm:px-10">
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[360px] -translate-x-1/2 rounded-full bg-kraveo-g400/10 blur-[110px] lg:hidden" />
         <div className="relative w-full max-w-md">
           <div className="mb-8 flex justify-center lg:hidden animate-fade-up">
             <LogoBadge imgClassName="h-14" />
@@ -80,7 +76,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
           <div className="k-card animate-scale-in p-6 sm:p-8">
             <h1 className="font-display text-3xl font-extrabold tracking-tight text-kraveo-ink">Welcome back</h1>
-            <p className="mt-1 text-sm text-kraveo-ink2">Sign in to open the command center.</p>
+            <p className="mt-1 text-sm text-kraveo-ink2">Sign in to open the operations console.</p>
 
             {errorMessage && (
               <div id="login-error" role="alert" className="mt-6 flex items-start gap-3 rounded-k-md border border-kraveo-danger/30 bg-kraveo-danger/10 p-3.5 text-sm text-kraveo-ink animate-fade-in">
@@ -119,7 +115,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                 </div>
               </div>
 
-              <button type="submit" disabled={isLoading} className="k-btn-accent !min-h-[52px] w-full text-base" aria-busy={isLoading}>
+              <button type="submit" disabled={isLoading} className="k-btn-primary !min-h-[52px] w-full text-base" aria-busy={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
@@ -127,7 +123,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                   </>
                 ) : (
                   <>
-                    <span>Enter command center</span>
+                    <span>Enter operations console</span>
                     <ArrowRight className="h-5 w-5" aria-hidden="true" />
                   </>
                 )}

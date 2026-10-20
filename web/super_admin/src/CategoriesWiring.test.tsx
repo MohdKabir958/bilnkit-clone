@@ -25,6 +25,9 @@ const mount = async () => {
   document.body.appendChild(host);
   root = createRoot(host);
   await act(async () => { root!.render(<ToastProvider><App /></ToastProvider>); });
+  // Exercise dispatch explicitly from the new overview default.
+  const dispatch=host.querySelector<HTMLButtonElement>('nav button[aria-label="Live map"]');
+  if(dispatch)await act(async()=>{dispatch.click();});
   return host;
 };
 const flush = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
@@ -111,11 +114,11 @@ describe('Vendors tab: edit restaurant', () => {
     vi.spyOn(apiService, 'updateVendorProfile').mockResolvedValue({ vendor: fresh, changed: true, message: 'Restaurant saved.' });
     await mount();
     await flush();
-    await click(nav('Vendors'));
+    await click(nav('Stores'));
     await flush();
     expect(document.body.textContent).toContain('Shape Kitchen & Co');
     const before = api.fetchVendors.mock.calls.length;
-    await click(Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Edit restaurant'));
+    await click(Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.trim() === "Edit store"));
     await flush();
     const name = document.getElementById('er-name') as HTMLInputElement;
     await act(async () => {

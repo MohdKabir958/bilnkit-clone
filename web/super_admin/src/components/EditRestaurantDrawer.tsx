@@ -53,7 +53,7 @@ export const EditRestaurantDrawer: React.FC<Props> = ({ vendor, onClose, onSaved
     setSaving(true); setBanner(''); setServerErrors({});
     try {
       const out = await apiService.updateVendorProfile(vendor.id, changes);
-      if (out.changed) toast.success('Restaurant saved', `Updated ${changedFieldsText(changes) || 'the restaurant'} for ${out.vendor.name}.`);
+      if (out.changed) toast.success('Store saved', `Updated ${changedFieldsText(changes) || 'the store'} for ${out.vendor.name}.`);
       else toast.info('Nothing to change', 'The server already had these values.');
       onSaved(out.vendor);
       onClose();
@@ -94,7 +94,7 @@ export const EditRestaurantDrawer: React.FC<Props> = ({ vendor, onClose, onSaved
       )}
     >
       <div className="space-y-5" onKeyDown={(event) => { if (event.key === 'Enter' && (event.target as HTMLInputElement).tagName === 'INPUT' && (event.target as HTMLInputElement).type === 'text' && !(event.target as HTMLInputElement).closest('[role="group"]')) { event.preventDefault(); void save(); } }}>
-        <Field label="Restaurant name" htmlFor="er-name" required error={shown('name')}>
+        <Field label="Store name" htmlFor="er-name" required error={shown('name')}>
           <input id="er-name" className="k-input" value={form.name} maxLength={80} autoComplete="off" disabled={disabled} onChange={(e) => set('name', e.target.value)} aria-invalid={Boolean(shown('name'))} aria-describedby={shown('name') ? 'er-name-msg' : undefined} />
         </Field>
 
@@ -103,7 +103,7 @@ export const EditRestaurantDrawer: React.FC<Props> = ({ vendor, onClose, onSaved
           <div className="rounded-k-md border border-kraveo-status-placed/40 bg-kraveo-status-placed/10 p-3 text-sm text-kraveo-ink" role="alert">
             <p className="font-semibold">The category list could not be loaded.</p>
             <p className="mt-1 break-words text-kraveo-ink2">{cats.error}</p>
-            <button type="button" className="k-btn-ghost mt-2 !min-h-[36px] text-xs" onClick={cats.reload}>Try again</button>
+            <button type="button" className="k-btn-ghost mt-2 !min-h-[44px] text-xs" onClick={cats.reload}>Try again</button>
             <p className="mt-2 text-xs text-kraveo-ink3">Shown to customers now: {vendor.category}. Categories are left as they are until the list loads.</p>
           </div>
         ) : (
@@ -122,7 +122,7 @@ export const EditRestaurantDrawer: React.FC<Props> = ({ vendor, onClose, onSaved
           />
         )}
 
-        <Field label="Where is the kitchen?" htmlFor="er-address" required error={shown('address')}>
+        <Field label="Where is the store?" htmlFor="er-address" required error={shown('address')}>
           <input id="er-address" className="k-input" value={form.address} maxLength={160} autoComplete="off" disabled={disabled} onChange={(e) => set('address', e.target.value)} aria-invalid={Boolean(shown('address'))} aria-describedby={shown('address') ? 'er-address-msg' : undefined} />
         </Field>
 
@@ -154,7 +154,7 @@ export const EditRestaurantDrawer: React.FC<Props> = ({ vendor, onClose, onSaved
         </div>
 
         <p className="text-xs text-kraveo-ink3" aria-live="polite">
-          {dirty ? `Will change: ${changedFieldsText(changes)}.` : 'Nothing changed yet. Open status, map pin, commission and payout details have their own controls on the restaurant card.'}
+          {dirty ? `Will change: ${changedFieldsText(changes)}.` : 'Nothing changed yet. Open status, map pin, commission and payout details have their own controls on the store card.'}
         </p>
       </div>
     </Drawer>

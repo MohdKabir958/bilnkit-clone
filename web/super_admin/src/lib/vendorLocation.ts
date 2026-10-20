@@ -49,7 +49,7 @@ export const pinSourceInfo = (p: PinInfo): PinSourceInfo => {
   const date = formatSetDate(p.locationSetAt);
   if (p.locationSource === 'DEVICE') {
     const acc = formatAccuracy(p.locationAccuracyM);
-    return { kind: 'DEVICE', label: `Set by the restaurant${date ? ` on ${date}` : ''}${acc ? `, ${acc}` : ''}` };
+    return { kind: 'DEVICE', label: `Set by the store${date ? ` on ${date}` : ''}${acc ? `, ${acc}` : ''}` };
   }
   if (p.locationSource === 'ADMIN') return { kind: 'ADMIN', label: `Set by admin${date ? ` on ${date}` : ''}` };
   return { kind: 'LEGACY', label: 'Location set' };

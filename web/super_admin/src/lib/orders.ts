@@ -153,7 +153,7 @@ export const preferRiderOrder = (candidate: Order, current: Order): boolean => {
 
 /** "#ABC123 to BH2", or "Combined order (3 restaurants) to BH2" for a part of a combined order. */
 export const riderOrderLabel = (order: Order): string => (order.group
-  ? `Combined order (${order.group.size} restaurants) to ${order.dropoffHostel}`
+  ? `Combined order (${order.group.size} stores) to ${order.dropoffHostel}`
   : `${orderCode(order.id)} to ${order.dropoffHostel}`);
 
 export const canCancel = (order: Order): boolean => !isTerminal(order.status);
@@ -189,7 +189,7 @@ export const paymentMeta = (status: string): { label: string; cls: string } =>
 
 export const CANCELLED_BY_LABEL: Record<string, string> = {
   CUSTOMER: 'Customer',
-  VENDOR: 'Restaurant',
+  VENDOR: 'Store',
   ADMIN: 'Admin',
   SYSTEM: 'Automatic',
 };

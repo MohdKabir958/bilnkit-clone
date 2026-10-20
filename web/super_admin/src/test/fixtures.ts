@@ -180,7 +180,7 @@ export const rawGroupCancel = (over: Record<string, unknown> = {}) => ({
 /** One `GET /admin/orders/needs-attention` row for the primary of a combined order with a failed refund. */
 export const rawGroupAttentionRow = (over: Record<string, unknown> = {}) => ({
   problem: 'REFUND_FAILED', problems: ['REFUND_FAILED'],
-  detail: 'Refund failed (1 permanent failure(s) so far): provider error. Combined order of 2 restaurants (Kitchen 1, Kitchen 2): this one payment covers all of them.',
+  detail: 'Refund failed (1 permanent failure(s) so far): provider error. Combined order of 2 stores (Kitchen 1, Kitchen 2): this one payment covers all of them.',
   since: '2026-10-07T04:01:00.000Z', hint: 'Fix the cause, then retry.', groupId: GROUP_ID,
   order: rawGroupOrder(0, { status: 'CANCELLED', refundStatus: 'FAILED', refundError: 'provider error', cancelledBy: 'ADMIN', cancelledAt: '2026-10-07T04:00:00.000Z' }),
   ...over,

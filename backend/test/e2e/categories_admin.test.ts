@@ -214,7 +214,7 @@ describe('Managed categories', () => {
       for (const name of ['zt street food', 'ZT   STREET   FOOD', 'ZT Street-Food', ' ZT Street Food ']) {
         const r = await post('/api/admin/categories', { name });
         expect([name, r.status, r.body.code, r.body.field, r.body.existing?.id]).toEqual([name, 409, 'CATEGORY_EXISTS', 'name', a.id]);
-        expect(r.body.existing).toMatchObject({ name: `${P} Street Food`, slug: 'zt-street-food' });
+        expect(r.body.existing).toMatchObject({ name: `${P} Street Food`, slug: "zt-street-food" });
       }
       expect(await adminList()).toHaveLength(1);
     });
@@ -278,7 +278,7 @@ describe('Managed categories', () => {
         'ca-ven-2': `${P} Tea • ${P} Thalis & Combos • ${P} North`,
         'ca-ven-3': `${P} Thalis & Combos`,
       });
-      expect((await audits('CATEGORY_EDITED', thali.id))[0].summary).toContain('updated 3 dishes, 3 restaurants');
+      expect((await audits('CATEGORY_EDITED', thali.id))[0].summary).toContain("updated 3 products, 3 stores");
       // a case-only rename is a rename (same slug) and rewrites the strings again
       const c2 = await patch(`/api/admin/categories/${thali.id}`, { name: `${P} thalis & combos` });
       expect([c2.status, c2.body.changed]).toEqual([200, true]);
@@ -497,7 +497,7 @@ describe('Managed categories', () => {
         for (const v of [V[0], V[1]]) {
           const links = await prisma.vendorCategory.findMany({ where: { vendorId: v.id }, orderBy: [{ position: 'asc' }, { categoryId: 'asc' }], include: { category: true } });
           const row = await prisma.vendor.findUniqueOrThrow({ where: { id: v.id } });
-          expect([v.id, row.category]).toEqual([v.id, links.length ? links.map((l) => l.category.name).join(' • ') : 'Campus kitchen']);
+          expect([v.id, row.category]).toEqual([v.id, links.length ? links.map((l) => l.category.name).join(' • ') : "Grocery store"]);
           expect(new Set(links.map((l) => l.categoryId)).size).toBe(links.length);
         }
         // invariant 3: no two categories share a slug and no ZT category lost its name

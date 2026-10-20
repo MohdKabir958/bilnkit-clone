@@ -192,7 +192,7 @@ describe('Dish categories, bulk actions and menu import', () => {
     test('an edit that does NOT change the category never fails because the category was hidden or made restaurant-only since', async () => {
       const d = (await adminAdd({ category: `${P} Other` })).body.data;
       await adminPatch(`/api/admin/categories/${other.id}`, { isActive: false });
-      expect((await adminPatch(`/api/admin/catalog/${d.id}`, { name: 'Renamed dish' })).status).toBe(200);
+      expect((await adminPatch(`/api/admin/catalog/${d.id}`, { name: "Renamed product" })).status).toBe(200);
       expect((await adminPatch(`/api/admin/catalog/${d.id}`, { name: 'Renamed again', category: `${P} Other` })).status).toBe(200); // same name sent back
       expect((await adminPatch(`/api/admin/catalog/${d.id}`, { categoryId: other.id, isVeg: false })).status).toBe(200); // same id sent back
       const move = await adminPatch(`/api/admin/catalog/${d.id}`, { category: `${P} Hidden` }); // moving INTO a hidden one is refused
@@ -258,7 +258,7 @@ describe('Dish categories, bulk actions and menu import', () => {
       expect(r.body.data.failed).toBe(2);
       expect(r.body.data.results).toEqual([
         { id: a, ok: true, changed: true },
-        { id: b, ok: false, changed: false, code: 'ITEM_DELETED', message: 'This dish is deleted. Restore it first.' },
+        { id: b, ok: false, changed: false, code: 'ITEM_DELETED', message: "This product is deleted. Restore it first." },
         { id: 'no-such-dish', ok: false, changed: false, code: 'NOT_FOUND', message: 'Menu item not found.' },
         { id: c, ok: true, changed: true },
       ]);
@@ -382,10 +382,10 @@ describe('Dish categories, bulk actions and menu import', () => {
       }
       const [plain, full] = await Promise.all(r.body.data.rows.slice(0, 2).map((x: any) => dbDish(x.dishId)));
       expect(plain).toMatchObject({ name: 'Plain', category: `${P} Main`, categoryId: main.id, description: '', imageUrl: DEFAULT_IMG, isVeg: true, isAvailable: true });
-      expect(full).toMatchObject({ name: 'Full Dish', category: `${P} Other`, categoryId: other.id, description: 'Spicy', imageUrl: 'https://img.test/a.jpg', isVeg: false, isAvailable: false });
+      expect(full).toMatchObject({ name: "Full Dish", category: `${P} Other`, categoryId: other.id, description: 'Spicy', imageUrl: 'https://img.test/a.jpg', isVeg: false, isAvailable: false });
       // customers see them (approved, live)
       const menu = (await request.get(`/api/menus/${V1}`)).body.data;
-      expect(menu.map((m: any) => m.name).sort()).toEqual(['Cheap', 'Full Dish', 'Max', 'Plain']);
+      expect(menu.map((m: any) => m.name).sort()).toEqual(['Cheap', "Full Dish", 'Max', 'Plain']);
       const a = await audits('MENU_IMPORTED', V1);
       expect(a).toHaveLength(1);
       expect(a[0].summary).toContain('4 added, 0 updated, 0 skipped');
@@ -435,7 +435,7 @@ describe('Dish categories, bulk actions and menu import', () => {
       const skip = await imp(rows);
       expect(skip.body.data.rows.map((x: any) => [x.action, x.reason ?? null])).toEqual([['skip', 'DUPLICATE_EXISTS'], ['create', null], ['invalid', null], ['invalid', null], ['create', null]]);
       expect(skip.body.data.rows[2].errors[0].message).toMatch(/repeated in the file \(first at row 2\)/);
-      expect(skip.body.data.rows[3].errors[0].message).toMatch(/more than one dish with this name/);
+      expect(skip.body.data.rows[3].errors[0].message).toMatch(/more than one product with this name/);
       expect(skip.body.data.rows[0].dishId).toBeDefined();
       // a soft-deleted dish does not count: the name can be used again
       expect(skip.body.data.summary).toMatchObject({ create: 2, update: 0, skip: 1, invalid: 2 });

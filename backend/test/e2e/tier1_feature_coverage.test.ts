@@ -540,7 +540,7 @@ describe('Tier 1: Feature Coverage E2E Test Suite (30 Test Cases Across 6 Featur
       expect(badRes.status).toBe(400);
       expect(badRes.body.success).toBe(false);
       expect(badRes.body.error).toBe('Invalid Gate OTP');
-      expect(badRes.body.message).toBe('Invalid or expired 4-digit Gate Handshake OTP code.');
+      expect(badRes.body.message).toBe('Enter the valid 4-digit delivery code.');
 
       // 2. Valid OTP attempt with DRIVER role
       const goodRes = await request

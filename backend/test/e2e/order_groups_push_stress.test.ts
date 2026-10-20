@@ -120,7 +120,7 @@ describe('Order groups: push and stress', () => {
       const nd = fake.of('NEW_DELIVERY');
       expect(nd.map((m) => owner.get(m.token)!.replace('gs-', '')).sort()).toEqual(['rider-1']);
       expect(nd.every((m) => m.data.orderId === a)).toBe(true);
-      expect(nd[0].body).toBe('2 restaurants to Kothri, Bhopal. Tap to accept.');
+      expect(nd[0].body).toBe("2 stores to Kothri, Bhopal. Tap to accept.");
       expect(await prisma.pushLog.count({ where: { event: 'NEW_DELIVERY', orderId: b } })).toBe(0);
       // claim, pickup stop by stop: ONE "picked up" when the last stop is done
       expect((await api.claim(r1, b)).status).toBe(200);
@@ -168,7 +168,7 @@ describe('Order groups: push and stress', () => {
       expect(lines().sort()).toEqual(['ORDER_CANCELLED>cust-1', 'ORDER_CANCELLED_VENDOR>vown-1', 'REFUND_PROCESSED>cust-1']);
       expect(fake.of('ORDER_CANCELLED')[0]).toMatchObject({ data: { orderId: a }, body: expect.stringContaining('Out of paneer') });
       expect(fake.of('ORDER_CANCELLED')[0].body).toContain('Your refund is on its way.');
-      expect(fake.of('ORDER_CANCELLED_VENDOR')[0]).toMatchObject({ data: { orderId: a }, body: expect.stringContaining('another restaurant could not take this combined order') });
+      expect(fake.of('ORDER_CANCELLED_VENDOR')[0]).toMatchObject({ data: { orderId: a }, body: expect.stringContaining("another store could not take this combined order") });
       expect(fake.of('REFUND_PROCESSED')[0]).toMatchObject({ data: { orderId: a }, body: 'Rs 410 is on its way to your account (5-7 working days).' });
       expect(count('DELIVERY_CANCELLED')).toBe(0);
       // repeating the cancel and replaying the money change nothing
@@ -221,7 +221,7 @@ describe('Order groups: push and stress', () => {
       expect((await api.reassign(W.admin, b, r2.profileId)).status).toBe(200);
       await api.reassign(W.admin, a, r2.profileId); // same rider again: nothing new
       await flush();
-      expect(fake.of('DELIVERY_ASSIGNED').map((m) => [m.data.orderId, owner.get(m.token), m.body])).toEqual([[a, r2.id, '2 restaurants to Kothri, Bhopal.']]);
+      expect(fake.of('DELIVERY_ASSIGNED').map((m) => [m.data.orderId, owner.get(m.token), m.body])).toEqual([[a, r2.id, "2 stores to Kothri, Bhopal."]]);
       expect(count('NEW_DELIVERY')).toBe(0);
       // a rider that is busy is not announced a delivery any more
       fake.sent.length = 0;

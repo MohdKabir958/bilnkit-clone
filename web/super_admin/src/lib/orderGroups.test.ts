@@ -32,7 +32,7 @@ describe('parseGroupInfo (OrderView.group, Docs/22 10.4)', () => {
 
   it('ignores unknown fields and survives garbage stops; sorts stops by index; size is at least the stops listed', () => {
     const g = parseGroupInfo({ id: 'g1', index: '1', size: 1, primary: 'yes', future: { a: 1 }, stops: [null, 5, { orderId: 'b', index: 1, status: 'picked_up', vendor: null }, { orderId: 'a', index: 0 }, { index: 2 }] })!;
-    expect(g.stops.map((s) => [s.orderId, s.index, s.status, s.vendorName, s.itemCount])).toEqual([['a', 0, 'PLACED', 'Restaurant', 0], ['b', 1, 'PICKED_UP', 'Restaurant', 0]]);
+    expect(g.stops.map((s) => [s.orderId, s.index, s.status, s.vendorName, s.itemCount])).toEqual([['a', 0, 'PLACED', "Store", 0], ['b', 1, 'PICKED_UP', "Store", 0]]);
     expect(g.size).toBe(2);
     expect(g.index).toBe(1);
     expect(g.primary).toBe(false); // not a boolean: derived from index
@@ -40,15 +40,15 @@ describe('parseGroupInfo (OrderView.group, Docs/22 10.4)', () => {
 
   it('texts', () => {
     const g = parseGroupInfo(rawGroup(0))!;
-    expect(groupBadgeText(g)).toBe('Combined order · 2 restaurants');
+    expect(groupBadgeText(g)).toBe("Combined order · 2 stores");
     expect(groupPositionText({ index: 0, size: 3 })).toBe('1 of 3');
     expect(groupRestaurantNames(g)).toEqual(['Kitchen 1', 'Kitchen 2']);
     expect(groupSearchTerms(g)).toEqual([GROUP_ID, 'Kitchen 1', 'Kitchen 2']);
     expect(groupSearchTerms(undefined)).toEqual([]);
-    expect(cancelWholeGroupText({ size: 3 }, true)).toBe('This cancels the WHOLE combined order (all 3 restaurants) and refunds the customer in full.');
+    expect(cancelWholeGroupText({ size: 3 }, true)).toBe("This cancels the WHOLE combined order (all 3 stores) and refunds the customer in full.");
     expect(cancelWholeGroupText({ size: 3 }, false)).not.toContain('refunds the customer');
     expect(reassignWholeGroupText({ size: 2 })).toContain('all 2 orders');
-    expect(groupMoneyNote({ size: 2 })).toContain('whole combined order (2 restaurants)');
+    expect(groupMoneyNote({ size: 2 })).toContain("whole combined order (2 stores)");
     expect(GROUP_MONEY_PROBLEMS.has('REFUND_FAILED')).toBe(true);
     expect(GROUP_MONEY_PROBLEMS.has('NO_RIDER')).toBe(false);
   });
@@ -113,7 +113,7 @@ describe('parseGroupView (GET /api/order-groups/:id)', () => {
   });
 
   it('status wording', () => {
-    expect(groupStatusLabel('AWAITING_RESTAURANTS')).toBe('Waiting for restaurants');
+    expect(groupStatusLabel('AWAITING_RESTAURANTS')).toBe("Waiting for stores");
     expect(groupStatusLabel('PREPARING')).toBe('Preparing');
     expect(groupStatusLabel('SOMETHING_NEW')).toBe('Something new');
   });
@@ -152,7 +152,7 @@ describe('needs-attention rows of a combined order', () => {
     const [entry] = normalizeAttention({ success: true, data: [rawGroupAttentionRow()] });
     expect(entry.groupId).toBe(GROUP_ID);
     expect(entry.order?.group?.size).toBe(2);
-    expect(entry.problems[0].detail).toContain('Combined order of 2 restaurants');
+    expect(entry.problems[0].detail).toContain("Combined order of 2 stores");
   });
   it('a single-order row has no groupId', () => {
     const { groupId, ...single } = rawGroupAttentionRow();
@@ -186,7 +186,7 @@ describe('one rider, several parts', () => {
     expect(preferRiderOrder(normalizeOrder({ id: 'a' }), part(0, 'PICKED_UP'))).toBe(true);
   });
   it('label names the combined order instead of one part', () => {
-    expect(riderOrderLabel(part(0, 'PICKED_UP'))).toBe('Combined order (2 restaurants) to BH2');
+    expect(riderOrderLabel(part(0, 'PICKED_UP'))).toBe("Combined order (2 stores) to BH2");
     expect(riderOrderLabel(normalizeOrder({ id: 'abc123456', dropoffHostel: 'BH1' }))).toBe('#123456 to BH1');
   });
 });

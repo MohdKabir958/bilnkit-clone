@@ -127,7 +127,7 @@ describe('recalculate prices', () => {
     expect(apply().disabled).toBe(true); // nothing previewed yet
     await click(byText('button', 'Preview changes')!);
     expect(recalc).toHaveBeenCalledWith(true);
-    expect(document.querySelector('[data-testid="recalc-preview"]')?.textContent).toContain('12 of 80 dishes would change price.');
+    expect(document.querySelector('[data-testid="recalc-preview"]')?.textContent).toContain("12 of 80 products would change price.");
     expect(document.querySelector('[data-testid="recalc-preview"]')?.textContent).toContain('₹112 → ₹110');
     expect(document.querySelector('[data-testid="recalc-preview"]')?.textContent).toContain('Paneer Roll (Sharma Dhaba)');
     recalc.mockResolvedValueOnce(result({ changed: 12, total: 80, dryRun: false, applied: true }));
@@ -140,7 +140,7 @@ describe('recalculate prices', () => {
     await flush();
     expect(recalc).toHaveBeenCalledTimes(2);
     expect(recalc).toHaveBeenLastCalledWith(false);
-    expect(document.body.textContent).toContain('12 dishes updated');
+    expect(document.body.textContent).toContain("12 products updated");
   });
 
   it('refuses to apply when the preview has no count or zero changes', async () => {
@@ -148,11 +148,11 @@ describe('recalculate prices', () => {
     await render();
     const apply = () => byText('button', /^Recalculate prices/, document.querySelector('section[aria-label="Recalculate prices"]')!) as HTMLButtonElement;
     await click(byText('button', 'Preview changes')!);
-    expect(document.body.textContent).toContain('did not say how many dishes');
+    expect(document.body.textContent).toContain("did not say how many products");
     expect(apply().disabled).toBe(true);
     recalc.mockResolvedValueOnce(result({ changed: 0, total: 80 }));
     await click(byText('button', 'Preview changes')!);
-    expect(document.body.textContent).toContain('No dish would change');
+    expect(document.body.textContent).toContain("No product would change");
     expect(apply().disabled).toBe(true);
   });
 
@@ -180,14 +180,14 @@ describe('recalculate prices', () => {
 
 describe('real response details', () => {
   it('recalculateRecommended from the server shows the recalculate prompt until prices are recalculated', async () => {
-    (save as any).mockImplementation(async (_g: string, value: any) => ({ value, view: null, changed: true, recalculateRecommended: true, message: 'Saved. Existing dish prices keep their old value until you run "Recalculate prices".' }));
+    (save as any).mockImplementation(async (_g: string, value: any) => ({ value, view: null, changed: true, recalculateRecommended: true, message: 'Saved. Existing product prices keep their old value until you run "Recalculate prices".' }));
     recalc.mockResolvedValueOnce(result({ changed: 3, total: 9 })).mockResolvedValueOnce(result({ changed: 3, total: 9, dryRun: false, applied: true }));
     await render();
     expect(document.body.textContent).not.toContain('keep their old value until you recalculate');
     await type(byId('commission-value'), '15');
     await click(saveButton('Default commission'));
     await flush();
-    expect(document.body.textContent).toContain('Existing dish prices keep their old value until you recalculate');
+    expect(document.body.textContent).toContain("Existing product prices keep their old value until you recalculate");
     expect(document.body.textContent).toContain('Recalculate prices'); // the saved message is also toasted
     await click(byText('button', 'Preview changes')!);
     await click(byText('button', /^Recalculate prices \(3\)/)!);
@@ -210,7 +210,7 @@ describe('real response details', () => {
     await render();
     await click(byText('button', 'Preview changes')!);
     const box = document.querySelector('[data-testid="recalc-preview"]')!.textContent!;
-    expect(box).toContain('640 of 900 dishes would change price.');
+    expect(box).toContain("640 of 900 products would change price.");
     expect(box).toContain('Only the first changes are listed');
   });
 

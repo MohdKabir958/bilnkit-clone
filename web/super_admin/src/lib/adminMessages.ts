@@ -12,7 +12,7 @@ export const reassignFailureMessage = (code: string | undefined, serverMessage: 
 export const decisionToast = (app: Pick<Application, 'kind' | 'status'>, next: ApprovalStatus, who: string): [string, string] => {
   if (next === 'APPROVED' && app.status === 'SUSPENDED') {
     return app.kind === 'VENDOR'
-      ? ['Reactivated', `${who} is reactivated. It is closed until the restaurant opens it.`]
+      ? ['Reactivated', `${who} is reactivated. It is closed until the store opens it.`]
       : ['Reactivated', `${who} can work again. They go on duty from the app.`];
   }
   const messages: Record<ApprovalStatus, [string, string]> = {

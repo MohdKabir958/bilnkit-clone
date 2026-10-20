@@ -100,7 +100,7 @@ describe('Restaurant categories and profile edit', () => {
         name: '  RP   Great  Kitchen ', cuisineIds: [b.id, a.id, c.id], address: 'Near   Gate 4, Ashta road', bannerImage: 'https://img.test/new.png', fssaiNumber: '12345678901234', eta: '15-20 min',
       });
       expect(r.status).toBe(200);
-      expect(r.body).toMatchObject({ success: true, changed: true, message: 'Restaurant saved.' });
+      expect(r.body).toMatchObject({ success: true, changed: true, message: "Store saved." });
       const v = r.body.data;
       expect(v).toMatchObject({
         id: `${R}-1`, name: 'RP Great Kitchen', category: `${P} Thali • ${P} North • ${P} Chai`, address: 'Near Gate 4, Ashta road', bannerImage: 'https://img.test/new.png',
@@ -190,7 +190,7 @@ describe('Restaurant categories and profile edit', () => {
       expect([seven.status, seven.body.code, seven.body.field]).toEqual([400, 'TOO_MANY_CATEGORIES', 'cuisineIds']);
       expect((await row(`${R}-1`)).cuisines).toHaveLength(6);
       const none = await patchProfile(`${R}-1`, { cuisineIds: [] });
-      expect([none.status, none.body.data.category, none.body.data.cuisines, none.body.data.tags]).toEqual([200, 'Campus kitchen', [], []]);
+      expect([none.status, none.body.data.category, none.body.data.cuisines, none.body.data.tags]).toEqual([200, "Grocery store", [], []]);
 
       // a category that was hidden / made dish-only later: it can stay on the restaurants that have it, nobody can add it
       await patchProfile(`${R}-1`, { cuisineIds: [cats[0].id, cats[1].id] });
@@ -290,7 +290,7 @@ describe('Restaurant categories and profile edit', () => {
     test('no category at all keeps the old default text and creates no category; text that matches only hidden categories is kept as typed', async () => {
       const total = await prisma.category.count();
       const r = track(await adminCreate({}));
-      expect((await row(r.body.profileId)).category).toBe('Campus kitchen');
+      expect((await row(r.body.profileId)).category).toBe("Grocery store");
       expect((await row(r.body.profileId)).cuisines).toHaveLength(0);
       expect(await prisma.category.count()).toBe(total);
       const hid = await mkCat('Hid');

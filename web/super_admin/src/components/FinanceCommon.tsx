@@ -35,7 +35,7 @@ export const useLoad = <T,>(fetcher: () => Promise<T>, deps: ReadonlyArray<unkno
 export const ErrorNote: React.FC<{ message: string; onRetry?: () => void }> = ({ message, onRetry }) => (
   <div role="alert" className="flex items-center justify-between gap-3 rounded-k-md border border-kraveo-danger/30 bg-kraveo-danger/10 px-4 py-3 text-sm text-kraveo-ink">
     <span className="min-w-0 break-words">{message}</span>
-    {onRetry && <button type="button" className="k-btn-ghost !min-h-[36px] shrink-0 !px-3 text-xs" onClick={onRetry}>Try again</button>}
+    {onRetry && <button type="button" className="k-btn-ghost !min-h-[44px] shrink-0 !px-3 text-xs" onClick={onRetry}>Try again</button>}
   </div>
 );
 

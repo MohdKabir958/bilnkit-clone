@@ -22,8 +22,8 @@ const render = (over: Record<string, unknown> = {}) => {
 };
 const box = (name: string) => document.querySelector(`input[type="checkbox"][aria-label="Select ${name}"]`) as HTMLInputElement;
 const boxes = (name: string) => Array.from(document.querySelectorAll(`input[type="checkbox"][aria-label="Select ${name}"]`)) as HTMLInputElement[];
-const pageBox = () => Array.from(document.querySelectorAll('label')).find((l) => l.textContent?.includes('Select all dishes on this page'))!.querySelector('input') as HTMLInputElement;
-const bar = () => document.querySelector('section[aria-label="Actions for the selected dishes"]') as HTMLElement | null;
+const pageBox = () => Array.from(document.querySelectorAll('label')).find((l) => l.textContent?.includes("Select all products on this page"))!.querySelector('input') as HTMLInputElement;
+const bar = () => document.querySelector("section[aria-label=\"Actions for the selected products\"]") as HTMLElement | null;
 
 const setup = async (items = [dish('a'), dish('b'), dish('c')]) => {
   const fetchCatalog = vi.spyOn(apiService, 'fetchCatalog').mockResolvedValue(page(items));
@@ -39,15 +39,15 @@ afterEach(async () => { vi.restoreAllMocks(); await unmount(); });
 describe('selecting dishes', () => {
   it('every dish has a checkbox; ticking shows the bulk bar with the count; categories load only then', async () => {
     const { fetchCategories } = await setup();
-    expect(boxes('Dish a').length).toBeGreaterThan(0);
+    expect(boxes("Dish a").length).toBeGreaterThan(0);
     expect(bar()).toBeNull();
     expect(fetchCategories).not.toHaveBeenCalled();
     await click(boxes('Dish a')[0]);
     await flush();
-    expect(bar()!.textContent).toContain('1 dish selected');
+    expect(bar()!.textContent).toContain("1 product selected");
     expect(fetchCategories).toHaveBeenCalledTimes(1);
     await click(boxes('Dish b')[0]);
-    expect(bar()!.textContent).toContain('2 dishes selected');
+    expect(bar()!.textContent).toContain("2 products selected");
   });
 
   it('Select all on this page ticks every dish (with a half-ticked state), Clear selection empties it', async () => {
@@ -55,7 +55,7 @@ describe('selecting dishes', () => {
     await click(boxes('Dish a')[0]);
     expect(pageBox().indeterminate).toBe(true);
     await click(pageBox());
-    expect(bar()!.textContent).toContain('3 dishes selected');
+    expect(bar()!.textContent).toContain("3 products selected");
     expect(pageBox().checked).toBe(true);
     await click(byText('button', 'Clear selection', bar()!));
     expect(bar()).toBeNull();
@@ -96,7 +96,7 @@ describe('bulk actions', () => {
   it('a mixed result lists every failed dish with the server’s reason, and only those stay ticked', async () => {
     const result = parseBulkResult({ ...bulkMixed, data: { ...bulkMixed.data, results: [
       { id: 'a', ok: true, changed: true },
-      { id: 'b', ok: false, changed: false, code: 'ITEM_DELETED', message: 'This dish is deleted. Restore it first.' },
+      { id: 'b', ok: false, changed: false, code: 'ITEM_DELETED', message: 'This product is deleted. Restore it first.' },
       { id: 'c', ok: false, changed: false, code: 'NOT_FOUND', message: 'Menu item not found.' },
     ], ok: 1, failed: 2 }, message: '1 done, 2 could not be changed.' })!;
     vi.spyOn(apiService, 'bulkCatalog').mockResolvedValue(result);
@@ -106,12 +106,12 @@ describe('bulk actions', () => {
     await flush();
     const panel = document.querySelector('section[aria-label="Result of the last bulk action"]')!;
     expect(panel.textContent).toContain('Mark available: 1 done, 2 could not be changed.');
-    expect(panel.textContent).toContain('Dish b: This dish is deleted. Restore it first.');
+    expect(panel.textContent).toContain('Dish b: This product is deleted. Restore it first.');
     expect(panel.textContent).toContain('Dish c: Menu item not found.');
     expect(panel.textContent).not.toContain('Dish a:');
-    expect(bar()!.textContent).toContain('2 dishes selected');
-    expect(box('Dish a')).toBeTruthy();
-    expect(boxes('Dish a')[0].checked).toBe(false);
+    expect(bar()!.textContent).toContain("2 products selected");
+    expect(box("Dish a")).toBeTruthy();
+    expect(boxes("Dish a")[0].checked).toBe(false);
     expect(boxes('Dish b')[0].checked).toBe(true);
     await click(panel.querySelector('button[aria-label="Dismiss this result"]'));
     expect(document.querySelector('section[aria-label="Result of the last bulk action"]')).toBeNull();
@@ -123,7 +123,7 @@ describe('bulk actions', () => {
     await click(boxes('Dish a')[0]);
     await click(byText('button', 'Delete', bar()!));
     const dialog = document.querySelector('[role="alertdialog"]')!;
-    expect(dialog.textContent).toContain('Delete 1 dish?');
+    expect(dialog.textContent).toContain("Delete 1 product?");
     expect(dialog.textContent).toContain('you can restore them later');
     await click(byText('button', 'Cancel', dialog as HTMLElement));
     expect(bulk).not.toHaveBeenCalled();
@@ -139,7 +139,7 @@ describe('bulk actions', () => {
     const bulk = vi.spyOn(apiService, 'bulkCatalog').mockResolvedValue({ results: [], ok: 0, failed: 0, message: '' });
     await click(boxes('Dish a')[0]);
     await click(byText('button', 'Approve', bar()!));
-    expect(document.querySelector('[role="alertdialog"]')!.textContent).toContain('Approve 1 dish?');
+    expect(document.querySelector('[role="alertdialog"]')!.textContent).toContain("Approve 1 product?");
     await click(byText('button', 'Approve', document.querySelector('[role="alertdialog"]') as HTMLElement));
     await flush();
     expect(bulk).toHaveBeenLastCalledWith(['a'], 'APPROVE', undefined);
@@ -185,7 +185,7 @@ describe('bulk actions', () => {
     await click(byText('button', 'Change category', bar()!));
     await flush();
     expect(bar()!.querySelector('[role="alert"]')!.textContent).toBe('Pick a category from the list. Did you mean Biryani? Nothing was changed.');
-    expect(bar()!.textContent).toContain('1 dish selected');
+    expect(bar()!.textContent).toContain("1 product selected");
     expect(fetchCategories).toHaveBeenCalledTimes(2); // the list was refreshed
   });
 
@@ -219,7 +219,7 @@ describe('bulk actions', () => {
     const text = document.querySelector('section[aria-label="Result of the last bulk action"]')!.textContent!;
     expect(text).toContain('2 done, 2 could not be changed.');
     expect(text).toContain('Old Roll: This dish is deleted. Restore it first.');
-    expect(text).toContain('Ghost Dish: Menu item not found.');
+    expect(text).toContain("Ghost Dish: Menu item not found.");
   });
 });
 
@@ -237,10 +237,10 @@ describe('duplicate and import entry points', () => {
     await click(byText('button', 'Duplicate', document.querySelector('[role="dialog"]') as HTMLElement));
     await flush();
     const dialog = document.querySelector('[role="dialog"]')!;
-    expect(dialog.textContent).toContain('Duplicate dish');
+    expect(dialog.textContent).toContain("Duplicate product");
     expect((document.getElementById('dish-name') as HTMLInputElement).value).toBe('Paneer Roll (copy)');
     expect((document.getElementById('dish-image') as HTMLInputElement).value).toBe('https://img.example/roll.jpg');
-    await click(byText('button', 'Add dish', dialog as HTMLElement));
+    await click(byText('button', "Add product", dialog as HTMLElement));
     await flush();
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ vendorId: 'v1', name: 'Paneer Roll (copy)', categoryId: 'rolls-id', imageUrl: 'https://img.example/roll.jpg', vendorPrice: 100 }));
     expect(props.onPendingChanged).toHaveBeenCalled();

@@ -31,10 +31,10 @@ describe('fees: most restaurants in one order', () => {
     expect(select().value).toBe('4');
     expect(Array.from(select().options).map((o) => o.value)).toEqual(['1', '2', '3', '4', '5']);
     expect(Array.from(select().options)[0].textContent).toContain('combined orders off');
-    expect(feesCard()).toContain('Customers can combine up to 4 restaurants in one checkout: one payment, one rider, one gate code.');
+    expect(feesCard()).toContain("Customers can combine up to 4 stores in one checkout: one payment, one rider, one gate code.");
     expect(feesCard()).toContain('the whole order is cancelled and fully refunded');
     await type(select(), '1');
-    expect(feesCard()).toContain('Off: customers can order from one restaurant at a time.');
+    expect(feesCard()).toContain("Off: customers can order from one store at a time.");
     expect(select().getAttribute('aria-describedby')).toBe('fee-max-restaurants-msg');
   });
 
@@ -75,9 +75,9 @@ describe('fees: most restaurants in one order', () => {
 describe('fees: extra fee for each additional restaurant', () => {
   it('has a plain explanation with an example and the 0 to 200 range', async () => {
     await render();
-    expect(feesCard()).toContain('Added once for every restaurant after the first');
+    expect(feesCard()).toContain("Added once for every store after the first");
     expect(feesCard()).toContain('0 to 200');
-    expect(feesCard()).toContain('₹15 and 3 restaurants adds ₹30');
+    expect(feesCard()).toContain("₹15 and 3 stores adds ₹30");
   });
 
   it('accepts 0 and 200, refuses 201 (the server limit; other fees keep 500) and never sends it', async () => {

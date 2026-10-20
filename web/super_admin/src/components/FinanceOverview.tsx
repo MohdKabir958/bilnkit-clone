@@ -26,8 +26,8 @@ const Stat: React.FC<{ label: string; value: string; note?: string; tone?: 'good
 const SummaryCards: React.FC<{ s: FinanceSummary }> = ({ s }) => (
   <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-testid="finance-cards">
     <Stat label="Orders" value={String(s.orders)} note="Delivered and paid" />
-    <Stat label="Food gross" value={rupees(s.foodGross)} note="What customers paid for food" />
-    <Stat label="Restaurant amount" value={rupees(s.vendorAmount)} note="What the restaurants earn" />
+    <Stat label="Product sales" value={rupees(s.foodGross)} note="What customers paid for products" />
+    <Stat label="Store amount" value={rupees(s.vendorAmount)} note="What the stores earn" />
     <Stat label="Commission" value={rupees(s.commission)} />
     <Stat label="Fees collected" value={rupees(s.feesCollected)} note="Delivery and service fee" />
     <Stat label="Discounts" value={rupees(s.discounts)} note="Coupons paid by Grozo" />
@@ -41,7 +41,7 @@ const SummaryCards: React.FC<{ s: FinanceSummary }> = ({ s }) => (
 
 const Loading: React.FC = () => <div role="status" aria-label="Loading" className="space-y-3"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-2/3" /></div>;
 
-const SORT_LABEL: Record<DishSort, string> = { units: 'Units sold', vendorRevenue: 'Restaurant revenue', commission: 'Commission' };
+const SORT_LABEL: Record<DishSort, string> = { units: 'Units sold', vendorRevenue: 'Store revenue', commission: 'Commission' };
 const TOP_CHOICES = [10, 20, 50, 100];
 
 export const FinanceOverview: React.FC<Props> = ({ vendors, onAuthError }) => {
@@ -80,7 +80,7 @@ export const FinanceOverview: React.FC<Props> = ({ vendors, onAuthError }) => {
         {byDay.data && byDay.data.rows.length === 0 && !byDay.error && <EmptyState icon={BarChart3} title="No days to show" description="The server returned no days for this range." />}
         {byDay.data && byDay.data.rows.length > 0 && (
           <ScrollTable caption="Finance by day" minWidth="min-w-[820px]">
-            <thead><tr><Th>Date</Th><Th right>Orders</Th><Th right>Food gross</Th><Th right>Commission</Th><Th right>Fees</Th><Th right>Discounts</Th><Th right>Platform revenue</Th><Th right>Refunds</Th></tr></thead>
+            <thead><tr><Th>Date</Th><Th right>Orders</Th><Th right>Product sales</Th><Th right>Commission</Th><Th right>Fees</Th><Th right>Discounts</Th><Th right>Platform revenue</Th><Th right>Refunds</Th></tr></thead>
             <tbody>
               {byDay.data.rows.map((row) => (
                 <tr key={row.date}>
@@ -106,13 +106,13 @@ export const FinanceOverview: React.FC<Props> = ({ vendors, onAuthError }) => {
         )}
       </SectionCard>
 
-      <SectionCard title="By restaurant" description="Highest restaurant earnings first.">
+      <SectionCard title="By store" description="Highest store earnings first.">
         {byRestaurant.loading && !byRestaurant.data && <Loading />}
         {byRestaurant.error && <ErrorNote message={byRestaurant.error} onRetry={byRestaurant.reload} />}
-        {byRestaurant.data && byRestaurant.data.rows.length === 0 && !byRestaurant.error && <p className="text-sm text-kraveo-ink2">No restaurant had a delivered, paid order in this range.</p>}
+        {byRestaurant.data && byRestaurant.data.rows.length === 0 && !byRestaurant.error && <p className="text-sm text-kraveo-ink2">No store had a delivered, paid order in this range.</p>}
         {byRestaurant.data && byRestaurant.data.rows.length > 0 && (
-          <ScrollTable caption="Finance by restaurant" minWidth="min-w-[860px]">
-            <thead><tr><Th>Restaurant</Th><Th right>Orders</Th><Th right>Food gross</Th><Th right>Restaurant amount</Th><Th right>Commission</Th><Th right>Platform revenue</Th><Th right>Unsettled</Th><Th right>Refunds</Th></tr></thead>
+          <ScrollTable caption="Finance by store" minWidth="min-w-[860px]">
+            <thead><tr><Th>Store</Th><Th right>Orders</Th><Th right>Product sales</Th><Th right>Store amount</Th><Th right>Commission</Th><Th right>Platform revenue</Th><Th right>Unsettled</Th><Th right>Refunds</Th></tr></thead>
             <tbody>
               {byRestaurant.data.rows.map((row) => (
                 <tr key={row.vendorId}>
@@ -132,13 +132,13 @@ export const FinanceOverview: React.FC<Props> = ({ vendors, onAuthError }) => {
       </SectionCard>
 
       <SectionCard
-        title="By dish"
+        title="By product"
         description="The best sellers in the range."
         actions={(
           <>
-            <label className="sr-only" htmlFor="finance-dish-vendor">Restaurant</label>
+            <label className="sr-only" htmlFor="finance-dish-vendor">Store</label>
             <select id="finance-dish-vendor" className="k-select !min-h-[40px] w-full sm:w-48" value={vendorId} onChange={(event) => setVendorId(event.target.value)}>
-              <option value="">All restaurants</option>
+              <option value="">All stores</option>
               {sortedVendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
             </select>
             <label className="sr-only" htmlFor="finance-dish-top">Show top</label>
@@ -148,16 +148,16 @@ export const FinanceOverview: React.FC<Props> = ({ vendors, onAuthError }) => {
           </>
         )}
       >
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 scrollbar-none" role="group" aria-label="Sort dishes by">
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 scrollbar-none" role="group" aria-label="Sort products by">
           {DISH_SORTS.map((id) => <button key={id} type="button" className="k-chip" aria-pressed={sort === id} onClick={() => setSort(id)}>{SORT_LABEL[id]}</button>)}
         </div>
         {byDish.loading && !byDish.data && <Loading />}
         {byDish.error && <ErrorNote message={byDish.error} onRetry={byDish.reload} />}
-        {byDish.data && byDish.data.rows.length === 0 && !byDish.error && <p className="text-sm text-kraveo-ink2">No dishes were sold in this range.</p>}
+        {byDish.data && byDish.data.rows.length === 0 && !byDish.error && <p className="text-sm text-kraveo-ink2">No products were sold in this range.</p>}
         {byDish.data && byDish.data.rows.length > 0 && (
           <div className={byDish.loading ? 'opacity-60 transition-opacity' : 'transition-opacity'} aria-busy={byDish.loading}>
-            <ScrollTable caption="Finance by dish" minWidth="min-w-[760px]">
-              <thead><tr><Th>Dish</Th><Th>Restaurant</Th><Th right>Units</Th><Th right>Customers paid</Th><Th right>Restaurant revenue</Th><Th right>Commission</Th></tr></thead>
+            <ScrollTable caption="Finance by product" minWidth="min-w-[760px]">
+              <thead><tr><Th>Product</Th><Th>Store</Th><Th right>Units</Th><Th right>Customers paid</Th><Th right>Store revenue</Th><Th right>Commission</Th></tr></thead>
               <tbody>
                 {byDish.data.rows.map((row, index) => (
                   <tr key={`${row.vendorId}-${row.menuItemId ?? row.name}-${index}`}>

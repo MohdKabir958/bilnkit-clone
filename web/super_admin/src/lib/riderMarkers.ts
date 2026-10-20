@@ -21,7 +21,7 @@ export const RIDER_STATE_ORDER: RiderMarkerState[] = ['idle', 'toRestaurant', 'd
 
 export const RIDER_STATE_META: Record<RiderMarkerState, RiderStateMeta> = {
   idle: { label: 'Idle', hex: '#43AE55', dot: 'bg-kraveo-g400', text: 'text-kraveo-g400' },
-  toRestaurant: { label: 'To restaurant', hex: '#F5A524', dot: 'bg-kraveo-status-placed', text: 'text-kraveo-status-placed' },
+  toRestaurant: { label: 'To store', hex: '#F5A524', dot: 'bg-kraveo-status-placed', text: 'text-kraveo-status-placed' },
   delivering: { label: 'Delivering', hex: '#3B82F6', dot: 'bg-kraveo-status-pickedUp', text: 'text-kraveo-status-pickedUp' },
   stale: { label: 'Stale', hex: '#9CA3AF', dot: 'bg-kraveo-ink3', text: 'text-kraveo-ink2' },
   offline: { label: 'Offline', hex: '#4B5563', dot: 'bg-kraveo-line', text: 'text-kraveo-ink3' },
@@ -108,7 +108,7 @@ export const mergeRiderPins = (previous: DriverPin[], updates: DriverPin[]): Dri
       // keep what the update did not carry
       dutyStatus: u.dutyStatus ?? cur.dutyStatus,
       approvalStatus: u.approvalStatus ?? cur.approvalStatus,
-      name: u.name && u.name !== 'Runner' ? u.name : cur.name,
+      name: u.name && !['Runner', 'Delivery partner'].includes(u.name) ? u.name : cur.name,
     };
     const same = merged.lat === cur.lat && merged.lng === cur.lng && merged.heading === cur.heading && merged.lastUpdated === cur.lastUpdated
       && merged.dutyStatus === cur.dutyStatus && merged.approvalStatus === cur.approvalStatus && merged.name === cur.name;

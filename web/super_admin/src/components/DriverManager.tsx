@@ -85,21 +85,21 @@ export const DriverManager: React.FC<DriverManagerProps> = ({ drivers, orders = 
 
   return (
     <div className="space-y-5">
-      <section aria-label="Runner summary" className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+      <section aria-label="Delivery partner summary" className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <KpiTile index={0} loading={initialLoad} label="On duty" icon={Users}
           value={<><AnimatedNumber value={hasData ? activeCount : null} />{hasData && <span className="text-xl text-kraveo-ink3"> / {drivers.length}</span>}</>}
-          note={hasData ? `${counts.IN_TRANSIT} delivering now` : 'No runners registered'} />
+          note={hasData ? `${counts.IN_TRANSIT} delivering now` : 'No delivery partners registered'} />
         <KpiTile index={1} loading={initialLoad} label="Trips today" icon={Zap} tone="text-kraveo-status-pickedUp" toneBg="bg-kraveo-status-pickedUp/15"
           value={<AnimatedNumber value={hasData ? totalOrdersToday : null} />} note="Delivered today, from the loaded orders" />
         <KpiTile index={2} loading={initialLoad} label="Delivering now" icon={Truck} tone="text-kraveo-status-ready" toneBg="bg-kraveo-status-ready/15"
-          value={<AnimatedNumber value={hasData ? counts.IN_TRANSIT : null} />} note="Runners on a delivery" />
+          value={<AnimatedNumber value={hasData ? counts.IN_TRANSIT : null} />} note="Delivery partners on a delivery" />
         <KpiTile index={3} loading={initialLoad} label="Offline" icon={Moon} tone="text-kraveo-status-atGate" toneBg="bg-kraveo-status-atGate/15"
           value={<AnimatedNumber value={hasData ? counts.OFFLINE : null} />} note="Registered but not on duty" />
       </section>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0" role="group" aria-label="Filter by duty status">
-        {([['ALL', 'All runners'], ['ONLINE', 'Online'], ['IN_TRANSIT', 'In transit'], ['OFFLINE', 'Offline']] as const).map(([id, label]) => (
+        {([['ALL', 'All delivery partners'], ['ONLINE', 'Online'], ['IN_TRANSIT', 'In transit'], ['OFFLINE', 'Offline']] as const).map(([id, label]) => (
           <button key={id} className="k-chip" aria-pressed={filter === id} onClick={() => setFilter(id)}>
             {label}
             <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums ${filter === id ? 'bg-kraveo-g400/25' : 'bg-kraveo-line/70'}`}>{counts[id]}</span>
@@ -111,10 +111,10 @@ export const DriverManager: React.FC<DriverManagerProps> = ({ drivers, orders = 
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 2xl:grid-cols-3">
         {initialLoad && Array.from({ length: 6 }).map((_, index) => <SkeletonCard key={index} lines={2} />)}
-        {!initialLoad && !hasData && <div className="k-card sm:col-span-2 2xl:col-span-3"><EmptyState icon={Bike} title="No runners yet" description="Riders appear here once you add one or approve an application from the Applications tab." action={<button className="k-btn-accent" onClick={() => setShowAdd(true)}><Plus className="h-4 w-4" aria-hidden="true" /> Add rider</button>} /></div>}
+        {!initialLoad && !hasData && <div className="k-card sm:col-span-2 2xl:col-span-3"><EmptyState icon={Bike} title="No delivery partners yet" description="Riders appear here once you add one or approve an application from the Applications tab." action={<button className="k-btn-accent" onClick={() => setShowAdd(true)}><Plus className="h-4 w-4" aria-hidden="true" /> Add rider</button>} /></div>}
         {!initialLoad && hasData && filtered.length === 0 && (
           <div className="k-card sm:col-span-2 2xl:col-span-3">
-            <EmptyState icon={SearchX} title="No runners match" description="Nothing matches the current filter and search." action={<button className="k-btn-ghost" onClick={() => { setFilter('ALL'); onClearQuery?.(); }}>Clear filters</button>} />
+            <EmptyState icon={SearchX} title="No delivery partners match" description="Nothing matches the current filter and search." action={<button className="k-btn-ghost" onClick={() => { setFilter('ALL'); onClearQuery?.(); }}>Clear filters</button>} />
           </div>
         )}
         {filtered.map((d, index) => (
@@ -132,7 +132,7 @@ export const DriverManager: React.FC<DriverManagerProps> = ({ drivers, orders = 
               <Avatar name={d.name} imageUrl={d.avatarUrl} size="lg" />
               <div className="min-w-0 flex-1">
                 <h3 className="truncate font-display text-lg font-bold leading-tight text-kraveo-ink">{d.name}</h3>
-                <p className="truncate text-xs text-kraveo-ink3">{d.runnerCode ? `Runner ${d.runnerCode}` : 'No runner code'}{d.phone ? ` · ${d.phone}` : ''}</p>
+                <p className="truncate text-xs text-kraveo-ink3">{d.runnerCode ? `Delivery partner ${d.runnerCode}` : 'No delivery partner code'}{d.phone ? ` · ${d.phone}` : ''}</p>
                 <div className="mt-2 flex flex-wrap gap-1.5"><DutyPill status={d.dutyStatus} /><ApprovalPill status={d.approvalStatus} /></div>
               </div>
               <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-kraveo-ink3" aria-hidden="true" />
@@ -147,8 +147,8 @@ export const DriverManager: React.FC<DriverManagerProps> = ({ drivers, orders = 
       <Drawer
         open={Boolean(selectedDriver)}
         onClose={() => setSelectedId(null)}
-        title={selectedDriver?.name ?? 'Runner'}
-        subtitle={selectedDriver?.runnerCode ? `Runner code ${selectedDriver.runnerCode}` : 'Runner details'}
+        title={selectedDriver?.name ?? 'Delivery partner'}
+        subtitle={selectedDriver?.runnerCode ? `Delivery partner code ${selectedDriver.runnerCode}` : 'Delivery partner details'}
         icon={Bike}
         footer={<button onClick={() => setSelectedId(null)} className="k-btn-ghost mb-1 w-full">Close</button>}
       >
@@ -162,7 +162,7 @@ export const DriverManager: React.FC<DriverManagerProps> = ({ drivers, orders = 
               <DetailRow label="Trips today">{tripsFor(selectedDriver)}</DetailRow>
             </div>
             {selectedDriver.approvalStatus && selectedDriver.approvalStatus !== 'APPROVED' && <DetailRow label="Approval"><ApprovalPill status={selectedDriver.approvalStatus} /></DetailRow>}
-            {selectedDriver.studentRegNo && <DetailRow label="Student reg no.">{dash(selectedDriver.studentRegNo)}</DetailRow>}
+            {selectedDriver.studentRegNo && <DetailRow label="Customer reg no.">{dash(selectedDriver.studentRegNo)}</DetailRow>}
             <DetailRow label="Phone">
               {selectedDriver.phone ? <a className="inline-flex items-center gap-1.5 text-kraveo-g300 hover:underline" href={`tel:${selectedDriver.phone}`}><Phone className="h-3.5 w-3.5" aria-hidden="true" />{selectedDriver.phone}</a> : '-'}
             </DetailRow>

@@ -38,7 +38,7 @@ const parseStop = (raw: any, fallbackIndex: number): GroupStop | null => {
     orderId,
     index: whole(raw.index) ?? fallbackIndex,
     status: (text(raw.status) ?? 'PLACED').toUpperCase(),
-    vendorName: text(vendor.name) ?? 'Restaurant',
+    vendorName: text(vendor.name) ?? 'Store',
     vendorAddress: text(vendor.address),
     itemCount: whole(raw.itemCount) ?? 0,
   };
@@ -68,10 +68,10 @@ export const groupIdOf = (order: MaybeGrouped | null | undefined): string | unde
 export const isGrouped = (order: MaybeGrouped | null | undefined): boolean => Boolean(order?.group);
 
 /** "Combined order · 3 restaurants". */
-export const groupBadgeText = (group: Pick<OrderGroupInfo, 'size'>): string => `Combined order · ${group.size} restaurants`;
+export const groupBadgeText = (group: Pick<OrderGroupInfo, 'size'>): string => `Combined order · ${group.size} stores`;
 /** "1 of 3" (the first restaurant of three). */
 export const groupPositionText = (group: Pick<OrderGroupInfo, 'index' | 'size'>): string => `${group.index + 1} of ${group.size}`;
-export const groupBadgeLabel = (group: Pick<OrderGroupInfo, 'index' | 'size'>): string => `Combined order of ${group.size} restaurants, this is restaurant ${groupPositionText(group)}`;
+export const groupBadgeLabel = (group: Pick<OrderGroupInfo, 'index' | 'size'>): string => `Combined order of ${group.size} stores, this is store ${groupPositionText(group)}`;
 
 /** Restaurant names in order, for a one-line summary. */
 export const groupRestaurantNames = (group: OrderGroupInfo): string[] => group.stops.map((stop) => stop.vendorName);
@@ -81,8 +81,8 @@ export const groupSearchTerms = (group: OrderGroupInfo | undefined): string[] =>
 
 /** What an admin must read before cancelling any part of a combined order. */
 export const cancelWholeGroupText = (group: Pick<OrderGroupInfo, 'size'>, paid: boolean): string => (paid
-  ? `This cancels the WHOLE combined order (all ${group.size} restaurants) and refunds the customer in full.`
-  : `This cancels the WHOLE combined order (all ${group.size} restaurants). Nothing was paid, so nothing is refunded.`);
+  ? `This cancels the WHOLE combined order (all ${group.size} stores) and refunds the customer in full.`
+  : `This cancels the WHOLE combined order (all ${group.size} stores). Nothing was paid, so nothing is refunded.`);
 
 export const reassignWholeGroupText = (group: Pick<OrderGroupInfo, 'size'>): string =>
   `Combined order: this moves all ${group.size} orders to the rider (one rider carries the whole group).`;
@@ -90,7 +90,7 @@ export const reassignWholeGroupText = (group: Pick<OrderGroupInfo, 'size'>): str
 /** Money problems of a combined order live on its primary order and cover every restaurant. */
 export const GROUP_MONEY_PROBLEMS = new Set(['PAYMENT_MISMATCH', 'DUPLICATE_PAYMENT', 'REFUND_FAILED', 'REFUND_PENDING', 'PAID_AFTER_CANCEL']);
 export const groupMoneyNote = (group: Pick<OrderGroupInfo, 'size'>): string =>
-  `The payment and the refund belong to the whole combined order (${group.size} restaurants), not to one restaurant. Any refund is for the full group total.`;
+  `The payment and the refund belong to the whole combined order (${group.size} stores), not to one store. Any refund is for the full group total.`;
 
 // ───────────────────────── Admin cancel answer ─────────────────────────
 

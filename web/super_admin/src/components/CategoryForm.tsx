@@ -121,7 +121,7 @@ export const CategoryForm: React.FC<Props> = ({ category, mode, preset = DEFAULT
       )}
 
       {mode === 'full' && (
-        <Field label="Hindi name (optional)" htmlFor={id('hi')} error={error('nameHi')} hint="Shown next to the English name in the restaurant app.">
+        <Field label="Hindi name (optional)" htmlFor={id('hi')} error={error('nameHi')} hint="Shown next to the English name in the store app.">
           <input id={id('hi')} className="k-input" lang="hi" value={form.nameHi} maxLength={40} autoComplete="off" disabled={saving} onChange={(e) => set('nameHi', e.target.value)} aria-invalid={Boolean(error('nameHi'))} aria-describedby={`${id('hi')}-msg`} />
         </Field>
       )}
@@ -153,12 +153,12 @@ export const CategoryForm: React.FC<Props> = ({ category, mode, preset = DEFAULT
       {mode === 'full' && (
         <div className="space-y-2">
           <p className="k-label">Where it is used</p>
-          {flagRow('forRestaurants', 'Restaurants', 'Can be picked as a cuisine when adding or editing a restaurant.')}
-          {flagRow('forDishes', 'Dishes', 'Can be picked as the category of a dish.')}
-          {flagRow('showOnHome', 'Home chip', 'Shows as a quick filter on the customer app’s home screen, once a restaurant or dish uses it.')}
+          {flagRow('forRestaurants', 'Stores', 'Can be picked as a cuisine when adding or editing a store.')}
+          {flagRow('forDishes', 'Products', 'Can be picked as the category of a product.')}
+          {flagRow('showOnHome', 'Home chip', 'Shows as a quick filter on the customer app’s home screen, once a store or product uses it.')}
           {editing && (
             <div className="k-inset flex items-start justify-between gap-3 px-4 py-3">
-              <div className="min-w-0"><p className="text-sm font-bold text-kraveo-ink">Active</p><p className="text-[11px] text-kraveo-ink3">Off hides it from pickers and the home screen. Restaurants and dishes that already use it keep it.</p></div>
+              <div className="min-w-0"><p className="text-sm font-bold text-kraveo-ink">Active</p><p className="text-[11px] text-kraveo-ink3">Off hides it from pickers and the home screen. Stores and products that already use it keep it.</p></div>
               <Switch checked={form.isActive} onChange={() => set('isActive', !form.isActive)} label="Active" disabled={saving} />
             </div>
           )}

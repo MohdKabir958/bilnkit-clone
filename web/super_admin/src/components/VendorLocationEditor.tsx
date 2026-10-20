@@ -73,7 +73,7 @@ export const VendorLocationEditor: React.FC<Props> = ({ id, name, pin, onSaved, 
           )}
           <PinSourceBadge pin={pin} notSetLabel={notSetLabel} />
         </div>
-        {!editing && <button type="button" className="k-btn-ghost !min-h-[36px] shrink-0 !px-3 text-xs" onClick={open} aria-label={`${has ? 'Change' : 'Set'} map location of ${name}`}>{has ? 'Change' : 'Set location'}</button>}
+        {!editing && <button type="button" className="k-btn-ghost !min-h-[44px] shrink-0 !px-3 text-xs" onClick={open} aria-label={`${has ? 'Change' : 'Set'} map location of ${name}`}>{has ? 'Change' : 'Set location'}</button>}
       </div>
       {editing && (
         <form onSubmit={save} className="mt-3 space-y-2" noValidate>
@@ -81,8 +81,8 @@ export const VendorLocationEditor: React.FC<Props> = ({ id, name, pin, onSaved, 
             <input id={inputId} className="k-input" inputMode="decimal" autoComplete="off" autoFocus value={text} onChange={(e) => { setText(e.target.value); setError(''); }} placeholder="23.0745, 76.8590" aria-invalid={Boolean(error)} aria-describedby={error ? `${inputId}-msg` : undefined} />
           </Field>
           <div className="flex gap-2">
-            <button type="button" className="k-btn-ghost flex-1 !min-h-[36px] text-xs" onClick={() => setEditing(false)} disabled={saving}>Cancel</button>
-            <button type="submit" className="k-btn-primary flex-1 !min-h-[36px] text-xs" disabled={saving} aria-busy={saving}>{saving ? <><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />Saving…</> : 'Save location'}</button>
+            <button type="button" className="k-btn-ghost flex-1 !min-h-[44px] text-xs" onClick={() => setEditing(false)} disabled={saving}>Cancel</button>
+            <button type="submit" className="k-btn-primary flex-1 !min-h-[44px] text-xs" disabled={saving} aria-busy={saving}>{saving ? <><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />Saving…</> : 'Save location'}</button>
           </div>
         </form>
       )}

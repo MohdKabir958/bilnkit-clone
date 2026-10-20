@@ -87,7 +87,7 @@ export const SettlementDrawer: React.FC<Props> = ({ settlementId, preview, onClo
     const input: MarkPaidInput = payCheck.value;
     const ok = await confirm({
       title: `Mark ${rupees(s.netPayable)} as paid?`,
-      message: `You are saying ${s.vendorName} was paid ${rupees(s.netPayable)} with reference ${input.reference}. The restaurant sees it as paid. A paid settlement cannot be undone or cancelled.`,
+      message: `You are saying ${s.vendorName} was paid ${rupees(s.netPayable)} with reference ${input.reference}. The store sees it as paid. A paid settlement cannot be undone or cancelled.`,
       confirmLabel: 'Mark as paid',
     });
     if (!ok) return;
@@ -212,7 +212,7 @@ export const SettlementDrawer: React.FC<Props> = ({ settlementId, preview, onClo
 
         {mode === 'adjust' && (
           <form className="k-inset space-y-3 p-4" aria-label="Add adjustment" noValidate onSubmit={(event) => { event.preventDefault(); submitAdjust(); }}>
-            <p className="text-sm text-kraveo-ink2">+ pays the restaurant more, - deducts. It changes the payable amount ({rupees(s.netPayable)} now).</p>
+            <p className="text-sm text-kraveo-ink2">+ pays the store more, - deducts. It changes the payable amount ({rupees(s.netPayable)} now).</p>
             <Field label="Amount (₹, + or -)" htmlFor="settle-adj-amount" required error={showError('amount', adjErrors)}>
               <input id="settle-adj-amount" className="k-input" inputMode="decimal" value={adjForm.amount} onChange={(e) => setAdjForm((f) => ({ ...f, amount: e.target.value }))} placeholder="-50 or 25.50" aria-invalid={Boolean(showError('amount', adjErrors))} aria-describedby="settle-adj-amount-msg" autoComplete="off" />
             </Field>
@@ -228,8 +228,8 @@ export const SettlementDrawer: React.FC<Props> = ({ settlementId, preview, onClo
 
         <section aria-label="Totals" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           <Total label="Orders" value={String(s.orderCount)} />
-          <Total label="Customers paid for food" value={rupees(s.foodGross)} />
-          <Total label="Restaurant amount" value={rupees(s.vendorAmount)} />
+          <Total label="Customers paid for products" value={rupees(s.foodGross)} />
+          <Total label="Store amount" value={rupees(s.vendorAmount)} />
           <Total label="Commission" value={rupees(s.commissionAmount)} />
           <Total label="Adjustments" value={rupeesSigned(s.adjustmentTotal)} />
           <Total label="Net payable" value={rupees(s.netPayable)} strong />
@@ -253,7 +253,7 @@ export const SettlementDrawer: React.FC<Props> = ({ settlementId, preview, onClo
               <p className="text-xs text-kraveo-ink3">{snap.verified ? 'Verified at that time' : 'Not verified at that time'}</p>
             </div>
           ) : (
-            <p role="status" className="rounded-k-sm border border-kraveo-status-placed/40 bg-kraveo-status-placed/10 px-3 py-2 text-sm text-kraveo-ink">No payout details were saved when this settlement was created. Ask the restaurant to add them, or add them below.</p>
+            <p role="status" className="rounded-k-sm border border-kraveo-status-placed/40 bg-kraveo-status-placed/10 px-3 py-2 text-sm text-kraveo-ink">No payout details were saved when this settlement was created. Ask the store to add them, or add them below.</p>
           )}
           {detail.loading && !d && <Skeleton className="h-20 w-full" />}
           {d && <PayoutAccountPanel userId={d.vendor.userId} name={d.vendor.name} kind="restaurant" initial={d.payoutAccount} onAuthError={onAuthError} />}
@@ -278,11 +278,11 @@ export const SettlementDrawer: React.FC<Props> = ({ settlementId, preview, onClo
               )}
             </section>
 
-            <section aria-label="Dishes" className="space-y-2">
-              <h3 className="font-display text-base font-bold text-kraveo-ink">Dishes</h3>
-              {d.dishes.length === 0 ? <p className="text-sm text-kraveo-ink2">No dish lines.</p> : (
-                <ScrollTable caption="Dish lines of this settlement" minWidth="min-w-[420px]">
-                  <thead><tr><Th>Dish</Th><Th right>Units</Th><Th right>Restaurant revenue</Th><Th right>Commission</Th></tr></thead>
+            <section aria-label="Products" className="space-y-2">
+              <h3 className="font-display text-base font-bold text-kraveo-ink">Products</h3>
+              {d.dishes.length === 0 ? <p className="text-sm text-kraveo-ink2">No product lines.</p> : (
+                <ScrollTable caption="Product lines of this settlement" minWidth="min-w-[420px]">
+                  <thead><tr><Th>Product</Th><Th right>Units</Th><Th right>Store revenue</Th><Th right>Commission</Th></tr></thead>
                   <tbody>{d.dishes.map((dish, index) => <tr key={`${dish.menuItemId ?? dish.name}-${index}`}><Td className="break-words font-bold text-kraveo-ink">{dish.name}</Td><Td right>{dish.units}</Td><Td right>{rupees(dish.vendorRevenue)}</Td><Td right>{rupees(dish.commission)}</Td></tr>)}</tbody>
                 </ScrollTable>
               )}
@@ -292,7 +292,7 @@ export const SettlementDrawer: React.FC<Props> = ({ settlementId, preview, onClo
               <h3 className="font-display text-base font-bold text-kraveo-ink">Orders</h3>
               {d.orders.length === 0 ? <p className="text-sm text-kraveo-ink2">No orders are in this settlement{status === 'CANCELLED' ? ' (they were released when it was cancelled)' : ''}.</p> : (
                 <ScrollTable caption="Orders of this settlement" minWidth="min-w-[560px]">
-                  <thead><tr><Th>Order</Th><Th>Delivered</Th><Th right>Food</Th><Th right>Restaurant</Th><Th right>Commission</Th></tr></thead>
+                  <thead><tr><Th>Order</Th><Th>Delivered</Th><Th right>Products</Th><Th right>Store</Th><Th right>Commission</Th></tr></thead>
                   <tbody>{d.orders.map((o) => <tr key={o.id}><Td className="font-mono text-xs text-kraveo-ink">{o.id.slice(0, 8)}</Td><Td className="whitespace-nowrap">{istDateTime(o.deliveredAt)}</Td><Td right>{rupees(o.subtotal)}</Td><Td right>{rupees(o.vendorSubtotal)}</Td><Td right>{rupees(o.commissionTotal)}</Td></tr>)}</tbody>
                 </ScrollTable>
               )}

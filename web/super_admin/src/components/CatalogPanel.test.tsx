@@ -25,7 +25,7 @@ describe('CatalogPanel', () => {
     const host = await mount(element);
     await flush();
     expect(fetchCatalog).toHaveBeenCalledWith({ status: 'PENDING', vendorId: '', q: '', page: 1 });
-    expect(host.textContent).toContain('Dish a');
+    expect(host.textContent).toContain("Dish a");
     expect(host.textContent).toContain('₹112.50');
     expect(host.textContent).toContain('Pending approval');
     expect(host.querySelector('button[aria-pressed="true"]')?.textContent).toContain('Needs review');
@@ -59,7 +59,7 @@ describe('CatalogPanel', () => {
     expect(fetchCatalog).not.toHaveBeenCalled();
     await act(async () => { await vi.advanceTimersByTimeAsync(300); });
     expect(fetchCatalog).toHaveBeenCalledWith({ status: 'PENDING', vendorId: '', q: 'roll', page: 1 });
-    expect(host.textContent).toContain('1 dish match');
+    expect(host.textContent).toContain("1 product match");
     vi.useRealTimers();
   });
 
@@ -68,7 +68,7 @@ describe('CatalogPanel', () => {
     const host = await mount(render().element);
     await flush();
     expect(host.textContent).toContain('Nothing is waiting for approval');
-    expect(byText('button', 'Show all dishes', host)).toBeDefined();
+    expect(byText('button', "Show all products", host)).toBeDefined();
   });
 
   it('shows the error in plain words, lets the admin retry, and passes the error up for logout handling', async () => {
@@ -81,7 +81,7 @@ describe('CatalogPanel', () => {
     await click(byText('button', 'Try again', host));
     await flush();
     expect(fetchCatalog).toHaveBeenCalledTimes(2);
-    expect(host.textContent).toContain('Dish a');
+    expect(host.textContent).toContain("Dish a");
   });
 
   it('the availability switch flips at once and rolls back when the server refuses', async () => {
@@ -121,8 +121,8 @@ describe('CatalogPanel', () => {
     vi.spyOn(apiService, 'fetchCatalog').mockResolvedValue(page([dish('a')]));
     const host = await mount(render().element);
     await flush();
-    await click(byText('button', 'Add dish', host));
-    expect(document.querySelector('[role="dialog"]')?.textContent).toContain('Add a dish');
+    await click(byText('button', "Add product", host));
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("Add a product");
   });
 
   it('loads the list once on mount', async () => {
@@ -147,7 +147,7 @@ describe('real response details', () => {
     const host = await mount(render().element);
     await flush();
     const table = host.querySelector('table')!.textContent!;
-    expect(table).toContain('₹7 (₹7 flat · this dish)');
+    expect(table).toContain("₹7 (₹7 flat · this product)");
     expect(table).toContain('asks ₹120');
     expect(table).toContain('Price change pending');
   });

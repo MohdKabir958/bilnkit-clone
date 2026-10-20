@@ -55,7 +55,7 @@ export const App: React.FC = () => {
   const [isAuth, setIsAuth] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
   const [adminProfile, setAdminProfile] = useState<AdminProfile | undefined>();
-  const [activeTab, setActiveTab] = useState<TabType>('map');
+  const [activeTab, setActiveTab] = useState<TabType>('operations');
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -292,10 +292,10 @@ export const App: React.FC = () => {
       const incoming = normalizeOrderPartial(rawOrder);
       const isNew = Boolean(incoming.id) && !ordersRef.current.some((order) => order.id === incoming.id);
       applyLiveOrder(rawOrder);
-      if (isNew) toast.info('New order', `${incoming.vendorName ?? 'A restaurant'} has a new paid order.`);
+      if (isNew) toast.info('New order', `${incoming.vendorName ?? 'A store'} has a new paid order.`);
     });
     socket.on('partner_application', (info: { kind?: string; name?: string; resubmitted?: boolean }) => {
-      const who = info?.kind === 'VENDOR' ? 'A restaurant' : 'A rider';
+      const who = info?.kind === 'VENDOR' ? 'A store' : 'A rider';
       toast.info(info?.resubmitted ? 'Application updated' : 'New application', `${who}${info?.name ? ` (${info.name})` : ''} is waiting for your approval.`);
       setApplicationsKey((key) => key + 1);
       refreshPendingCount();
@@ -517,8 +517,8 @@ export const App: React.FC = () => {
     if (first.isAcceptingOrders) {
       const ok = await confirm({
         title: `Close ${first.name}?`,
-        message: 'Customers cannot place new orders with this restaurant until it is opened again.',
-        confirmLabel: 'Close restaurant',
+        message: 'Customers cannot place new orders with this store until it is opened again.',
+        confirmLabel: 'Close store',
         danger: true,
       });
       if (!ok) return;

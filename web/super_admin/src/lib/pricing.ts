@@ -54,7 +54,7 @@ export const parseAmount = (text: string, opts: { label: string; min?: number; m
 
 const capitalise = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
 
-export const parseVendorPrice = (text: string): ParsedNumber => parseAmount(text, { label: 'the restaurant price', max: MAX_DISH_PRICE, allowZero: false });
+export const parseVendorPrice = (text: string): ParsedNumber => parseAmount(text, { label: 'the store price', max: MAX_DISH_PRICE, allowZero: false });
 
 /** A commission value: PERCENT is 0-100, FLAT is a rupee amount. */
 export const parseCommissionValue = (type: CommissionType, text: string): ParsedNumber => (type === 'PERCENT'
@@ -132,10 +132,10 @@ const lineKey = (label: string, preferred: string | undefined, taken: Set<string
 /** The server takes a whole number from 1 to 5 (backend services/pricing.ts validateFees); 3.5, "abc", 0 and 6 are refused. */
 export const parseRestaurantsPerOrder = (text: string): ParsedNumber => {
   const clean = text.trim();
-  const range = `a whole number from ${MIN_RESTAURANTS_PER_ORDER} to ${MAX_RESTAURANTS_PER_ORDER} (1 turns multi-restaurant orders off)`;
-  if (!/^\d{1,3}$/.test(clean)) return { ok: false, message: `The most restaurants per order must be ${range}.` };
+  const range = `a whole number from ${MIN_RESTAURANTS_PER_ORDER} to ${MAX_RESTAURANTS_PER_ORDER} (1 turns multi-store orders off)`;
+  if (!/^\d{1,3}$/.test(clean)) return { ok: false, message: `The most stores per order must be ${range}.` };
   const value = Number(clean);
-  if (value < MIN_RESTAURANTS_PER_ORDER || value > MAX_RESTAURANTS_PER_ORDER) return { ok: false, message: `The most restaurants per order must be ${range}.` };
+  if (value < MIN_RESTAURANTS_PER_ORDER || value > MAX_RESTAURANTS_PER_ORDER) return { ok: false, message: `The most stores per order must be ${range}.` };
   return { ok: true, value };
 };
 
@@ -150,14 +150,14 @@ export const validateFees = (form: FeesForm): ValidatedFees => {
     return parsed.value;
   };
   const baseFee = num('baseFee', 'the all-in fee', MAX_FEE);
-  const extraRestaurantFee = num('extraRestaurantFee', 'the extra-restaurant fee', MAX_EXTRA_RESTAURANT_FEE);
+  const extraRestaurantFee = num('extraRestaurantFee', 'the extra-store fee', MAX_EXTRA_RESTAURANT_FEE);
   const maxRestaurants = parseRestaurantsPerOrder(String(form.maxRestaurantsPerOrder));
   if (!maxRestaurants.ok) errors.maxRestaurantsPerOrder = maxRestaurants.message;
   const freeFeeAbove = num('freeFeeAbove', 'the free-delivery amount (0 = off)', MAX_THRESHOLD);
   const smallOrderBelow = num('smallOrderBelow', 'the small-order limit (0 = off)', MAX_THRESHOLD);
   const smallOrderFee = num('smallOrderFee', 'the small-order fee', MAX_FEE);
   const gstOnFeesPercent = num('gstOnFeesPercent', 'the GST percent on fees', 100);
-  const gstOnFoodPercent = num('gstOnFoodPercent', 'the GST percent on food', 100);
+  const gstOnFoodPercent = num('gstOnFoodPercent', 'the GST percent on products', 100);
 
   const lineErrors: Record<number, { label?: string; amount?: string }> = {};
   if (form.lines.length > 10) errors.lines = 'At most 10 lines.';

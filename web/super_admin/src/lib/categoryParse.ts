@@ -10,7 +10,7 @@ export const ICON_KEYS = [
 export type IconKey = (typeof ICON_KEYS)[number];
 
 export const ICON_LABEL: Record<IconKey, string> = {
-  restaurant: 'Restaurant', thali: 'Thali', rice: 'Rice', biryani: 'Biryani', dosa: 'Dosa', noodles: 'Noodles', roll: 'Roll', burger: 'Burger', pizza: 'Pizza',
+  restaurant: 'Store', thali: 'Thali', rice: 'Rice', biryani: 'Biryani', dosa: 'Dosa', noodles: 'Noodles', roll: 'Roll', burger: 'Burger', pizza: 'Pizza',
   snack: 'Snack', bread: 'Bread', tandoor: 'Tandoor', egg: 'Egg', chicken: 'Chicken', fish: 'Fish', veg: 'Vegetables', sweet: 'Sweet', dessert: 'Dessert',
   icecream: 'Ice cream', tea: 'Tea', coffee: 'Coffee', juice: 'Juice', shake: 'Shake', healthy: 'Healthy', latenight: 'Late night',
 };
@@ -123,8 +123,8 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 /** "1 restaurant and 2 dishes", "3 dishes", or "" when nothing uses it. */
 export const usageText = (usage: { restaurants: number; dishes: number }): string => {
   const parts: string[] = [];
-  if (usage.restaurants > 0) parts.push(plural(usage.restaurants, 'restaurant'));
-  if (usage.dishes > 0) parts.push(plural(usage.dishes, 'dish', 'dishes'));
+  if (usage.restaurants > 0) parts.push(plural(usage.restaurants, 'store'));
+  if (usage.dishes > 0) parts.push(plural(usage.dishes, 'product', 'products'));
   return parts.join(' and ');
 };
 

@@ -144,7 +144,7 @@ describe('Order groups: review fixes', () => {
     expect(pushes.map((p) => p.data.orderId).sort()).toEqual([ids[0], ids[1]].sort()); // the two that accepted earlier, not the one that just accepted
     expect(pushes.map((p) => p.token).sort()).toEqual([v1, v2].map((v) => `tok_${v.id}_AAAAAAAAAAAAAAAAAAAAAAAA`).sort()); // to their restaurants only
     for (const p of pushes) {
-      expect(p).toMatchObject({ title: 'Start cooking', body: 'All restaurants accepted - you can start cooking.', channelId: 'order_updates', priority: 'high' });
+      expect(p).toMatchObject({ title: "Start packing", body: "All stores accepted - you can start packing.", channelId: 'order_updates', priority: 'high' });
       expect(Object.keys(p.data).sort()).toEqual(['event', 'orderId', 'v']);
       expect(`${p.title} ${p.body}`).not.toMatch(/Cust|\d{4}|Kitchen|BH2|Room/);
     }
@@ -401,7 +401,7 @@ describe('Order groups: review fixes', () => {
     expect(res.body.data.id).toBe(pg.g.orders[1].id);
     expect((await kids(pg.g.id)).map((o) => o.driverId)).toEqual([r1.id, r1.id]);
     const log = await prisma.adminAuditLog.findFirstOrThrow({ where: { action: 'ORDER_REASSIGNED', targetId: pg.g.orders[1].id } });
-    expect(log.summary).toContain('Whole combined order (2 restaurants) moved. Warning: the rider needs the latest app.');
+    expect(log.summary).toContain("Whole combined order (2 stores) moved. Warning: the rider needs the latest app.");
     // unassigning carries no warning; a no-op carries none
     const un = await api.reassign(W.admin, pg.g.orders[0].id, null);
     expect(un.status).toBe(200);

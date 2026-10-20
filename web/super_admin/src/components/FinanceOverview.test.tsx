@@ -35,7 +35,7 @@ describe('FinanceOverview', () => {
     expect(last(summary)[0]).toEqual({ from: addDays(today, -6), to: today });
     expect(byText('button', '7 days', host)!.getAttribute('aria-pressed')).toBe('true');
     const cards = host.querySelector('[data-testid="finance-cards"]')!.textContent!;
-    for (const label of ['Orders', 'Food gross', 'Restaurant amount', 'Commission', 'Fees collected', 'Discounts', 'Platform revenue', 'Refunds', 'Settled', 'Unsettled', 'Paid out']) expect(cards).toContain(label);
+    for (const label of ['Orders', 'Product sales', 'Store amount', 'Commission', 'Fees collected', 'Discounts', 'Platform revenue', 'Refunds', 'Settled', 'Unsettled', 'Paid out']) expect(cards).toContain(label);
     expect(cards).toContain('₹1,000'); // food gross, no .00
     expect(cards).toContain('₹30.50'); // discounts keep paise
     expect(cards).toContain('₹169.50'); // platform revenue
@@ -106,7 +106,7 @@ describe('FinanceOverview', () => {
     await click(byText('button', 'Commission', host));
     await flush();
     expect(last(byDish)[1]).toMatchObject({ sort: 'commission', top: 20 });
-    await click(byText('button', 'Restaurant revenue', host));
+    await click(byText('button', "Store revenue", host));
     await flush();
     expect(last(byDish)[1]).toMatchObject({ sort: 'vendorRevenue' });
     await type(host.querySelector('#finance-dish-top'), '50');
@@ -138,8 +138,8 @@ describe('FinanceOverview', () => {
     byDish.mockResolvedValue({ range: { from: '', to: '', days: 0 }, sort: 'units', rows: [] });
     const { host } = await render();
     expect(host.textContent).toContain('No delivered, paid orders in this range yet.');
-    expect(host.textContent).toContain('No restaurant had a delivered, paid order in this range.');
-    expect(host.textContent).toContain('No dishes were sold in this range.');
+    expect(host.textContent).toContain("No store had a delivered, paid order in this range.");
+    expect(host.textContent).toContain("No products were sold in this range.");
   });
 
   it('shows loading placeholders first', async () => {

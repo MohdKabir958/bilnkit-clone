@@ -25,6 +25,9 @@ const mount = async () => {
   document.body.appendChild(host);
   root = createRoot(host);
   await act(async () => { root!.render(<ToastProvider><App /></ToastProvider>); });
+  // Exercise dispatch explicitly from the new overview default.
+  const dispatch=host.querySelector<HTMLButtonElement>('nav button[aria-label="Live map"]');
+  if(dispatch)await act(async()=>{dispatch.click();});
   return host;
 };
 const flush = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
@@ -97,7 +100,7 @@ describe('combined orders in the app', () => {
     const pagesBefore = api.fetchOrderPage.mock.calls.length;
     await click(document.querySelector('button[type="submit"][form="admin-cancel-form"]'));
     const dialog = document.querySelector('[role="alertdialog"]')!;
-    expect(dialog.textContent).toContain('This cancels the WHOLE combined order (all 2 restaurants) and refunds the customer in full.');
+    expect(dialog.textContent).toContain("This cancels the WHOLE combined order (all 2 stores) and refunds the customer in full.");
     await click(byText('button', 'Cancel all 2 orders', dialog));
     await flush();
     expect(cancel).toHaveBeenCalledWith(GROUP_ORDER_IDS[0], 'Kitchen 2 is closed');

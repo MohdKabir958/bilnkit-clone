@@ -30,7 +30,7 @@ export const CommissionEditor: React.FC<Props> = ({ id, name, commissionType, co
   const [error, setError] = useState('');
 
   const unknown = commissionType === undefined;
-  const summary = unknown ? 'Not reported by the server' : commissionType ? `${commissionLabel(commissionType, commissionValue)} (this restaurant)` : 'Default (global setting)';
+  const summary = unknown ? 'Not reported by the server' : commissionType ? `${commissionLabel(commissionType, commissionValue)} (this store)` : 'Default (global setting)';
   const parsed = mode === 'INHERIT' ? null : parseCommissionValue(mode, value);
   const invalid = parsed !== null && !parsed.ok;
 
@@ -61,7 +61,7 @@ export const CommissionEditor: React.FC<Props> = ({ id, name, commissionType, co
     <div className="mt-3 rounded-k-md border border-kraveo-line bg-kraveo-night/40 px-3 py-2.5">
       <div className="flex items-center justify-between gap-3">
         <p className="flex min-w-0 items-center gap-2 text-xs text-kraveo-ink2"><Percent className="h-3.5 w-3.5 shrink-0 text-kraveo-ink3" aria-hidden="true" /><span className="min-w-0 break-words"><span className="font-bold text-kraveo-ink">Commission:</span> {summary}</span></p>
-        {!editing && <button type="button" className="k-btn-ghost !min-h-[32px] shrink-0 !px-3 text-xs" onClick={open} aria-label={`Change commission for ${name}`}>Change</button>}
+        {!editing && <button type="button" className="k-btn-ghost !min-h-[44px] shrink-0 !px-3 text-xs" onClick={open} aria-label={`Change commission for ${name}`}>Change</button>}
       </div>
       {editing && (
         <div className="mt-3 space-y-3">
@@ -70,7 +70,7 @@ export const CommissionEditor: React.FC<Props> = ({ id, name, commissionType, co
               <select id={`commission-mode-${id}`} className="k-select" value={mode} onChange={(e) => { setMode(e.target.value as Mode); setError(''); }} disabled={saving}>
                 <option value="INHERIT">Use the default</option>
                 <option value="PERCENT">Percent</option>
-                <option value="FLAT">Flat rupees per dish</option>
+                <option value="FLAT">Flat rupees per product</option>
               </select>
             </Field>
             {mode !== 'INHERIT' && (
@@ -81,8 +81,8 @@ export const CommissionEditor: React.FC<Props> = ({ id, name, commissionType, co
           </div>
           {error && <p role="alert" className="break-words rounded-k-sm border border-kraveo-danger/30 bg-kraveo-danger/10 px-3 py-2 text-xs text-kraveo-ink">{error}</p>}
           <div className="flex gap-2">
-            <button type="button" className="k-btn-primary !min-h-[36px] text-xs" onClick={save} disabled={saving} aria-busy={saving}>{saving && <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />}Save commission</button>
-            <button type="button" className="k-btn-ghost !min-h-[36px] text-xs" onClick={() => setEditing(false)} disabled={saving}>Cancel</button>
+            <button type="button" className="k-btn-primary !min-h-[44px] text-xs" onClick={save} disabled={saving} aria-busy={saving}>{saving && <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />}Save commission</button>
+            <button type="button" className="k-btn-ghost !min-h-[44px] text-xs" onClick={() => setEditing(false)} disabled={saving}>Cancel</button>
           </div>
         </div>
       )}

@@ -597,7 +597,7 @@ describe('Pricing and catalog (phase 1)', () => {
       expect(r.body.data).toMatchObject({ status: 'LIVE', vendorPrice: 80, price: 100, effectiveCommission: 20, commission: { type: 'PERCENT', value: 25, source: 'DISH' }, reviewedByUserId: ADMIN.id });
       expect(r.body.preview).toMatchObject({ previousPrice: 84, price: 100, commission: { source: 'DISH' } });
       expect(await dbItem(id)).toMatchObject({ approvalStatus: 'APPROVED', commissionType: 'PERCENT', commissionValue: 25, price: 100, reviewedByUserId: ADMIN.id });
-      expect((await audits('DISH_APPROVED', id))[0].summary).toMatch(/Approved "Roll".*restaurant Rs 80.*customer Rs 84 -> Rs 100/);
+      expect((await audits('DISH_APPROVED', id))[0].summary).toMatch(/Approved "Roll".*store Rs 80.*customer Rs 84 -> Rs 100/);
       // inherited commission: no body fields
       const id2 = (await addDish(tV1, V1.vendorId, { name: 'Tea', price: 20 })).body.data.id;
       const r2 = await adminPost(`/api/admin/catalog/${id2}/approve`);
@@ -774,7 +774,7 @@ describe('Pricing and catalog (phase 1)', () => {
       const real = await adminPost('/api/admin/catalog/recalculate', { dryRun: false, vendorId: V1.vendorId });
       expect(real.body.data).toMatchObject({ dryRun: false, applied: true, changed: 3 });
       expect([(await dbItem(a.id)).price, (await dbItem(b.id)).price, (await dbItem(c.id)).price, (await dbItem(a.id)).vendorPrice]).toEqual([110, 55, 37, 100]);
-      expect((await audits('PRICES_RECALCULATED'))[0].summary).toMatch(/3 of 3 dishes changed/);
+      expect((await audits('PRICES_RECALCULATED'))[0].summary).toMatch(/3 of 3 products changed/);
       // nothing left to change
       expect((await adminPost('/api/admin/catalog/recalculate', { dryRun: false, vendorId: V1.vendorId })).body.data.changed).toBe(0);
       // the placed order keeps its old numbers
@@ -878,7 +878,13 @@ describe('Pricing and catalog (phase 1)', () => {
       const dish = await liveDish(60);
       const rs = await Promise.all([order([{ itemId: dish.id, quantity: 1 }]), adminDel(`/api/admin/catalog/${dish.id}`), order([{ itemId: dish.id, quantity: 1 }], V1.vendorId)]);
       expect(rs[1].status).toBe(200);
-      for (const r of [rs[0], rs[2]]) expect([201, 400]).toContain(r.status);
+      for (const r of [rs[0], rs[2]]) {
+        if (r.status === 409) {
+          expect(r.body).toMatchObject({ success: false, code: 'CART_CHANGED' });
+        } else {
+          expect([201, 400]).toContain(r.status);
+        }
+      }
       const rows = await prisma.orderItem.findMany({ where: { menuItemId: dish.id } });
       for (const i of rows) expect([i.price, i.vendorUnitPrice, i.commissionUnit]).toEqual([60, 60, 0]);
     });

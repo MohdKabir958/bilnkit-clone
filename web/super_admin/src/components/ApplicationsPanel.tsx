@@ -125,7 +125,7 @@ export const ApplicationsPanel: React.FC<Props> = ({ refreshKey, query = '', onC
           ))}
         </div>
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0" role="group" aria-label="Filter by type">
-          {([['ALL', 'Everyone'], ['VENDOR', 'Restaurants'], ['DRIVER', 'Riders']] as const).map(([id, label]) => (
+          {([['ALL', 'Everyone'], ['VENDOR', 'Stores'], ['DRIVER', 'Riders']] as const).map(([id, label]) => (
             <button key={id} className="k-chip" aria-pressed={kind === id} onClick={() => setKind(id)}>{label}</button>
           ))}
         </div>
@@ -140,7 +140,7 @@ export const ApplicationsPanel: React.FC<Props> = ({ refreshKey, query = '', onC
             <EmptyState
               icon={ClipboardCheck}
               title={status === 'PENDING' ? 'No applications waiting' : 'Nothing here'}
-              description={status === 'PENDING' ? 'When a restaurant or rider creates an account in their app, it shows up here for your approval.' : 'No partners match this filter.'}
+              description={status === 'PENDING' ? 'When a store or rider creates an account in their app, it shows up here for your approval.' : 'No partners match this filter.'}
             />
           </div>
         )}
@@ -154,7 +154,7 @@ export const ApplicationsPanel: React.FC<Props> = ({ refreshKey, query = '', onC
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-kraveo-surface2 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-kraveo-ink2">
-                      {isVendor ? <Store className="h-3 w-3" aria-hidden="true" /> : <Bike className="h-3 w-3" aria-hidden="true" />}{isVendor ? 'Restaurant' : 'Rider'}
+                      {isVendor ? <Store className="h-3 w-3" aria-hidden="true" /> : <Bike className="h-3 w-3" aria-hidden="true" />}{isVendor ? 'Store' : 'Rider'}
                     </span>
                     <ApprovalPill status={a.status} showApproved />
                   </div>
@@ -192,7 +192,7 @@ export const ApplicationsPanel: React.FC<Props> = ({ refreshKey, query = '', onC
                 <>
                   <VendorLocationEditor id={a.id} name={a.vendor.name} pin={a.vendor} onSaved={pinSaved} heading="Map pin" notSetLabel="Not provided" />
                   {a.status === 'PENDING' && !vendorHasRealPin(a.vendor) && (
-                    <p className="mt-2 text-xs text-kraveo-ink3">The restaurant did not send a location. Type one above before approving, or approve now and set it later (riders cannot navigate to it until then).</p>
+                    <p className="mt-2 text-xs text-kraveo-ink3">The store did not send a location. Type one above before approving, or approve now and set it later (riders cannot navigate to it until then).</p>
                   )}
                 </>
               )}
@@ -314,7 +314,7 @@ const PasswordDrawer: React.FC<{ app: Application | null; onClose: () => void; o
     } finally { setSaving(false); }
   };
 
-  const text = app ? `Grozo ${app.kind === 'VENDOR' ? 'Restaurant Partner' : 'Delivery Partner'} login\nPhone: ${(app.phone ?? '').replace(/\D/g, '').slice(-10)}\nNew password: ${password}` : '';
+  const text = app ? `Grozo ${app.kind === 'VENDOR' ? 'Store Partner' : 'Delivery Partner'} login\nPhone: ${(app.phone ?? '').replace(/\D/g, '').slice(-10)}\nNew password: ${password}` : '';
 
   return (
     <Drawer

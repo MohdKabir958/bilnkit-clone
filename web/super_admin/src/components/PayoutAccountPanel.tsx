@@ -198,7 +198,7 @@ export const PayoutAccountPanel: React.FC<Props> = ({ userId, name, kind, initia
       <div className="flex items-center justify-between gap-3">
         <h4 className="flex min-w-0 items-center gap-2 text-sm font-bold text-kraveo-ink"><Landmark className="h-4 w-4 shrink-0 text-kraveo-ink3" aria-hidden="true" /><span className="min-w-0 break-words">Payout details</span></h4>
         {allowEdit && load.status === 'ready' && !editing && (
-          <button type="button" className="k-btn-ghost !min-h-[32px] shrink-0 !px-3 text-xs" onClick={startEdit} aria-label={`${account ? 'Edit' : 'Add'} payout details of ${name}`}><Pencil className="h-3.5 w-3.5" aria-hidden="true" />{account ? 'Edit' : 'Add'}</button>
+          <button type="button" className="k-btn-ghost !min-h-[44px] shrink-0 !px-3 text-xs" onClick={startEdit} aria-label={`${account ? 'Edit' : 'Add'} payout details of ${name}`}><Pencil className="h-3.5 w-3.5" aria-hidden="true" />{account ? 'Edit' : 'Add'}</button>
         )}
       </div>
 
@@ -206,7 +206,7 @@ export const PayoutAccountPanel: React.FC<Props> = ({ userId, name, kind, initia
       {load.status === 'error' && (
         <div role="alert" className="flex items-center justify-between gap-3 rounded-k-sm border border-kraveo-danger/30 bg-kraveo-danger/10 px-3 py-2 text-xs text-kraveo-ink">
           <span className="min-w-0 break-words">{load.message}</span>
-          <button type="button" className="k-btn-ghost !min-h-[32px] shrink-0 !px-3 text-xs" onClick={() => setAttempt((n) => n + 1)}>Try again</button>
+          <button type="button" className="k-btn-ghost !min-h-[44px] shrink-0 !px-3 text-xs" onClick={() => setAttempt((n) => n + 1)}>Try again</button>
         </div>
       )}
 
@@ -235,7 +235,7 @@ export const PayoutAccountPanel: React.FC<Props> = ({ userId, name, kind, initia
               </span>
             </div>
             {account.method === 'BANK' && (
-              <button type="button" className="k-btn-danger !min-h-[36px] text-xs" onClick={reveal} disabled={busy !== null} aria-busy={busy === 'reveal'}>
+              <button type="button" className="k-btn-danger !min-h-[44px] text-xs" onClick={reveal} disabled={busy !== null} aria-busy={busy === 'reveal'}>
                 {busy === 'reveal' ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Eye className="h-3.5 w-3.5" aria-hidden="true" />}Reveal full account number
               </button>
             )}
@@ -275,8 +275,8 @@ export const PayoutAccountPanel: React.FC<Props> = ({ userId, name, kind, initia
           <p className="text-xs text-kraveo-ink3">Saving changed details clears the verification. Verify them again afterwards.</p>
           {error && <p role="alert" className="break-words rounded-k-sm border border-kraveo-danger/30 bg-kraveo-danger/10 px-3 py-2 text-xs text-kraveo-ink">{error}</p>}
           <div className="flex gap-2">
-            <button type="submit" className="k-btn-primary !min-h-[36px] text-xs" disabled={busy === 'save'} aria-busy={busy === 'save'}>{busy === 'save' && <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />}Save payout details</button>
-            <button type="button" className="k-btn-ghost !min-h-[36px] text-xs" onClick={() => { setEditing(false); setForm(emptyForm(account)); setError(''); }} disabled={busy === 'save'}>Cancel</button>
+            <button type="submit" className="k-btn-primary !min-h-[44px] text-xs" disabled={busy === 'save'} aria-busy={busy === 'save'}>{busy === 'save' && <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />}Save payout details</button>
+            <button type="button" className="k-btn-ghost !min-h-[44px] text-xs" onClick={() => { setEditing(false); setForm(emptyForm(account)); setError(''); }} disabled={busy === 'save'}>Cancel</button>
           </div>
         </form>
       )}

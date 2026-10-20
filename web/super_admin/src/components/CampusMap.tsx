@@ -131,7 +131,7 @@ const CampusMap: React.FC<Props> = ({ riders, vendors, dropPoints, center, now, 
       });
       const popup = el('div');
       popup.appendChild(el('div', 'k-popup__title', `Drop point: ${text}`));
-      popup.appendChild(el('div', 'k-popup__row', pin.group === 'girls' ? 'Girls hostel' : 'Boys hostel'));
+      popup.appendChild(el('div', 'k-popup__row', pin.group === 'girls' ? 'Girls address' : 'Boys address'));
       popup.appendChild(el('div', 'k-popup__mono', formatLatLng(pin.lat, pin.lng)));
       marker.bindPopup(popup, { className: 'k-popup' });
       marker.on('add', () => marker.getElement()?.setAttribute('aria-label', `Drop point ${text}`));
@@ -158,10 +158,10 @@ const CampusMap: React.FC<Props> = ({ riders, vendors, dropPoints, center, now, 
       });
       const popup = el('div');
       popup.appendChild(el('div', 'k-popup__title', v.name));
-      popup.appendChild(el('div', 'k-popup__row', 'Restaurant'));
+      popup.appendChild(el('div', 'k-popup__row', 'Store'));
       popup.appendChild(el('div', 'k-popup__mono', formatLatLng(v.lat, v.lng)));
       marker.bindPopup(popup, { className: 'k-popup' });
-      marker.on('add', () => marker.getElement()?.setAttribute('aria-label', `Restaurant ${v.name}`));
+      marker.on('add', () => marker.getElement()?.setAttribute('aria-label', `Store ${v.name}`));
       marker.addTo(map);
       live.set(v.id, { marker, lat: v.lat, lng: v.lng, name: v.name });
     }

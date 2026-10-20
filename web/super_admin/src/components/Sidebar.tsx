@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Bike, ClipboardCheck, Landmark, MapPinned, PanelLeftClose, PanelLeftOpen, ShoppingBag, SlidersHorizontal, Store, Tags, TrendingUp, TriangleAlert, Users, UtensilsCrossed, X } from 'lucide-react';
+import { Bike, ClipboardCheck, Landmark, MapPinned, PanelLeftClose, PanelLeftOpen, ShoppingBag, SlidersHorizontal, Store, Tags, TrendingUp, TriangleAlert, Users, Package, X } from 'lucide-react';
 import { TabType } from '../types';
 import { LogoBadge, LogoMark } from './ui/Logo';
 import { brand } from '../config/brand';
@@ -17,18 +17,18 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS: Array<{ id: TabType; label: string; hint: string; icon: React.ElementType }> = [
-  { id: 'operations', label: 'Operations and support', hint: 'City metrics, dispatch, support and audit', icon: ClipboardCheck },
+  { id: 'operations', label: 'Overview', hint: 'City metrics, dispatch, support and audit', icon: ClipboardCheck },
   { id: 'inventory', label: 'Products and inventory', hint: 'Grocery SKUs and stock movements', icon: ShoppingBag },
   { id: 'coverage', label: 'Delivery coverage', hint: 'Cities, zones and store opening hours', icon: MapPinned },
-  { id: 'map', label: 'Live map', hint: 'Dispatch and runner positions', icon: MapPinned },
+  { id: 'map', label: 'Live map', hint: 'Dispatch and delivery partner positions', icon: MapPinned },
   { id: 'orders', label: 'Orders', hint: 'Every order and its status', icon: ShoppingBag },
   { id: 'attention', label: 'Needs attention', hint: 'Failed refunds, locked OTPs, stuck orders', icon: TriangleAlert },
-  { id: 'applications', label: 'Applications', hint: 'Approve new restaurants and riders', icon: ClipboardCheck },
-  { id: 'vendors', label: 'Vendors', hint: 'Stores and availability', icon: Store },
+  { id: 'applications', label: 'Applications', hint: 'Approve new stores and riders', icon: ClipboardCheck },
+  { id: 'vendors', label: 'Stores', hint: 'Stores and availability', icon: Store },
   { id: 'categories', label: 'Categories', hint: 'Store and product categories', icon: Tags },
-  { id: 'catalog', label: 'Catalog', hint: 'Approve products, prices and commission', icon: UtensilsCrossed },
+  { id: 'catalog', label: 'Catalog', hint: 'Approve products, prices and commission', icon: Package },
   { id: 'finance', label: 'Finance', hint: 'Revenue, settlements and rider payouts', icon: Landmark },
-  { id: 'drivers', label: 'Drivers', hint: 'Runner partners and duty', icon: Bike },
+  { id: 'drivers', label: 'Delivery partners', hint: 'Delivery partner partners and duty', icon: Bike },
   { id: 'customers', label: 'Customers', hint: 'Everyone who ordered', icon: Users },
   { id: 'analytics', label: 'Analytics', hint: 'Delivery statistics', icon: TrendingUp },
   { id: 'settings', label: 'Settings', hint: 'Fees, commission and rounding', icon: SlidersHorizontal },
@@ -47,29 +47,29 @@ interface BodyProps extends Pick<SidebarProps, 'activeTab' | 'setActiveTab' | 'i
 
 const SidebarBody: React.FC<BodyProps> = ({ activeTab, setActiveTab, isLiveConnected, badges, alertBadges, expanded, onNavigate }) => (
   <>
-    <nav aria-label="Primary" className="flex-1 space-y-1 px-3 py-2">
-      {expanded && <p className="k-label px-3 pb-2 pt-1">Operations</p>}
+    <nav aria-label="Primary" className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-3">
       {NAV_ITEMS.map((item, index) => {
         const Icon = item.icon;
         const isActive = activeTab === item.id;
         const count = badges?.[item.id] ?? 0;
         const alert = Boolean(alertBadges?.[item.id]) && count > 0;
         return (
+          <React.Fragment key={item.id}>
+          {expanded && ['operations','vendors','finance'].includes(item.id) && <p className="k-label px-3 pb-1 pt-4">{item.id === 'operations' ? 'Operations' : item.id === 'vendors' ? 'Commerce' : 'Administration'}</p>}
           <button
-            key={item.id}
             onClick={() => { setActiveTab(item.id); onNavigate?.(); }}
             aria-label={count > 0 ? `${item.label} (${count})` : item.label}
             aria-current={isActive ? 'page' : undefined}
             title={expanded ? undefined : item.label}
             style={{ ['--i' as string]: index }}
-            className={`k-reveal group relative flex w-full items-center gap-3 rounded-k-sm px-3 py-2.5 text-left text-sm font-bold transition-all duration-fast ease-emphasized ${expanded ? '' : 'justify-center'} ${isActive ? 'bg-kraveo-g400/15 text-kraveo-g300' : 'text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink'}`}
+            className={`k-reveal group relative flex min-h-[44px] w-full items-center gap-3 rounded-k-sm px-3 py-2.5 text-left text-sm font-semibold transition-all duration-fast ease-emphasized ${expanded ? '' : 'justify-center'} ${isActive ? 'bg-kraveo-g400/15 text-kraveo-g300' : 'text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink'}`}
           >
             {isActive && <span className="absolute -left-3 top-2 h-[calc(100%-1rem)] w-1 rounded-r-full bg-kraveo-g400" aria-hidden="true" />}
             <Icon className={`h-5 w-5 shrink-0 transition-transform duration-base ease-spring ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} aria-hidden="true" />
             {expanded && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
             {count > 0 && (
               expanded
-                ? <span className={`rounded-full px-2 py-0.5 text-[11px] font-extrabold tabular-nums ${alert ? 'bg-kraveo-danger/20 text-kraveo-danger' : 'bg-kraveo-g400/20 text-kraveo-g300'}`} aria-hidden="true">{count}</span>
+                ? <span className={`rounded-full px-2 py-0.5 text-xs font-extrabold tabular-nums ${alert ? 'bg-kraveo-danger/20 text-kraveo-danger' : 'bg-kraveo-g400/20 text-kraveo-g300'}`} aria-hidden="true">{count}</span>
                 : <span className={`absolute right-1.5 top-1.5 h-2 w-2 rounded-full ${alert ? 'bg-kraveo-danger' : 'bg-kraveo-g400'}`} aria-hidden="true" />
             )}
             {!expanded && (
@@ -78,6 +78,7 @@ const SidebarBody: React.FC<BodyProps> = ({ activeTab, setActiveTab, isLiveConne
               </span>
             )}
           </button>
+          </React.Fragment>
         );
       })}
     </nav>
@@ -91,7 +92,7 @@ const SidebarBody: React.FC<BodyProps> = ({ activeTab, setActiveTab, isLiveConne
         {expanded ? (
           <div className="min-w-0">
             <p className={`text-xs font-bold ${isLiveConnected ? 'text-kraveo-ink' : 'text-kraveo-danger'}`}>{isLiveConnected ? 'Live connection' : 'Disconnected'}</p>
-            <p className="truncate text-[11px] text-kraveo-ink3">{isLiveConnected ? 'Receiving order and runner updates' : 'Trying to reconnect to the server'}</p>
+            <p className="truncate text-xs text-kraveo-ink3">{isLiveConnected ? 'Receiving order and delivery partner updates' : 'Trying to reconnect to the server'}</p>
           </div>
         ) : <span className="sr-only">{isLiveConnected ? 'Live connection active' : 'Live connection lost'}</span>}
       </div>
@@ -102,6 +103,9 @@ const SidebarBody: React.FC<BodyProps> = ({ activeTab, setActiveTab, isLiveConne
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isLiveConnected, mobileOpen, onCloseMobile, badges, alertBadges }) => {
   const [collapsed, setCollapsed] = useState<boolean>(readCollapsed);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const closeCallback = useRef(onCloseMobile);
+  closeCallback.current = onCloseMobile;
 
   const toggleCollapsed = () => {
     setCollapsed((current) => {
@@ -114,16 +118,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isLiv
   // Mobile drawer: Esc to close, lock page scroll, move focus in.
   useEffect(() => {
     if (!mobileOpen) return undefined;
+    const previous = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     closeRef.current?.focus();
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onCloseMobile(); };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeCallback.current();
+      if (event.key !== 'Tab') return;
+      const nodes = Array.from(panelRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],[tabindex="0"]') ?? []);
+      if (!nodes.length) return;
+      if (event.shiftKey && document.activeElement === nodes[0]) { event.preventDefault(); nodes[nodes.length-1].focus(); }
+      else if (!event.shiftKey && document.activeElement === nodes[nodes.length-1]) { event.preventDefault(); nodes[0].focus(); }
+    };
     document.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener('keydown', onKey);
+      previous?.focus();
     };
-  }, [mobileOpen, onCloseMobile]);
+  }, [mobileOpen]);
 
   return (
     <>
@@ -138,7 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isLiv
               <LogoMark size={44} />
               <div className="min-w-0">
                 <p className="truncate font-display text-base font-extrabold leading-tight tracking-tight text-kraveo-ink">{brand.name}</p>
-                <p className="truncate text-[11px] font-semibold text-kraveo-ink3">Operations console</p>
+                <p className="truncate text-xs font-semibold text-kraveo-ink3">Operations console</p>
               </div>
             </div>
           )}
@@ -161,8 +174,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isLiv
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-[60] lg:hidden">
-          <div className="absolute inset-0 animate-fade-in bg-black/70 backdrop-blur-sm" onClick={onCloseMobile} aria-hidden="true" />
-          <aside role="dialog" aria-modal="true" aria-label="Navigation" className="absolute inset-y-0 left-0 flex w-[280px] max-w-[85vw] animate-slide-in-left flex-col border-r border-kraveo-line bg-kraveo-surface shadow-k-lift">
+          <div className="absolute inset-0 animate-fade-in bg-black/35" onClick={onCloseMobile} aria-hidden="true" />
+          <aside ref={panelRef} role="dialog" aria-modal="true" aria-label="Navigation" className="absolute inset-y-0 left-0 flex w-[280px] max-w-[85vw] animate-slide-in-left flex-col border-r border-kraveo-line bg-kraveo-surface shadow-k-lift">
             <div className="flex h-[72px] items-center justify-between gap-3 border-b border-kraveo-line px-4">
               <LogoBadge imgClassName="h-9" />
               <button ref={closeRef} aria-label="Close navigation" onClick={onCloseMobile} className="k-icon-btn"><X className="h-4 w-4" aria-hidden="true" /></button>

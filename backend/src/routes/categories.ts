@@ -67,8 +67,8 @@ categoriesRouter.post('/admin/categories/:id/merge', ...adminOnly, validParams('
   try {
     const out = await mergeCategory(req.params.id, body(req), actorOf(req));
     const message = out.dryRun
-      ? `Merging would move ${out.dishes} dish${out.dishes === 1 ? '' : 'es'} and ${out.restaurants} restaurant${out.restaurants === 1 ? '' : 's'}. Nothing was changed.`
-      : `Merged. Moved ${out.dishes} dish${out.dishes === 1 ? '' : 'es'} and ${out.restaurants} restaurant${out.restaurants === 1 ? '' : 's'}.`;
+      ? `Merging would move ${out.dishes} product${out.dishes === 1 ? '' : 'es'} and ${out.restaurants} store${out.restaurants === 1 ? '' : 's'}. Nothing was changed.`
+      : `Merged. Moved ${out.dishes} product${out.dishes === 1 ? '' : 'es'} and ${out.restaurants} store${out.restaurants === 1 ? '' : 's'}.`;
     return res.json({ success: true, message, data: out });
   } catch (err) {
     return fail(res, err, 'merge category');

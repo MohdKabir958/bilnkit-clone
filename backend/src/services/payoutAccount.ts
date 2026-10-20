@@ -114,7 +114,7 @@ export const getAccount = (userId: string) => prisma.payoutAccount.findUnique({ 
 /** The user an admin route points at: must be a restaurant owner or a rider. */
 export const partnerUser = async (userId: string): Promise<{ id: string; name: string; role: PartnerType }> => {
   const u = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, role: true, deletedAt: true } });
-  if (!u || u.deletedAt || (u.role !== 'VENDOR' && u.role !== 'DRIVER')) throw new AppError(404, 'NOT_FOUND', 'No restaurant or rider account with this id.');
+  if (!u || u.deletedAt || (u.role !== 'VENDOR' && u.role !== 'DRIVER')) throw new AppError(404, 'NOT_FOUND', 'No store or rider account with this id.');
   return { id: u.id, name: u.name, role: u.role };
 };
 

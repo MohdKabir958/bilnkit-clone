@@ -26,11 +26,11 @@ export const MAX_GROUP_RESTAURANTS_HARD = 10; // request shape guard only; the r
 /** The restaurant count rules (Docs/22 4.2). `forPlace` = a group order (2 or more); a quote also accepts exactly one restaurant. */
 const checkCount = (restaurants: GroupRestaurantInput[], max: number, forPlace: boolean) => {
   const n = restaurants.length;
-  if (n < 1) throw new OrderFlowError(400, 'BAD_REQUEST', 'Choose at least one restaurant.', { field: 'restaurants' });
-  if (n === 1 && forPlace) throw new OrderFlowError(400, 'USE_SINGLE_ORDER', 'One restaurant is a normal order: use POST /api/orders.', { field: 'restaurants' });
-  if (n > 1 && max <= 1) throw new OrderFlowError(400, 'MULTI_DISABLED', 'Ordering from several restaurants at once is switched off right now.', { field: 'restaurants' });
-  if (n > max) throw new OrderFlowError(400, 'TOO_MANY_RESTAURANTS', `You can order from at most ${max} restaurants at once.`, { field: 'restaurants', maxRestaurants: max });
-  if (new Set(restaurants.map((r) => r.vendorId)).size !== n) throw new OrderFlowError(400, 'DUPLICATE_RESTAURANT', 'Each restaurant can appear only once in a combined order.', { field: 'restaurants' });
+  if (n < 1) throw new OrderFlowError(400, 'BAD_REQUEST', 'Choose at least one store.', { field: 'restaurants' });
+  if (n === 1 && forPlace) throw new OrderFlowError(400, 'USE_SINGLE_ORDER', 'One store is a normal order: use POST /api/orders.', { field: 'restaurants' });
+  if (n > 1 && max <= 1) throw new OrderFlowError(400, 'MULTI_DISABLED', 'Ordering from several stores at once is switched off right now.', { field: 'restaurants' });
+  if (n > max) throw new OrderFlowError(400, 'TOO_MANY_RESTAURANTS', `You can order from at most ${max} stores at once.`, { field: 'restaurants', maxRestaurants: max });
+  if (new Set(restaurants.map((r) => r.vendorId)).size !== n) throw new OrderFlowError(400, 'DUPLICATE_RESTAURANT', 'Each store can appear only once in a combined order.', { field: 'restaurants' });
 };
 
 /** Every restaurant must be approved and open (same messages as a single order). Returns them by id. */
@@ -39,7 +39,7 @@ const loadOpenVendors = async (restaurants: GroupRestaurantInput[]) => {
   const byId = new Map(vendors.map((v) => [v.id, v]));
   for (const r of restaurants) {
     const v = byId.get(r.vendorId);
-    if (!v || v.approvalStatus !== 'APPROVED') throw new OrderFlowError(400, 'VENDOR_UNAVAILABLE', 'This restaurant is not available right now.', { vendorId: r.vendorId });
+    if (!v || v.approvalStatus !== 'APPROVED') throw new OrderFlowError(400, 'VENDOR_UNAVAILABLE', 'This store is not available right now.', { vendorId: r.vendorId });
     if (!v.isAcceptingOrders) throw new OrderFlowError(400, 'VENDOR_CLOSED', 'This Dhaba is currently CLOSED for new orders.', { vendorId: r.vendorId });
   }
   return byId;

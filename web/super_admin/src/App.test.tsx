@@ -31,6 +31,9 @@ const mount = async () => {
   document.body.appendChild(host);
   root = createRoot(host);
   await act(async () => { root!.render(<ToastProvider><App /></ToastProvider>); });
+  // Exercise dispatch explicitly from the new overview default.
+  const dispatch=host.querySelector<HTMLButtonElement>('nav button[aria-label="Live map"]');
+  if(dispatch)await act(async()=>{dispatch.click();});
   return host;
 };
 const flush = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });

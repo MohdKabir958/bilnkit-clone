@@ -27,7 +27,7 @@ export const MAX_CATEGORIES = 300;
 export const MAX_CUISINES = 6;
 export const MAX_NAME_LEN = 30;
 export const DEFAULT_DISH_CATEGORY = 'Main Course';
-export const DEFAULT_VENDOR_CATEGORY = 'Campus kitchen';
+export const DEFAULT_VENDOR_CATEGORY = 'Grocery store';
 export const CUISINE_SEPARATOR = ' • ';
 export const MAX_DISH_CATEGORY_TEXT = 40;
 const TX_OPTS = { maxWait: 10_000, timeout: 20_000 };
@@ -41,7 +41,7 @@ export const LEGACY_PROTECTED_SLUGS: readonly string[] = ['main-course', 'breads
 const legacyChangesAllowed = () => process.env.ALLOW_LEGACY_CATEGORY_CHANGES === '1';
 const assertNotProtected = (c: { slug: string }, what: string) => {
   if (LEGACY_PROTECTED_SLUGS.includes(c.slug) && !legacyChangesAllowed()) {
-    throw new AppError(409, 'CATEGORY_PROTECTED', `Older restaurant apps still use this name (${what}). It stays as it is until those builds are gone.`);
+    throw new AppError(409, 'CATEGORY_PROTECTED', `Older store apps still use this name (${what}). It stays as it is until those builds are gone.`);
   }
 };
 
@@ -268,7 +268,7 @@ const ensureDefaultDishCategory = async (tx: Tx) => {
   if (await tx.category.findUnique({ where: { slug }, select: { id: true } })) return;
   await tx.$executeRaw`
     INSERT INTO "Category" ("id", "name", "slug", "icon", "sortOrder", "isActive", "forRestaurants", "forDishes", "showOnHome", "createdAt", "updatedAt")
-    SELECT ${randomUUID()}, ${DEFAULT_DISH_CATEGORY}, ${slug}, 'restaurant', COALESCE(MAX("sortOrder"), 0) + 1, true, false, true, false, now(), now() FROM "Category"
+    SELECT ${randomUUID()}, ${DEFAULT_DISH_CATEGORY}, ${slug}, 'store', COALESCE(MAX("sortOrder"), 0) + 1, true, false, true, false, now(), now() FROM "Category"
     ON CONFLICT ("slug") DO NOTHING`;
   invalidatePublicCategories();
 };
@@ -362,7 +362,7 @@ export type Cuisine = { id: string; name: string };
 /** Validates a `cuisineIds` value: an array of 0..6 distinct category ids. */
 export const checkCuisineIds = (raw: unknown, field = 'cuisineIds'): string[] => {
   if (!Array.isArray(raw)) throw bad(field, 'cuisineIds must be a list of category ids.');
-  if (raw.length > MAX_CUISINES) throw bad(field, `A restaurant can have at most ${MAX_CUISINES} categories.`, 'TOO_MANY_CATEGORIES');
+  if (raw.length > MAX_CUISINES) throw bad(field, `A store can have at most ${MAX_CUISINES} categories.`, 'TOO_MANY_CATEGORIES');
   const ids: string[] = [];
   for (const v of raw) {
     if (typeof v !== 'string' || !ID_RE.test(v)) throw bad(field, 'Every category id must be a valid id.');
@@ -385,7 +385,7 @@ export const lockCuisines = async (tx: Tx, ids: string[], keep: Set<string> = ne
   return ids.map((id) => {
     const c = byId.get(id);
     if (!c) throw bad(field, 'One of the categories does not exist.', 'CATEGORY_UNKNOWN');
-    if (!keep.has(id) && !(c.isActive && c.forRestaurants)) throw bad(field, `"${c.name}" cannot be added to a restaurant right now.`, 'CATEGORY_NOT_AVAILABLE');
+    if (!keep.has(id) && !(c.isActive && c.forRestaurants)) throw bad(field, `"${c.name}" cannot be added to a store right now.`, 'CATEGORY_NOT_AVAILABLE');
     return { id: c.id, name: c.name };
   });
 };
@@ -513,7 +513,7 @@ export const createCategory = async (b: Record<string, unknown>, actor: Actor) =
   const forRestaurants = b.forRestaurants === undefined ? true : checkBool(b.forRestaurants, 'forRestaurants');
   const forDishes = b.forDishes === undefined ? true : checkBool(b.forDishes, 'forDishes');
   const showOnHome = b.showOnHome === undefined ? false : checkBool(b.showOnHome, 'showOnHome');
-  if (!forRestaurants && !forDishes) throw bad('forDishes', 'A category must be usable for restaurants, for dishes, or both.');
+  if (!forRestaurants && !forDishes) throw bad('forDishes', 'A category must be usable for stores, for products, or both.');
   try {
     const created = await prisma.$transaction(async (tx) => {
       if ((await tx.category.count()) >= MAX_CATEGORIES) throw new AppError(409, 'TOO_MANY_CATEGORIES', `There are already ${MAX_CATEGORIES} categories. Delete or merge unused ones first.`);
@@ -521,7 +521,7 @@ export const createCategory = async (b: Record<string, unknown>, actor: Actor) =
       return tx.category.create({ data: { name, slug, nameHi, icon, forRestaurants, forDishes, showOnHome, sortOrder: next + 1 } });
     }, TX_OPTS);
     invalidatePublicCategories();
-    await writeAudit('CATEGORY_CREATED', 'CATEGORY', created.id, `Admin created category "${name}" (restaurants ${forRestaurants}, dishes ${forDishes}, home ${showOnHome}, icon ${icon})`);
+    await writeAudit('CATEGORY_CREATED', 'CATEGORY', created.id, `Admin created category "${name}" (stores ${forRestaurants}, products ${forDishes}, home ${showOnHome}, icon ${icon})`);
     return (await adminViewOf(prisma, created.id))!;
   } catch (e) {
     if (isUniqueViolation(e)) throw await conflict(slug);
@@ -560,18 +560,18 @@ export const patchCategory = async (id: string, b: Record<string, unknown>, acto
       if (Object.keys(diff).length === 0) return { changed: false, before, renamed: false, moved: { dishes: 0, restaurants: 0 } };
       if (diff.slug !== undefined && diff.slug !== before.slug) assertNotProtected(before, 'rename');
       if (diff.isActive === false) assertNotProtected(before, 'hide');
-      if (diff.forDishes === false) assertNotProtected(before, 'dish category off');
+      if (diff.forDishes === false) assertNotProtected(before, 'product category off');
 
       const nextR = diff.forRestaurants ?? before.forRestaurants;
       const nextD = diff.forDishes ?? before.forDishes;
-      if (!nextR && !nextD) throw bad('forDishes', 'A category must be usable for restaurants, for dishes, or both.');
+      if (!nextR && !nextD) throw bad('forDishes', 'A category must be usable for stores, for products, or both.');
       if (diff.forDishes === false) {
         const dishes = await tx.menuItem.count({ where: { categoryId: id } });
-        if (dishes > 0) throw new AppError(409, 'CATEGORY_IN_USE', `${dishes} dish${dishes === 1 ? ' uses' : 'es use'} this category, so it cannot stop being a dish category. Merge it into another one first.`, 'forDishes', { dishes });
+        if (dishes > 0) throw new AppError(409, 'CATEGORY_IN_USE', `${dishes} product${dishes === 1 ? ' uses' : 'es use'} this category, so it cannot stop being a product category. Merge it into another one first.`, 'forDishes', { dishes });
       }
       if (diff.forRestaurants === false) {
         const restaurants = await tx.vendorCategory.count({ where: { categoryId: id } });
-        if (restaurants > 0) throw new AppError(409, 'CATEGORY_IN_USE', `${restaurants} restaurant${restaurants === 1 ? ' uses' : 's use'} this category, so it cannot stop being a restaurant category. Merge it into another one first.`, 'forRestaurants', { restaurants });
+        if (restaurants > 0) throw new AppError(409, 'CATEGORY_IN_USE', `${restaurants} store${restaurants === 1 ? ' uses' : 's use'} this category, so it cannot stop being a store category. Merge it into another one first.`, 'forRestaurants', { restaurants });
       }
       if (diff.slug !== undefined && diff.slug !== before.slug) {
         if (await tx.category.findUnique({ where: { slug: diff.slug }, select: { id: true } })) throw new AppError(409, 'CATEGORY_EXISTS', 'There is already a category with this name.', 'name', { slug: diff.slug });
@@ -597,7 +597,7 @@ export const patchCategory = async (id: string, b: Record<string, unknown>, acto
     const data = (await adminViewOf(prisma, id))!;
     if (out.changed && 'diff' in out && out.diff) {
       const parts = Object.entries(out.diff).filter(([k]) => k !== 'slug').map(([k, v]) => `${k} ${JSON.stringify((out.before as Record<string, unknown>)[k])} -> ${JSON.stringify(v)}`);
-      await writeAudit('CATEGORY_EDITED', 'CATEGORY', id, `Admin edited category "${out.before.name}": ${parts.join('; ')}${out.renamed ? ` (updated ${out.moved.dishes} dishes, ${out.moved.restaurants} restaurants)` : ''}`);
+      await writeAudit('CATEGORY_EDITED', 'CATEGORY', id, `Admin edited category "${out.before.name}": ${parts.join('; ')}${out.renamed ? ` (updated ${out.moved.dishes} products, ${out.moved.restaurants} stores)` : ''}`);
     }
     return { changed: out.changed, data };
   } catch (e) {
@@ -665,8 +665,8 @@ export const mergeCategory = async (fromId: string, b: Record<string, unknown>, 
       tx.vendorCategory.findMany({ where: { categoryId: fromId }, select: { vendorId: true } }),
     ]);
     if (!into.isActive) throw new AppError(409, 'CATEGORY_INACTIVE', `"${into.name}" is hidden. Choose an active category to merge into.`, 'intoId');
-    if (dishes > 0 && !into.forDishes) throw new AppError(409, 'CATEGORY_INCOMPATIBLE', `"${into.name}" is not a dish category, but ${dishes} dishes would move into it.`, 'intoId', { dishes });
-    if (links.length > 0 && !into.forRestaurants) throw new AppError(409, 'CATEGORY_INCOMPATIBLE', `"${into.name}" is not a restaurant category, but ${links.length} restaurants would move into it.`, 'intoId', { restaurants: links.length });
+    if (dishes > 0 && !into.forDishes) throw new AppError(409, 'CATEGORY_INCOMPATIBLE', `"${into.name}" is not a product category, but ${dishes} products would move into it.`, 'intoId', { dishes });
+    if (links.length > 0 && !into.forRestaurants) throw new AppError(409, 'CATEGORY_INCOMPATIBLE', `"${into.name}" is not a store category, but ${links.length} stores would move into it.`, 'intoId', { restaurants: links.length });
     return { from, into, dishes, vendorIds: links.map((l) => l.vendorId) };
   };
 
@@ -709,7 +709,7 @@ export const mergeCategory = async (fromId: string, b: Record<string, unknown>, 
   }, { maxWait: 10_000, timeout: 30_000 });
 
   invalidatePublicCategories();
-  await writeAudit('CATEGORY_MERGED', 'CATEGORY', fromId, `Admin merged category "${done.from.name}" into "${done.into.name}": ${done.dishes} dishes and ${done.restaurants} restaurants moved; "${done.from.name}" was removed`);
+  await writeAudit('CATEGORY_MERGED', 'CATEGORY', fromId, `Admin merged category "${done.from.name}" into "${done.into.name}": ${done.dishes} products and ${done.restaurants} stores moved; "${done.from.name}" was removed`);
   return {
     dryRun: false,
     from: { id: done.from.id, name: done.from.name },
@@ -728,7 +728,7 @@ export const deleteCategory = async (id: string, actor: Actor) => {
     assertNotProtected(row, 'delete');
     const [dishes, restaurants] = await Promise.all([tx.menuItem.count({ where: { categoryId: id } }), tx.vendorCategory.count({ where: { categoryId: id } })]);
     if (dishes + restaurants > 0) {
-      throw new AppError(409, 'CATEGORY_IN_USE', `This category is used by ${restaurants} restaurant${restaurants === 1 ? '' : 's'} and ${dishes} dish${dishes === 1 ? '' : 'es'}. Hide it, or merge it into another category.`, undefined, { restaurants, dishes });
+      throw new AppError(409, 'CATEGORY_IN_USE', `This category is used by ${restaurants} store${restaurants === 1 ? '' : 's'} and ${dishes} product${dishes === 1 ? '' : 'es'}. Hide it, or merge it into another category.`, undefined, { restaurants, dishes });
     }
     return tx.category.delete({ where: { id } });
   }, TX_OPTS).catch((e) => {

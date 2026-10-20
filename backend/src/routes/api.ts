@@ -150,7 +150,7 @@ apiRouter.get('/drivers/:id', requireAuth, requireRole('DRIVER', 'ADMIN'), valid
 // ----------------------------------------------------
 // AUTH: students sign in with Google, partners with phone + password (contract: Docs/15_auth_v2_contract.md)
 // ----------------------------------------------------
-const PLACEHOLDER_NAMES = new Set(['VIT Student', 'Dhaba Owner', 'Delivery Partner']);
+const PLACEHOLDER_NAMES = new Set(['VIT Student', 'VIT Customer', 'Dhaba Owner', 'Delivery Partner']);
 const UPI_RE = /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}$/;
 const AVATAR_COUNT = 15;
 
@@ -401,7 +401,7 @@ apiRouter.put('/auth/profile', requireAuth, async (req: AuthenticatedRequest, re
         updateData.phone = canon;
       }
       if (isStudent !== undefined) {
-        if (typeof isStudent !== 'boolean') return bad('isStudent', 'Tell us whether you are a student.');
+        if (typeof isStudent !== 'boolean') return bad('isStudent', 'Profile type must be true or false.');
         updateData.isStudent = isStudent;
         if (!isStudent) updateData.hostelBlock = null;
       }
@@ -507,8 +507,8 @@ apiRouter.post('/admin/partners', requireAuth, requireRole('ADMIN'), async (req:
     if (role === 'VENDOR') {
       if (vendorId) {
         const vendor = await prisma.vendor.findUnique({ where: { id: String(vendorId) } });
-        if (!vendor) return bad('vendorId', 'That restaurant does not exist.');
-        if (vendor.userId) return res.status(409).json({ success: false, field: 'vendorId', message: 'That restaurant already has an owner account.' });
+        if (!vendor) return bad('vendorId', 'That store does not exist.');
+        if (vendor.userId) return res.status(409).json({ success: false, field: 'vendorId', message: 'That store already has an owner account.' });
       } else {
         const v = validateVendorFields(b);
         if (!v.ok) return bad(v.error.field, v.error.message);
@@ -704,9 +704,9 @@ apiRouter.patch('/admin/vendors/:id/profile', requireAuth, requireRole('ADMIN'),
   try {
     const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
     const out = await editVendorProfile(req.params.id, body, { id: req.user!.id, role: req.user!.role as string });
-    return res.json({ success: true, changed: out.changed, message: out.changed ? 'Restaurant saved.' : 'Nothing to change.', data: fullVendorView(out.vendor, { id: req.user!.id, role: Role.ADMIN }) });
+    return res.json({ success: true, changed: out.changed, message: out.changed ? 'Store saved.' : 'Nothing to change.', data: fullVendorView(out.vendor, { id: req.user!.id, role: Role.ADMIN }) });
   } catch (err: any) {
-    return fail(res, err, 'Error editing the restaurant');
+    return fail(res, err, 'Error editing the store');
   }
 });
 
@@ -881,7 +881,7 @@ apiRouter.patch('/vendors/items/:itemId', requireAuth, requireRole('VENDOR', 'AD
     const out = await vendorEditDish(req.params.itemId, { id: req.user!.id, role: req.user!.role }, { isAvailable, price });
     const message =
       out.kind === 'CHANGE_REQUESTED' ? 'Price change sent for approval. Customers keep the old price until Grozo approves it.'
-      : out.kind === 'RESUBMITTED' ? 'Dish sent for approval again.'
+      : out.kind === 'RESUBMITTED' ? 'Product sent for approval again.'
       : out.kind === 'CHANGE_WITHDRAWN' ? 'Price change request withdrawn.'
       : out.kind === 'EDITED_IN_PLACE' ? 'Menu item updated. It is still waiting for approval.'
       : 'Menu item updated successfully.';
@@ -932,9 +932,9 @@ apiRouter.post('/reviews', requireAuth, requireRole('STUDENT'), async (req: Auth
     const seen = new Set<string>();
     for (const dr of dishReviews) {
       if (!dr || typeof dr !== 'object' || typeof dr.dishId !== 'string' || !ID_RE.test(dr.dishId) || !isRating(dr.rating)) {
-        return reviewBad(res, 'dishReviews', 'Every dish rating needs a dishId and a whole number rating from 1 to 5.');
+        return reviewBad(res, 'dishReviews', 'Every product rating needs a dishId and a whole number rating from 1 to 5.');
       }
-      if (seen.has(dr.dishId)) return reviewBad(res, 'dishReviews', 'Each dish can be rated once.');
+      if (seen.has(dr.dishId)) return reviewBad(res, 'dishReviews', 'Each product can be rated once.');
       seen.add(dr.dishId);
       dishes.push({ dishId: dr.dishId, rating: dr.rating });
     }
@@ -944,7 +944,7 @@ apiRouter.post('/reviews', requireAuth, requireRole('STUDENT'), async (req: Auth
     // Authorisation BEFORE any lock (Docs/22 review #7): somebody else's order is refused on a plain read, it never queues on a group.
     const preview = await prisma.order.findUnique({ where: { id: orderId }, select: { customerId: true, driverId: true } });
     if (!preview) return res.status(404).json({ success: false, message: 'Order not found.' });
-    if (preview.customerId !== req.user?.id) return res.status(403).json({ success: false, message: 'Only the student who placed a delivered order can review it.' });
+    if (preview.customerId !== req.user?.id) return res.status(403).json({ success: false, message: 'Only the customer who placed a delivered order can review it.' });
     const result = await prisma.$transaction(async (tx) => {
       // Lock order is rider -> group -> children (Docs/22 section 3): the rider row is taken first because step 5 updates it.
       if (preview.driverId && typeof driverRating === 'number') await tx.$queryRaw`SELECT "id" FROM "DriverPartner" WHERE "userId" = ${preview.driverId} FOR UPDATE`;
@@ -1032,10 +1032,10 @@ apiRouter.post('/reviews', requireAuth, requireRole('STUDENT'), async (req: Auth
       return res.status(400).json({ success: false, message: 'This order has already been reviewed.' });
     }
     if (err.message === 'FORBIDDEN') {
-      return res.status(403).json({ success: false, message: 'Only the student who placed a delivered order can review it.' });
+      return res.status(403).json({ success: false, message: 'Only the customer who placed a delivered order can review it.' });
     }
     if (err.message === 'DISH_NOT_IN_ORDER') {
-      return reviewBad(res, 'dishReviews', 'You can only rate dishes that were in this order.');
+      return reviewBad(res, 'dishReviews', 'You can only rate products that were in this order.');
     }
     return fail(res, err, 'Error submitting review');
   }

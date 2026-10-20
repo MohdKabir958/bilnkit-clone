@@ -29,7 +29,7 @@ const setAvailability = async (itemId: string, value: boolean, actor: Actor) => 
   const out = await prisma.$transaction(async (tx) => {
     const item = await lockDish(tx, itemId);
     if (!item) throw notFound();
-    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This dish is deleted. Restore it first.');
+    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This product is deleted. Restore it first.');
     if (item.isAvailable === value) return { item, changed: false };
     const updated = await tx.menuItem.update({ where: { id: itemId }, data: { isAvailable: value }, include: { vendor: { select: { name: true } } } });
     return { item: updated, changed: true };
@@ -45,7 +45,7 @@ const setCategory = async (itemId: string, input: { name?: unknown; id?: unknown
     const resolved = await resolveDishCategory(tx, input, { admin: true, current }); // category lock first
     const item = await lockDish(tx, itemId);
     if (!item) throw notFound();
-    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This dish is deleted. Restore it first.');
+    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This product is deleted. Restore it first.');
     if (item.categoryId === resolved.id && item.category === resolved.name) return { item, changed: false, from: item.category };
     const updated = await tx.menuItem.update({ where: { id: itemId }, data: { category: resolved.name, categoryRef: { connect: { id: resolved.id } } }, include: { vendor: { select: { name: true } } } });
     return { item: updated, changed: true, from: item.category };
@@ -59,12 +59,12 @@ type BulkResult = { id: string; ok: boolean; changed: boolean; code?: string; me
 export const bulkDishAction = async (b: Record<string, unknown>, actor: Actor) => {
   const unknown = Object.keys(b).find((k) => !['ids', 'action', 'category', 'categoryId'].includes(k));
   if (unknown) throw bad(unknown.slice(0, 40), `Unknown field '${unknown.slice(0, 40)}'. Send: ids, action, category or categoryId.`);
-  if (!Array.isArray(b.ids) || b.ids.length === 0) throw bad('ids', 'Choose at least one dish.');
-  if (b.ids.length > MAX_BULK_IDS) throw bad('ids', `You can change at most ${MAX_BULK_IDS} dishes at a time.`, 'TOO_MANY_ITEMS');
+  if (!Array.isArray(b.ids) || b.ids.length === 0) throw bad('ids', 'Choose at least one product.');
+  if (b.ids.length > MAX_BULK_IDS) throw bad('ids', `You can change at most ${MAX_BULK_IDS} products at a time.`, 'TOO_MANY_ITEMS');
   const ids: string[] = [];
   for (const v of b.ids) {
-    if (typeof v !== 'string' || !ID_RE.test(v)) throw bad('ids', 'Every id must be a valid dish id.');
-    if (ids.includes(v)) throw bad('ids', 'The same dish is listed twice.');
+    if (typeof v !== 'string' || !ID_RE.test(v)) throw bad('ids', 'Every id must be a valid product id.');
+    if (ids.includes(v)) throw bad('ids', 'The same product is listed twice.');
     ids.push(v);
   }
   // Category text is capped and type-checked BEFORE any processing (a 95 KB string must be a cheap 400, not CPU work).
@@ -94,8 +94,8 @@ export const bulkDishAction = async (b: Record<string, unknown>, actor: Actor) =
     } catch (e) {
       if (e instanceof AppError) results.push({ id, ok: false, changed: false, code: e.code, message: e.message });
       else {
-        console.error('bulk dish action failed:', errSummary(e));
-        results.push({ id, ok: false, changed: false, code: 'INTERNAL_ERROR', message: 'Something went wrong with this dish. Try it again.' });
+        console.error('bulk product action failed:', errSummary(e));
+        results.push({ id, ok: false, changed: false, code: 'INTERNAL_ERROR', message: 'Something went wrong with this product. Try it again.' });
       }
     }
   }
@@ -128,16 +128,16 @@ type Planned =
 
 const parseRow = (raw: unknown, cats: Map<string, Category>, suggest: (typed: string) => string[]): { row?: ParsedRow; errors: RowError[]; name: string | null } => {
   const errors: RowError[] = [];
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { errors: [{ field: 'row', message: 'This row is not a dish.' }], name: null };
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { errors: [{ field: 'row', message: 'This row is not a product.' }], name: null };
   const r = raw as Record<string, unknown>;
   for (const k of Object.keys(r)) if (!IMPORT_KEYS.includes(k)) errors.push({ field: k.slice(0, 40), message: `Unknown column '${k.slice(0, 40)}'.` });
 
   let name: string | null = null;
-  if (typeof r.name !== 'string') errors.push({ field: 'name', message: 'The dish name is required.' });
+  if (typeof r.name !== 'string') errors.push({ field: 'name', message: 'The product name is required.' });
   else {
     const n = collapse(r.name);
-    if (n.length < 2 || n.length > 60) errors.push({ field: 'name', message: 'The dish name must be 2 to 60 characters.' });
-    else if (BAD_LABEL_CHARS.test(r.name.normalize('NFC')) || /[<>]/.test(n)) errors.push({ field: 'name', message: 'The dish name cannot contain symbols like < > or hidden, control or direction-changing characters.' });
+    if (n.length < 2 || n.length > 60) errors.push({ field: 'name', message: 'The product name must be 2 to 60 characters.' });
+    else if (BAD_LABEL_CHARS.test(r.name.normalize('NFC')) || /[<>]/.test(n)) errors.push({ field: 'name', message: 'The product name cannot contain symbols like < > or hidden, control or direction-changing characters.' });
     else name = n;
   }
 
@@ -218,7 +218,7 @@ const planImport = (
     const row = parsed.row;
     const key = nameKey(row.name);
     if (seenInFile.has(key)) {
-      report.push({ ...base, action: 'invalid', errors: [{ field: 'name', message: `This dish name is repeated in the file (first at row ${seenInFile.get(key)! + 1}).` }], computedPrice: null });
+      report.push({ ...base, action: 'invalid', errors: [{ field: 'name', message: `This product name is repeated in the file (first at row ${seenInFile.get(key)! + 1}).` }], computedPrice: null });
       planned.push({ kind: 'invalid' });
       return;
     }
@@ -226,7 +226,7 @@ const planImport = (
 
     const matches = byName.get(key) ?? [];
     if (matches.length > 1) {
-      report.push({ ...base, action: 'invalid', errors: [{ field: 'name', message: 'This restaurant already has more than one dish with this name. Fix it in the catalog first.' }], computedPrice: null });
+      report.push({ ...base, action: 'invalid', errors: [{ field: 'name', message: 'This store already has more than one product with this name. Fix it in the catalog first.' }], computedPrice: null });
       planned.push({ kind: 'invalid' });
       return;
     }
@@ -274,8 +274,8 @@ class Retry extends Error {}
 export const importMenu = async (vendorId: string, b: Record<string, unknown>, actor: Actor) => {
   const unknown = Object.keys(b).find((k) => !['rows', 'dryRun', 'onDuplicate'].includes(k));
   if (unknown) throw bad(unknown.slice(0, 40), `Unknown field '${unknown.slice(0, 40)}'. Send: rows, dryRun, onDuplicate.`);
-  if (!Array.isArray(b.rows) || b.rows.length === 0) throw bad('rows', 'Send at least one dish row.');
-  if (b.rows.length > MAX_IMPORT_ROWS) throw bad('rows', `You can import at most ${MAX_IMPORT_ROWS} dishes at a time.`, 'TOO_MANY_ROWS');
+  if (!Array.isArray(b.rows) || b.rows.length === 0) throw bad('rows', 'Send at least one product row.');
+  if (b.rows.length > MAX_IMPORT_ROWS) throw bad('rows', `You can import at most ${MAX_IMPORT_ROWS} products at a time.`, 'TOO_MANY_ROWS');
   if (b.dryRun !== undefined && typeof b.dryRun !== 'boolean') throw bad('dryRun', 'dryRun must be true or false.');
   if (b.onDuplicate !== undefined && b.onDuplicate !== 'SKIP' && b.onDuplicate !== 'UPDATE') throw bad('onDuplicate', "onDuplicate must be 'SKIP' or 'UPDATE'.");
   const dryRun = b.dryRun !== false;

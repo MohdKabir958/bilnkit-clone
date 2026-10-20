@@ -117,7 +117,7 @@ export const lockDish = async (tx: Tx, id: string): Promise<DishRow | null> => {
 
 const money = (raw: unknown, field = 'vendorPrice'): number => {
   const problem = priceProblem(raw);
-  if (problem) throw new AppError(400, 'BAD_REQUEST', problem.replace(/^Price/, field === 'vendorPrice' ? 'The restaurant price' : 'Price'), field);
+  if (problem) throw new AppError(400, 'BAD_REQUEST', problem.replace(/^Price/, field === 'vendorPrice' ? 'The store price' : 'Price'), field);
   return raw as number;
 };
 
@@ -126,7 +126,7 @@ const commissionOverrideFrom = (b: Record<string, unknown>): CommissionRule | nu
   const hasType = 'commissionType' in b;
   const hasValue = 'commissionValue' in b;
   if (!hasType && !hasValue) return undefined;
-  if (!hasType || !hasValue) throw new AppError(400, 'BAD_REQUEST', 'Send commissionType and commissionValue together (both null = use the restaurant or global default).', hasType ? 'commissionValue' : 'commissionType');
+  if (!hasType || !hasValue) throw new AppError(400, 'BAD_REQUEST', 'Send commissionType and commissionValue together (both null = use the store or global default).', hasType ? 'commissionValue' : 'commissionType');
   if (b.commissionType === null && b.commissionValue === null) return null;
   const check = checkCommissionRule(b.commissionType, b.commissionValue);
   if (!check.ok) throw new AppError(400, 'BAD_REQUEST', check.error.message, check.error.field === 'type' ? 'commissionType' : 'commissionValue');
@@ -160,7 +160,7 @@ export const createDish = async (
     if (!byAdmin) {
       const pending = await tx.menuItem.count({ where: { vendorId, approvalStatus: 'PENDING', deletedAt: null } });
       if (pending >= MAX_PENDING_DISHES_PER_RESTAURANT) {
-        throw new AppError(409, 'TOO_MANY_PENDING', `You already have ${pending} dishes waiting for approval. Wait for Grozo to review them before adding more.`);
+        throw new AppError(409, 'TOO_MANY_PENDING', `You already have ${pending} products waiting for approval. Wait for Grozo to review them before adding more.`);
       }
     }
     const rules: Rules = { dish: input.commission ?? null, vendor: ruleFromColumns(vendor.commissionType, vendor.commissionValue) };
@@ -188,7 +188,7 @@ export const createDish = async (
     return { row, priced, vendor };
   }, TX_OPTS);
   if (byAdmin) {
-    await writeAudit('DISH_CREATED', 'MENU_ITEM', created.row.id, `Admin added "${created.row.name}" to ${created.vendor.name}: restaurant Rs ${created.row.vendorPrice}, customer Rs ${created.row.price} (live)`);
+    await writeAudit('DISH_CREATED', 'MENU_ITEM', created.row.id, `Admin added "${created.row.name}" to ${created.vendor.name}: store Rs ${created.row.vendorPrice}, customer Rs ${created.row.price} (live)`);
   }
   return created.row;
 };
@@ -209,7 +209,7 @@ export const vendorEditDish = async (itemId: string, actor: Actor, patch: { isAv
     const item = await lockDish(tx, itemId);
     if (!item || (item.deletedAt && actor.role !== 'ADMIN')) throw notFound();
     if (actor.role !== 'ADMIN' && item.vendor.userId !== actor.id) throw new AppError(403, 'FORBIDDEN', 'Forbidden. You do not own this vendor.');
-    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This dish was deleted. Restore it first.');
+    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This product was deleted. Restore it first.');
 
     const data: Prisma.MenuItemUpdateInput = {};
     let kind: VendorEditResult['kind'] = 'AVAILABILITY';
@@ -222,7 +222,7 @@ export const vendorEditDish = async (itemId: string, actor: Actor, patch: { isAv
         const priced = priceFor(price, rulesOf(item), settings);
         Object.assign(data, { vendorPrice: price, price: priced.price, pendingVendorPrice: null });
         kind = 'ADMIN_EDIT';
-        audit = `Admin set the restaurant price of "${item.name}" (${item.vendor.name}) from Rs ${item.vendorPrice} to Rs ${price}; customer price Rs ${item.price} -> Rs ${priced.price}`;
+        audit = `Admin set the store price of "${item.name}" (${item.vendor.name}) from Rs ${item.vendorPrice} to Rs ${price}; customer price Rs ${item.price} -> Rs ${priced.price}`;
       } else if (item.approvalStatus === 'PENDING') {
         const priced = priceFor(price, rulesOf(item), settings);
         Object.assign(data, { vendorPrice: price, price: priced.price });
@@ -350,7 +350,7 @@ export const approveDish = async (itemId: string, b: Record<string, unknown>, ac
   const out = await prisma.$transaction(async (tx) => {
     const item = await lockDish(tx, itemId);
     if (!item) throw notFound();
-    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This dish is deleted. Restore it first.');
+    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This product is deleted. Restore it first.');
     if (b.applyPending === false && item.pendingVendorPrice !== null) {
       throw new AppError(409, 'USE_REJECT', 'To decline the requested price change, use reject with a reason.', 'applyPending');
     }
@@ -397,7 +397,7 @@ export const approveDish = async (itemId: string, b: Record<string, unknown>, ac
       'DISH_APPROVED',
       'MENU_ITEM',
       itemId,
-      `${what} "${out.item.name}" (${out.item.vendor.name}): restaurant Rs ${out.before.vendorPrice} -> Rs ${out.item.vendorPrice}, commission ${describeRule(out.priced.rule)} (${out.priced.source.toLowerCase()}), customer Rs ${out.before.price} -> Rs ${out.item.price}`,
+      `${what} "${out.item.name}" (${out.item.vendor.name}): store Rs ${out.before.vendorPrice} -> Rs ${out.item.vendorPrice}, commission ${describeRule(out.priced.rule)} (${out.priced.source.toLowerCase()}), customer Rs ${out.before.price} -> Rs ${out.item.price}`,
     );
   }
   return { item: out.item, changed: out.changed, settings, preview: pricePreview(out.before, out.priced) };
@@ -411,13 +411,13 @@ export const approveDish = async (itemId: string, b: Record<string, unknown>, ac
  */
 export const rejectDish = async (itemId: string, reasonRaw: unknown, actor: Actor) => {
   const reason = text(reasonRaw, 200);
-  if (!reason || reason.length < 3) throw new AppError(400, 'BAD_REQUEST', 'Give the restaurant a reason (3 to 200 characters).', 'reason');
+  if (!reason || reason.length < 3) throw new AppError(400, 'BAD_REQUEST', 'Give the store a reason (3 to 200 characters).', 'reason');
   const out = await prisma.$transaction(async (tx) => {
     const item = await lockDish(tx, itemId);
     if (!item) throw notFound();
-    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This dish is deleted. Restore it first.');
+    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This product is deleted. Restore it first.');
     if (item.approvalStatus === 'APPROVED' && item.pendingVendorPrice === null) {
-      throw new AppError(409, 'NOT_PENDING', 'This dish is live and has no change waiting. To take it off the menu, hide it (isAvailable) or delete it.');
+      throw new AppError(409, 'NOT_PENDING', 'This product is live and has no change waiting. To take it off the menu, hide it (isAvailable) or delete it.');
     }
     if (item.approvalStatus === 'REJECTED' && item.rejectionReason === reason) return { item, changed: false, declinedChange: false };
     const declinedChange = item.approvalStatus === 'APPROVED';
@@ -495,7 +495,7 @@ export const adminEditDish = async (itemId: string, b: Record<string, unknown>, 
     }
     const item = await lockDish(tx, itemId);
     if (!item) throw notFound();
-    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This dish is deleted. Restore it first.');
+    if (item.deletedAt) throw new AppError(409, 'ITEM_DELETED', 'This product is deleted. Restore it first.');
     const vendorPrice = newVendorPrice ?? item.vendorPrice;
     const rule = override === undefined ? ruleFromColumns(item.commissionType, item.commissionValue) : override;
     const priced = priceFor(vendorPrice, { dish: rule, vendor: ruleFromColumns(item.vendor.commissionType, item.vendor.commissionValue) }, settings);
@@ -516,7 +516,7 @@ export const adminEditDish = async (itemId: string, b: Record<string, unknown>, 
     'DISH_EDITED',
     'MENU_ITEM',
     itemId,
-    `Admin edited "${out.item.name}" (${out.item.vendor.name}): ${changedKeys}; restaurant Rs ${out.before.vendorPrice} -> Rs ${out.item.vendorPrice}, customer Rs ${out.before.price} -> Rs ${out.item.price}`,
+    `Admin edited "${out.item.name}" (${out.item.vendor.name}): ${changedKeys}; store Rs ${out.before.vendorPrice} -> Rs ${out.item.vendorPrice}, customer Rs ${out.before.price} -> Rs ${out.item.price}`,
   );
   return { item: out.item, settings, preview: pricePreview(out.before, out.priced) };
 };
@@ -617,9 +617,9 @@ export const recalculatePrices = async (opts: { dryRun: boolean; vendorId?: stri
     return { total: items.length, changes };
   }, { maxWait: 10_000, timeout: 60_000 });
   if (!opts.dryRun && out.changes.length > 0) {
-    await writeAudit('PRICES_RECALCULATED', 'MENU_ITEM', opts.vendorId ?? 'all', `Admin recalculated customer prices: ${out.changes.length} of ${out.total} dishes changed${opts.vendorId ? ' (one restaurant)' : ''}`);
+    await writeAudit('PRICES_RECALCULATED', 'MENU_ITEM', opts.vendorId ?? 'all', `Admin recalculated customer prices: ${out.changes.length} of ${out.total} products changed${opts.vendorId ? ' (one store)' : ''}`);
   } else if (!opts.dryRun) {
-    await writeAudit('PRICES_RECALCULATED', 'MENU_ITEM', opts.vendorId ?? 'all', `Admin recalculated customer prices: nothing to change (${out.total} dishes)`);
+    await writeAudit('PRICES_RECALCULATED', 'MENU_ITEM', opts.vendorId ?? 'all', `Admin recalculated customer prices: nothing to change (${out.total} products)`);
   }
   const SAMPLE = 500;
   return {

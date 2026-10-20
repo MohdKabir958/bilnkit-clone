@@ -16,7 +16,7 @@ const fillOwner = async () => {
   await type(byId('ap-name'), 'Ravi Kumar');
   await type(byId('ap-phone'), '9876543210');
 };
-const submit = async () => { await click(byText('button', 'Add restaurant', document.querySelector('[role="dialog"]') as HTMLElement)); await flush(); };
+const submit = async () => { await click(byText('button', "Add store", document.querySelector('[role="dialog"]') as HTMLElement)); await flush(); };
 
 afterEach(async () => { vi.restoreAllMocks(); await unmount(); });
 
@@ -52,7 +52,7 @@ describe('AddPartnerDrawer: categories', () => {
     await fillOwner();
     await submit();
     const body = create.mock.calls[0][0] as any;
-    expect(body.category).toBe('Campus kitchen');
+    expect(body.category).toBe("Service area store");
     expect('cuisineIds' in body).toBe(false);
   });
 

@@ -82,7 +82,7 @@ export const AnalyticsPanel: React.FC = () => {
       {error && (
         <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-k-md border border-kraveo-danger/30 bg-kraveo-danger/10 px-4 py-3 text-sm text-kraveo-ink">
           <span>{error}</span>
-          <button className="k-btn-ghost !min-h-[36px]" onClick={() => void load()}>Try again</button>
+          <button className="k-btn-ghost !min-h-[44px]" onClick={() => void load()}>Try again</button>
         </div>
       )}
 
@@ -98,7 +98,7 @@ export const AnalyticsPanel: React.FC = () => {
             <KpiTile index={1} loading={firstLoad} label="Avg delivery time" icon={Clock} tone="text-kraveo-status-pickedUp" toneBg="bg-kraveo-status-pickedUp/15"
               value={<AnimatedNumber value={data && data.averageDeliveryMinutes > 0 ? data.averageDeliveryMinutes : null} decimals={1} suffix={data && data.averageDeliveryMinutes > 0 ? ' min' : ''} />}
               note={data && data.averageDeliveryMinutes > 0 ? 'Created to last persisted update' : 'No delivered orders yet'} />
-            <KpiTile index={2} loading={firstLoad} label="Active students" icon={Users} tone="text-kraveo-status-accepted" toneBg="bg-kraveo-status-accepted/15"
+            <KpiTile index={2} loading={firstLoad} label="Active customers" icon={Users} tone="text-kraveo-status-accepted" toneBg="bg-kraveo-status-accepted/15"
               value={<AnimatedNumber value={data ? data.activeStudents : null} />} note={data ? `${data.cancellationRate.toFixed(1)}% cancellation rate` : undefined} />
             <KpiTile index={3} loading={firstLoad} label="Top vendor" icon={Award} tone="text-kraveo-status-atGate" toneBg="bg-kraveo-status-atGate/15"
               value={<span className="block truncate text-2xl sm:text-[26px]">{data?.topVendor?.name || '-'}</span>}
@@ -129,9 +129,9 @@ export const AnalyticsPanel: React.FC = () => {
               ) : <EmptyState icon={BarChart3} title="No orders in this range" description="The chart fills in as soon as orders are placed." className="h-64" />}
             </ChartCard>
 
-            <ChartCard index={5} title="Hostel drop-off volume" icon={Users} insight={topHostel && topHostel.orders > 0 ? `Top ${topHostel.hostel} · ${topHostel.orders}` : undefined}>
+            <ChartCard index={5} title="Address drop-off volume" icon={Users} insight={topHostel && topHostel.orders > 0 ? `Top ${topHostel.hostel} · ${topHostel.orders}` : undefined}>
               {firstLoad ? <Skeleton className="h-64 w-full" /> : hostelData.length ? (
-                <div style={{ height: Math.max(256, hostelData.length * 40 + 24) }} role="img" aria-label="Orders by hostel drop-off">
+                <div style={{ height: Math.max(256, hostelData.length * 40 + 24) }} role="img" aria-label="Orders by address drop-off">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={hostelData} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 0 }}>
                       <CartesianGrid stroke={palette.line} strokeDasharray="3 5" horizontal={false} />
@@ -144,7 +144,7 @@ export const AnalyticsPanel: React.FC = () => {
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              ) : <EmptyState icon={Users} title={noOrders ? 'No orders in this range' : 'No non-cancelled orders'} description="Drop-off hostels appear here once orders come in." className="h-64" />}
+              ) : <EmptyState icon={Users} title={noOrders ? 'No orders in this range' : 'No non-cancelled orders'} description="Drop-off neighbourhoods appear here once orders come in." className="h-64" />}
             </ChartCard>
           </div>
 

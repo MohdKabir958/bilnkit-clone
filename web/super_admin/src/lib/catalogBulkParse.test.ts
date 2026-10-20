@@ -22,7 +22,7 @@ describe('bulk result', () => {
     const r = parseBulkResult({ data: { results: [{ id: 'a', ok: false, code: 'ITEM_DELETED' }, { id: 'b', ok: false }, { id: 'c', ok: true, changed: false }] } })!;
     expect(r.ok).toBe(1);
     expect(r.failed).toBe(2);
-    expect(bulkFailures(r, (id) => id).map((f) => f.message)).toEqual(['This dish is deleted. Restore it first.', 'This dish could not be changed.']);
+    expect(bulkFailures(r, (id) => id).map((f) => f.message)).toEqual(['This product is deleted. Restore it first.', 'This product could not be changed.']);
   });
   it('null when there is no results list', () => {
     expect(parseBulkResult({ success: true })).toBeNull();

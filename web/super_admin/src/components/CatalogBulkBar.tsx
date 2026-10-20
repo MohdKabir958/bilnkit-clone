@@ -31,23 +31,23 @@ export const CatalogBulkBar: React.FC<Props> = ({ count, busy, categories, categ
   const tooMany = count > MAX_BULK_IDS;
   const off = busy || tooMany;
   return (
-    <section className="sticky top-2 z-10 space-y-2 rounded-k-md border border-kraveo-g400/40 bg-kraveo-surface2 p-3 shadow-k-lift" aria-label="Actions for the selected dishes">
+    <section className="sticky top-2 z-10 space-y-2 rounded-k-md border border-kraveo-g400/40 bg-kraveo-surface2 p-3 shadow-k-lift" aria-label="Actions for the selected products">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-bold text-kraveo-ink" aria-live="polite">{count} {count === 1 ? 'dish' : 'dishes'} selected</p>
-        <button type="button" className="k-btn-ghost !min-h-[36px] !px-3 text-xs" onClick={onClear} disabled={busy}><X className="h-3.5 w-3.5" aria-hidden="true" />Clear selection</button>
+        <p className="text-sm font-bold text-kraveo-ink" aria-live="polite">{count} {count === 1 ? 'product' : 'products'} selected</p>
+        <button type="button" className="k-btn-ghost !min-h-[44px] !px-3 text-xs" onClick={onClear} disabled={busy}><X className="h-3.5 w-3.5" aria-hidden="true" />Clear selection</button>
       </div>
-      {tooMany && <p role="alert" className="text-xs font-semibold text-kraveo-danger">Select at most {MAX_BULK_IDS} dishes at a time.</p>}
+      {tooMany && <p role="alert" className="text-xs font-semibold text-kraveo-danger">Select at most {MAX_BULK_IDS} products at a time.</p>}
       {error && <p role="alert" className="break-words rounded-k-sm border border-kraveo-danger/30 bg-kraveo-danger/10 px-3 py-2 text-sm text-kraveo-ink">{error}</p>}
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" className="k-btn-ghost !min-h-[36px] !px-3 text-xs" onClick={() => onRun('AVAILABLE')} disabled={off}>Mark available</button>
-        <button type="button" className="k-btn-ghost !min-h-[36px] !px-3 text-xs" onClick={() => onRun('UNAVAILABLE')} disabled={off}>Mark sold out</button>
-        <button type="button" className="k-btn-ghost !min-h-[36px] !px-3 text-xs" onClick={() => onRun('APPROVE')} disabled={off}><CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />Approve</button>
-        <button type="button" className="k-btn-ghost !min-h-[36px] !px-3 text-xs" onClick={() => onRun('RESTORE')} disabled={off}><RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />Restore</button>
-        <button type="button" className="k-btn-danger !min-h-[36px] !px-3 text-xs" onClick={() => onRun('DELETE')} disabled={off}><Trash2 className="h-3.5 w-3.5" aria-hidden="true" />Delete</button>
+        <button type="button" className="k-btn-ghost !min-h-[44px] !px-3 text-xs" onClick={() => onRun('AVAILABLE')} disabled={off}>Mark available</button>
+        <button type="button" className="k-btn-ghost !min-h-[44px] !px-3 text-xs" onClick={() => onRun('UNAVAILABLE')} disabled={off}>Mark sold out</button>
+        <button type="button" className="k-btn-ghost !min-h-[44px] !px-3 text-xs" onClick={() => onRun('APPROVE')} disabled={off}><CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />Approve</button>
+        <button type="button" className="k-btn-ghost !min-h-[44px] !px-3 text-xs" onClick={() => onRun('RESTORE')} disabled={off}><RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />Restore</button>
+        <button type="button" className="k-btn-danger !min-h-[44px] !px-3 text-xs" onClick={() => onRun('DELETE')} disabled={off}><Trash2 className="h-3.5 w-3.5" aria-hidden="true" />Delete</button>
         {busy && <span className="flex items-center gap-1.5 text-xs text-kraveo-ink3" role="status"><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />Working…</span>}
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <label className="sr-only" htmlFor="bulk-category">Category for the selected dishes</label>
+        <label className="sr-only" htmlFor="bulk-category">Category for the selected products</label>
         <select id="bulk-category" className="k-select !min-h-[40px] sm:w-64" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} disabled={off || categoriesFailed || categories.length === 0}>
           <option value="">{categoriesFailed ? 'Categories could not be loaded' : categoriesLoading && categories.length === 0 ? 'Loading categories…' : 'Change category to…'}</option>
           {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}

@@ -146,7 +146,7 @@ describe('Order groups: lifecycle', () => {
       expect((await api.setStatus(v1, pg2.g.orders[0].id, 'ACCEPTED')).status).toBe(200);
       const no = await api.cancel(c, pg2.g.orders[1].id);
       expect([no.status, no.body.code]).toEqual([409, 'CANNOT_CANCEL']);
-      expect(no.body.message).toBe('The restaurant has already accepted this order, so it can no longer be cancelled in the app. Please contact Grozo support.');
+      expect(no.body.message).toBe("The store has already accepted this order, so it can no longer be cancelled in the app. Please contact Grozo support.");
       k = await kids(pg2.g.id);
       expect(k.map((o) => o.status)).toEqual(['ACCEPTED', 'PLACED']);
       expect(ledger.refundsOf(pg2.payId)).toHaveLength(0);
@@ -319,7 +319,7 @@ describe('Order groups: lifecycle', () => {
       expect((await api.get(v1, a)).body.data.group).toEqual({ size: 3, allAccepted: false });
       expect((await api.setStatus(v1, a, 'ACCEPTED')).status).toBe(200);
       const wait = await api.setStatus(v1, a, 'PREPARING');
-      expect([wait.status, wait.body.code, wait.body.message]).toEqual([409, 'GROUP_WAITING', 'Waiting for the other restaurant(s) in this combined order to accept.']);
+      expect([wait.status, wait.body.code, wait.body.message]).toEqual([409, 'GROUP_WAITING', "Waiting for the other store(s) in this combined order to accept."]);
       expect((await api.setStatus(v2, b, 'ACCEPTED')).status).toBe(200);
       expect((await api.setStatus(v1, a, 'PREPARING')).body.code).toBe('GROUP_WAITING'); // restaurant 3 has not accepted yet
       expect((await api.setStatus(W.admin, a, 'PREPARING')).body.code).toBe('GROUP_WAITING'); // the admin is bound by the same rule

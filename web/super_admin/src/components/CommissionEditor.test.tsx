@@ -14,7 +14,7 @@ const render = (commissionType: any, commissionValue: any) => {
 describe('CommissionEditor', () => {
   it('says what is set: own, default, or not reported', async () => {
     let r = render('PERCENT', 12.5); let host = await mount(r.element);
-    expect(host.textContent).toContain('12.5% (this restaurant)');
+    expect(host.textContent).toContain("12.5% (this store)");
     await unmount();
     r = render(null, null); host = await mount(r.element);
     expect(host.textContent).toContain('Default (global setting)');
@@ -24,7 +24,7 @@ describe('CommissionEditor', () => {
   });
 
   it('saves a flat commission and reports it to the parent', async () => {
-    const set = vi.spyOn(apiService, 'setVendorCommission').mockResolvedValue({ commission: { type: 'FLAT', value: 6 }, staleDishes: 2, dishCount: 5, message: 'Saved. 2 dish prices are out of date: run "Recalculate prices".' });
+    const set = vi.spyOn(apiService, 'setVendorCommission').mockResolvedValue({ commission: { type: 'FLAT', value: 6 }, staleDishes: 2, dishCount: 5, message: 'Saved. 2 product prices are out of date: run "Recalculate prices".' });
     const r = render(null, null); await mount(r.element);
     await click(byText('button', 'Change')!);
     await type(byId('commission-mode-v1'), 'FLAT');
@@ -33,7 +33,7 @@ describe('CommissionEditor', () => {
     await flush();
     expect(set).toHaveBeenCalledWith('v1', { type: 'FLAT', value: 6 });
     expect(r.onSaved).toHaveBeenCalledWith('v1', { type: 'FLAT', value: 6 });
-    expect(document.body.textContent).toContain('2 dish prices are out of date: run "Recalculate prices"'); // the server's own words
+    expect(document.body.textContent).toContain("2 product prices are out of date: run \"Recalculate prices\""); // the server's own words
   });
 
   it('refuses bad numbers and shows the server error plainly', async () => {

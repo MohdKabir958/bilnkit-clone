@@ -238,7 +238,7 @@ describe('Review fixes for the managed categories', () => {
         const c = await bySlug(slug);
         const protectedCall = async (label: string, r: supertest.Response) => {
           expect([name, label, r.status, r.body.code]).toEqual([name, label, 409, 'CATEGORY_PROTECTED']);
-          expect(r.body.message).toMatch(/Older restaurant apps still use this name/);
+          expect(r.body.message).toMatch(/Older store apps still use this name/);
         };
         await protectedCall('rename', await patch(`/api/admin/categories/${c.id}`, { name: `${name} Renamed` }));
         await protectedCall('hide', await patch(`/api/admin/categories/${c.id}`, { isActive: false }));
@@ -330,7 +330,7 @@ describe('Review fixes for the managed categories', () => {
       expect((await patch(`/api/admin/catalog/${d.id}`, { name: 'ZR a\u200bb' })).status).toBe(400);
       expect((await patch(`/api/admin/catalog/${d.id}`, { description: 'x\u202ey' })).status).toBe(400);
       const nfc = await post('/api/admin/catalog', { vendorId: 'rf-ven-1', name: 'ZR Cafe\u0301 dish', vendorPrice: 10, category: main.name });
-      expect([nfc.status, nfc.body.data.name]).toEqual([201, 'ZR Café dish']);
+      expect([nfc.status, nfc.body.data.name]).toEqual([201, "ZR Café dish"]);
       const imp = await post('/api/admin/vendors/rf-ven-1/menu-import', { rows: BAD.map((bad) => ({ name: `ZR Row ${bad}`, category: main.name, vendorPrice: 10, description: 'ok' })).concat([{ name: 'ZR Row ok', category: main.name, vendorPrice: 10, description: 'a\u200bb' }]) });
       expect(imp.body.data.rows.map((r: any) => [r.action, r.errors[0]?.field])).toEqual([...BAD.map(() => ['invalid', 'name']), ['invalid', 'description']]);
     });

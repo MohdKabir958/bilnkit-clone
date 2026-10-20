@@ -33,7 +33,7 @@ const setup = async (over: Record<string, unknown> = {}) => {
 const paste = (text: string) => type(byId('import-text'), text);
 const dialog = () => document.querySelector('[role="dialog"]') as HTMLElement;
 const check = async () => { await click(byText('button', 'Check the menu', dialog())); await flush(); };
-const importButton = () => Array.from(dialog().querySelectorAll('button')).find((b) => /^(Import \d+ dish|Nothing to import|Importing)/.test(b.textContent ?? '')) as HTMLButtonElement;
+const importButton = () => Array.from(dialog().querySelectorAll('button')).find((b) => /^(Import \d+ product|Nothing to import|Importing)/.test(b.textContent ?? '')) as HTMLButtonElement;
 const rows = () => Array.from(dialog().querySelectorAll('ul[aria-label="Rows"] > li')) as HTMLElement[];
 
 beforeEach(() => { saved.length = 0; });
@@ -43,7 +43,7 @@ describe('step 1: the file', () => {
   it('starts with the restaurant from the filter, explains the columns and the 200 row limit, and needs text before it can check', async () => {
     await setup();
     expect((byId('import-vendor') as HTMLSelectElement).value).toBe('v1');
-    expect(dialog().textContent).toContain('At most 200 dishes at a time');
+    expect(dialog().textContent).toContain("At most 200 products at a time");
     expect(dialog().textContent).toContain('The category must already exist in the Categories tab.');
     expect((byText('button', 'Check the menu', dialog()) as HTMLButtonElement).disabled).toBe(true);
     await paste('name,category,price\nTea,Beverages,10');
@@ -90,7 +90,7 @@ describe('step 1: the file', () => {
     await setup({ initialVendorId: '' });
     await paste(THREE);
     await check();
-    expect(dialog().querySelector('[role="alert"]')!.textContent).toBe('Choose the restaurant this menu belongs to.');
+    expect(dialog().querySelector('[role="alert"]')!.textContent).toBe("Choose the store this menu belongs to.");
     expect(dry).not.toHaveBeenCalled();
   });
 
@@ -104,7 +104,7 @@ describe('step 1: the file', () => {
     const big = `name,category,price\n${Array.from({ length: 201 }, (_, i) => `D${i},Snacks,10`).join('\n')}`;
     await paste(big);
     await check();
-    expect(dialog().textContent).toContain('This file has 201 dishes, but at most 200 can be imported at a time.');
+    expect(dialog().textContent).toContain("This file has 201 products, but at most 200 can be imported at a time.");
     expect(dry).not.toHaveBeenCalled();
   });
 });
@@ -150,7 +150,7 @@ describe('step 2: the preview', () => {
     await paste(FIVE);
     await check();
     expect(importButton().disabled).toBe(true);
-    expect(importButton().textContent).toBe('Import 2 dishes');
+    expect(importButton().textContent).toBe("Import 2 products");
     expect(dialog().textContent).toContain('2 rows are not valid, so nothing can be imported yet.');
   });
 
@@ -160,7 +160,7 @@ describe('step 2: the preview', () => {
     const { onImported, host } = await setup();
     await paste(THREE);
     await check();
-    expect(importButton().textContent).toBe('Import 2 dishes');
+    expect(importButton().textContent).toBe("Import 2 products");
     expect(importButton().disabled).toBe(false);
     await click(importButton());
     await flush();
@@ -233,7 +233,7 @@ describe('step 2: the preview', () => {
     await check();
     expect(importButton().textContent).toBe('Nothing to import');
     expect(importButton().disabled).toBe(true);
-    expect(dialog().textContent).toContain('Every dish is already on the menu');
+    expect(dialog().textContent).toContain("Every product is already on the menu");
   });
 
   it('the "Not valid" chip shows only the rows that need fixing', async () => {

@@ -57,7 +57,7 @@ export const SettlementsPanel: React.FC<Props> = ({ vendors, onChanged, onAuthEr
     if (busyRef.current) return;
     const ok = await confirm({
       title: 'Create settlements now?',
-      message: 'This groups every delivered and paid order that is not in a settlement yet, for all restaurants, into one new PENDING settlement per restaurant, using the hold days from Settings. Orders already settled are never counted twice, so it is safe to press again. Nothing is paid by this.',
+      message: 'This groups every delivered and paid order that is not in a settlement yet, for all stores, into one new PENDING settlement per store, using the hold days from Settings. Orders already settled are never counted twice, so it is safe to press again. Nothing is paid by this.',
       confirmLabel: 'Create settlements',
     });
     if (!ok || busyRef.current) return;
@@ -98,7 +98,7 @@ export const SettlementsPanel: React.FC<Props> = ({ vendors, onChanged, onAuthEr
     <div className="space-y-5">
       <SectionCard
         title="Settlements"
-        description="What each restaurant is owed for delivered orders. The daily job creates them; you pay by bank or UPI and record the reference."
+        description="What each store is owed for delivered orders. The daily job creates them; you pay by bank or UPI and record the reference."
         actions={(
           <>
             <ReloadButton onClick={list.reload} loading={list.loading} label="Reload settlements" />
@@ -119,7 +119,7 @@ export const SettlementsPanel: React.FC<Props> = ({ vendors, onChanged, onAuthEr
             <p className="font-bold">{runResult.message || (runResult.created.length > 0 ? `${runResult.created.length} settlement(s) created.` : 'Nothing to settle.')}</p>
             {runResult.created.length > 0 && <p className="mt-1 text-xs text-kraveo-ink2">{runResult.created.length} {runResult.created.length === 1 ? 'settlement' : 'settlements'}, {runResult.orderCount} {runResult.orderCount === 1 ? 'order' : 'orders'}, {rupees(runResult.netPayable)} payable{runResult.holdDays ? `, orders held for ${runResult.holdDays} days` : ''}.</p>}
             {runResult.skipped.length > 0 && <p className="mt-1 text-xs text-kraveo-status-placed">{runResult.skipped.length} skipped: today&apos;s automatic batch already exists for them.</p>}
-            {runResult.failed.length > 0 && <p className="mt-1 text-xs font-bold text-kraveo-danger">{runResult.failed.length} {runResult.failed.length === 1 ? 'restaurant' : 'restaurants'} failed. Press the button again to retry them.</p>}
+            {runResult.failed.length > 0 && <p className="mt-1 text-xs font-bold text-kraveo-danger">{runResult.failed.length} {runResult.failed.length === 1 ? 'store' : 'stores'} failed. Press the button again to retry them.</p>}
             <button type="button" className="mt-2 text-xs font-bold text-kraveo-g300 underline" onClick={() => setRunResult(null)}>Dismiss</button>
           </div>
         )}
@@ -132,9 +132,9 @@ export const SettlementsPanel: React.FC<Props> = ({ vendors, onChanged, onAuthEr
             <button type="button" className="k-chip" aria-pressed={status === ''} onClick={() => setStatus('')}>All</button>
           </div>
           <div>
-            <label className="sr-only" htmlFor="settle-vendor-filter">Restaurant</label>
+            <label className="sr-only" htmlFor="settle-vendor-filter">Store</label>
             <select id="settle-vendor-filter" className="k-select !min-h-[40px] w-full sm:w-64" value={vendorId} onChange={(event) => setVendorId(event.target.value)}>
-              <option value="">All restaurants</option>
+              <option value="">All stores</option>
               {sortedVendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}
             </select>
           </div>
@@ -171,7 +171,7 @@ export const SettlementsPanel: React.FC<Props> = ({ vendors, onChanged, onAuthEr
           <p className="text-xs text-kraveo-ink3" aria-live="polite">{data.total} {data.total === 1 ? 'settlement' : 'settlements'}</p>
           <div className="hidden md:block">
             <ScrollTable caption="Settlements" minWidth="min-w-[860px]">
-              <thead><tr><Th>Restaurant</Th><Th>Status</Th><Th right>Orders</Th><Th right>Restaurant amount</Th><Th right>Adjustments</Th><Th right>Net payable</Th><Th>Payout</Th><Th>Created</Th><Th><span className="sr-only">Open</span></Th></tr></thead>
+              <thead><tr><Th>Store</Th><Th>Status</Th><Th right>Orders</Th><Th right>Store amount</Th><Th right>Adjustments</Th><Th right>Net payable</Th><Th>Payout</Th><Th>Created</Th><Th><span className="sr-only">Open</span></Th></tr></thead>
               <tbody>
                 {data.items.map((s) => (
                   <tr key={s.id} tabIndex={0} aria-label={`Open settlement of ${s.vendorName}`} onClick={() => setOpen(s)} onKeyDown={(event) => { if (event.key === 'Enter' && event.target === event.currentTarget) setOpen(s); }}

@@ -156,7 +156,7 @@ export const parseByRestaurant = (body: unknown, requested?: DateRange): { range
   return {
     range: rangeOf(body.range, requested),
     rows: list(body.data).map((r) => ({
-      vendorId: String(r.vendorId ?? ''), vendorName: str(r.vendorName) ?? 'Unknown restaurant', ...moneyCols(r), unsettledAmount: money(r.unsettledAmount), refunds: refundsOf(r.refunds),
+      vendorId: String(r.vendorId ?? ''), vendorName: str(r.vendorName) ?? 'Unknown store', ...moneyCols(r), unsettledAmount: money(r.unsettledAmount), refunds: refundsOf(r.refunds),
     })),
   };
 };
@@ -182,7 +182,7 @@ export const parseByDish = (body: unknown, requested?: DateRange): { range: Rang
     range: rangeOf(body.range, requested),
     sort: str(body.sort) ?? 'units',
     rows: list(body.data).map((r) => ({
-      menuItemId: str(r.menuItemId), name: str(r.name) ?? 'Dish', vendorId: String(r.vendorId ?? ''), vendorName: str(r.vendorName) ?? '',
+      menuItemId: str(r.menuItemId), name: str(r.name) ?? 'Product', vendorId: String(r.vendorId ?? ''), vendorName: str(r.vendorName) ?? '',
       units: Math.max(0, Math.round(num(r.units))), customerRevenue: money(r.customerRevenue), vendorRevenue: money(r.vendorRevenue), commission: money(r.commission),
     })),
   };
@@ -353,7 +353,7 @@ export const parseSettlement = (raw: unknown): Settlement | null => {
   if (!isObject(raw) || (typeof raw.id !== 'string' && typeof raw.id !== 'number')) return null;
   const snapshot = parseSnapshot(raw.payoutSnapshot);
   return {
-    id: String(raw.id), vendorId: String(raw.vendorId ?? ''), vendorName: str(raw.vendorName) ?? 'Restaurant', batchKey: str(raw.batchKey) ?? '',
+    id: String(raw.id), vendorId: String(raw.vendorId ?? ''), vendorName: str(raw.vendorName) ?? 'Store', batchKey: str(raw.batchKey) ?? '',
     periodStart: str(raw.periodStart), periodEnd: str(raw.periodEnd), status: str(raw.status)?.toUpperCase() ?? 'PENDING',
     orderCount: Math.max(0, Math.round(num(raw.orderCount))), foodGross: money(raw.foodGross), vendorAmount: money(raw.vendorAmount),
     commissionAmount: money(raw.commissionAmount), adjustmentTotal: money(raw.adjustmentTotal), netPayable: money(raw.netPayable),
@@ -443,7 +443,7 @@ export const parseSettlementDetail = (body: unknown): SettlementDetail | null =>
     })),
     ordersTruncated: data.ordersTruncated === true,
     adjustments: list(data.adjustments).map(parseAdjustment),
-    dishes: list(data.dishes).map((d) => ({ menuItemId: str(d.menuItemId), name: str(d.name) ?? 'Dish', units: Math.max(0, Math.round(num(d.units))), vendorRevenue: money(d.vendorRevenue), commission: money(d.commission) })),
+    dishes: list(data.dishes).map((d) => ({ menuItemId: str(d.menuItemId), name: str(d.name) ?? 'Product', units: Math.max(0, Math.round(num(d.units))), vendorRevenue: money(d.vendorRevenue), commission: money(d.commission) })),
   };
 };
 

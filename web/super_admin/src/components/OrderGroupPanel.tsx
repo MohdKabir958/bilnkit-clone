@@ -107,11 +107,11 @@ export const OrderGroupPanel: React.FC<{ order: Order; state: GroupState; onRelo
         <GroupBadge group={group} />
       </div>
       <p className="mb-3 text-xs text-kraveo-ink2">
-        The customer ordered from {group.size} restaurants in one checkout: one payment, one rider, one gate code. If one restaurant cannot take its part, the whole order is cancelled and refunded.
+        The customer ordered from {group.size} stores in one checkout: one payment, one rider, one gate code. If one store cannot take its part, the whole order is cancelled and refunded.
         This is order {group.index + 1} of {group.size}{group.primary ? ' (it carries the payment)' : ''}.
       </p>
 
-      <ul className="divide-y divide-kraveo-line" aria-label="Restaurants in this combined order">
+      <ul className="divide-y divide-kraveo-line" aria-label="Stores in this combined order">
         {rows.map((row) => {
           const current = row.orderId === order.id;
           return (
@@ -130,7 +130,7 @@ export const OrderGroupPanel: React.FC<{ order: Order; state: GroupState; onRelo
               <div className="flex items-center gap-2">
                 <StatusPill status={row.status} compact />
                 {!current && onOpenOrder && (
-                  <button type="button" className="k-btn-ghost !min-h-[36px] !px-3 text-xs" onClick={() => onOpenOrder(row.orderId)} aria-label={`Open order ${shortId(row.orderId)} from ${row.vendorName}`}>
+                  <button type="button" className="k-btn-ghost !min-h-[44px] !px-3 text-xs" onClick={() => onOpenOrder(row.orderId)} aria-label={`Open order ${shortId(row.orderId)} from ${row.vendorName}`}>
                     <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />Open
                   </button>
                 )}
@@ -149,7 +149,7 @@ export const OrderGroupPanel: React.FC<{ order: Order; state: GroupState; onRelo
         {state.status === 'error' && (
           <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-k-sm border border-kraveo-danger/30 bg-kraveo-danger/10 px-3 py-2 text-xs text-kraveo-ink">
             <span className="min-w-0 break-words">The group total could not be loaded: {state.message}</span>
-            <button type="button" className="k-btn-ghost !min-h-[32px] shrink-0 !px-3 text-xs" onClick={onReload}><RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />Try again</button>
+            <button type="button" className="k-btn-ghost !min-h-[44px] shrink-0 !px-3 text-xs" onClick={onReload}><RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />Try again</button>
           </div>
         )}
         {view && (
@@ -160,8 +160,8 @@ export const OrderGroupPanel: React.FC<{ order: Order; state: GroupState; onRelo
               <PaymentPill status={view.paymentStatus} />
             </div>
             <dl className="space-y-1 text-xs text-kraveo-ink2" aria-label="Combined order total">
-              <Money label="Food (all restaurants)" value={view.subtotal} />
-              <Money label="Fees (delivery and extra restaurants)" value={view.feeTotal} />
+              <Money label="Products (all stores)" value={view.subtotal} />
+              <Money label="Fees (delivery and extra stores)" value={view.feeTotal} />
               {view.discount ? <Money label={`Discount${view.couponCode ? ` (${view.couponCode})` : ''}`} value={view.discount} negative /> : null}
               <Money label="Group total paid by the customer" value={view.total} strong />
             </dl>

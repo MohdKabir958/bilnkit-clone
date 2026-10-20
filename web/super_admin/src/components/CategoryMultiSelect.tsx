@@ -79,7 +79,7 @@ export const CategoryMultiSelect: React.FC<Props> = ({ id, label, value, onChang
 
       {creating && (
         <div className="k-inset space-y-3 p-4" role="group" aria-label="Create a new category">
-          <p className="text-sm font-bold text-kraveo-ink">New category for restaurants</p>
+          <p className="text-sm font-bold text-kraveo-ink">New category for stores</p>
           <CategoryForm
             category={null}
             mode="quick"

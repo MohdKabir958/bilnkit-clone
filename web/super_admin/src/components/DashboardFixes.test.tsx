@@ -142,7 +142,7 @@ describe('WEB-02 DriverManager shows only numbers that are computed', () => {
     ];
     const h = await mount(<DriverManager drivers={[seeded]} orders={orders} now={NOW} />);
     for (const gone of ['Payout', 'Avg completion', 'On-time', 'Rating', '₹320', '4.2', '5.0']) expect(h.textContent).not.toContain(gone);
-    const tile = Array.from(h.querySelectorAll('section[aria-label="Runner summary"] > *')).find((el) => el.textContent?.includes('Trips today'))!;
+    const tile = Array.from(h.querySelectorAll('section[aria-label="Delivery partner summary"] > *')).find((el) => el.textContent?.includes('Trips today'))!;
     expect(tile.textContent).toContain('2');
     expect(tile.textContent).not.toContain('8');
     expect(h.querySelector('[aria-label="Open details for Ravi"]')!.textContent).toContain('Trips today2');
@@ -204,8 +204,8 @@ describe('WEB-11 / WEB-16 live map inputs', () => {
     const h = await mount(<LiveCommandCenter {...props({ drivers, driverPartners: [rider({ userId: 'u1' })] })} />);
     await flush();
     expect(lastMap().riders.map((r: any) => r.id)).toEqual(['u1']);
-    expect(h.textContent).toContain('1 runner plotted');
-    const list = h.querySelector('ul[aria-label="Tracked runners"]')!;
+    expect(h.textContent).toContain("1 delivery partner plotted");
+    const list = h.querySelector("ul[aria-label=\"Tracked delivery partners\"]")!;
     expect(list.querySelectorAll('li')).toHaveLength(1);
   });
 

@@ -409,7 +409,7 @@ describe('Push notifications', () => {
       const summary = await runOrderMaintenance();
       expect(summary.autoCancelled).toContain(id);
       await flush();
-      expect(fake.to(id, 'ORDER_CANCELLED')[0].body).toBe('Restaurant did not respond. Your refund is on its way.');
+      expect(fake.to(id, 'ORDER_CANCELLED')[0].body).toBe("Store did not respond. Your refund is on its way.");
       expect(fake.to(id, 'ORDER_CANCELLED_VENDOR')).toHaveLength(1);
       expect(fake.to(id, 'REFUND_PROCESSED')).toHaveLength(1);
     });

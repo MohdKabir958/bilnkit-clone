@@ -161,12 +161,12 @@ describe('EditRestaurantDrawer', () => {
   });
 
   it('a server error is shown on the field it names (NAME_TAKEN) and the drawer stays open', async () => {
-    vi.spyOn(apiService, 'updateVendorProfile').mockRejectedValue(new ApiError(409, 'Another restaurant already uses this name.', 'NAME_TAKEN', 'name'));
+    vi.spyOn(apiService, 'updateVendorProfile').mockRejectedValue(new ApiError(409, 'Another store already uses this name.', 'NAME_TAKEN', 'name'));
     const { onClose, onSaved, onAuthError } = await setup();
     await type(byId('er-name'), 'Taken Name');
     await save();
     expect(byId('er-name')!.getAttribute('aria-invalid')).toBe('true');
-    expect(byId('er-name-msg')!.textContent).toBe('Another restaurant already uses this name.');
+    expect(byId('er-name-msg')!.textContent).toBe("Another store already uses this name.");
     expect(onClose).not.toHaveBeenCalled();
     expect(onSaved).not.toHaveBeenCalled();
     expect(onAuthError).toHaveBeenCalled();
@@ -270,7 +270,7 @@ describe('Edit restaurant on the vendor card', () => {
   it('every restaurant card has the button and it opens the drawer for that restaurant', async () => {
     vi.spyOn(apiService, 'fetchCategories').mockResolvedValue([]);
     const host = await mount(<VendorManager vendors={list} onToggleVendor={vi.fn()} />);
-    const buttons = Array.from(host.querySelectorAll('button')).filter((b) => b.textContent?.trim() === 'Edit restaurant');
+    const buttons = Array.from(host.querySelectorAll('button')).filter((b) => b.textContent?.trim() === "Edit store");
     expect(buttons).toHaveLength(2);
     await click(buttons[1]);
     await flush();
@@ -283,7 +283,7 @@ describe('Edit restaurant on the vendor card', () => {
     vi.spyOn(apiService, 'updateVendorProfile').mockResolvedValue({ vendor: fresh, changed: true, message: '' });
     const onProfileSaved = vi.fn();
     const host = await mount(<VendorManager vendors={list} onToggleVendor={vi.fn()} onProfileSaved={onProfileSaved} />);
-    await click(Array.from(host.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Edit restaurant')!);
+    await click(Array.from(host.querySelectorAll('button')).find((b) => b.textContent?.trim() === "Edit store")!);
     await flush();
     await type(byId('er-name'), 'Renamed');
     await save();

@@ -129,7 +129,7 @@ const RULES: Rule[] = [
     applies: (r, p) => ['POST', 'PATCH', 'DELETE'].includes(r.method) && /^\/admin\/categories(\/|$)/.test(p),
     message: 'Too many category changes. Please wait a few minutes.',
   },
-  { name: 'ADMIN_VENDOR_PROFILE_WRITE', scope: 'user', max: 120, windowMs: 10 * MIN, applies: (r, p) => r.method === 'PATCH' && /^\/admin\/vendors\/[^/]+\/profile$/.test(p), message: 'Too many restaurant edits. Please wait a few minutes.' },
+  { name: 'ADMIN_VENDOR_PROFILE_WRITE', scope: 'user', max: 120, windowMs: 10 * MIN, applies: (r, p) => r.method === 'PATCH' && /^\/admin\/vendors\/[^/]+\/profile$/.test(p), message: 'Too many store edits. Please wait a few minutes.' },
   { name: 'ADMIN_CATALOG_BULK', scope: 'user', max: 30, windowMs: 10 * MIN, applies: (r, p) => r.method === 'POST' && p === '/admin/catalog/bulk', message: 'Too many bulk changes. Please wait a few minutes.' },
   { name: 'ADMIN_MENU_IMPORT', scope: 'user', max: 30, windowMs: 10 * MIN, applies: (r, p) => r.method === 'POST' && /^\/admin\/vendors\/[^/]+\/menu-import$/.test(p), message: 'Too many menu imports. Please wait a few minutes.' },
   { name: 'ADMIN_UPLOAD', scope: 'user', max: 60, windowMs: 60 * MIN, applies: (r, p) => r.method === 'POST' && p === '/admin/uploads/image', message: 'Too many image uploads. Please try again in an hour.' },

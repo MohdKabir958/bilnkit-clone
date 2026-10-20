@@ -116,11 +116,11 @@ type Fail = { field: string; message: string };
 /** Validates the restaurant fields shared by sign-up, re-apply and admin creation. */
 const vendorFields = (b: any): { ok: true; data: { name: string; category: string; address: string; fssaiNumber: string | null } } | { ok: false; error: Fail } => {
   const name = clean(b?.restaurantName ?? b?.vendorName, 60);
-  if (name.length < 2) return { ok: false, error: { field: 'restaurantName', message: 'Enter the restaurant name.' } };
+  if (name.length < 2) return { ok: false, error: { field: 'restaurantName', message: 'Enter the store name.' } };
   if (badLabel(name) || badLabel(clean(b?.address, 140))) return { ok: false, error: { field: badLabel(name) ? 'restaurantName' : 'address', message: 'Remove the hidden or control characters from the text.' } };
-  const category = clean(b?.category, 60) || 'Campus kitchen';
+  const category = clean(b?.category, 60) || 'Grocery store';
   const address = clean(b?.address, 140);
-  if (address.length < 3) return { ok: false, error: { field: 'address', message: 'Tell us where the kitchen is.' } };
+  if (address.length < 3) return { ok: false, error: { field: 'address', message: 'Tell us where the store is.' } };
   const fssai = clean(b?.fssaiNumber, 20).replace(/\s/g, '');
   if (fssai && !FSSAI_RE.test(fssai)) return { ok: false, error: { field: 'fssaiNumber', message: 'FSSAI number has 14 digits. Leave it empty if you do not have it yet.' } };
   return { ok: true, data: { name, category, address, fssaiNumber: fssai || null } };
@@ -315,7 +315,7 @@ partnerRouter.put('/partner/vendor/location', requireAuth, requireRole('VENDOR')
     const b = req.body && typeof req.body === 'object' ? req.body : {};
     const bad = (e: Fail) => res.status(400).json({ success: false, field: e.field, message: e.message });
     const { vendor } = await loadOwnProfile(req.user!.id, Role.VENDOR);
-    if (!vendor) return res.status(404).json({ success: false, message: 'No restaurant is linked to this account.' });
+    if (!vendor) return res.status(404).json({ success: false, message: 'No store is linked to this account.' });
     if (vendor.approvalStatus !== 'PENDING' && vendor.approvalStatus !== 'APPROVED') {
       return res.status(403).json({ success: false, code: 'PARTNER_NOT_APPROVED', approvalStatus: vendor.approvalStatus, message: notApprovedMessage(vendor.approvalStatus) });
     }
@@ -383,7 +383,7 @@ partnerRouter.put('/partner/application', requireAuth, requireRole('VENDOR', 'DR
     }
     const now = new Date();
     if (user.role === Role.VENDOR) {
-      if (!p.vendor) return res.status(404).json({ success: false, message: 'No restaurant is linked to this account.' });
+      if (!p.vendor) return res.status(404).json({ success: false, message: 'No store is linked to this account.' });
       const v = vendorFields({ restaurantName: p.vendor.name, category: p.vendor.category, address: p.vendor.address, fssaiNumber: p.vendor.fssaiNumber, ...b });
       if (!v.ok) return bad(v.error);
       // Docs/23: Vendor.category is DERIVED from the cuisine links, so it is never written from this form directly. The text counts only when the

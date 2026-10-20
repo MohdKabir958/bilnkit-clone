@@ -61,7 +61,7 @@ const Loading: React.FC<{ load: Load; onRetry: () => void; children: (raw: Raw) 
     return (
       <div role="alert" className="flex items-center justify-between gap-3 rounded-k-md border border-kraveo-danger/30 bg-kraveo-danger/10 px-4 py-3 text-sm text-kraveo-ink">
         <span className="min-w-0 break-words">{load.message}</span>
-        <button type="button" className="k-btn-ghost !min-h-[36px] shrink-0 !px-3 text-xs" onClick={onRetry}>Try again</button>
+        <button type="button" className="k-btn-ghost !min-h-[44px] shrink-0 !px-3 text-xs" onClick={onRetry}>Try again</button>
       </div>
     );
   }
@@ -103,9 +103,9 @@ const MAX_OPTIONS = Array.from({ length: MAX_RESTAURANTS_PER_ORDER - MIN_RESTAUR
 /** Plain explanation under the "most restaurants" field, for the value currently chosen. */
 const maxRestaurantsHint = (text: string): string => {
   const n = Number(text);
-  if (n === 1) return 'Off: customers can order from one restaurant at a time. Orders already placed are not affected.';
+  if (n === 1) return 'Off: customers can order from one store at a time. Orders already placed are not affected.';
   if (Number.isInteger(n) && n > 1 && n <= MAX_RESTAURANTS_PER_ORDER) {
-    return `Customers can combine up to ${n} restaurants in one checkout: one payment, one rider, one gate code. If any restaurant cannot accept, the whole order is cancelled and fully refunded. 1 turns this off.`;
+    return `Customers can combine up to ${n} stores in one checkout: one payment, one rider, one gate code. If any store cannot accept, the whole order is cancelled and fully refunded. 1 turns this off.`;
   }
   return `Choose a whole number from ${MIN_RESTAURANTS_PER_ORDER} to ${MAX_RESTAURANTS_PER_ORDER}. 1 turns combined orders off.`;
 };
@@ -155,11 +155,11 @@ const FeesCard: React.FC<{ raw: Raw; onSaved: (raw: Raw, outcome: Outcome) => vo
     <div className="space-y-5">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="All-in fee per order (₹)" htmlFor="fee-base" required error={err('baseFee')} hint="Delivery coverage sets each active zone’s base rate. Free-delivery and small-order policies below apply to the whole checkout.">{input('baseFee', 'fee-base')}</Field>
-        <Field label="Extra fee for each additional restaurant (₹)" htmlFor="fee-extra" required error={err('extraRestaurantFee')} hint={`Added once for every restaurant after the first in a combined order (0 to ${MAX_EXTRA_RESTAURANT_FEE}). Example: ₹15 and 3 restaurants adds ₹30 on top of the all-in fee. Not used while combined orders are off.`}>{input('extraRestaurantFee', 'fee-extra')}</Field>
+        <Field label="Extra fee for each additional store (₹)" htmlFor="fee-extra" required error={err('extraRestaurantFee')} hint={`Added once for every store after the first in a combined order (0 to ${MAX_EXTRA_RESTAURANT_FEE}). Example: ₹15 and 3 stores adds ₹30 on top of the all-in fee. Not used while combined orders are off.`}>{input('extraRestaurantFee', 'fee-extra')}</Field>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Most restaurants in one order" htmlFor="fee-max-restaurants" required error={err('maxRestaurantsPerOrder')} hint={maxHint}>
+        <Field label="Most stores in one order" htmlFor="fee-max-restaurants" required error={err('maxRestaurantsPerOrder')} hint={maxHint}>
           <select
             id="fee-max-restaurants"
             className="k-select"
@@ -193,19 +193,19 @@ const FeesCard: React.FC<{ raw: Raw; onSaved: (raw: Raw, outcome: Outcome) => vo
           );
         })}
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" className="k-btn-ghost !min-h-[36px] text-xs" onClick={() => setForm((f) => ({ ...f, lines: [...f.lines, { rowId: newRowId(), label: '', amount: '' }] }))}><Plus className="h-4 w-4" aria-hidden="true" />Add a line</button>
+          <button type="button" className="k-btn-ghost !min-h-[44px] text-xs" onClick={() => setForm((f) => ({ ...f, lines: [...f.lines, { rowId: newRowId(), label: '', amount: '' }] }))}><Plus className="h-4 w-4" aria-hidden="true" />Add a line</button>
           {linesTotalLabel && <span className={`text-xs font-semibold ${touched && result.errors.lines ? 'text-kraveo-danger' : 'text-kraveo-ink2'}`} aria-live="polite">{linesTotalLabel}</span>}
         </div>
         {touched && result.errors.lines && <p role="alert" className="text-xs font-semibold text-kraveo-danger">{result.errors.lines}</p>}
       </fieldset>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Free delivery above (₹, 0 = off)" htmlFor="fee-free" error={err('freeFeeAbove')} hint="Orders with food worth at least this pay no fee.">{input('freeFeeAbove', 'fee-free')}</Field>
+        <Field label="Free delivery above (₹, 0 = off)" htmlFor="fee-free" error={err('freeFeeAbove')} hint="Orders with products worth at least this pay no fee.">{input('freeFeeAbove', 'fee-free')}</Field>
         <div className="hidden sm:block" />
         <Field label="Small order below (₹, 0 = off)" htmlFor="fee-small-below" error={err('smallOrderBelow')}>{input('smallOrderBelow', 'fee-small-below')}</Field>
-        <Field label="Small order fee (₹)" htmlFor="fee-small" error={err('smallOrderFee')} hint="Added when the food total is under the limit.">{input('smallOrderFee', 'fee-small')}</Field>
+        <Field label="Small order fee (₹)" htmlFor="fee-small" error={err('smallOrderFee')} hint="Added when the products total is under the limit.">{input('smallOrderFee', 'fee-small')}</Field>
         <Field label="GST on fees (%) – for records" htmlFor="fee-gst-fees" error={err('gstOnFeesPercent')} hint="Information only until the accountant decides.">{input('gstOnFeesPercent', 'fee-gst-fees')}</Field>
-        <Field label="GST on food (%) – for records" htmlFor="fee-gst-food" error={err('gstOnFoodPercent')} hint="Information only.">{input('gstOnFoodPercent', 'fee-gst-food')}</Field>
+        <Field label="GST on products (%) – for records" htmlFor="fee-gst-food" error={err('gstOnFoodPercent')} hint="Information only.">{input('gstOnFoodPercent', 'fee-gst-food')}</Field>
       </div>
       <SaveBar dirty={dirty} saving={saving} error={error} onSave={save} onUndo={undo} />
     </div>
@@ -239,7 +239,7 @@ const CommissionCard: React.FC<{ raw: Raw; onSaved: (raw: Raw, outcome: Outcome)
       const v = amountText(asNum(stored.value) ?? checked.value.value);
       setType(t); setValue(v); setBaseline(`${t}|${v}`); setTouched(false);
       onSaved(stored, saved);
-      toast.success('Commission saved', saved.message || 'Dish prices change when you run Recalculate prices below.');
+      toast.success('Commission saved', saved.message || 'Product prices change when you run Recalculate prices below.');
     } catch (failure) {
       onAuthError(failure);
       setError(plain(failure));
@@ -252,15 +252,15 @@ const CommissionCard: React.FC<{ raw: Raw; onSaved: (raw: Raw, outcome: Outcome)
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Commission type" htmlFor="commission-type">
           <select id="commission-type" className="k-select" value={type} onChange={(e) => { setType(e.target.value as CommissionType); setError(''); }}>
-            <option value="PERCENT">Percent of the restaurant price</option>
-            <option value="FLAT">Flat rupee amount per dish</option>
+            <option value="PERCENT">Percent of the store price</option>
+            <option value="FLAT">Flat rupee amount per product</option>
           </select>
         </Field>
-        <Field label={type === 'PERCENT' ? 'Percent (%)' : 'Amount per dish (₹)'} htmlFor="commission-value" required error={touched && !checked.ok ? checked.message : undefined}>
+        <Field label={type === 'PERCENT' ? 'Percent (%)' : 'Amount per product (₹)'} htmlFor="commission-value" required error={touched && !checked.ok ? checked.message : undefined}>
           <input id="commission-value" className="k-input" inputMode="decimal" value={value} onChange={(e) => { setValue(e.target.value); setError(''); }} aria-invalid={touched && !checked.ok} aria-describedby="commission-value-msg" autoComplete="off" />
         </Field>
       </div>
-      <p className="text-xs text-kraveo-ink3">A restaurant or a single dish can have its own commission; the most specific one wins. This is the default for everything else.</p>
+      <p className="text-xs text-kraveo-ink3">A store or a single product can have its own commission; the most specific one wins. This is the default for everything else.</p>
       <SaveBar dirty={dirty} saving={saving} error={error} onSave={save} onUndo={undo} />
     </div>
   );
@@ -289,7 +289,7 @@ const RoundingCard: React.FC<{ raw: Raw; onSaved: (raw: Raw, outcome: Outcome) =
       const next = isRoundingStep(saved.value.step) ? saved.value.step : step;
       setStep(next); setBaseline(next);
       onSaved(saved.value, saved);
-      toast.success('Rounding saved', saved.message || 'Dish prices change when you run Recalculate prices below.');
+      toast.success('Rounding saved', saved.message || 'Product prices change when you run Recalculate prices below.');
     } catch (failure) {
       onAuthError(failure);
       setError(plain(failure));
@@ -333,7 +333,7 @@ const RecalcCard: React.FC<{ settingsVersion: number; recommended: boolean; onSe
       const result = await apiService.recalculatePrices(true);
       setPreview(result);
       if (result.changed === 0) onSettled(); // nothing is out of date any more
-      if (result.changed === null) setError('The server did not say how many dishes would change, so prices cannot be recalculated from here.');
+      if (result.changed === null) setError('The server did not say how many products would change, so prices cannot be recalculated from here.');
     } catch (failure) {
       onAuthError(failure);
       setPreview(null);
@@ -345,7 +345,7 @@ const RecalcCard: React.FC<{ settingsVersion: number; recommended: boolean; onSe
     if (busyRef.current || !preview || preview.changed === null || preview.changed <= 0) return;
     const count = preview.changed;
     const ok = await confirm({
-      title: `Change the price of ${count} ${count === 1 ? 'dish' : 'dishes'}?`,
+      title: `Change the price of ${count} ${count === 1 ? 'product' : 'products'}?`,
       message: 'Customers see the new prices at once. Orders already placed keep the prices they were placed with. This cannot be undone with one click.',
       confirmLabel: 'Recalculate prices',
       danger: true,
@@ -354,7 +354,7 @@ const RecalcCard: React.FC<{ settingsVersion: number; recommended: boolean; onSe
     busyRef.current = true; setBusy('apply'); setError('');
     try {
       const result = await apiService.recalculatePrices(false);
-      toast.success('Prices recalculated', result.changed !== null ? `${result.changed} ${result.changed === 1 ? 'dish' : 'dishes'} updated.` : 'The server did not say how many dishes changed.');
+      toast.success('Prices recalculated', result.changed !== null ? `${result.changed} ${result.changed === 1 ? 'product' : 'products'} updated.` : 'The server did not say how many products changed.');
       setPreview(null);
       onSettled();
     } catch (failure) {
@@ -366,7 +366,7 @@ const RecalcCard: React.FC<{ settingsVersion: number; recommended: boolean; onSe
   const changed = preview?.changed ?? null;
   return (
     <div className="space-y-4">
-      {recommended && !unsaved && <p role="status" className="rounded-k-sm border border-kraveo-status-placed/40 bg-kraveo-status-placed/10 px-3 py-2 text-sm text-kraveo-ink">Existing dish prices keep their old value until you recalculate. Preview the change below.</p>}
+      {recommended && !unsaved && <p role="status" className="rounded-k-sm border border-kraveo-status-placed/40 bg-kraveo-status-placed/10 px-3 py-2 text-sm text-kraveo-ink">Existing product prices keep their old value until you recalculate. Preview the change below.</p>}
       {unsaved && <p className="rounded-k-sm border border-kraveo-status-placed/40 bg-kraveo-status-placed/10 px-3 py-2 text-sm text-kraveo-ink">Save your commission or rounding changes first. The recalculation uses the saved settings.</p>}
       <div className="flex flex-wrap gap-2">
         <button type="button" className="k-btn-ghost" onClick={runPreview} disabled={busy !== null || unsaved} aria-busy={busy === 'preview'}>{busy === 'preview' && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}Preview changes</button>
@@ -376,7 +376,7 @@ const RecalcCard: React.FC<{ settingsVersion: number; recommended: boolean; onSe
       {preview && changed !== null && (
         <div className="k-inset space-y-2 p-4" aria-live="polite" data-testid="recalc-preview">
           <p className="text-sm text-kraveo-ink">
-            {changed === 0 ? 'No dish would change. Prices already match the settings.' : <><b className="tabular-nums">{changed}</b>{preview.total !== null ? <> of <b className="tabular-nums">{preview.total}</b></> : null} {changed === 1 && preview.total === null ? 'dish' : 'dishes'} would change price.</>}
+            {changed === 0 ? 'No product would change. Prices already match the settings.' : <><b className="tabular-nums">{changed}</b>{preview.total !== null ? <> of <b className="tabular-nums">{preview.total}</b></> : null} {changed === 1 && preview.total === null ? 'product' : 'products'} would change price.</>}
           </p>
           {preview.truncated && <p className="text-xs font-semibold text-kraveo-status-placed">Only the first changes are listed. The count above is complete.</p>}
           {preview.samples.length > 0 && (
@@ -386,7 +386,7 @@ const RecalcCard: React.FC<{ settingsVersion: number; recommended: boolean; onSe
           )}
         </div>
       )}
-      <p className="text-xs text-kraveo-ink3">Preview first: nothing changes until you confirm. Dishes also get the right price when they are approved or edited.</p>
+      <p className="text-xs text-kraveo-ink3">Preview first: nothing changes until you confirm. Products also get the right price when they are approved or edited.</p>
       {dialog}
     </div>
   );
@@ -508,19 +508,19 @@ export const SettingsPanel: React.FC<Props> = ({ onAuthError }) => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
-      <Card title="Fees" description="What the customer pays on top of the food. All amounts come from here, not from the app code.">
+      <Card title="Fees" description="What the customer pays on top of the products. All amounts come from here, not from the app code.">
         <Loading load={fees.load} onRetry={fees.retry}>{(raw) => <FeesCard raw={raw} onSaved={fees.saved} onDirty={dirtyFees} onAuthError={onAuthError} />}</Loading>
       </Card>
-      <Card title="Default commission" description="Grozo's share on top of the restaurant's price, unless the restaurant or the dish has its own.">
+      <Card title="Default commission" description="Grozo's share on top of the store's price, unless the store or the product has its own.">
         <Loading load={commission.load} onRetry={commission.retry}>{(raw) => <CommissionCard raw={raw} onSaved={onPricingSaved(commission.saved)} onDirty={dirtyCommission} onAuthError={onAuthError} />}</Loading>
       </Card>
       <Card title="Price rounding" description="Customer prices are rounded up to a tidy number.">
         <Loading load={rounding.load} onRetry={rounding.retry}>{(raw) => <RoundingCard raw={raw} onSaved={onPricingSaved(rounding.saved)} onDirty={dirtyRounding} onAuthError={onAuthError} />}</Loading>
       </Card>
-      <Card title="Recalculate prices" description="After changing the default commission, a restaurant's commission or the rounding, apply the new prices to the dishes already on the menu.">
+      <Card title="Recalculate prices" description="After changing the default commission, a store's commission or the rounding, apply the new prices to the products already on the menu.">
         <RecalcCard settingsVersion={pricingChanged} recommended={recommended} onSettled={settled} unsaved={Boolean(dirty.commission || dirty.rounding)} onAuthError={onAuthError} />
       </Card>
-      <Card title="Settlements" description="When restaurant settlements are created and how they are paid. Changes apply from the next daily run.">
+      <Card title="Settlements" description="When store settlements are created and how they are paid. Changes apply from the next daily run.">
         <Loading load={settlement.load} onRetry={settlement.retry}>{(raw) => <SettlementCard raw={raw} onSaved={settlement.saved} onAuthError={onAuthError} />}</Loading>
       </Card>
     </div>

@@ -70,14 +70,14 @@ export const editVendorProfile = async (vendorId: string, b: Record<string, unkn
     const data: Prisma.VendorUpdateInput = {};
     const notes: string[] = [];
     if (b.name !== undefined) {
-      const name = checkVendorProfileText(b.name, 'name', 'The restaurant name', 2, 60);
+      const name = checkVendorProfileText(b.name, 'name', 'The store name', 2, 60);
       if (name !== before.name) {
         // Names of APPROVED restaurants are unique ignoring case and spacing. The advisory lock makes two parallel renames to the same name safe.
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('vendor-name-unique'))`;
         const taken = await tx.$queryRaw<{ id: string }[]>`
           SELECT "id" FROM "Vendor" WHERE "id" <> ${vendorId} AND "approvalStatus" = 'APPROVED'
             AND lower(regexp_replace(btrim("name"), '\\s+', ' ', 'g')) = lower(${name}) LIMIT 1`;
-        if (taken.length) throw new AppError(409, 'NAME_TAKEN', 'Another restaurant already uses this name.', 'name');
+        if (taken.length) throw new AppError(409, 'NAME_TAKEN', 'Another store already uses this name.', 'name');
         data.name = name;
         notes.push(`name "${before.name}" -> "${name}"`);
       }
@@ -117,6 +117,6 @@ export const editVendorProfile = async (vendorId: string, b: Record<string, unkn
   }, TX_OPTS);
 
   const vendor = (await adminVendorRow(vendorId))!;
-  if (out.changed) await writeAudit('VENDOR_PROFILE_EDITED', 'VENDOR', vendorId, `Admin edited restaurant "${out.before.name}": ${out.notes.join('; ')}`);
+  if (out.changed) await writeAudit('VENDOR_PROFILE_EDITED', 'VENDOR', vendorId, `Admin edited store "${out.before.name}": ${out.notes.join('; ')}`);
   return { changed: out.changed, vendor, cuisines: cuisineList(vendor) };
 };

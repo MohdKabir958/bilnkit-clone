@@ -19,7 +19,7 @@ describe('WEB-10 decisionToast', () => {
   it('reactivating a suspended restaurant says it stays closed', () => {
     const [title, text] = decisionToast({ kind: 'VENDOR', status: 'SUSPENDED' }, 'APPROVED', 'Sharma Dhaba');
     expect(title).toBe('Reactivated');
-    expect(text).toContain('closed until the restaurant opens it');
+    expect(text).toContain("closed until the store opens it");
   });
   it('approving a pending restaurant and the other decisions keep their wording', () => {
     expect(decisionToast({ kind: 'VENDOR', status: 'PENDING' }, 'APPROVED', 'X')).toEqual(['Approved', 'X can start working now.']);

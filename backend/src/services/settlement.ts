@@ -194,7 +194,7 @@ export const createSettlements = async (opts: { until?: Date; vendorId?: string;
     } catch (err: any) {
       if (err?.code === 'P2002') result.skipped.push({ vendorId, reason: 'ALREADY_CREATED_FOR_THIS_DAY' }); // another run made today's automatic batch first
       else {
-        console.error(`settlement for restaurant ${vendorId} failed:`, errSummary(err));
+        console.error(`settlement for store ${vendorId} failed:`, errSummary(err));
         result.failed.push({ vendorId });
       }
     }
@@ -351,7 +351,7 @@ export const markPaid = async (id: string, raw: unknown, actor: Actor) => {
     const row = await tx.settlement.update({ where: { id }, data: { status: 'PAID', paidAt, paymentReference: reference, paidBy: actor.id, ...(note !== null ? { note } : {}) } });
     return { row, changed: true };
   });
-  if (out.changed) await writeAudit('SETTLEMENT_PAID', 'SETTLEMENT', id, `Admin ${actor.id} marked the settlement of restaurant ${out.row.vendorId} paid: Rs ${out.row.netPayable.toFixed(2)}, reference ${reference}.`);
+  if (out.changed) await writeAudit('SETTLEMENT_PAID', 'SETTLEMENT', id, `Admin ${actor.id} marked the settlement of store ${out.row.vendorId} paid: Rs ${out.row.netPayable.toFixed(2)}, reference ${reference}.`);
   return out;
 };
 
@@ -370,7 +370,7 @@ export const holdSettlement = async (id: string, raw: unknown, actor: Actor) => 
     if (s.status !== 'PENDING') throw conflict('NOT_PENDING', `A ${s.status === 'PAID' ? 'paid' : 'cancelled'} settlement cannot be put on hold.`);
     return { row: await tx.settlement.update({ where: { id }, data: { status: 'ON_HOLD', ...(note ? { note } : {}) } }), changed: true };
   });
-  if (out.changed) await writeAudit('SETTLEMENT_HELD', 'SETTLEMENT', id, `Admin ${actor.id} put the settlement of restaurant ${out.row.vendorId} on hold${note ? `: ${note}` : ''}.`);
+  if (out.changed) await writeAudit('SETTLEMENT_HELD', 'SETTLEMENT', id, `Admin ${actor.id} put the settlement of store ${out.row.vendorId} on hold${note ? `: ${note}` : ''}.`);
   return out;
 };
 
@@ -380,14 +380,14 @@ export const releaseSettlement = async (id: string, actor: Actor) => {
     if (s.status !== 'ON_HOLD') throw conflict('NOT_ON_HOLD', `A ${s.status === 'PAID' ? 'paid' : 'cancelled'} settlement is not on hold.`);
     return { row: await tx.settlement.update({ where: { id }, data: { status: 'PENDING' } }), changed: true };
   });
-  if (out.changed) await writeAudit('SETTLEMENT_RELEASED', 'SETTLEMENT', id, `Admin ${actor.id} released the settlement of restaurant ${out.row.vendorId}.`);
+  if (out.changed) await writeAudit('SETTLEMENT_RELEASED', 'SETTLEMENT', id, `Admin ${actor.id} released the settlement of store ${out.row.vendorId}.`);
   return out;
 };
 
 export const addAdjustment = async (id: string, raw: unknown, actor: Actor) => {
   const b = raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
   const amount = b.amount;
-  if (typeof amount !== 'number' || !Number.isFinite(amount)) throw new AppError(400, 'BAD_REQUEST', 'amount must be a number (+ pays the restaurant more, - deducts).', 'amount');
+  if (typeof amount !== 'number' || !Number.isFinite(amount)) throw new AppError(400, 'BAD_REQUEST', 'amount must be a number (+ pays the store more, - deducts).', 'amount');
   if (amount === 0 || Math.round(amount * 100) === 0) throw new AppError(400, 'BAD_REQUEST', 'amount cannot be 0.', 'amount');
   if (!hasAtMostTwoDecimals(amount)) throw new AppError(400, 'BAD_REQUEST', 'amount can have at most 2 decimals.', 'amount');
   if (Math.abs(amount) > MAX_ADJUSTMENT) throw new AppError(400, 'BAD_REQUEST', `amount must be between -${MAX_ADJUSTMENT} and ${MAX_ADJUSTMENT}.`, 'amount');
@@ -412,7 +412,7 @@ export const addAdjustment = async (id: string, raw: unknown, actor: Actor) => {
     const row = await tx.settlement.update({ where: { id }, data: { adjustmentTotal: fromPaise(total), netPayable: fromPaise(net) } });
     return { row, changed: true, adjustment };
   });
-  if (out.changed) await writeAudit('SETTLEMENT_ADJUSTED', 'SETTLEMENT', id, `Admin ${actor.id} adjusted the settlement of restaurant ${out.row.vendorId} by Rs ${amount.toFixed(2)} (${reason.slice(0, 120)}). Payable now Rs ${out.row.netPayable.toFixed(2)}.`);
+  if (out.changed) await writeAudit('SETTLEMENT_ADJUSTED', 'SETTLEMENT', id, `Admin ${actor.id} adjusted the settlement of store ${out.row.vendorId} by Rs ${amount.toFixed(2)} (${reason.slice(0, 120)}). Payable now Rs ${out.row.netPayable.toFixed(2)}.`);
   return out;
 };
 
@@ -424,7 +424,7 @@ export const cancelSettlement = async (id: string, actor: Actor) => {
     const row = await tx.settlement.update({ where: { id }, data: { status: 'CANCELLED' } });
     return { row, changed: true, freed };
   });
-  if (out.changed) await writeAudit('SETTLEMENT_CANCELLED', 'SETTLEMENT', id, `Admin ${actor.id} cancelled the settlement of restaurant ${out.row.vendorId}; ${out.freed} order(s) are unsettled again.`);
+  if (out.changed) await writeAudit('SETTLEMENT_CANCELLED', 'SETTLEMENT', id, `Admin ${actor.id} cancelled the settlement of store ${out.row.vendorId}; ${out.freed} order(s) are unsettled again.`);
   return out;
 };
 

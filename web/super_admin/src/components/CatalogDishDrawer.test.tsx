@@ -57,7 +57,7 @@ describe('live price preview', () => {
     await type(byId('dish-price'), bad);
     await advance(1000);
     expect(preview).not.toHaveBeenCalled();
-    expect(document.body.textContent).toContain('Enter a valid restaurant price');
+    expect(document.body.textContent).toContain("Enter a valid store price");
   });
 
   it('shows a plain error when the preview fails', async () => {
@@ -132,17 +132,17 @@ describe('reject', () => {
     const reject = vi.spyOn(apiService, 'rejectCatalogItem').mockResolvedValue(null);
     await mount(open(pendingDish()).element);
     await click(byText('button', 'Reject…'));
-    await click(byText('button', 'Reject dish'));
+    await click(byText('button', "Reject product"));
     expect(reject).not.toHaveBeenCalled();
     expect(document.body.textContent).toContain('short reason');
     await type(byId('dish-reject-reason'), 'Photo is missing');
-    await click(byText('button', 'Reject dish'));
+    await click(byText('button', "Reject product"));
     expect(document.querySelector('[role="alertdialog"]')).not.toBeNull();
     expect(reject).not.toHaveBeenCalled();
     await click(byText('button', 'Cancel', document.querySelector('[role="alertdialog"]')!));
     expect(reject).not.toHaveBeenCalled();
-    await click(byText('button', 'Reject dish'));
-    await click(byText('button', 'Reject dish', document.querySelector('[role="alertdialog"]')!));
+    await click(byText('button', "Reject product"));
+    await click(byText('button', "Reject product", document.querySelector('[role="alertdialog"]')!));
     await flush();
     expect(reject).toHaveBeenCalledWith('d1', 'Photo is missing');
   });
@@ -157,7 +157,7 @@ describe('delete and restore', () => {
     await click(byText('button', 'Cancel'));
     expect(del).not.toHaveBeenCalled();
     await click(byText('button', 'Delete'));
-    await click(byText('button', 'Delete dish'));
+    await click(byText('button', "Delete product"));
     await flush();
     expect(del).toHaveBeenCalledWith('d1');
   });
@@ -167,7 +167,7 @@ describe('delete and restore', () => {
     await mount(open(deletedDish()).element);
     expect((byId('dish-name') as HTMLInputElement).disabled).toBe(true);
     expect(byText('button', 'Delete')).toBeUndefined();
-    await click(byText('button', 'Restore dish'));
+    await click(byText('button', "Restore product"));
     await flush();
     expect(restore).toHaveBeenCalledWith('d1');
   });
@@ -202,14 +202,14 @@ describe('edit and create', () => {
   it('create needs a restaurant, a name, a category and a valid price, then posts them', async () => {
     const create = vi.spyOn(apiService, 'createCatalogItem').mockResolvedValue(null);
     await mount(open(null).element);
-    await click(byText('button', 'Add dish'));
+    await click(byText('button', "Add product"));
     expect(create).not.toHaveBeenCalled();
-    expect(document.body.textContent).toContain('Choose the restaurant');
+    expect(document.body.textContent).toContain("Choose the store");
     await type(byId('dish-vendor'), 'v2');
     await type(byId('dish-name'), 'Masala Chai');
     await type(byId('dish-category'), 'Tea');
     await type(byId('dish-price'), '15.50');
-    await click(byText('button', 'Add dish'));
+    await click(byText('button', "Add product"));
     await flush();
     expect(create).toHaveBeenCalledWith({ vendorId: 'v2', name: 'Masala Chai', category: 'Tea', isVeg: true, isAvailable: true, vendorPrice: 15.5 });
   });
@@ -222,7 +222,7 @@ describe('edit and create', () => {
     await type(byId('dish-category'), 'Tea');
     await type(byId('dish-price'), '15');
     await type(byId('dish-image'), 'javascript:alert(1)');
-    await click(byText('button', 'Add dish'));
+    await click(byText('button', "Add product"));
     expect(create).not.toHaveBeenCalled();
     expect(document.body.textContent).toContain('starting with https://');
   });
@@ -286,7 +286,7 @@ describe('real response details', () => {
     await mount(open(dish()).element);
     await advance(500);
     const rule = document.querySelector('[data-testid="preview-rule"]')!.textContent!;
-    expect(rule).toContain('12% (this restaurant)');
+    expect(rule).toContain("12% (this store)");
     expect(rule).toContain('multiple of ₹5');
     expect(rule).toContain('rounding adds ₹2');
   });
@@ -298,7 +298,7 @@ describe('real response details', () => {
 
   it('the commission rule in use is shown for a dish that inherits', async () => {
     await mount(open(dish({ commission: { type: 'FLAT', value: 7, source: 'VENDOR' } })).element);
-    expect(document.body.textContent).toContain('Uses ₹7 flat (this restaurant)');
+    expect(document.body.textContent).toContain("Uses ₹7 flat (this store)");
   });
 
   it('a photo cannot be emptied on an existing dish (the server requires an http link)', async () => {

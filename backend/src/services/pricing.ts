@@ -314,7 +314,7 @@ export const validateFees = (raw: unknown): Checked<FeesSettings> => {
   if (extra) return bad(extra, `Unknown fee setting '${extra.slice(0, 40)}'.`);
   const baseFee = money(raw, 'baseFee', LIMITS.maxFee, 'The fee');
   if (!baseFee.ok) return baseFee;
-  const extraFee = money(raw, 'extraRestaurantFee', LIMITS.maxExtraRestaurantFee, 'The extra-restaurant fee');
+  const extraFee = money(raw, 'extraRestaurantFee', LIMITS.maxExtraRestaurantFee, 'The extra-store fee');
   if (!extraFee.ok) return extraFee;
   const freeAbove = money(raw, 'freeFeeAbove', LIMITS.maxThreshold, 'The free-fee limit');
   if (!freeAbove.ok) return freeAbove;
@@ -324,12 +324,12 @@ export const validateFees = (raw: unknown): Checked<FeesSettings> => {
   if (!smallFee.ok) return smallFee;
   const gstFees = money(raw, 'gstOnFeesPercent', 100, 'GST on fees', '');
   if (!gstFees.ok) return gstFees;
-  const gstFood = money(raw, 'gstOnFoodPercent', 100, 'GST on food', '');
+  const gstFood = money(raw, 'gstOnFoodPercent', 100, 'GST on products', '');
   if (!gstFood.ok) return gstFood;
   // Missing (a row stored before Docs/22) = the default 3, so an old row keeps validating and behaves like the default.
   const maxRaw = raw.maxRestaurantsPerOrder === undefined ? DEFAULT_SETTINGS.fees.maxRestaurantsPerOrder : raw.maxRestaurantsPerOrder;
   if (typeof maxRaw !== 'number' || !Number.isInteger(maxRaw) || maxRaw < LIMITS.minRestaurantsPerOrder || maxRaw > LIMITS.maxRestaurantsPerOrder) {
-    return bad('maxRestaurantsPerOrder', `The most restaurants per order must be a whole number from ${LIMITS.minRestaurantsPerOrder} to ${LIMITS.maxRestaurantsPerOrder} (1 turns multi-restaurant orders off).`);
+    return bad('maxRestaurantsPerOrder', `The most stores per order must be a whole number from ${LIMITS.minRestaurantsPerOrder} to ${LIMITS.maxRestaurantsPerOrder} (1 turns multi-store orders off).`);
   }
   if (freeAbove.value > 0 && smallBelow.value > freeAbove.value) {
     return bad('smallOrderBelow', 'The small-order limit cannot be higher than the free-fee limit (an order cannot be both free and small).');

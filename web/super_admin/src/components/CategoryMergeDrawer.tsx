@@ -18,8 +18,8 @@ interface Props {
 /** Why a category cannot receive the source's dishes / restaurants, or '' when it can. Mirrors the server's CATEGORY_INACTIVE / CATEGORY_INCOMPATIBLE. */
 const cannotReceive = (source: Category, target: Category): string => {
   if (!target.isActive) return 'hidden';
-  if (source.usage.dishes > 0 && !target.forDishes) return 'not a dish category';
-  if (source.usage.restaurants > 0 && !target.forRestaurants) return 'not a restaurant category';
+  if (source.usage.dishes > 0 && !target.forDishes) return 'not a product category';
+  if (source.usage.restaurants > 0 && !target.forRestaurants) return 'not a store category';
   return '';
 };
 
@@ -92,7 +92,7 @@ export const CategoryMergeDrawer: React.FC<Props> = ({ source, all, onClose, onM
         )}
       >
         <div className="space-y-4">
-          <p className="text-sm text-kraveo-ink2">Every restaurant and dish in <b>{source.name}</b> moves to the category you pick, and <b>{source.name}</b> is deleted. Check what would move first; nothing changes until you confirm.</p>
+          <p className="text-sm text-kraveo-ink2">Every store and product in <b>{source.name}</b> moves to the category you pick, and <b>{source.name}</b> is deleted. Check what would move first; nothing changes until you confirm.</p>
           <Field label="Merge into" htmlFor="merge-into" required>
             <select id="merge-into" className="k-select" value={intoId} onChange={(e) => setIntoId(e.target.value)} disabled={merging}>
               <option value="">Choose a category…</option>

@@ -101,14 +101,14 @@ export const parseDish = (raw: unknown): CatalogDish | null => {
   const source = isObject(raw.commission) && SOURCES.includes(raw.commission.source) ? (raw.commission.source as CommissionSource) : null;
   return {
     id: String(raw.id),
-    name: asStr(raw.name) ?? 'Unnamed dish',
+    name: asStr(raw.name) ?? 'Unnamed product',
     description: typeof raw.description === 'string' ? raw.description : '',
     category: asStr(raw.category) ?? '',
     imageUrl: asStr(raw.imageUrl),
     isVeg: raw.isVeg === true,
     isAvailable: raw.isAvailable !== false,
     vendorId: String(raw.vendorId ?? vendor.id ?? ''),
-    vendorName: asStr(raw.vendorName ?? vendor.name) ?? 'Unknown restaurant',
+    vendorName: asStr(raw.vendorName ?? vendor.name) ?? 'Unknown store',
     vendorPrice,
     price,
     computedPrice: asNum(raw.computedPrice),
@@ -243,7 +243,7 @@ export const parseRecalc = (body: unknown): RecalcResult => {
     total: asNum(data.total),
     truncated: data.truncated === true,
     samples: list.filter(isObject).slice(0, 5).map((row) => ({
-      name: asStr(row.name) ?? 'Dish', vendorName: asStr(row.vendorName) ?? '', from: asNum(row.oldPrice), to: asNum(row.newPrice),
+      name: asStr(row.name) ?? 'Product', vendorName: asStr(row.vendorName) ?? '', from: asNum(row.oldPrice), to: asNum(row.newPrice),
     })),
   };
 };

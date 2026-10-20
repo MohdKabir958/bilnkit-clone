@@ -69,7 +69,7 @@ const ActionButton: React.FC<{ meta: ProblemMeta; entry: AttentionEntry; busy: b
     case 'call-vendor':
     case 'call-customer': {
       const phone = meta.action === 'call-rider' ? o?.driverPhone : meta.action === 'call-vendor' ? o?.vendorPhone : o?.customerPhone;
-      const who = meta.action === 'call-rider' ? 'rider' : meta.action === 'call-vendor' ? 'restaurant' : 'customer';
+      const who = meta.action === 'call-rider' ? 'rider' : meta.action === 'call-vendor' ? 'store' : 'customer';
       // No phone in the payload (OrderView has no restaurant phone): offer the next sensible action instead.
       if (!phone) {
         const fallback = meta.action === 'call-vendor' ? 'cancel' : meta.action === 'call-rider' ? 'assign' : null;
@@ -132,9 +132,9 @@ export const NeedsAttentionPanel: React.FC<Props> = ({ entries, serverAvailable,
       {error && <div role="alert" className="rounded-k-md border border-kraveo-danger/30 bg-kraveo-danger/10 px-4 py-3 text-sm text-kraveo-ink">{error}</div>}
 
       {visibleGaps.length > 0 && (
-        <section className="k-card border-l-4 border-kraveo-status-placed p-4" aria-label="Restaurants without a map location">
-          <p className="font-bold text-kraveo-ink">Restaurants without a map location ({visibleGaps.length})</p>
-          <p className="mt-0.5 text-xs text-kraveo-ink3">Riders cannot navigate to a kitchen that has no pin. The restaurant can detect it from its app; you can also type it in.</p>
+        <section className="k-card border-l-4 border-kraveo-status-placed p-4" aria-label="Stores without a map location">
+          <p className="font-bold text-kraveo-ink">Stores without a map location ({visibleGaps.length})</p>
+          <p className="mt-0.5 text-xs text-kraveo-ink3">Riders cannot navigate to a store that has no pin. The store can detect it from its app; you can also type it in.</p>
           <ul className="mt-3 divide-y divide-kraveo-line">
             {visibleGaps.map((v) => (
               <li key={v.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
@@ -142,7 +142,7 @@ export const NeedsAttentionPanel: React.FC<Props> = ({ entries, serverAvailable,
                   <p className="truncate font-bold text-kraveo-ink">{v.name}</p>
                   <p className="flex items-center gap-1 text-xs text-kraveo-status-placed"><TriangleAlert className="h-3 w-3 shrink-0" aria-hidden="true" />{NO_LOCATION_TEXT}</p>
                 </div>
-                {onOpenVendors && <button type="button" className="k-btn-ghost !min-h-[36px] shrink-0 !px-3 text-xs" onClick={onOpenVendors} aria-label={`Set the map location of ${v.name} in the Vendors tab`}><MapPin className="h-4 w-4" aria-hidden="true" />Set location</button>}
+                {onOpenVendors && <button type="button" className="k-btn-ghost !min-h-[44px] shrink-0 !px-3 text-xs" onClick={onOpenVendors} aria-label={`Set the map location of ${v.name} in the Stores tab`}><MapPin className="h-4 w-4" aria-hidden="true" />Set location</button>}
               </li>
             ))}
           </ul>
@@ -184,7 +184,7 @@ export const NeedsAttentionPanel: React.FC<Props> = ({ entries, serverAvailable,
               {o?.group && (
                 <div className="mt-3 rounded-k-md border border-kraveo-status-atGate/30 bg-kraveo-status-atGate/10 px-3 py-2.5 text-xs" data-testid="attention-group">
                   <GroupBadge group={o.group} />
-                  {o.group.stops.length > 0 && <p className="mt-1.5 text-kraveo-ink [overflow-wrap:anywhere]"><span className="text-kraveo-ink3">Restaurants:</span> {groupRestaurantNames(o.group).join(', ')}</p>}
+                  {o.group.stops.length > 0 && <p className="mt-1.5 text-kraveo-ink [overflow-wrap:anywhere]"><span className="text-kraveo-ink3">Stores:</span> {groupRestaurantNames(o.group).join(', ')}</p>}
                   {metas.some(({ meta }) => GROUP_MONEY_PROBLEMS.has(meta.code)) && <p className="mt-1 font-semibold text-kraveo-ink">{groupMoneyNote(o.group)}</p>}
                 </div>
               )}

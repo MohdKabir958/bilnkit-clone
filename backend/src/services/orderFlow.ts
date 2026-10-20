@@ -308,8 +308,8 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
   if (!customer || customer.deletedAt) throw new OrderFlowError(401, 'ACCOUNT_UNAVAILABLE', 'This account is no longer available. Please sign in again.');
 
   const vendor = await prisma.vendor.findUnique({ where: { id: input.vendorId } });
-  if (!vendor || vendor.approvalStatus !== 'APPROVED') throw new OrderFlowError(400, 'VENDOR_UNAVAILABLE', 'This restaurant is not available right now.');
-  if (!vendor.isAcceptingOrders) throw new OrderFlowError(400, 'VENDOR_CLOSED', 'This Dhaba is currently CLOSED for new orders.');
+  if (!vendor || vendor.approvalStatus !== 'APPROVED') throw new OrderFlowError(400, 'VENDOR_UNAVAILABLE', 'This store is not available right now.');
+  if (!vendor.isAcceptingOrders) throw new OrderFlowError(400, 'VENDOR_CLOSED', 'This store is currently closed for new orders.');
 
   const selectedAddress = await ownedAddress(prisma, customerId, input.addressId);
   const delivery = await deliveryEligibility(prisma, selectedAddress, input.vendorId);
@@ -595,7 +595,7 @@ export const markPaymentFailed = async (razorpayOrderId: string) => {
  *  - ARRIVED_AT_GATE is a GROUP action: only when EVERY child is PICKED_UP (409 GROUP_NOT_PICKED_UP); it moves all children and writes ONE
  *    new OTP, identical on all of them. Nobody can move one child to ARRIVED_AT_GATE or DELIVERED on its own.
  */
-export const GROUP_WAITING_MESSAGE = 'Waiting for the other restaurant(s) in this combined order to accept.';
+export const GROUP_WAITING_MESSAGE = 'Waiting for the other store(s) in this combined order to accept.';
 
 export const advanceStatus = async (orderId: string, actor: Actor, target: string): Promise<{ order: OrderWithRelations; idempotent: boolean }> => {
   // Nothing below needs a lock to be refused: ownership first (404), then the role / target rules (403 / 400).
@@ -604,10 +604,10 @@ export const advanceStatus = async (orderId: string, actor: Actor, target: strin
   const result = await withOrderLock(orderId, async (tx, order, group): Promise<ChangeResult> => {
     if (actor.role === 'VENDOR') {
       if (order.vendor.userId !== actor.id || !isVendorVisible(order)) throw notFound();
-      if (!VENDOR_TARGETS.has(target)) throw new OrderFlowError(403, 'ROLE_NOT_ALLOWED', 'Restaurants can only move an order to ACCEPTED, PREPARING or READY_FOR_PICKUP.');
+      if (!VENDOR_TARGETS.has(target)) throw new OrderFlowError(403, 'ROLE_NOT_ALLOWED', 'Stores can only move an order to ACCEPTED, PREPARING or READY_FOR_PICKUP.');
     } else if (actor.role === 'DRIVER') {
       if (order.driverId !== actor.id) throw notFound();
-      if (!RIDER_TARGETS.has(target)) throw new OrderFlowError(403, 'ROLE_NOT_ALLOWED', 'Riders can only mark an order PICKED_UP or ARRIVED_AT_GATE (delivery needs the gate OTP).');
+      if (!RIDER_TARGETS.has(target)) throw new OrderFlowError(403, 'ROLE_NOT_ALLOWED', 'Riders can only mark an order PICKED_UP or ARRIVED_AT_GATE (delivery needs the customer code).');
     } else if (actor.role === 'ADMIN') {
       if (!ADMIN_TARGETS.has(target)) throw new OrderFlowError(400, 'INVALID_STATUS', 'Use the cancel or gate OTP endpoints for that.');
     } else {
@@ -628,7 +628,7 @@ export const advanceStatus = async (orderId: string, actor: Actor, target: strin
       }
       if (target === 'ARRIVED_AT_GATE') {
         if (!group.every((c) => c.status === 'PICKED_UP')) {
-          throw new OrderFlowError(409, 'GROUP_NOT_PICKED_UP', 'Pick up the food from every restaurant of this combined order before arriving at the gate.');
+          throw new OrderFlowError(409, 'GROUP_NOT_PICKED_UP', 'Pick up the products from every store of this combined order before arriving at the doorstep.');
         }
         if (!group.every((c) => c.paymentStatus === 'PAID')) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid yet.');
         // ONE code for the whole group, the same on every child.
@@ -695,7 +695,7 @@ export const cancelInTx = async (
     if (actor.role !== 'STUDENT' || order.customerId !== actor.id) throw notFound();
     if (alreadyCancelled) return { order, before: order, changed: false };
     if (!repair && (order.status !== 'PLACED' || (group && group.some((c) => c.status !== 'PLACED' && c.status !== 'CANCELLED')))) {
-      throw new OrderFlowError(409, 'CANNOT_CANCEL', 'The restaurant has already accepted this order, so it can no longer be cancelled in the app. Please contact Grozo support.');
+      throw new OrderFlowError(409, 'CANNOT_CANCEL', 'The store has already accepted this order, so it can no longer be cancelled in the app. Please contact Grozo support.');
     }
   } else if (by === 'VENDOR') {
     if (order.vendor.userId !== actor.id || !isVendorVisible(order)) throw notFound();
@@ -911,7 +911,7 @@ export const releaseOrder = async (orderId: string, riderUserId: string) => {
     await tx.order.update({ where: { id: order.id }, data: { pickupArrivalAt:null, driverId: null } });
     return { order: await reload(tx, order.id), before: order, changed: true };
   });
-  await writeAudit('ORDER_RELEASED', 'ORDER', result.group ? result.group.after[0].id : orderId, `Rider ${result.before.driver?.name ?? riderUserId} gave the ${result.group ? `combined order (${result.group.after.length} restaurants)` : 'order'} back to the pool (${result.before.status}).`);
+  await writeAudit('ORDER_RELEASED', 'ORDER', result.group ? result.group.after[0].id : orderId, `Rider ${result.before.driver?.name ?? riderUserId} gave the ${result.group ? `combined order (${result.group.after.length} stores)` : 'order'} back to the pool (${result.before.status}).`);
   return finishChange(result);
 };
 
@@ -927,7 +927,7 @@ export const reassignOrder = async (orderId: string, driverIdOrProfileId: string
   let resolved: string | null = null;
   if (driverIdOrProfileId) {
     const driver = await prisma.driverPartner.findFirst({ where: { OR: [{ id: driverIdOrProfileId }, { userId: driverIdOrProfileId }] } });
-    if (!driver?.userId) throw new OrderFlowError(400, 'RIDER_NOT_FOUND', 'Selected runner is not linked to an active user account.');
+    if (!driver?.userId) throw new OrderFlowError(400, 'RIDER_NOT_FOUND', 'Selected delivery partner is not linked to an active user account.');
     if (driver.approvalStatus !== 'APPROVED') throw new OrderFlowError(400, 'RIDER_NOT_APPROVED', 'Only an approved rider can be assigned to an order.');
     resolved = driver.userId;
   }
@@ -937,7 +937,7 @@ export const reassignOrder = async (orderId: string, driverIdOrProfileId: string
     if (resolved && all.some((c) => c.paymentStatus !== 'PAID')) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'An unpaid order cannot be given to a rider.');
     if (all.every((c) => c.driverId === resolved)) return { order, before: order, changed: false };
     if (!resolved && all.some((c) => c.status === 'PICKED_UP' || c.status === 'ARRIVED_AT_GATE')) {
-      throw new OrderFlowError(409, 'CANNOT_UNASSIGN', 'The food is already with the rider. Assign another rider or cancel the order instead of removing the rider.');
+      throw new OrderFlowError(409, 'CANNOT_UNASSIGN', 'The order is already with the rider. Assign another rider or cancel the order instead of removing the rider.');
     }
     if (resolved) {
       const rider = await tx.driverPartner.findUnique({ where: { userId: resolved }, include: {serviceZone:{include:{city:true}}} });
@@ -965,7 +965,7 @@ export const reassignOrder = async (orderId: string, driverIdOrProfileId: string
     return { order: await reload(tx, order.id), before: order, changed: true };
   }, resolved ? { riderUserIdFirst: resolved, assignedByAdmin:true } : {assignedByAdmin:true});
   if (result.changed) {
-    await writeAudit('ORDER_REASSIGNED', 'ORDER', orderId, `Rider changed from ${result.before.driver?.name ?? 'none'} to ${result.order.driver?.name ?? 'none'} (${result.order.status}).${opts.force && result.order.driverId ? ' Forced by admin.' : ''}${result.group ? ` Whole combined order (${result.group.after.length} restaurants) moved.${result.order.driverId ? ' Warning: the rider needs the latest app.' : ''}` : ''}`);
+    await writeAudit('ORDER_REASSIGNED', 'ORDER', orderId, `Rider changed from ${result.before.driver?.name ?? 'none'} to ${result.order.driver?.name ?? 'none'} (${result.order.status}).${opts.force && result.order.driverId ? ' Forced by admin.' : ''}${result.group ? ` Whole combined order (${result.group.after.length} stores) moved.${result.order.driverId ? ' Warning: the rider needs the latest app.' : ''}` : ''}`);
   }
   return finishChange(result, { awaitRefund: true, assignedByAdmin: true });
 };
@@ -1020,14 +1020,14 @@ export const verifyGateOtp = async (orderId: string, actor: Actor, rawOtp: unkno
     if(order.otpExpiresAt && order.otpExpiresAt<=new Date()) throw new OrderFlowError(410,'OTP_EXPIRED','This delivery code expired. Ask operations to issue a new code.');
     if (order.otpLocked) throw new OrderFlowError(423, 'OTP_LOCKED', 'Too many wrong codes. Grozo support has to unlock this delivery.');
     if (order.status !== 'ARRIVED_AT_GATE' || (group && !group.every((c) => c.status === 'ARRIVED_AT_GATE'))) {
-      throw new OrderFlowError(409, 'NOT_AT_GATE', 'Gate OTP can only be verified after the runner arrives at the gate.');
+      throw new OrderFlowError(409, 'NOT_AT_GATE', 'Delivery code can only be verified after the delivery partner arrives at the doorstep.');
     }
     if (order.paymentStatus !== 'PAID' || (group && group.some((c) => c.paymentStatus !== 'PAID'))) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid.');
 
     const otp = normaliseOtp(rawOtp);
     if (!otp) {
       // A missing or malformed code is a client mistake, not a guess: it does not count as an attempt.
-      throw new OrderFlowError(400, 'OTP_INVALID', 'Invalid or expired 4-digit Gate Handshake OTP code.', { error: 'Invalid Gate OTP', attemptsLeft: OTP_MAX_ATTEMPTS - order.otpAttempts });
+      throw new OrderFlowError(400, 'OTP_INVALID', 'Enter the valid 4-digit delivery code.', { error: 'Invalid Gate OTP', attemptsLeft: OTP_MAX_ATTEMPTS - order.otpAttempts });
     }
     if (!sameOtp(otp, order.otpCode)) {
       const attempts = order.otpAttempts + 1;
@@ -1053,11 +1053,11 @@ export const verifyGateOtp = async (orderId: string, actor: Actor, rawOtp: unkno
 
   if (result.kind === 'WRONG') {
     if (result.locked) {
-      await writeAudit('OTP_LOCKED', 'ORDER', orderId, `Gate OTP locked after ${result.attempts} wrong attempts (last by ${actor.role} ${actor.id}).${result.group ? ` Combined order of ${result.group.after.length} restaurants.` : ''}`);
+      await writeAudit('OTP_LOCKED', 'ORDER', orderId, `Delivery code locked after ${result.attempts} wrong attempts (last by ${actor.role} ${actor.id}).${result.group ? ` Combined order of ${result.group.after.length} stores.` : ''}`);
       await finishChange(result); // admins see otpLocked at once
       throw new OrderFlowError(423, 'OTP_LOCKED', 'Too many wrong codes. Grozo support has to unlock this delivery.');
     }
-    throw new OrderFlowError(400, 'OTP_INVALID', 'Invalid or expired 4-digit Gate Handshake OTP code.', {
+    throw new OrderFlowError(400, 'OTP_INVALID', 'Enter the valid 4-digit delivery code.', {
       error: 'Invalid Gate OTP',
       attemptsLeft: OTP_MAX_ATTEMPTS - (result.attempts ?? 0),
     });
@@ -1068,7 +1068,7 @@ export const verifyGateOtp = async (orderId: string, actor: Actor, rawOtp: unkno
 /** Admin: unlock after 5 wrong codes. A fresh code is issued (the old one may be partly guessed). For a combined order: one new code on every child. */
 export const resetOtpLock = async (orderId: string) => {
   const result = await withOrderLock(orderId, async (tx, order, group): Promise<ChangeResult> => {
-    if (order.status !== 'ARRIVED_AT_GATE') throw new OrderFlowError(409, 'NOT_AT_GATE', 'Only an order waiting at the gate has a gate OTP.');
+    if (order.status !== 'ARRIVED_AT_GATE') throw new OrderFlowError(409, 'NOT_AT_GATE', 'Only an order waiting at the doorstep has a delivery code.');
     if (group) {
       await tx.order.updateMany({ where: { groupId: order.groupId!, status: 'ARRIVED_AT_GATE' }, data: { otpLocked: false, otpAttempts: 0, otpCode: secureOtp(), otpExpiresAt:new Date(Date.now()+10*60000) } });
       return groupResult(tx, order, group, group.filter((c) => c.status === 'ARRIVED_AT_GATE').map((c) => c.id));

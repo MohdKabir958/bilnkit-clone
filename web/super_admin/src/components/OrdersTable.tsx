@@ -36,13 +36,13 @@ type Filter = 'ALL' | 'ATTENTION' | 'UNPAID' | OrderStatus;
 const FILTERS: Array<{ id: Filter; label: string; hint?: string }> = [
   { id: 'ALL', label: 'All' },
   { id: 'ATTENTION', label: 'Needs attention', hint: 'Failed refunds, locked OTPs, payment problems and stuck orders' },
-  { id: 'UNPAID', label: 'Unpaid', hint: 'Open orders the customer has not paid yet (hidden from restaurants and riders)' },
+  { id: 'UNPAID', label: 'Unpaid', hint: 'Open orders the customer has not paid yet (hidden from stores and riders)' },
   { id: 'PLACED', label: 'Placed' },
   { id: 'ACCEPTED', label: 'Accepted' },
   { id: 'PREPARING', label: 'Preparing' },
   { id: 'READY_FOR_PICKUP', label: 'Ready' },
   { id: 'PICKED_UP', label: 'On the way' },
-  { id: 'ARRIVED_AT_GATE', label: 'At gate' },
+  { id: 'ARRIVED_AT_GATE', label: 'At doorstep' },
   { id: 'DELIVERED', label: 'Delivered' },
   { id: 'CANCELLED', label: 'Cancelled' },
 ];
@@ -117,7 +117,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, attentionIds, 
   };
 
   const emptyState = orders.length === 0
-    ? <EmptyState icon={ClipboardList} title="No orders yet" description="Orders placed by students show up here in real time." />
+    ? <EmptyState icon={ClipboardList} title="No orders yet" description="Orders placed by customers show up here in real time." />
     : (
       <EmptyState
         icon={SearchX}
@@ -154,7 +154,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, attentionIds, 
         <table className="w-full min-w-[1000px] border-separate border-spacing-0 text-left text-sm">
           <thead>
             <tr>
-              {['Order', 'Student and drop-off', 'Restaurant', 'Rider', 'Amount', 'Payment', 'Status'].map((heading) => (
+              {['Order', 'Customer and drop-off', 'Store', 'Rider', 'Amount', 'Payment', 'Status'].map((heading) => (
                 <th key={heading} scope="col" className="k-label sticky top-0 z-10 border-b border-kraveo-line bg-kraveo-surface px-4 py-3.5 first:rounded-tl-k-xl">{heading}</th>
               ))}
               <th scope="col" className="k-label sticky top-0 z-10 border-b border-kraveo-line bg-kraveo-surface px-4 py-3.5 text-right last:rounded-tr-k-xl">Next step</th>
@@ -196,7 +196,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, attentionIds, 
                   </td>
                   <td className={`${cell} font-semibold text-kraveo-ink2 [overflow-wrap:anywhere]`}>{order.vendorName}</td>
                   <td className={cell}><RunnerCell name={order.driverName} unpaid={order.paymentStatus !== 'PAID'} finished={isTerminal(order.status)} /></td>
-                  <td className={`k-num ${cell} text-base text-kraveo-ink`}>{inr(order.totalAmount)}{order.group && <span className="block font-sans text-[10px] font-medium text-kraveo-ink3">this restaurant's share</span>}</td>
+                  <td className={`k-num ${cell} text-base text-kraveo-ink`}>{inr(order.totalAmount)}{order.group && <span className="block font-sans text-[10px] font-medium text-kraveo-ink3">this store's share</span>}</td>
                   <td className={cell}><PaymentCell order={order} /></td>
                   <td className={cell}><StatusCell order={order} now={now} attention={attention} /></td>
                   <td className={`${cell} text-right`}>

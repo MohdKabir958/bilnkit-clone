@@ -88,7 +88,7 @@ catalogRouter.post('/admin/catalog/recalculate', ...adminOnly, async (req: Authe
     if (b.vendorId !== undefined && (typeof b.vendorId !== 'string' || !ID_RE.test(b.vendorId))) throw new AppError(400, 'BAD_REQUEST', 'Invalid vendorId.', 'vendorId');
     // Safe by default: nothing is written unless the admin explicitly sends dryRun:false.
     const out = await recalculatePrices({ dryRun: b.dryRun !== false, vendorId: b.vendorId as string | undefined }, actorOf(req));
-    return res.json({ success: true, message: out.dryRun ? `${out.changed} of ${out.total} dishes would change.` : `${out.changed} of ${out.total} dishes updated.`, data: out });
+    return res.json({ success: true, message: out.dryRun ? `${out.changed} of ${out.total} products would change.` : `${out.changed} of ${out.total} products updated.`, data: out });
   } catch (err) {
     return fail(res, err, 'recalculate prices');
   }
@@ -100,7 +100,7 @@ catalogRouter.post('/admin/catalog/bulk', ...adminOnly, async (req: Authenticate
     const out = await bulkDishAction(body(req), actorOf(req));
     return res.json({ success: true, message: out.failed ? `${out.ok} done, ${out.failed} could not be changed.` : `${out.ok} done.`, data: out });
   } catch (err) {
-    return fail(res, err, 'bulk dish action');
+    return fail(res, err, 'bulk product action');
   }
 });
 
@@ -123,9 +123,9 @@ catalogRouter.post('/admin/vendors/:id/menu-import', ...adminOnly, validParams('
 catalogRouter.post('/admin/catalog', ...adminOnly, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const out = await adminCreateDish(body(req), actorOf(req));
-    return res.status(201).json({ success: true, message: 'Dish created and live.', data: adminDishView(out.item, out.settings) });
+    return res.status(201).json({ success: true, message: 'Product created and live.', data: adminDishView(out.item, out.settings) });
   } catch (err) {
-    return fail(res, err, 'create catalog dish');
+    return fail(res, err, 'create catalog product');
   }
 });
 
@@ -135,52 +135,52 @@ catalogRouter.get('/admin/catalog/:id', ...adminOnly, validParams('id'), async (
     if (!item) return res.status(404).json({ success: false, code: 'NOT_FOUND', message: 'Menu item not found.' });
     return res.json({ success: true, data: adminDishView(item, await getSettings()) });
   } catch (err) {
-    return fail(res, err, 'get catalog dish');
+    return fail(res, err, 'get catalog product');
   }
 });
 
 catalogRouter.post('/admin/catalog/:id/approve', ...adminOnly, validParams('id'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const out = await approveDish(req.params.id, body(req), actorOf(req));
-    return res.json({ success: true, changed: out.changed, message: out.changed ? 'Dish approved.' : 'Nothing to change: the dish is already approved with these values.', data: adminDishView(out.item, out.settings), preview: out.preview });
+    return res.json({ success: true, changed: out.changed, message: out.changed ? 'Product approved.' : 'Nothing to change: the product is already approved with these values.', data: adminDishView(out.item, out.settings), preview: out.preview });
   } catch (err) {
-    return fail(res, err, 'approve dish');
+    return fail(res, err, 'approve product');
   }
 });
 
 catalogRouter.post('/admin/catalog/:id/reject', ...adminOnly, validParams('id'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const out = await rejectDish(req.params.id, body(req).reason, actorOf(req));
-    return res.json({ success: true, changed: out.changed, message: out.changed ? 'Dish rejected.' : 'Already rejected with this reason.', data: adminDishView(out.item, out.settings) });
+    return res.json({ success: true, changed: out.changed, message: out.changed ? 'Product rejected.' : 'Already rejected with this reason.', data: adminDishView(out.item, out.settings) });
   } catch (err) {
-    return fail(res, err, 'reject dish');
+    return fail(res, err, 'reject product');
   }
 });
 
 catalogRouter.patch('/admin/catalog/:id', ...adminOnly, validParams('id'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const out = await adminEditDish(req.params.id, body(req), actorOf(req));
-    return res.json({ success: true, message: 'Dish updated.', data: adminDishView(out.item, out.settings), preview: out.preview });
+    return res.json({ success: true, message: 'Product updated.', data: adminDishView(out.item, out.settings), preview: out.preview });
   } catch (err) {
-    return fail(res, err, 'edit dish');
+    return fail(res, err, 'edit product');
   }
 });
 
 catalogRouter.delete('/admin/catalog/:id', ...adminOnly, validParams('id'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const out = await softDeleteDish(req.params.id, actorOf(req));
-    return res.json({ success: true, changed: out.changed, message: out.changed ? 'Dish deleted.' : 'Dish was already deleted.', data: adminDishView(out.item, out.settings) });
+    return res.json({ success: true, changed: out.changed, message: out.changed ? 'Product deleted.' : 'Product was already deleted.', data: adminDishView(out.item, out.settings) });
   } catch (err) {
-    return fail(res, err, 'delete dish');
+    return fail(res, err, 'delete product');
   }
 });
 
 catalogRouter.post('/admin/catalog/:id/restore', ...adminOnly, validParams('id'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const out = await restoreDish(req.params.id, actorOf(req));
-    return res.json({ success: true, changed: out.changed, message: out.changed ? 'Dish restored.' : 'Dish was not deleted.', data: adminDishView(out.item, out.settings) });
+    return res.json({ success: true, changed: out.changed, message: out.changed ? 'Product restored.' : 'Product was not deleted.', data: adminDishView(out.item, out.settings) });
   } catch (err) {
-    return fail(res, err, 'restore dish');
+    return fail(res, err, 'restore product');
   }
 });
 
@@ -190,7 +190,7 @@ catalogRouter.post('/admin/catalog/:id/restore', ...adminOnly, validParams('id')
 catalogRouter.patch('/admin/vendors/:id/commission', ...adminOnly, validParams('id'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const out = await setVendorCommission(req.params.id, body(req));
-    return res.json({ success: true, message: out.staleDishes > 0 ? `Saved. ${out.staleDishes} dish prices are out of date: run "Recalculate prices".` : 'Saved.', data: out });
+    return res.json({ success: true, message: out.staleDishes > 0 ? `Saved. ${out.staleDishes} product prices are out of date: run "Recalculate prices".` : 'Saved.', data: out });
   } catch (err) {
     return fail(res, err, 'set vendor commission');
   }
@@ -229,7 +229,7 @@ catalogRouter.put('/admin/settings/:group', ...adminOnly, async (req: Authentica
     return res.json({
       success: true,
       changed: out.changed,
-      message: needsRecalc ? 'Saved. Existing dish prices keep their old value until you run "Recalculate prices".' : 'Saved.',
+      message: needsRecalc ? 'Saved. Existing product prices keep their old value until you run "Recalculate prices".' : 'Saved.',
       ...(needsRecalc ? { recalculateRecommended: true } : {}),
       data: settingView(group, out.value, out.meta),
     });

@@ -32,8 +32,8 @@ describe('validateProfile', () => {
   it('checks only the fields that changed, with plain messages', () => {
     const f = { ...base, name: 'X', address: 'ab', fssai: '123', eta: '30-20' };
     const e = validateProfile(f, base, 6);
-    expect(e.name).toBe('Enter the restaurant name (at least 2 letters).');
-    expect(e.address).toBe('Enter where the kitchen is (at least 3 letters).');
+    expect(e.name).toBe("Enter the store name (at least 2 letters).");
+    expect(e.address).toBe("Enter where the store is (at least 3 letters).");
     expect(e.fssaiNumber).toBe('The FSSAI number has exactly 14 digits. Leave it empty to remove it.');
     expect(e.eta).toContain('first number must not be bigger');
   });
@@ -44,7 +44,7 @@ describe('validateProfile', () => {
     expect(validateProfile({ ...base, banner: 'ftp://x' }, base, 6).bannerImage).toMatch(/https/);
     expect(validateProfile({ ...base, banner: `https://x.test/${'a'.repeat(500)}` }, base, 6).bannerImage).toMatch(/500/);
     expect(validateProfile({ ...base, banner: '  ' }, base, 6).bannerImage).toMatch(/default banner/);
-    expect(validateProfile({ ...base, cuisineIds: ['1', '2', '3', '4', '5', '6', '7'] }, base, 6).cuisineIds).toBe('A restaurant can have at most 6 categories.');
+    expect(validateProfile({ ...base, cuisineIds: ['1', '2', '3', '4', '5', '6', '7'] }, base, 6).cuisineIds).toBe("A store can have at most 6 categories.");
   });
   it('resetting the banner is valid, FSSAI may be cleared, spaces and dashes in FSSAI are ignored', () => {
     expect(validateProfile({ ...base, banner: '', resetBanner: true }, base, 6)).toEqual({});

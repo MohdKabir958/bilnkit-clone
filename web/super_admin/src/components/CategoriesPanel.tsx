@@ -25,10 +25,10 @@ const GRID = 'lg:grid lg:grid-cols-[80px_minmax(0,1fr)_repeat(4,84px)_130px_auto
 
 type FlagKey = 'forRestaurants' | 'forDishes' | 'showOnHome' | 'isActive';
 const FLAGS: Array<{ key: FlagKey; short: string; label: string; help: string }> = [
-  { key: 'forRestaurants', short: 'Restaurants', label: 'can be tagged on restaurants', help: 'Can be picked as a cuisine when adding or editing a restaurant.' },
-  { key: 'forDishes', short: 'Dishes', label: 'can be a dish category', help: 'Can be picked as the category of a dish.' },
-  { key: 'showOnHome', short: 'Home chip', label: 'shown as a chip on the customer home screen', help: 'Shows as a quick filter on the customer app’s home screen, once a restaurant or dish uses it.' },
-  { key: 'isActive', short: 'Active', label: 'active', help: 'Off hides it from pickers and the home screen. Restaurants and dishes that already use it keep it.' },
+  { key: 'forRestaurants', short: 'Stores', label: 'can be tagged on stores', help: 'Can be picked as a cuisine when adding or editing a store.' },
+  { key: 'forDishes', short: 'Products', label: 'can be a product category', help: 'Can be picked as the category of a product.' },
+  { key: 'showOnHome', short: 'Home chip', label: 'shown as a chip on the customer home screen', help: 'Shows as a quick filter on the customer app’s home screen, once a store or product uses it.' },
+  { key: 'isActive', short: 'Active', label: 'active', help: 'Off hides it from pickers and the home screen. Stores and products that already use it keep it.' },
 ];
 
 interface RowProps {
@@ -70,17 +70,17 @@ const Row = memo<RowProps>(({ category, position, total, busy, canMove, onToggle
         </div>
       ))}
 
-      <p className="mt-3 text-xs text-kraveo-ink2 lg:mt-0" title="Restaurants and dishes in any state use this category">
-        <span className="font-bold tabular-nums text-kraveo-ink">{category.usage.restaurants}</span> {category.usage.restaurants === 1 ? 'restaurant' : 'restaurants'}
+      <p className="mt-3 text-xs text-kraveo-ink2 lg:mt-0" title="Stores and products in any state use this category">
+        <span className="font-bold tabular-nums text-kraveo-ink">{category.usage.restaurants}</span> {category.usage.restaurants === 1 ? 'store' : 'stores'}
         <span aria-hidden="true"> · </span>
-        <span className="font-bold tabular-nums text-kraveo-ink">{category.usage.dishes}</span> {category.usage.dishes === 1 ? 'dish' : 'dishes'}
+        <span className="font-bold tabular-nums text-kraveo-ink">{category.usage.dishes}</span> {category.usage.dishes === 1 ? 'product' : 'products'}
       </p>
 
       <div className="mt-3 lg:mt-0">
         <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-          <button type="button" className="k-btn-ghost !min-h-[36px] !px-3 text-xs" onClick={() => onEdit(category)} aria-label={`Edit ${category.name}`} disabled={busy}><Pencil className="h-3.5 w-3.5" aria-hidden="true" />Edit</button>
-          <button type="button" className="k-btn-ghost !min-h-[36px] !px-3 text-xs" onClick={() => onMerge(category)} aria-label={`Merge ${category.name} into another category`} disabled={busy}><GitMerge className="h-3.5 w-3.5" aria-hidden="true" />Merge</button>
-          <button type="button" className="k-btn-danger !min-h-[36px] !px-3 text-xs" onClick={() => onDelete(category)} aria-label={`Delete ${category.name}`} aria-describedby={blocked ? reasonId : undefined} disabled={busy || blocked !== null} title={blocked ?? undefined}><Trash2 className="h-3.5 w-3.5" aria-hidden="true" />Delete</button>
+          <button type="button" className="k-btn-ghost !min-h-[44px] !px-3 text-xs" onClick={() => onEdit(category)} aria-label={`Edit ${category.name}`} disabled={busy}><Pencil className="h-3.5 w-3.5" aria-hidden="true" />Edit</button>
+          <button type="button" className="k-btn-ghost !min-h-[44px] !px-3 text-xs" onClick={() => onMerge(category)} aria-label={`Merge ${category.name} into another category`} disabled={busy}><GitMerge className="h-3.5 w-3.5" aria-hidden="true" />Merge</button>
+          <button type="button" className="k-btn-danger !min-h-[44px] !px-3 text-xs" onClick={() => onDelete(category)} aria-label={`Delete ${category.name}`} aria-describedby={blocked ? reasonId : undefined} disabled={busy || blocked !== null} title={blocked ?? undefined}><Trash2 className="h-3.5 w-3.5" aria-hidden="true" />Delete</button>
         </div>
         {blocked && <p id={reasonId} className="mt-1.5 text-[11px] text-kraveo-ink3 lg:text-right">Cannot delete: used by {used}.</p>}
       </div>
@@ -199,7 +199,7 @@ const CategoriesPanelBase: React.FC<Props> = ({ query, onClearQuery, onAuthError
       const ids = rows.map((r) => r.id);
       serverOrderRef.current = ids;
       setList(rows); setServerOrder(ids); setOrder(ids);
-      toast.success('Order saved', 'Restaurants and the customer app use this order.');
+      toast.success('Order saved', 'Stores and the customer app use this order.');
     } catch (failure) {
       onAuthError(failure);
       toast.error('Order not saved', errorText(failure));
@@ -229,7 +229,7 @@ const CategoriesPanelBase: React.FC<Props> = ({ query, onClearQuery, onAuthError
 
   const onDelete = useCallback(async (category: Category) => {
     if (busyRef.current.has(category.id)) return;
-    const ok = await confirm({ title: `Delete “${category.name}”?`, message: 'Nothing uses it, so no restaurant or dish is affected. This cannot be undone.', confirmLabel: 'Delete category', danger: true });
+    const ok = await confirm({ title: `Delete “${category.name}”?`, message: 'Nothing uses it, so no store or product is affected. This cannot be undone.', confirmLabel: 'Delete category', danger: true });
     if (!ok) return;
     setBusy(category.id, true);
     try {
@@ -263,7 +263,7 @@ const CategoriesPanelBase: React.FC<Props> = ({ query, onClearQuery, onAuthError
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-kraveo-ink2">One list for restaurant cuisines and dish categories. Changes reach the apps without a new app version.</p>
+        <p className="text-sm text-kraveo-ink2">One list for store and product categories. Changes reach the apps without a new app version.</p>
         <div className="flex shrink-0 items-center gap-2">
           <button type="button" className="k-icon-btn" aria-label="Reload categories" title="Reload categories" onClick={reload} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" /></button>
           <button type="button" className="k-btn-accent" onClick={() => setDrawer({ category: null })}><Plus className="h-4 w-4" aria-hidden="true" />Add category</button>
@@ -277,13 +277,13 @@ const CategoriesPanelBase: React.FC<Props> = ({ query, onClearQuery, onAuthError
             <div key={flag.key}><dt className="inline font-bold text-kraveo-ink">{flag.short}: </dt><dd className="inline">{flag.help}</dd></div>
           ))}
         </dl>
-        <p className="mt-2 text-xs text-kraveo-ink3">“Used by” counts every restaurant and dish that has the category, whatever its state. A category can only be deleted when that is zero; otherwise hide it or merge it.</p>
+        <p className="mt-2 text-xs text-kraveo-ink3">“Used by” counts every store and product that has the category, whatever its state. A category can only be deleted when that is zero; otherwise hide it or merge it.</p>
       </details>
 
       {error && (
         <div role="alert" className="flex items-center justify-between gap-3 rounded-k-md border border-kraveo-danger/30 bg-kraveo-danger/10 px-4 py-3 text-sm text-kraveo-ink">
           <span className="min-w-0 break-words">{error}</span>
-          <button type="button" className="k-btn-ghost !min-h-[36px] shrink-0 !px-3 text-xs" onClick={reload}>Try again</button>
+          <button type="button" className="k-btn-ghost !min-h-[44px] shrink-0 !px-3 text-xs" onClick={reload}>Try again</button>
         </div>
       )}
 
@@ -291,8 +291,8 @@ const CategoriesPanelBase: React.FC<Props> = ({ query, onClearQuery, onAuthError
         <div role="region" aria-label="Unsaved order" className="sticky top-2 z-10 flex flex-col gap-2 rounded-k-md border border-kraveo-g400/40 bg-kraveo-surface2 px-4 py-3 shadow-k-lift sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-semibold text-kraveo-ink">The order has changed and is not saved yet.</p>
           <div className="flex gap-2">
-            <button type="button" className="k-btn-ghost !min-h-[36px]" onClick={discardOrder} disabled={savingOrder}>Discard</button>
-            <button type="button" className="k-btn-primary !min-h-[36px]" onClick={() => void saveOrder()} disabled={savingOrder} aria-busy={savingOrder}>{savingOrder ? 'Saving…' : 'Save order'}</button>
+            <button type="button" className="k-btn-ghost !min-h-[44px]" onClick={discardOrder} disabled={savingOrder}>Discard</button>
+            <button type="button" className="k-btn-primary !min-h-[44px]" onClick={() => void saveOrder()} disabled={savingOrder} aria-busy={savingOrder}>{savingOrder ? 'Saving…' : 'Save order'}</button>
           </div>
         </div>
       )}
@@ -303,7 +303,7 @@ const CategoriesPanelBase: React.FC<Props> = ({ query, onClearQuery, onAuthError
 
       {empty && (
         <div className="k-card">
-          <EmptyState icon={Tags} title="No categories yet" description="Add the cuisines your restaurants serve and the categories your dishes use." action={<button type="button" className="k-btn-accent" onClick={() => setDrawer({ category: null })}><Plus className="h-4 w-4" aria-hidden="true" />Add category</button>} />
+          <EmptyState icon={Tags} title="No categories yet" description="Add the cuisines your stores serve and the categories your products use." action={<button type="button" className="k-btn-accent" onClick={() => setDrawer({ category: null })}><Plus className="h-4 w-4" aria-hidden="true" />Add category</button>} />
         </div>
       )}
 

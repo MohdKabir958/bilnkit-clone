@@ -39,9 +39,9 @@ describe('GroupBadge', () => {
     const host = await mount(<><GroupBadge group={normalizeOrder(rawGroupOrder(1)).group} /><GroupBadge group={undefined} /></>);
     const badges = host.querySelectorAll('[data-testid="group-badge"]');
     expect(badges).toHaveLength(1);
-    expect(badges[0].textContent).toContain('Combined order · 2 restaurants');
+    expect(badges[0].textContent).toContain("Combined order · 2 stores");
     expect(badges[0].textContent).toContain('2 of 2');
-    expect(badges[0].getAttribute('aria-label')).toBe('Combined order of 2 restaurants, this is restaurant 2 of 2');
+    expect(badges[0].getAttribute('aria-label')).toBe("Combined order of 2 stores, this is store 2 of 2");
     expect(badges[0].className).toContain('flex-wrap'); // wraps on a 360 px phone instead of overflowing
   });
 });
@@ -52,8 +52,8 @@ describe('order drawer: combined order', () => {
     expect(props.fetchGroup).toHaveBeenCalledTimes(1);
     expect((props.fetchGroup as any).mock.calls[0][0]).toBe(GROUP_ID);
     const panel = document.querySelector('[data-testid="group-panel"]')!;
-    expect(panel.textContent).toContain('Combined order · 2 restaurants');
-    const items = panel.querySelectorAll('ul[aria-label="Restaurants in this combined order"] li');
+    expect(panel.textContent).toContain("Combined order · 2 stores");
+    const items = panel.querySelectorAll("ul[aria-label=\"Stores in this combined order\"] li");
     expect(items).toHaveLength(2);
     expect(items[0].textContent).toContain('Kitchen 1');
     expect(items[0].textContent).toContain('This order');
@@ -65,14 +65,14 @@ describe('order drawer: combined order', () => {
   it('shows the group total only from the server: food, fees, discount, total, and where the single payment is recorded', async () => {
     await render({ order: normalizeOrder(rawGroupOrder(1)) });
     const totals = document.querySelector('dl[aria-label="Combined order total"]')!;
-    expect(totals.textContent).toContain('Food (all restaurants)₹270');
-    expect(totals.textContent).toContain('Fees (delivery and extra restaurants)₹40');
+    expect(totals.textContent).toContain("Products (all stores)₹270");
+    expect(totals.textContent).toContain("Fees (delivery and extra stores)₹40");
     expect(totals.textContent).toContain('Discount (KRAVEO50)−₹50');
     expect(totals.textContent).toContain('Group total paid by the customer₹260');
-    expect(text()).toContain('Waiting for restaurants');
+    expect(text()).toContain("Waiting for stores");
     expect(text()).toContain(`#${GROUP_ORDER_IDS[0].slice(-6).toUpperCase()}`); // the payment lives on the primary
     // this order's own money is labelled as its share, not as the total
-    expect(text()).toContain("This restaurant's share");
+    expect(text()).toContain("This store's share");
   });
 
   it('while the group loads: a loading note, the siblings from the order itself, no invented total', async () => {
@@ -80,7 +80,7 @@ describe('order drawer: combined order', () => {
     const fetchGroup = vi.fn(() => new Promise<any>((r) => { resolve = r; }));
     await render({ fetchGroup });
     expect(document.querySelector('[role="status"][aria-label="Loading combined order totals"]')).not.toBeNull();
-    expect(document.querySelectorAll('ul[aria-label="Restaurants in this combined order"] li')).toHaveLength(2);
+    expect(document.querySelectorAll("ul[aria-label=\"Stores in this combined order\"] li")).toHaveLength(2);
     expect(text()).not.toContain('Group total paid');
     await act(async () => { resolve(parseGroupView(rawGroupView())); });
     await flush();
@@ -95,7 +95,7 @@ describe('order drawer: combined order', () => {
     await render({ fetchGroup });
     const alert = document.querySelector('[data-testid="group-panel"] [role="alert"]')!;
     expect(alert.textContent).toContain('The group total could not be loaded: Order not found');
-    expect(document.querySelectorAll('ul[aria-label="Restaurants in this combined order"] li')).toHaveLength(2);
+    expect(document.querySelectorAll("ul[aria-label=\"Stores in this combined order\"] li")).toHaveLength(2);
     expect(text()).not.toContain('Group total paid');
     await click(byText('button', 'Try again', alert as any));
     await flush();
@@ -106,7 +106,7 @@ describe('order drawer: combined order', () => {
   it('freshly loaded sibling statuses replace the stale ones from the order, and a sibling can be opened (not the current one)', async () => {
     const fresh = rawGroupView({ orders: [rawGroupOrder(0), rawGroupOrder(1, { status: 'ACCEPTED' })] });
     const props = await render({ fetchGroup: vi.fn(async () => parseGroupView(fresh)!) });
-    const items = document.querySelectorAll('ul[aria-label="Restaurants in this combined order"] li');
+    const items = document.querySelectorAll("ul[aria-label=\"Stores in this combined order\"] li");
     expect(items[1].textContent).toContain('Accepted'); // the order's own stops said PLACED
     expect(items[0].querySelector('button')).toBeNull();
     const open = items[1].querySelector('button')!;
@@ -135,7 +135,7 @@ describe('order drawer: combined order', () => {
   it('a refund problem on a combined order mentions the whole group', async () => {
     const order = normalizeOrder(rawGroupOrder(0, { status: 'CANCELLED', refundStatus: 'FAILED', refundError: 'provider error' }));
     await render({ order, problems: [{ code: 'PAYMENT_MISMATCH', detail: 'Captured Rs 10 but the total is Rs 260' }] });
-    expect(text()).toContain('The payment and the refund belong to the whole combined order (2 restaurants)');
+    expect(text()).toContain("The payment and the refund belong to the whole combined order (2 stores)");
   });
 });
 
@@ -143,7 +143,7 @@ describe('order drawer: cancelling a combined order', () => {
   it('the cancel form says it cancels the WHOLE order, lists every restaurant and refunds the group total', async () => {
     await render({ mode: 'cancel' });
     const warning = document.querySelector('[data-testid="cancel-group-warning"]')!;
-    expect(warning.textContent).toContain('This cancels the WHOLE combined order (all 2 restaurants) and refunds the customer in full.');
+    expect(warning.textContent).toContain("This cancels the WHOLE combined order (all 2 stores) and refunds the customer in full.");
     expect(warning.textContent).toContain('Kitchen 1');
     expect(warning.textContent).toContain('Kitchen 2');
     expect(text()).toContain('Refunds ₹260 for the whole combined order, automatically'); // the group total, not this order's share of 190
@@ -160,7 +160,7 @@ describe('order drawer: cancelling a combined order', () => {
   it('an unpaid combined order does not promise a refund', async () => {
     await render({ mode: 'cancel', order: normalizeOrder(rawGroupOrder(0, { paymentStatus: 'PENDING', status: 'PLACED' })) });
     const warning = document.querySelector('[data-testid="cancel-group-warning"]')!;
-    expect(warning.textContent).toContain('(all 2 restaurants). Nothing was paid, so nothing is refunded.');
+    expect(warning.textContent).toContain("(all 2 stores). Nothing was paid, so nothing is refunded.");
     expect(warning.textContent).not.toContain('refunds the customer in full');
   });
 
@@ -170,8 +170,8 @@ describe('order drawer: cancelling a combined order', () => {
     const submit = () => click(document.querySelector('button[type="submit"][form="admin-cancel-form"]'));
     await submit();
     const dialog = document.querySelector('[role="alertdialog"]')!;
-    expect(dialog.textContent).toContain('Cancel all 2 restaurants?');
-    expect(dialog.textContent).toContain('This cancels the WHOLE combined order (all 2 restaurants) and refunds the customer in full.');
+    expect(dialog.textContent).toContain("Cancel all 2 stores?");
+    expect(dialog.textContent).toContain("This cancels the WHOLE combined order (all 2 stores) and refunds the customer in full.");
     await click(byText('button', 'Keep order', dialog as any));
     expect(props.onCancel).not.toHaveBeenCalled();
     await submit();
@@ -209,7 +209,7 @@ describe('orders table: one row per order, with the group badge', () => {
     expect(badges[0]).toContain('1 of 2');
     expect(badges[1]).toContain('2 of 2');
     expect(rows[2].querySelector('[data-testid="group-badge"]')).toBeNull();
-    expect(rows[0].textContent).toContain("this restaurant's share");
+    expect(rows[0].textContent).toContain("this store's share");
     expect(rows[2].textContent).not.toContain('share');
   });
 
@@ -238,10 +238,10 @@ describe('needs-attention list', () => {
   it('shows the group (badge and restaurants) and, for a refund problem, says the money belongs to the whole group', async () => {
     const host = await mount(<NeedsAttentionPanel {...(props() as any)} />);
     const group = host.querySelector('[data-testid="attention-group"]')!;
-    expect(group.textContent).toContain('Combined order · 2 restaurants');
-    expect(group.textContent).toContain('Restaurants: Kitchen 1, Kitchen 2');
-    expect(group.textContent).toContain('The payment and the refund belong to the whole combined order (2 restaurants)');
-    expect(host.textContent).toContain('Combined order of 2 restaurants (Kitchen 1, Kitchen 2): this one payment covers all of them.'); // the server's own detail line
+    expect(group.textContent).toContain("Combined order · 2 stores");
+    expect(group.textContent).toContain("Stores: Kitchen 1, Kitchen 2");
+    expect(group.textContent).toContain("The payment and the refund belong to the whole combined order (2 stores)");
+    expect(host.textContent).toContain("Combined order of 2 stores (Kitchen 1, Kitchen 2): this one payment covers all of them."); // the server's own detail line
     expect(host.querySelectorAll('article')).toHaveLength(1); // one card for the group, as the server sends it
   });
 

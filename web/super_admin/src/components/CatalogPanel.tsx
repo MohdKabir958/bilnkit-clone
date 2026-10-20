@@ -39,7 +39,7 @@ const FILTERS = [
   { id: 'LIVE', label: 'Live', status: 'LIVE' },
   { id: 'REJECTED', label: 'Rejected', status: 'REJECTED' },
   { id: 'DELETED', label: 'Deleted', status: 'DELETED' },
-  { id: 'ALL', label: 'All dishes', status: '' },
+  { id: 'ALL', label: 'All products', status: '' },
 ] as const;
 type FilterId = (typeof FILTERS)[number]['id'];
 
@@ -63,7 +63,7 @@ const Thumb: React.FC<{ url: string | null; name: string; size?: string }> = ({ 
   );
 };
 
-const SOURCE_LABEL = { DISH: 'this dish', VENDOR: 'restaurant', GLOBAL: 'default' } as const;
+const SOURCE_LABEL = { DISH: 'this product', VENDOR: 'store', GLOBAL: 'default' } as const;
 
 const commissionText = (dish: CatalogDish): string => {
   const rule = dish.commission ? `${commissionLabel(dish.commission.type, dish.commission.value)} · ${SOURCE_LABEL[dish.commission.source]}` : 'Default';
@@ -139,7 +139,7 @@ const DishCard = memo<RowProps & { index: number }>(({ dish, busy, selected, onS
       <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-kraveo-ink3" aria-hidden="true" />
     </button>
     <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-      <div className="k-inset px-2 py-2"><p className="k-label !text-[10px]">Restaurant</p><p className="k-num text-base text-kraveo-ink"><PriceCell dish={dish} /></p></div>
+      <div className="k-inset px-2 py-2"><p className="k-label !text-[10px]">Store</p><p className="k-num text-base text-kraveo-ink"><PriceCell dish={dish} /></p></div>
       <div className="k-inset px-2 py-2"><p className="k-label !text-[10px]">Commission</p><p className="break-words text-xs font-bold text-kraveo-ink">{commissionText(dish)}</p></div>
       <div className="k-inset px-2 py-2"><p className="k-label !text-[10px]">Customer</p><p className="k-num text-base text-kraveo-ink"><CustomerPrice dish={dish} /></p></div>
     </div>
@@ -193,7 +193,7 @@ const CatalogPanelBase: React.FC<Props> = ({ vendors, query, onClearQuery, onAut
       } catch (failure) {
         if (mine !== seq.current) return;
         onAuthError(failure);
-        setError(failure instanceof Error ? failure.message : 'The dishes could not be loaded.');
+        setError(failure instanceof Error ? failure.message : 'The products could not be loaded.');
       } finally {
         if (mine === seq.current) setLoading(false);
       }
@@ -253,12 +253,12 @@ const CatalogPanelBase: React.FC<Props> = ({ vendors, query, onClearQuery, onAut
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     const count = ids.length;
-    const noun = `${count} ${count === 1 ? 'dish' : 'dishes'}`;
+    const noun = `${count} ${count === 1 ? 'product' : 'products'}`;
     if (action === 'DELETE') {
       const ok = await confirm({ title: `Delete ${noun}?`, message: 'Customers will no longer see them. Old orders keep their copy, and you can restore them later.', confirmLabel: 'Delete', danger: true });
       if (!ok) return;
     } else if (action === 'APPROVE') {
-      const ok = await confirm({ title: `Approve ${noun}?`, message: 'They go live for customers at once. Any dish that cannot be approved is listed afterwards.', confirmLabel: 'Approve' });
+      const ok = await confirm({ title: `Approve ${noun}?`, message: 'They go live for customers at once. Any product that cannot be approved is listed afterwards.', confirmLabel: 'Approve' });
       if (!ok) return;
     }
     if (bulkRef.current) return;
@@ -267,12 +267,12 @@ const CatalogPanelBase: React.FC<Props> = ({ vendors, query, onClearQuery, onAut
     const names = new Map(items.map((dish) => [dish.id, dish.name]));
     try {
       const result = await apiService.bulkCatalog(ids, action, extra);
-      const failures = bulkFailures(result, (id) => names.get(id) ?? 'A dish');
+      const failures = bulkFailures(result, (id) => names.get(id) ?? 'A product');
       const label = BULK_ACTION_LABEL[action];
       setBulkResult({ action: label, message: result.message, ok: result.ok, failed: result.failed, failures });
       // Failed dishes stay ticked so they can be fixed and retried; the rest are done.
       setSelected(new Set(failures.map((f) => f.id)));
-      if (result.failed === 0) toast.success(label, `${result.ok} ${result.ok === 1 ? 'dish' : 'dishes'} done.`);
+      if (result.failed === 0) toast.success(label, `${result.ok} ${result.ok === 1 ? 'product' : 'products'} done.`);
       handleChanged();
     } catch (failure) {
       onAuthError(failure);
@@ -300,7 +300,7 @@ const CatalogPanelBase: React.FC<Props> = ({ vendors, query, onClearQuery, onAut
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none lg:mx-0 lg:px-0" role="group" aria-label="Filter dishes">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none lg:mx-0 lg:px-0" role="group" aria-label="Filter products">
           {FILTERS.map((entry) => {
             const count = counts(entry.id);
             return (
@@ -312,33 +312,33 @@ const CatalogPanelBase: React.FC<Props> = ({ vendors, query, onClearQuery, onAut
           })}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="sr-only" htmlFor="catalog-vendor-filter">Restaurant</label>
+          <label className="sr-only" htmlFor="catalog-vendor-filter">Store</label>
           <select id="catalog-vendor-filter" className="k-select !min-h-[40px] w-full sm:w-56" value={vendorId} onChange={(event) => setVendorId(event.target.value)}>
-            <option value="">All restaurants</option>
+            <option value="">All stores</option>
             {sortedVendors.map((vendor) => <option key={vendor.id} value={vendor.id}>{vendor.name}</option>)}
           </select>
-          <button type="button" className="k-icon-btn" aria-label="Reload dishes" title="Reload dishes" onClick={reload} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" /></button>
-          <button type="button" className="k-btn-ghost" onClick={() => setImportOpen(true)} disabled={vendors.length === 0} title={vendors.length === 0 ? 'No restaurants loaded yet' : 'Add many dishes from a CSV file'}><FileUp className="h-4 w-4" aria-hidden="true" />Import menu</button>
-          <button type="button" className="k-btn-accent" onClick={() => setDrawer({ kind: 'create' })} disabled={vendors.length === 0} title={vendors.length === 0 ? 'No restaurants loaded yet' : undefined}><Plus className="h-4 w-4" aria-hidden="true" />Add dish</button>
+          <button type="button" className="k-icon-btn" aria-label="Reload products" title="Reload products" onClick={reload} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" /></button>
+          <button type="button" className="k-btn-ghost" onClick={() => setImportOpen(true)} disabled={vendors.length === 0} title={vendors.length === 0 ? 'No stores loaded yet' : 'Add many products from a CSV file'}><FileUp className="h-4 w-4" aria-hidden="true" />Import menu</button>
+          <button type="button" className="k-btn-accent" onClick={() => setDrawer({ kind: 'create' })} disabled={vendors.length === 0} title={vendors.length === 0 ? 'No stores loaded yet' : undefined}><Plus className="h-4 w-4" aria-hidden="true" />Add product</button>
         </div>
       </div>
 
       {error && (
         <div role="alert" className="flex items-center justify-between gap-3 rounded-k-md border border-kraveo-danger/30 bg-kraveo-danger/10 px-4 py-3 text-sm text-kraveo-ink">
           <span className="min-w-0 break-words">{error}</span>
-          <button type="button" className="k-btn-ghost !min-h-[36px] shrink-0 !px-3 text-xs" onClick={reload}>Try again</button>
+          <button type="button" className="k-btn-ghost !min-h-[44px] shrink-0 !px-3 text-xs" onClick={reload}>Try again</button>
         </div>
       )}
 
-      {data && data.total !== null && !error && <p className="text-xs text-kraveo-ink3" aria-live="polite">{data.total} {data.total === 1 ? 'dish' : 'dishes'}{query.trim() ? ` match “${query.trim()}”` : ''}</p>}
+      {data && data.total !== null && !error && <p className="text-xs text-kraveo-ink3" aria-live="polite">{data.total} {data.total === 1 ? 'product' : 'products'}{query.trim() ? ` match “${query.trim()}”` : ''}</p>}
 
       {empty && (
         <div className="k-card">
           <EmptyState
             icon={query.trim() ? SearchX : UtensilsCrossed}
-            title={query.trim() ? 'No dishes match' : filter === 'PENDING' ? 'Nothing is waiting for approval' : 'No dishes here'}
-            description={query.trim() ? 'Try a dish name, category or restaurant.' : filter === 'PENDING' ? 'New dishes from restaurants appear here for you to approve.' : 'Nothing matches this filter.'}
-            action={query.trim() ? <button type="button" className="k-btn-ghost" onClick={onClearQuery}>Clear search</button> : filter !== 'ALL' ? <button type="button" className="k-btn-ghost" onClick={() => setFilter('ALL')}>Show all dishes</button> : undefined}
+            title={query.trim() ? 'No products match' : filter === 'PENDING' ? 'Nothing is waiting for approval' : 'No products here'}
+            description={query.trim() ? 'Try a product name, category or store.' : filter === 'PENDING' ? 'New products from stores appear here for you to approve.' : 'Nothing matches this filter.'}
+            action={query.trim() ? <button type="button" className="k-btn-ghost" onClick={onClearQuery}>Clear search</button> : filter !== 'ALL' ? <button type="button" className="k-btn-ghost" onClick={() => setFilter('ALL')}>Show all products</button> : undefined}
           />
         </div>
       )}
@@ -349,9 +349,9 @@ const CatalogPanelBase: React.FC<Props> = ({ vendors, query, onClearQuery, onAut
         <div className="flex flex-wrap items-center justify-between gap-2">
           <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-kraveo-ink2">
             <input type="checkbox" className="h-5 w-5 cursor-pointer accent-kraveo-g400" checked={allOnPage} ref={(el) => { if (el) el.indeterminate = someOnPage && !allOnPage; }} onChange={(event) => selectPage(event.target.checked)} />
-            Select all dishes on this page
+            Select all products on this page
           </label>
-          {selected.size > 0 && <button type="button" className="k-btn-ghost !min-h-[36px] !px-3 text-xs" onClick={() => setSelected(new Set())}>Clear selection</button>}
+          {selected.size > 0 && <button type="button" className="k-btn-ghost !min-h-[44px] !px-3 text-xs" onClick={() => setSelected(new Set())}>Clear selection</button>}
         </div>
       )}
 
@@ -372,11 +372,11 @@ const CatalogPanelBase: React.FC<Props> = ({ vendors, query, onClearQuery, onAut
         <div className={loading ? 'opacity-60 transition-opacity' : 'transition-opacity'} aria-busy={loading}>
           <div className="k-card hidden max-h-[calc(100vh-24rem)] overflow-auto xl:block">
             <table className="w-full min-w-[1020px] border-separate border-spacing-0 text-left text-sm">
-              <caption className="sr-only">Dishes</caption>
+              <caption className="sr-only">Products</caption>
               <thead>
                 <tr className="sticky top-0 z-10 bg-kraveo-surface text-[11px] uppercase tracking-wide text-kraveo-ink3">
                   <th scope="col" className="border-b border-kraveo-line py-3 pl-4 pr-1 font-bold"><span className="sr-only">Select</span></th>
-                  {['Dish', 'Restaurant', 'Restaurant price', 'Commission', 'Customer price', 'Status', 'Available', ''].map((heading) => <th key={heading || 'open'} scope="col" className="border-b border-kraveo-line px-4 py-3 font-bold">{heading}{heading === '' && <span className="sr-only">Open</span>}</th>)}
+                  {['Product', 'Store', 'Store price', 'Commission', 'Customer price', 'Status', 'Available', ''].map((heading) => <th key={heading || 'open'} scope="col" className="border-b border-kraveo-line px-4 py-3 font-bold">{heading}{heading === '' && <span className="sr-only">Open</span>}</th>)}
                 </tr>
               </thead>
               <tbody>

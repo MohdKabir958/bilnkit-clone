@@ -55,7 +55,7 @@ describe('VendorLocationEditor', () => {
   it('a device pin shows coordinates, who/when/how accurate and an Open in Google Maps link', async () => {
     const h = await mount(<VendorLocationEditor id="v1" name="Sharma Dhaba" pin={{ ...PIN, hasLocation: true, locationSource: 'DEVICE', locationSetAt: '2026-10-05T10:00:00.000Z', locationAccuracyM: 12.4 }} />);
     expect(h.textContent).toContain('23.07450, 76.85900');
-    expect(h.textContent).toContain('Set by the restaurant on 5 Oct 2026, about 12 m');
+    expect(h.textContent).toContain("Set by the store on 5 Oct 2026, about 12 m");
     const a = h.querySelector('a') as HTMLAnchorElement;
     expect(a.href).toBe('https://www.google.com/maps/search/?api=1&query=23.0745,76.859');
     expect(a.target).toBe('_blank');
@@ -103,7 +103,7 @@ describe('ApplicationsPanel: the location a pending restaurant sent', () => {
     await flush();
     expect(h.textContent).toContain('Pending Dhaba');
     expect(h.textContent).toContain('23.07450, 76.85900');
-    expect(h.textContent).toContain('Set by the restaurant on 5 Oct 2026, about 18 m');
+    expect(h.textContent).toContain("Set by the store on 5 Oct 2026, about 18 m");
     expect(Array.from(h.querySelectorAll('a')).some((a) => a.href.startsWith('https://www.google.com/maps/search/'))).toBe(true);
     expect(h.textContent).not.toContain('did not send a location');
   });
@@ -148,7 +148,7 @@ describe('NeedsAttentionPanel: restaurants without a location', () => {
     expect((h.textContent!.match(/No location - riders cannot navigate to it/g) ?? []).length).toBe(2);
     expect(h.textContent).toContain('2 without location');
     expect(h.textContent).not.toContain('Nothing needs you right now');
-    await click(h.querySelector('[aria-label="Set the map location of Sharma Dhaba in the Vendors tab"]')!);
+    await click(h.querySelector("[aria-label=\"Set the map location of Sharma Dhaba in the Stores tab\"]")!);
     expect(onOpenVendors).toHaveBeenCalledTimes(1);
   });
 

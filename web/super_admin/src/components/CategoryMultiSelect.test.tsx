@@ -80,7 +80,7 @@ describe('CategoryMultiSelect', () => {
     await mount(<Harness onCreated={onCreated} />);
     await click(byText('button', 'Create new category'));
     const group = document.querySelector('[role="group"][aria-label="Create a new category"]') as HTMLElement;
-    expect(group.textContent).toContain('New category for restaurants');
+    expect(group.textContent).toContain("New category for stores");
     await type(group.querySelector('input'), 'Korean');
     await click(byText('button', 'Add category', group));
     await flush();

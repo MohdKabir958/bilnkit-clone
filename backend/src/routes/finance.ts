@@ -286,7 +286,7 @@ financeRouter.get('/admin/finance/by-restaurant', ...adminOnly, async (req: Auth
     const range = financeRange(req);
     return res.json({ success: true, ...(await financeByRestaurant(range, intQuery(req.query.limit, 'limit', 100, 1, 200))) });
   } catch (err) {
-    return fail(res, err, 'finance by restaurant');
+    return fail(res, err, 'finance by store');
   }
 });
 
@@ -298,7 +298,7 @@ financeRouter.get('/admin/finance/by-dish', ...adminOnly, async (req: Authentica
     const out = await financeByDish(range, { top: intQuery(req.query.top ?? req.query.limit, 'top', 20, 1, 200), sort: sort as (typeof DISH_SORTS)[number], vendorId: idQuery(req.query.vendorId, 'vendorId') });
     return res.json({ success: true, ...out });
   } catch (err) {
-    return fail(res, err, 'finance by dish');
+    return fail(res, err, 'finance by product');
   }
 });
 

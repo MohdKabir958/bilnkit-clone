@@ -40,11 +40,11 @@ describe('ImageUploadField', () => {
     expect(env.encode).toHaveBeenCalledWith(expect.anything(), 1200, 600, 'image/webp', 0.82);
     expect(upload).toHaveBeenCalledTimes(1);
     const sent = upload.mock.calls[0];
-    expect(sent[1]).toBe('dish');
+    expect(sent[1]).toBe("dish");
     expect((sent[0] as Blob).type).toBe('image/webp');
     expect((document.getElementById('img') as HTMLInputElement).value).toBe('https://api.kraveo.site/uploads/dish/2026/aaaa.webp');
     expect(host.querySelector('img')!.getAttribute('src')).toBe('https://api.kraveo.site/uploads/dish/2026/aaaa.webp');
-    expect(host.querySelector('img')!.getAttribute('alt')).toBe('Photo of the dish');
+    expect(host.querySelector('img')!.getAttribute('alt')).toBe("Photo of the dish");
     expect(host.textContent).toContain('Photo uploaded (1200 x 600, 35 KB).');
     expect(byText('button', 'Replace photo', host)).toBeTruthy();
     expect(busy.mock.calls.map((c) => c[0])).toEqual([true, true, false]); // preparing, uploading, done
