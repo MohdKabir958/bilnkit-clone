@@ -20,7 +20,7 @@ class KAddButton extends StatelessWidget {
   final bool enabled;
   final String itemName;
 
-  static const double _height = 40;
+  static const double _height = 44;
 
   @override
   Widget build(BuildContext context) {
@@ -33,19 +33,34 @@ class KAddButton extends StatelessWidget {
               child: KPressable(
                 onTap: onRemove,
                 semanticLabel: 'Remove one $itemName',
-                child: SizedBox(height: _height, child: Center(child: Icon(LucideIcons.minus, size: 18, color: k.onBrand))),
+                child: SizedBox(
+                    height: _height,
+                    child: Center(
+                        child: Icon(LucideIcons.minus,
+                            size: 18, color: k.onBrand))),
               ),
             ),
             AnimatedSwitcher(
-              duration: KMotion.fast,
-              transitionBuilder: (child, anim) => ScaleTransition(scale: CurvedAnimation(parent: anim, curve: KMotion.spring), child: FadeTransition(opacity: anim, child: child)),
-              child: Text('$quantity', key: ValueKey(quantity), style: KraveoType.numericSm.copyWith(color: k.onBrand, fontSize: 18)),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : KMotion.fast,
+              transitionBuilder: (child, anim) => ScaleTransition(
+                  scale: CurvedAnimation(parent: anim, curve: KMotion.spring),
+                  child: FadeTransition(opacity: anim, child: child)),
+              child: Text('$quantity',
+                  key: ValueKey(quantity),
+                  style: KraveoType.numericSm
+                      .copyWith(color: k.onBrand, fontSize: 18)),
             ),
             Expanded(
               child: KPressable(
                 onTap: onAdd,
                 semanticLabel: 'Add one more $itemName',
-                child: SizedBox(height: _height, child: Center(child: Icon(LucideIcons.plus, size: 18, color: k.onBrand))),
+                child: SizedBox(
+                    height: _height,
+                    child: Center(
+                        child: Icon(LucideIcons.plus,
+                            size: 18, color: k.onBrand))),
               ),
             ),
           ])
@@ -58,7 +73,9 @@ class KAddButton extends StatelessWidget {
               height: _height,
               child: Center(
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text('ADD', style: KraveoType.button.copyWith(color: k.brand, fontSize: 14, letterSpacing: 0.8)),
+                  Text('ADD',
+                      style: KraveoType.button.copyWith(
+                          color: k.brand, fontSize: 14, letterSpacing: 0.8)),
                   const SizedBox(width: 4),
                   Icon(LucideIcons.plus, size: 16, color: k.brand),
                 ]),
@@ -71,21 +88,28 @@ class KAddButton extends StatelessWidget {
       child: Opacity(
         opacity: enabled || active ? 1 : 0.45,
         child: AnimatedContainer(
-          duration: KMotion.base,
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : KMotion.base,
           curve: KMotion.spring,
-          width: active ? 112 : 96,
+          width: 132,
           height: _height,
           decoration: BoxDecoration(
             color: active ? k.brand : k.surface,
-            borderRadius: BorderRadius.circular(KRadius.pill),
-            border: Border.all(color: active ? k.brand : k.brand.withValues(alpha: 0.55), width: 1.4),
+            borderRadius: BorderRadius.circular(KRadius.md),
+            border: Border.all(
+                color: active ? k.brand : k.brand.withValues(alpha: 0.55),
+                width: 1.4),
             boxShadow: active ? KShadow.soft(k.shadowTint) : null,
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(KRadius.pill),
+            borderRadius: BorderRadius.circular(KRadius.md),
             child: AnimatedSwitcher(
-              duration: KMotion.fast,
-              transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : KMotion.fast,
+              transitionBuilder: (child, anim) =>
+                  FadeTransition(opacity: anim, child: child),
               child: content,
             ),
           ),

@@ -25,7 +25,7 @@ import '../widgets/ui/k_icon_button.dart';
 import '../widgets/ui/scroll_empty.dart';
 import '../widgets/ui/sheet_chrome.dart';
 import '../widgets/ui/snack.dart';
-import '../widgets/ui/veg_mark.dart';
+
 import 'live_tracking_screen.dart';
 import 'payment_success_screen.dart';
 
@@ -94,15 +94,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.initState();
     // Legacy spellings ("Block 2") become the canonical name; an unknown value (the removed
     // "VIT Main Gate") means the student has to choose again.
-    _currentHostel = widget.selectedHostel ?? context.read<SessionProvider>().deliveryPoint;
-    _deliveryNoteController.text = 'Call when reaching hostel gate';
+    _currentHostel =
+        widget.selectedHostel ?? context.read<SessionProvider>().deliveryPoint;
+    _deliveryNoteController.text = 'Call when reaching delivery address';
     // Back in checkout with the same cart: show the unpaid order it already created.
     final cart = context.read<CartProvider>();
     if (cart.items.isNotEmpty) {
-      final existing = context.read<OrderProvider>().openCheckoutOrder(CheckoutDraft.fromCart(cart, dropoffHostel: _currentHostel ?? '', dropoffNotes: ''));
+      final existing = context.read<OrderProvider>().openCheckoutOrder(
+          CheckoutDraft.fromCart(cart,
+              dropoffHostel: _currentHostel ?? '', dropoffNotes: ''));
       if (existing != null && existing.awaitsPayment) {
         _orderId = existing.id;
-        _notice = 'You already placed this order. Complete the payment, or cancel it to change something.';
+        _notice =
+            'You already placed this order. Complete the payment, or cancel it to change something.';
       }
     }
     _quote = QuoteController(
@@ -133,7 +137,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   /// Asks for the server's price of the cart on screen (nothing once the order exists: the bill
   /// then comes from the order). An unchanged cart is a no-op.
   void _syncQuote(CartProvider cart, bool placed) {
-    final request = placed || cart.items.isEmpty ? null : CheckoutDraft.fromCart(cart, dropoffHostel: '', dropoffNotes: '').quoteRequest;
+    final request = placed || cart.items.isEmpty
+        ? null
+        : CheckoutDraft.fromCart(cart, dropoffHostel: '', dropoffNotes: '')
+            .quoteRequest;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _quote.request(request);
     });
@@ -141,13 +148,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   /// What the Pay button and the bill show right now: the server's quote when there is one,
   /// otherwise the local estimate.
-  double _shownTotal(CartProvider cart) => _quote.quote?.total ?? cart.grandTotal;
+  double _shownTotal(CartProvider cart) =>
+      _quote.quote?.total ?? cart.grandTotal;
 
   /// Why a cart with several restaurants cannot be ordered as it is, or null.
   String? _blockMessage(CartProvider cart) {
-    if (!cart.isMultiRestaurant) return _quote.blocksCheckout ? _quote.problem : null;
-    if (cart.maxRestaurants <= 1) return 'Ordering from several restaurants at once is not available right now. Go back and keep one restaurant in your cart.';
-    if (cart.restaurantCount > cart.maxRestaurants) return 'You can order from at most ${cart.maxRestaurants} restaurants at once. Go back and remove a restaurant from your cart.';
+    if (!cart.isMultiRestaurant) {
+      return _quote.blocksCheckout ? _quote.problem : null;
+    }
+    if (cart.maxRestaurants <= 1) {
+      return 'Ordering from several stores at once is not available right now. Go back and keep one store in your cart.';
+    }
+    if (cart.restaurantCount > cart.maxRestaurants) {
+      return 'You can order from at most ${cart.maxRestaurants} stores at once. Go back and remove a store from your cart.';
+    }
     if (_quote.blocksCheckout) return _quote.problem;
     return null;
   }
@@ -158,7 +172,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Future<void> _onPrimary(CartProvider cart, OrderProvider orders) async {
     if (_busy || _handlingTap) return;
-    _handlingTap = true; // set before the first await: the second tap of a double tap sees it
+    _handlingTap =
+        true; // set before the first await: the second tap of a double tap sees it
     try {
       await _handlePrimary(cart, orders);
     } finally {
@@ -191,7 +206,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         return;
       }
       if (cart.dhabaId != null && cart.items.isNotEmpty) {
-        final confirmed = await showConfirmDeliveryPoint(context, current: current);
+        final confirmed =
+            await showConfirmDeliveryPoint(context, current: current);
         if (confirmed == null || !mounted) return;
       }
       final placed = await _placeOrder(cart, orders);
@@ -202,9 +218,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   /// Creates the server order. Returns it when payment should start right away, otherwise null
   /// (error shown, or the server's price differs and the student must see it first).
-  Future<OrderModel?> _placeOrder(CartProvider cart, OrderProvider orders) async {
+  Future<OrderModel?> _placeOrder(
+      CartProvider cart, OrderProvider orders) async {
     if (cart.dhabaId == null || cart.items.isEmpty) {
-      _showError('Your cart is empty or the restaurant is missing.');
+      _showError('Your cart is empty or the store is missing.');
       return null;
     }
     final dropoff = _currentHostel;
@@ -216,7 +233,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final dhabas = context.read<DhabaProvider>();
     if (!cart.isMultiRestaurant) {
       if (!dhabas.isLiveVendor(cart.dhabaId)) {
-        _showError('This kitchen\'s live menu hasn\'t loaded, so it can\'t take orders right now. Check your connection, then open the kitchen again from Home.');
+        _showError(
+            'This store\'s live catalog hasn\'t loaded, so it can\'t take orders right now. Check your connection, then open the store again from Home.');
         return null;
       }
     } else {
@@ -227,7 +245,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
       for (final r in cart.restaurants) {
         if (!dhabas.isLiveVendor(r.id)) {
-          _showError('${r.name}\'s live menu hasn\'t loaded, so it can\'t take orders right now. Check your connection, then open the kitchen again from Home.');
+          _showError(
+              '${r.name}\'s live catalog hasn\'t loaded, so it can\'t take orders right now. Check your connection, then open the store again from Home.');
           return null;
         }
       }
@@ -238,13 +257,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _busy = true;
       _notice = null;
     });
-    final result = await orders.placeOrder(CheckoutDraft.fromCart(cart, dropoffHostel: dropoff, dropoffNotes: _deliveryNoteController.text.trim()));
+    final result = await orders.placeOrder(CheckoutDraft.fromCart(cart,
+        dropoffHostel: dropoff,
+        dropoffNotes: _deliveryNoteController.text.trim()));
     if (!mounted) return null;
     final order = result.value;
     if (order == null) {
       final error = result.error!;
       var message = orderErrorMessage(error, action: 'place your order');
-      if (error.isNetwork) message += ' Trying again is safe: you won\'t get a duplicate order.';
+      if (error.isNetwork) {
+        message += ' Trying again is safe: you won\'t get a duplicate order.';
+      }
       _setBusy(false);
       switch (error.code) {
         case 'COUPON_NOT_APPLICABLE':
@@ -252,14 +275,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           // say why and what the total is now (the next tap places the order without it).
           cart.removeCoupon();
           final reason = error.message ?? 'It can\'t be used on this order.';
-          message = 'Coupon removed. $reason Your total is now ${rupee(cart.grandTotal)}.';
+          message =
+              'Coupon removed. $reason Your total is now ${rupee(cart.grandTotal)}.';
         case 'INVALID_ITEMS':
         case 'VENDOR_CLOSED':
         case 'VENDOR_UNAVAILABLE':
           // The menu or the kitchen's open state changed since this phone last looked.
           unawaited(context.read<DhabaProvider>().loadCatalog());
       }
-      if (cart.isMultiRestaurant) message = _groupErrorMessage(cart, error, message);
+      if (cart.isMultiRestaurant) {
+        message = _groupErrorMessage(cart, error, message);
+      }
       _showError(message);
       return null;
     }
@@ -267,7 +293,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (!order.awaitsPayment) {
       _setBusy(false);
       if (order.isTerminal) {
-        _showError('This order is no longer open. Tap the button to place it again.');
+        _showError(
+            'This order is no longer open. Tap the button to place it again.');
       } else {
         _openTracking(order.id);
       }
@@ -283,23 +310,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   /// Wording for the errors only a combined order can get (Docs/22 10.1): which restaurant is
   /// closed, how many restaurants are allowed, an old server without combined orders.
-  String _groupErrorMessage(CartProvider cart, OrderApiError error, String fallback) {
-    final name = error.vendorId == null ? null : cart.restaurants.where((r) => r.id == error.vendorId).map((r) => r.name).firstOrNull;
+  String _groupErrorMessage(
+      CartProvider cart, OrderApiError error, String fallback) {
+    final name = error.vendorId == null
+        ? null
+        : cart.restaurants
+            .where((r) => r.id == error.vendorId)
+            .map((r) => r.name)
+            .firstOrNull;
     switch (error.code) {
       case 'VENDOR_CLOSED':
-        return name == null ? fallback : '$name is closed for new orders right now. Remove it from your cart to order from the others.';
+        return name == null
+            ? fallback
+            : '$name is closed for new orders right now. Remove it from your cart to order from the others.';
       case 'VENDOR_UNAVAILABLE':
-        return name == null ? fallback : '$name isn\'t available right now. Remove it from your cart to order from the others.';
+        return name == null
+            ? fallback
+            : '$name isn\'t available right now. Remove it from your cart to order from the others.';
       case 'MULTI_DISABLED':
         cart.setMaxRestaurants(1);
-        return 'Ordering from several restaurants at once is switched off right now. Keep one restaurant in your cart.';
+        return 'Ordering from several stores at once is switched off right now. Keep one store in your cart.';
       case 'TOO_MANY_RESTAURANTS':
-        if (error.maxRestaurants != null) cart.setMaxRestaurants(error.maxRestaurants!);
+        if (error.maxRestaurants != null) {
+          cart.setMaxRestaurants(error.maxRestaurants!);
+        }
         return error.message ?? fallback;
     }
     if (error.kind == OrderErrorKind.notFound) {
       cart.setMaxRestaurants(1); // an old server knows no combined orders
-      return 'Ordering from several restaurants at once is not available yet. Please order from one restaurant at a time.';
+      return 'Ordering from several stores at once is not available yet. Please order from one store at a time.';
     }
     return fallback;
   }
@@ -311,7 +350,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _busy = true;
       _notice = null;
     });
-    final outcome = await orders.payForOrder(id, contact: context.read<SessionProvider>().user?.phone);
+    final outcome = await orders.payForOrder(id,
+        contact: context.read<SessionProvider>().user?.phone);
     if (!mounted) return;
     switch (outcome.kind) {
       case PaymentOutcomeKind.paid:
@@ -319,7 +359,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         final placed = orders.orderById(id) ?? outcome.order;
         cart.clearCart();
         orders.clearCheckout();
-        _openPaymentSuccess(id, placed, confirming: outcome.kind == PaymentOutcomeKind.confirming);
+        _openPaymentSuccess(id, placed,
+            confirming: outcome.kind == PaymentOutcomeKind.confirming);
       case PaymentOutcomeKind.orderClosed:
         // The server won't take money for this order any more: back to the editable cart so
         // the next tap places a fresh order (new idempotency key).
@@ -328,14 +369,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           _busy = false;
           _orderId = null;
           _paymentAttempted = false;
-          _notice = outcome.message ?? 'This order can no longer be paid. Please place it again.';
+          _notice = outcome.message ??
+              'This order can no longer be paid. Please place it again.';
         });
       case PaymentOutcomeKind.cancelled:
       case PaymentOutcomeKind.failed:
         setState(() {
           _busy = false;
           _paymentAttempted = true;
-          _notice = outcome.message ?? 'Payment not completed. You can try again.';
+          _notice =
+              outcome.message ?? 'Payment not completed. You can try again.';
         });
     }
   }
@@ -345,7 +388,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final ok = await showKConfirm(
       context,
       title: 'Cancel this order?',
-      message: (order.isGroup ? 'This cancels your whole order, from all ${order.group!.size} restaurants. ' : '') +
+      message: (order.isGroup
+              ? 'This cancels your whole order, from all ${order.group!.size} stores. '
+              : '') +
           (_paymentAttempted
               ? 'If your bank already took money for this order, ${BrandConfig.name} refunds it automatically. Your cart stays as it is, so you can change it and order again.'
               : 'You have not completed a payment for this order, so nothing is charged. Your cart stays as it is, so you can change it and order again.'),
@@ -355,7 +400,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
     if (ok != true || !mounted) return;
     _setBusy(true);
-    final r = await orders.cancelOrder(order.id, reason: 'Cancelled at checkout');
+    final r =
+        await orders.cancelOrder(order.id, reason: 'Cancelled at checkout');
     if (!mounted) return;
     if (r.ok) {
       orders.clearCheckout();
@@ -373,7 +419,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   /// Success beat first, then tracking. Falls back to tracking straight away if the order is unknown.
-  void _openPaymentSuccess(String orderId, OrderModel? order, {required bool confirming}) {
+  void _openPaymentSuccess(String orderId, OrderModel? order,
+      {required bool confirming}) {
     if (order == null) {
       _openTracking(orderId);
       return;
@@ -384,13 +431,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         builder: (context) => PaymentSuccessScreen(
           orderId: orderId,
           amountLabel: rupee(order.totalAmount),
-          vendorName: order.isGroup ? 'your ${order.group!.size} restaurants' : (order.vendorName.isEmpty ? 'the kitchen' : order.vendorName),
+          vendorName: order.isGroup
+              ? 'your ${order.group!.size} stores'
+              : (order.vendorName.isEmpty ? 'the store' : order.vendorName),
           confirming: confirming,
           onContinue: () {
             if (!context.mounted) return;
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => LiveTrackingScreen(orderId: orderId)),
+              MaterialPageRoute(
+                  builder: (context) => LiveTrackingScreen(orderId: orderId)),
               (route) => route.isFirst,
             );
           },
@@ -403,7 +453,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void _openTracking(String orderId) {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => LiveTrackingScreen(orderId: orderId)),
+      MaterialPageRoute(
+          builder: (context) => LiveTrackingScreen(orderId: orderId)),
       (route) => route.isFirst,
     );
   }
@@ -438,8 +489,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: KEmptyState(
           icon: LucideIcons.shoppingBag,
           title: 'Your cart is empty',
-          message: 'Add something delicious from a kitchen and come back to pay.',
-          action: KButton(label: 'Back to menu', kind: KButtonKind.tonal, expand: false, onPressed: () => Navigator.of(context).maybePop()),
+          message: 'Add something delicious from a store and come back to pay.',
+          action: KButton(
+              label: 'Back to catalog',
+              kind: KButtonKind.tonal,
+              expand: false,
+              onPressed: () => Navigator.of(context).maybePop()),
         ),
       );
       footer = null;
@@ -448,13 +503,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.fromLTRB(KSpace.gutter, 8, KSpace.gutter, 24),
         children: [
-          if (keyboardOpen && _notice != null) _NoticeLine(message: _notice!, error: true),
-          KReveal(child: _SectionCard(title: 'Drop-off', icon: LucideIcons.mapPin, child: _buildDropoff(context, k))),
+          if (keyboardOpen && _notice != null)
+            _NoticeLine(message: _notice!, error: true),
+          KReveal(
+              child: _SectionCard(
+                  title: 'Drop-off',
+                  icon: LucideIcons.mapPin,
+                  child: _buildDropoff(context, k))),
           const SizedBox(height: 14),
           KReveal(
             index: 1,
             child: _SectionCard(
-              title: multi ? 'Your order · ${cart.restaurantCount} restaurants' : (cart.dhabaName ?? 'Your order'),
+              title: multi
+                  ? 'Your order · ${cart.restaurantCount} stores'
+                  : (cart.dhabaName ?? 'Your order'),
               icon: LucideIcons.receiptText,
               child: _buildSummary(context, k, cart),
             ),
@@ -462,7 +524,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           const SizedBox(height: 14),
           KReveal(index: 2, child: CoinsBalance(cart: cart)),
           const SizedBox(height: 14),
-          KReveal(index: 3, child: _SectionCard(title: 'Payment', icon: LucideIcons.wallet, child: _buildPayment(context, k))),
+          KReveal(
+              index: 3,
+              child: _SectionCard(
+                  title: 'Payment',
+                  icon: LucideIcons.wallet,
+                  child: _buildPayment(context, k))),
           const SizedBox(height: 14),
           KReveal(index: 4, child: _buildBill(cart)),
         ],
@@ -470,23 +537,35 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       footer = KSheetFooter(
         floating: true,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          if (blockMessage != null && !keyboardOpen) _NoticeLine(message: blockMessage, error: true),
-          if (_notice != null && !keyboardOpen && _notice != blockMessage) _NoticeLine(message: _notice!, error: true),
+          if (blockMessage != null && !keyboardOpen)
+            _NoticeLine(message: blockMessage, error: true),
+          if (_notice != null && !keyboardOpen && _notice != blockMessage)
+            _NoticeLine(message: _notice!, error: true),
           KButton(
-            label: _currentHostel == null ? 'Choose address' : 'Pay ${rupee(_shownTotal(cart))}',
-            icon: _currentHostel == null ? LucideIcons.mapPin : LucideIcons.lock,
-            kind: _currentHostel == null ? KButtonKind.accent : KButtonKind.primary,
+            label: _currentHostel == null
+                ? 'Choose address'
+                : 'Pay ${rupee(_shownTotal(cart))}',
+            icon:
+                _currentHostel == null ? LucideIcons.mapPin : LucideIcons.lock,
+            kind: _currentHostel == null
+                ? KButtonKind.accent
+                : KButtonKind.primary,
             loading: busy,
-            onPressed: busy || blockMessage != null ? null : () => _onPrimary(cart, orders),
+            onPressed: busy || blockMessage != null
+                ? null
+                : () => _onPrimary(cart, orders),
           ),
           if (!keyboardOpen) ...[
             const SizedBox(height: 8),
             Text(
               busy
                   ? 'Placing your order. Please do not close the app.'
-                  : (_currentHostel == null ? 'Tell us where to deliver first. Payment opens right after.' : 'Next: ${BrandConfig.name} confirms the price, then you pay online.'),
+                  : (_currentHostel == null
+                      ? 'Tell us where to deliver first. Payment opens right after.'
+                      : 'Next: ${BrandConfig.name} confirms the price, then you pay online.'),
               textAlign: TextAlign.center,
-              style: KraveoType.caption.copyWith(color: k.inkFaint, fontSize: 12),
+              style:
+                  KraveoType.caption.copyWith(color: k.inkFaint, fontSize: 12),
             ),
           ],
         ]),
@@ -516,14 +595,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         body: body,
         // A Scaffold keeps its bottom bar at the very bottom of the screen, i.e. UNDER the keyboard:
         // lift it by the keyboard height so "Pay" stays reachable while the note is being typed.
-        bottomNavigationBar: footer == null ? null : Padding(padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom), child: footer),
+        bottomNavigationBar: footer == null
+            ? null
+            : Padding(
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.viewInsetsOf(context).bottom),
+                child: footer),
       ),
     );
   }
 
   /// The order exists on the server: everything shown comes from it.
-  Widget _buildPlacedOrder(BuildContext context, KraveoTokens k, OrderModel order) {
-    final priceChanged = _previewTotal != null && order.awaitsPayment && order.totalPaise != (_previewTotal! * 100).round();
+  Widget _buildPlacedOrder(
+      BuildContext context, KraveoTokens k, OrderModel order) {
+    final priceChanged = _previewTotal != null &&
+        order.awaitsPayment &&
+        order.totalPaise != (_previewTotal! * 100).round();
     return ListView(
       padding: const EdgeInsets.fromLTRB(KSpace.gutter, 8, KSpace.gutter, 24),
       children: [
@@ -531,44 +618,66 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           _InfoCard(
             icon: LucideIcons.badgeInfo,
             title: 'Updated total: ${rupee(order.totalAmount)}',
-            message: '${BrandConfig.name} priced your order at ${rupee(order.totalAmount)} (your cart estimate was ${rupee(_previewTotal!)}). Check the bill below before you pay.',
+            message:
+                '${BrandConfig.name} priced your order at ${rupee(order.totalAmount)} (your cart estimate was ${rupee(_previewTotal!)}). Check the bill below before you pay.',
           ),
           const SizedBox(height: 14),
         ],
         if (order.awaitsPayment) ...[
           _InfoCard(
             icon: LucideIcons.timer,
-            title: _paymentAttempted ? 'Payment not completed' : 'Order saved, waiting for payment',
-            message: 'Pay by ${clockLabel(order.paymentDeadline)}. Unpaid orders are cancelled automatically 15 minutes after they are placed.',
+            title: _paymentAttempted
+                ? 'Payment not completed'
+                : 'Order saved, waiting for payment',
+            message:
+                'Pay by ${clockLabel(order.paymentDeadline)}. Unpaid orders are cancelled automatically 15 minutes after they are placed.',
           ),
           const SizedBox(height: 14),
         ] else if (order.isTerminal) ...[
           _InfoCard(
             icon: LucideIcons.circleX,
-            title: order.isPaymentNotCompletedCancel ? 'This order expired' : 'This order was cancelled',
-            message: order.isPaymentNotCompletedCancel ? 'Payment was not completed within 15 minutes, so nothing was ordered.' : (order.cancelReason ?? 'It can no longer be paid.'),
+            title: order.isPaymentNotCompletedCancel
+                ? 'This order expired'
+                : 'This order was cancelled',
+            message: order.isPaymentNotCompletedCancel
+                ? 'Payment was not completed within 15 minutes, so nothing was ordered.'
+                : (order.cancelReason ?? 'It can no longer be paid.'),
           ),
           const SizedBox(height: 14),
         ],
         _SectionCard(
           title: 'Drop-off',
           icon: LucideIcons.mapPin,
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(order.dropoffHostel.isEmpty ? 'Delivery address' : displayDropPoint(order.dropoffHostel), style: KraveoType.titleLg.copyWith(color: k.ink)),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+                order.dropoffHostel.isEmpty
+                    ? 'Delivery address'
+                    : displayDropPoint(order.dropoffHostel),
+                style: KraveoType.titleLg.copyWith(color: k.ink)),
             if (order.dropoffNotes.isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text(order.dropoffNotes, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+              Text(order.dropoffNotes,
+                  style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
             ],
           ]),
         ),
         const SizedBox(height: 14),
         if (order.isGroup && order.members != null && order.members!.length > 1)
           for (final part in order.members!) ...[
-            _SectionCard(title: part.vendorName, icon: LucideIcons.receiptText, child: _placedLines(k, part, label: 'Order ${orderRef(part.id)}')),
+            _SectionCard(
+                title: part.vendorName,
+                icon: LucideIcons.receiptText,
+                child:
+                    _placedLines(k, part, label: 'Order ${orderRef(part.id)}')),
             const SizedBox(height: 14),
           ]
         else ...[
-          _SectionCard(title: order.vendorName, icon: LucideIcons.receiptText, child: _placedLines(k, order, label: 'Order ${orderRef(order.id)}')),
+          _SectionCard(
+              title: order.vendorName,
+              icon: LucideIcons.receiptText,
+              child:
+                  _placedLines(k, order, label: 'Order ${orderRef(order.id)}')),
           const SizedBox(height: 14),
         ],
         BillBreakdown.order(order: order),
@@ -576,17 +685,28 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _placedLines(KraveoTokens k, OrderModel part, {required String label}) {
+  Widget _placedLines(KraveoTokens k, OrderModel part,
+      {required String label}) {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Text(label, style: KraveoType.label.copyWith(color: k.brand, fontSize: 13)),
+      Text(label,
+          style: KraveoType.label.copyWith(color: k.brand, fontSize: 13)),
       const SizedBox(height: 6),
       for (final line in part.items)
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(child: Text('${line.quantity} × ${line.name}', maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.body.copyWith(color: k.ink, fontWeight: FontWeight.w600, fontSize: 14))),
+            Expanded(
+                child: Text('${line.quantity} × ${line.name}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: KraveoType.body.copyWith(
+                        color: k.ink,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14))),
             const SizedBox(width: 12),
-            Text(rupee(line.lineTotal), style: KraveoType.body.copyWith(color: k.ink, fontWeight: FontWeight.w700, fontSize: 14)),
+            Text(rupee(line.lineTotal),
+                style: KraveoType.body.copyWith(
+                    color: k.ink, fontWeight: FontWeight.w700, fontSize: 14)),
           ]),
         ),
     ]);
@@ -600,11 +720,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       cart: cart,
       loading: _quote.isLoading,
       problem: _quote.problem,
-      onRetry: _quote.status == QuoteStatus.failed && !_quote.unsupported ? _quote.retry : null,
+      onRetry: _quote.status == QuoteStatus.failed && !_quote.unsupported
+          ? _quote.retry
+          : null,
     );
   }
 
-  Widget _buildPlacedFooter(BuildContext context, KraveoTokens k, CartProvider cart, OrderProvider orders, OrderModel order, bool busy) {
+  Widget _buildPlacedFooter(BuildContext context, KraveoTokens k,
+      CartProvider cart, OrderProvider orders, OrderModel order, bool busy) {
     final String label;
     final IconData icon;
     if (order.isTerminal) {
@@ -614,14 +737,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       label = 'Track your order';
       icon = LucideIcons.bike;
     } else {
-      label = _paymentAttempted ? 'Try payment again · ${rupee(order.totalAmount)}' : 'Pay ${rupee(order.totalAmount)}';
+      label = _paymentAttempted
+          ? 'Try payment again · ${rupee(order.totalAmount)}'
+          : 'Pay ${rupee(order.totalAmount)}';
       icon = LucideIcons.lock;
     }
     return KSheetFooter(
       floating: true,
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        if (_notice != null) _NoticeLine(message: _notice!, error: _paymentAttempted || order.isTerminal),
-        KButton(label: label, icon: icon, loading: busy, onPressed: busy ? null : () => _onPrimary(cart, orders)),
+        if (_notice != null)
+          _NoticeLine(
+              message: _notice!, error: _paymentAttempted || order.isTerminal),
+        KButton(
+            label: label,
+            icon: icon,
+            loading: busy,
+            onPressed: busy ? null : () => _onPrimary(cart, orders)),
         if (order.awaitsPayment) ...[
           const SizedBox(height: 8),
           KButton(
@@ -641,16 +772,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (_pickerOpen || _busy || _orderId != null) return;
     _pickerOpen = true;
     try {
-      final selected = await Navigator.push<DeliveryAddress>(context, MaterialPageRoute(builder: (_) => const AddressesScreen()));
+      final selected = await Navigator.push<DeliveryAddress>(
+          context, MaterialPageRoute(builder: (_) => const AddressesScreen()));
       if (!mounted) return;
-      if (selected != null) { context.read<SessionProvider>().selectDeliveryAddress(selected); }
-      else { await context.read<SessionProvider>().refreshDeliveryAddress(); }
-      if (mounted) setState(() => _currentHostel = context.read<SessionProvider>().deliveryPoint);
+      if (selected != null) {
+        context.read<SessionProvider>().selectDeliveryAddress(selected);
+      } else {
+        await context.read<SessionProvider>().refreshDeliveryAddress();
+      }
+      if (mounted) {
+        setState(() =>
+            _currentHostel = context.read<SessionProvider>().deliveryPoint);
+      }
       if (mounted) {
         context.read<DhabaProvider>().resetForAddress();
         unawaited(context.read<DhabaProvider>().refreshHome());
       }
-    } finally { _pickerOpen = false; }
+    } finally {
+      _pickerOpen = false;
+    }
   }
 
   Widget _buildDropoff(BuildContext context, KraveoTokens k) {
@@ -673,16 +813,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Container(
                   width: 46,
                   height: 46,
-                  decoration: BoxDecoration(color: k.brand, shape: BoxShape.circle),
+                  decoration:
+                      BoxDecoration(color: k.brand, shape: BoxShape.circle),
                   child: Icon(LucideIcons.mapPin, size: 22, color: k.onBrand),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Choose address point', style: KraveoType.titleLg.copyWith(color: k.ink)),
-                    const SizedBox(height: 2),
-                    Text('Required before you can pay', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
-                  ]),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Choose address point',
+                            style: KraveoType.titleLg.copyWith(color: k.ink)),
+                        const SizedBox(height: 2),
+                        Text('Required before you can pay',
+                            style:
+                                KraveoType.bodySm.copyWith(color: k.inkMuted)),
+                      ]),
                 ),
                 Icon(LucideIcons.chevronRight, size: 22, color: k.brand),
               ]),
@@ -693,7 +839,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _DeliveringToRow(name: chosen, onChange: _chooseDropoff),
       const SizedBox(height: 12),
       Text(
-        'Your runner meets you at the gate. After you pay you get a 4-digit OTP: share it only when they arrive.',
+        'Your delivery partner meets you at your door. After you pay you get a 4-digit OTP: share it only when they arrive.',
         style: KraveoType.bodySm.copyWith(color: k.inkMuted),
       ),
       const SizedBox(height: 14),
@@ -701,8 +847,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         controller: _deliveryNoteController,
         textInputAction: TextInputAction.done,
         decoration: InputDecoration(
-          hintText: 'Note for your runner, e.g. call 5 mins before',
-          prefixIcon: Icon(LucideIcons.messageSquare, size: 18, color: k.inkMuted),
+          hintText: 'Note for your delivery partner, e.g. call 5 mins before',
+          prefixIcon:
+              Icon(LucideIcons.messageSquare, size: 18, color: k.inkMuted),
         ),
       ),
     ]);
@@ -712,24 +859,41 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(padding: const EdgeInsets.only(top: 3), child: VegMark(isVeg: item.item.isVeg, size: 14)),
+        SizedBox(
+            width: 36,
+            height: 44,
+            child: KProductMedia(
+                url: item.item.primaryImage, label: item.item.name)),
         const SizedBox(width: 10),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('${item.quantity} × ${item.item.displayName}', maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.body.copyWith(color: k.ink, fontWeight: FontWeight.w600, fontSize: 14)),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('${item.quantity} × ${item.item.displayName}',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: KraveoType.body.copyWith(
+                    color: k.ink, fontWeight: FontWeight.w600, fontSize: 14)),
             if (item.selectedOptions.isNotEmpty)
-              Text(item.customizationSummary, maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+              Text(item.customizationSummary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
           ]),
         ),
         const SizedBox(width: 12),
-        Text(rupee(item.totalPrice), style: KraveoType.body.copyWith(color: k.ink, fontWeight: FontWeight.w700, fontSize: 14)),
+        Text(rupee(item.totalPrice),
+            style: KraveoType.body.copyWith(
+                color: k.ink, fontWeight: FontWeight.w700, fontSize: 14)),
       ]),
     );
   }
 
-  Widget _buildSummary(BuildContext context, KraveoTokens k, CartProvider cart) {
+  Widget _buildSummary(
+      BuildContext context, KraveoTokens k, CartProvider cart) {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Text('${cart.itemCount} ${cart.itemCount == 1 ? 'item' : 'items'} in your order', style: KraveoType.label.copyWith(color: k.brand, fontSize: 13)),
+      Text(
+          '${cart.itemCount} ${cart.itemCount == 1 ? 'item' : 'items'} in your order',
+          style: KraveoType.label.copyWith(color: k.brand, fontSize: 13)),
       const SizedBox(height: 6),
       if (cart.isMultiRestaurant)
         for (final r in cart.restaurants) ...[
@@ -739,13 +903,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               header: true,
               label: '${r.name}, ${rupee(r.subtotal)}',
               child: ExcludeSemantics(
-                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Icon(LucideIcons.store, size: 16, color: k.brand),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(r.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.titleMd.copyWith(color: k.ink))),
-                  const SizedBox(width: 12),
-                  Text(rupee(r.subtotal), style: KraveoType.body.copyWith(color: k.inkMuted, fontWeight: FontWeight.w700, fontSize: 14)),
-                ]),
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(LucideIcons.store, size: 16, color: k.brand),
+                      const SizedBox(width: 8),
+                      Expanded(
+                          child: Text(r.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  KraveoType.titleMd.copyWith(color: k.ink))),
+                      const SizedBox(width: 12),
+                      Text(rupee(r.subtotal),
+                          style: KraveoType.body.copyWith(
+                              color: k.inkMuted,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14)),
+                    ]),
               ),
             ),
           ),
@@ -753,7 +928,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ]
       else
         for (final item in cart.items) _summaryLine(k, item),
-      Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Divider(height: 1, color: k.line)),
+      Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Divider(height: 1, color: k.line)),
       const CouponBox(),
     ]);
   }
@@ -766,31 +943,43 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           return KPressable(
             onTap: () => setState(() => _selectedPaymentMethod = opt['name']),
             scale: 0.985,
-            semanticLabel: '${opt['name']}, ${opt['sub']}${isSelected ? ', selected' : ''}',
+            semanticLabel:
+                '${opt['name']}, ${opt['sub']}${isSelected ? ', selected' : ''}',
             child: AnimatedContainer(
               duration: KMotion.base,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: isSelected ? k.brandSoft : k.surface,
                 borderRadius: BorderRadius.circular(KRadius.md),
-                border: Border.all(color: isSelected ? k.brand : k.line, width: isSelected ? 1.6 : 1.2),
+                border: Border.all(
+                    color: isSelected ? k.brand : k.line,
+                    width: isSelected ? 1.6 : 1.2),
               ),
               child: Row(children: [
                 Container(
                   width: 42,
                   height: 42,
-                  decoration: BoxDecoration(color: isSelected ? k.brand : k.surfaceAlt, shape: BoxShape.circle),
-                  child: Icon(opt['icon'] as IconData, size: 20, color: isSelected ? k.onBrand : k.inkMuted),
+                  decoration: BoxDecoration(
+                      color: isSelected ? k.brand : k.surfaceAlt,
+                      shape: BoxShape.circle),
+                  child: Icon(opt['icon'] as IconData,
+                      size: 20, color: isSelected ? k.onBrand : k.inkMuted),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(opt['name'] as String, style: KraveoType.titleMd.copyWith(color: k.ink)),
-                    Text(opt['sub'] as String, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
-                  ]),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(opt['name'] as String,
+                            style: KraveoType.titleMd.copyWith(color: k.ink)),
+                        Text(opt['sub'] as String,
+                            style:
+                                KraveoType.bodySm.copyWith(color: k.inkMuted)),
+                      ]),
                 ),
                 const SizedBox(width: 8),
-                Icon(isSelected ? LucideIcons.circleCheck : LucideIcons.circle, color: isSelected ? k.brand : k.inkFaint),
+                Icon(isSelected ? LucideIcons.circleCheck : LucideIcons.circle,
+                    color: isSelected ? k.brand : k.inkFaint),
               ]),
             ),
           );
@@ -815,23 +1004,34 @@ class _DeliveringToRow extends StatelessWidget {
       child: ExcludeSemantics(
         child: Container(
           padding: const EdgeInsets.fromLTRB(12, 10, 14, 10),
-          decoration: BoxDecoration(color: k.surfaceAlt, borderRadius: BorderRadius.circular(KRadius.lg)),
+          decoration: BoxDecoration(
+              color: k.surfaceAlt,
+              borderRadius: BorderRadius.circular(KRadius.lg)),
           child: Row(children: [
             Container(
               width: 38,
               height: 38,
-              decoration: BoxDecoration(color: k.brandSoft, shape: BoxShape.circle),
+              decoration:
+                  BoxDecoration(color: k.brandSoft, shape: BoxShape.circle),
               child: Icon(LucideIcons.mapPin, size: 18, color: k.brand),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Delivering to', style: KraveoType.caption.copyWith(color: k.inkFaint, letterSpacing: 0.4)),
-                Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.titleLg.copyWith(color: k.ink)),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Delivering to',
+                        style: KraveoType.caption
+                            .copyWith(color: k.inkFaint, letterSpacing: 0.4)),
+                    Text(name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: KraveoType.titleLg.copyWith(color: k.ink)),
+                  ]),
             ),
             const SizedBox(width: 8),
-            Text('Change', style: KraveoType.label.copyWith(color: k.brand, fontSize: 14)),
+            Text('Change',
+                style: KraveoType.label.copyWith(color: k.brand, fontSize: 14)),
           ]),
         ),
       ),
@@ -840,7 +1040,8 @@ class _DeliveringToRow extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.title, required this.icon, required this.child});
+  const _SectionCard(
+      {required this.title, required this.icon, required this.child});
 
   final String title;
   final IconData icon;
@@ -856,11 +1057,16 @@ class _SectionCard extends StatelessWidget {
           Container(
             width: 34,
             height: 34,
-            decoration: BoxDecoration(color: k.brandSoft, shape: BoxShape.circle),
+            decoration:
+                BoxDecoration(color: k.brandSoft, shape: BoxShape.circle),
             child: Icon(icon, size: 17, color: k.brand),
           ),
           const SizedBox(width: 10),
-          Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.titleLg.copyWith(color: k.ink))),
+          Expanded(
+              child: Text(title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: KraveoType.titleLg.copyWith(color: k.ink))),
         ]),
         const SizedBox(height: 14),
         child,
@@ -870,7 +1076,8 @@ class _SectionCard extends StatelessWidget {
 }
 
 class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.icon, required this.title, required this.message});
+  const _InfoCard(
+      {required this.icon, required this.title, required this.message});
 
   final IconData icon;
   final String title;
@@ -881,12 +1088,14 @@ class _InfoCard extends StatelessWidget {
     final k = context.k;
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: k.brandSoft, borderRadius: BorderRadius.circular(KRadius.lg)),
+      decoration: BoxDecoration(
+          color: k.brandSoft, borderRadius: BorderRadius.circular(KRadius.lg)),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Icon(icon, size: 20, color: k.brand),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(title, style: KraveoType.titleMd.copyWith(color: k.ink)),
             const SizedBox(height: 4),
             Text(message, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
@@ -913,9 +1122,13 @@ class _NoticeLine extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(error ? LucideIcons.circleAlert : LucideIcons.info, size: 16, color: color),
+          Icon(error ? LucideIcons.circleAlert : LucideIcons.info,
+              size: 16, color: color),
           const SizedBox(width: 8),
-          Expanded(child: Text(message, style: KraveoType.bodySm.copyWith(color: color, fontWeight: FontWeight.w600))),
+          Expanded(
+              child: Text(message,
+                  style: KraveoType.bodySm
+                      .copyWith(color: color, fontWeight: FontWeight.w600))),
         ]),
       ),
     );

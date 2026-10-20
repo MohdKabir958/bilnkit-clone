@@ -46,7 +46,13 @@ enum OrderErrorKind {
 }
 
 class OrderApiError {
-  const OrderApiError(this.kind, {this.statusCode, this.code, this.message, this.order, this.vendorId, this.maxRestaurants});
+  const OrderApiError(this.kind,
+      {this.statusCode,
+      this.code,
+      this.message,
+      this.order,
+      this.vendorId,
+      this.maxRestaurants});
 
   final OrderErrorKind kind;
   final int? statusCode;
@@ -68,7 +74,8 @@ class OrderApiError {
   /// `TOO_MANY_RESTAURANTS` also reports the allowed number.
   final int? maxRestaurants;
 
-  bool get isNetwork => kind == OrderErrorKind.offline || kind == OrderErrorKind.timeout;
+  bool get isNetwork =>
+      kind == OrderErrorKind.offline || kind == OrderErrorKind.timeout;
 
   @override
   String toString() => 'OrderApiError($kind, $statusCode, $code, $message)';
@@ -94,7 +101,12 @@ class OrdersPage {
 
 /// What `POST /payments/create-order` returns, reduced to what Razorpay checkout needs.
 class PaymentSession {
-  const PaymentSession({required this.orderId, required this.keyId, required this.razorpayOrderId, required this.amountPaise, this.currency = 'INR'});
+  const PaymentSession(
+      {required this.orderId,
+      required this.keyId,
+      required this.razorpayOrderId,
+      required this.amountPaise,
+      this.currency = 'INR'});
 
   /// Grozo order id.
   final String orderId;
@@ -106,7 +118,10 @@ class PaymentSession {
 
 /// The three values Razorpay hands back on success; the server verifies the signature.
 class PaymentProof {
-  const PaymentProof({required this.razorpayOrderId, required this.razorpayPaymentId, required this.razorpaySignature});
+  const PaymentProof(
+      {required this.razorpayOrderId,
+      required this.razorpayPaymentId,
+      required this.razorpaySignature});
   final String razorpayOrderId;
   final String razorpayPaymentId;
   final String razorpaySignature;
@@ -134,17 +149,26 @@ class CreateOrderRequest {
 
   Map<String, dynamic> toJson() => {
         'vendorId': vendorId,
-        'items': [for (final i in items) {'itemId': i.itemId, 'quantity': i.quantity}],
+        'items': [
+          for (final i in items) {'itemId': i.itemId, 'quantity': i.quantity}
+        ],
         'dropoffHostel': dropoffHostel,
         if (dropoffNotes.isNotEmpty) 'dropoffNotes': dropoffNotes,
-        if (couponCode != null && couponCode!.isNotEmpty) 'couponCode': couponCode,
+        if (couponCode != null && couponCode!.isNotEmpty)
+          'couponCode': couponCode,
         'clientRequestId': clientRequestId,
       };
 }
 
 /// A review for a delivered order, in the shape `POST /reviews` accepts today.
 class ReviewRequest {
-  const ReviewRequest({required this.orderId, required this.driverRating, required this.dishRatings, this.driverTags = const [], this.driverNotes = '', this.dhabaNotes = ''});
+  const ReviewRequest(
+      {required this.orderId,
+      required this.driverRating,
+      required this.dishRatings,
+      this.driverTags = const [],
+      this.driverNotes = '',
+      this.dhabaNotes = ''});
 
   final String orderId;
   final int? driverRating;
@@ -160,7 +184,10 @@ class ReviewRequest {
         if (driverRating != null) 'driverRating': driverRating,
         'driverTags': driverTags,
         'driverNotes': driverNotes,
-        'dishReviews': [for (final e in dishRatings.entries) {'dishId': e.key, 'rating': e.value}],
+        'dishReviews': [
+          for (final e in dishRatings.entries)
+            {'dishId': e.key, 'rating': e.value}
+        ],
         'dhabaNotes': dhabaNotes,
       };
 }
@@ -186,7 +213,8 @@ abstract class OrderApi {
 
   /// `POST /orders/quote`: what the cart would be charged. 404 = an old server.
   Future<OrderResult<OrderQuote>> quote(QuoteRequest request);
-  Future<OrderResult<OrdersPage>> fetchOrders({required String scope, int limit = 20, String? cursor});
+  Future<OrderResult<OrdersPage>> fetchOrders(
+      {required String scope, int limit = 20, String? cursor});
   Future<OrderResult<OrderModel>> fetchOrder(String orderId);
   Future<OrderResult<OrderModel>> cancelOrder(String orderId, {String? reason});
   Future<OrderResult<PaymentSession>> createPayment(String orderId);
@@ -206,27 +234,37 @@ class HttpOrderApi implements OrderApi {
 
   @override
   Future<OrderResult<OrderModel>> createOrder(CreateOrderRequest request) =>
-      _call('POST', '/orders', body: request.toJson(), timeout: _write, parse: _orderFromBody);
+      _call('POST', '/orders',
+          body: request.toJson(), timeout: _write, parse: _orderFromBody);
 
   @override
-  Future<OrderResult<OrderGroupView>> createGroup(CreateGroupRequest request) => _call(
+  Future<OrderResult<OrderGroupView>> createGroup(CreateGroupRequest request) =>
+      _call(
         'POST',
         '/order-groups',
         body: request.toJson(),
         timeout: _write,
-        parse: (body) => OrderGroupView.tryParse(body['data'], replay: body['idempotentReplay'] == true),
+        parse: (body) => OrderGroupView.tryParse(body['data'],
+            replay: body['idempotentReplay'] == true),
       );
 
   @override
   Future<OrderResult<OrderGroupView>> fetchGroup(String groupId) =>
-      _call('GET', '/order-groups/${Uri.encodeComponent(groupId)}', timeout: _read, parse: (body) => OrderGroupView.tryParse(body['data']));
+      _call('GET', '/order-groups/${Uri.encodeComponent(groupId)}',
+          timeout: _read,
+          parse: (body) => OrderGroupView.tryParse(body['data']));
 
   @override
   Future<OrderResult<OrderQuote>> quote(QuoteRequest request) =>
-      _call('POST', '/orders/quote', body: request.toJson(), timeout: _read, parse: (body) => OrderQuote.tryParse(body['data']));
+      _call('POST', '/orders/quote',
+          body: request.toJson(),
+          timeout: _read,
+          parse: (body) => OrderQuote.tryParse(body['data']));
 
   @override
-  Future<OrderResult<OrdersPage>> fetchOrders({required String scope, int limit = 20, String? cursor}) => _call(
+  Future<OrderResult<OrdersPage>> fetchOrders(
+          {required String scope, int limit = 20, String? cursor}) =>
+      _call(
         'GET',
         '/orders',
         query: {'scope': scope, 'limit': limit, 'cursor': cursor},
@@ -234,18 +272,23 @@ class HttpOrderApi implements OrderApi {
         parse: (body) {
           final data = body['data'];
           if (data is! List) return null;
-          final orders = data.map(OrderModel.tryParse).whereType<OrderModel>().toList();
+          final orders =
+              data.map(OrderModel.tryParse).whereType<OrderModel>().toList();
           final next = body['nextCursor'];
-          return OrdersPage(orders, next is String && next.isNotEmpty ? next : null);
+          return OrdersPage(
+              orders, next is String && next.isNotEmpty ? next : null);
         },
       );
 
   @override
   Future<OrderResult<OrderModel>> fetchOrder(String orderId) =>
-      _call('GET', '/orders/${Uri.encodeComponent(orderId)}', timeout: _read, parse: _orderFromBody);
+      _call('GET', '/orders/${Uri.encodeComponent(orderId)}',
+          timeout: _read, parse: _orderFromBody);
 
   @override
-  Future<OrderResult<OrderModel>> cancelOrder(String orderId, {String? reason}) => _call(
+  Future<OrderResult<OrderModel>> cancelOrder(String orderId,
+          {String? reason}) =>
+      _call(
         'POST',
         '/orders/${Uri.encodeComponent(orderId)}/cancel',
         body: {if (reason != null && reason.isNotEmpty) 'reason': reason},
@@ -262,25 +305,46 @@ class HttpOrderApi implements OrderApi {
         parse: (body) {
           if (body['success'] == false) return null;
           final keyId = (body['key_id'] ?? body['keyId'])?.toString();
-          final rzpOrder = (body['order_id'] ?? body['razorpayOrderId'])?.toString();
+          final rzpOrder =
+              (body['order_id'] ?? body['razorpayOrderId'])?.toString();
           final amount = body['amount'] ?? body['amountInPaise'];
-          if (keyId == null || keyId.isEmpty || rzpOrder == null || rzpOrder.isEmpty || amount is! num || amount < 100) return null;
-          return PaymentSession(orderId: orderId, keyId: keyId, razorpayOrderId: rzpOrder, amountPaise: amount.round(), currency: body['currency']?.toString() ?? 'INR');
+          if (keyId == null ||
+              keyId.isEmpty ||
+              rzpOrder == null ||
+              rzpOrder.isEmpty ||
+              amount is! num ||
+              amount < 100) {
+            return null;
+          }
+          return PaymentSession(
+              orderId: orderId,
+              keyId: keyId,
+              razorpayOrderId: rzpOrder,
+              amountPaise: amount.round(),
+              currency: body['currency']?.toString() ?? 'INR');
         },
       );
 
   @override
-  Future<OrderResult<OrderModel?>> verifyPayment(PaymentProof proof) => _call<OrderModel?>(
+  Future<OrderResult<OrderModel?>> verifyPayment(PaymentProof proof) =>
+      _call<OrderModel?>(
         'POST',
         '/payments/verify-signature',
-        body: {'razorpayOrderId': proof.razorpayOrderId, 'razorpayPaymentId': proof.razorpayPaymentId, 'razorpaySignature': proof.razorpaySignature},
+        body: {
+          'razorpayOrderId': proof.razorpayOrderId,
+          'razorpayPaymentId': proof.razorpayPaymentId,
+          'razorpaySignature': proof.razorpaySignature
+        },
         timeout: _write,
         // Success may or may not carry the order; both are fine.
-        parse: (body) => body['success'] == false ? null : _Maybe(OrderModel.tryParse(body['data'] ?? body['order'])),
+        parse: (body) => body['success'] == false
+            ? null
+            : _Maybe(OrderModel.tryParse(body['data'] ?? body['order'])),
       );
 
   @override
-  Future<OrderResult<ReviewReceipt>> submitReview(ReviewRequest request) => _call(
+  Future<OrderResult<ReviewReceipt>> submitReview(ReviewRequest request) =>
+      _call(
         'POST',
         '/reviews',
         body: request.toJson(),
@@ -289,11 +353,14 @@ class HttpOrderApi implements OrderApi {
           if (body['success'] == false) return null;
           final earned = body['coinsEarned'];
           final total = body['totalCoins'];
-          return ReviewReceipt(coinsEarned: earned is num ? earned.toInt() : 0, totalCoins: total is num ? total.toInt() : null);
+          return ReviewReceipt(
+              coinsEarned: earned is num ? earned.toInt() : 0,
+              totalCoins: total is num ? total.toInt() : null);
         },
       );
 
-  static OrderModel? _orderFromBody(Map<String, dynamic> body) => OrderModel.tryParse(body['data'] ?? body['order']);
+  static OrderModel? _orderFromBody(Map<String, dynamic> body) =>
+      OrderModel.tryParse(body['data'] ?? body['order']);
 
   /// [parse] returns null for an unusable body. For nullable [T], wrap the value in [_Maybe].
   Future<OrderResult<T>> _call<T>(
@@ -304,13 +371,20 @@ class HttpOrderApi implements OrderApi {
     required Duration timeout,
     required Object? Function(Map<String, dynamic> body) parse,
   }) async {
-    if (['/orders', '/order-groups', '/orders/quote'].contains(path) && method == 'POST' && body is Map) {
-      body = {...body, if (CustomerApiService.selectedAddressId != null) 'addressId': CustomerApiService.selectedAddressId};
+    if (['/orders', '/order-groups', '/orders/quote'].contains(path) &&
+        method == 'POST' &&
+        body is Map) {
+      body = {
+        ...body,
+        if (CustomerApiService.selectedAddressId != null)
+          'addressId': CustomerApiService.selectedAddressId
+      };
       path = '/v1$path';
     }
     http.Response response;
     try {
-      response = await CustomerApiService.authorizedRequest(method, path, query: query, body: body, timeout: timeout);
+      response = await CustomerApiService.authorizedRequest(method, path,
+          query: query, body: body, timeout: timeout);
     } on TimeoutException {
       return const OrderResult.fail(OrderApiError(OrderErrorKind.timeout));
     } on SocketException {
@@ -333,7 +407,8 @@ class HttpOrderApi implements OrderApi {
       final parsed = parse(json);
       if (parsed == null) {
         debugPrint('[Order API] $method $path: unexpected body (HTTP $status)');
-        return OrderResult.fail(OrderApiError(OrderErrorKind.badResponse, statusCode: status));
+        return OrderResult.fail(
+            OrderApiError(OrderErrorKind.badResponse, statusCode: status));
       }
       return OrderResult.ok((parsed is _Maybe ? parsed.value : parsed) as T);
     }
@@ -359,7 +434,13 @@ class HttpOrderApi implements OrderApi {
     };
     final vendorId = body['vendorId'];
     final max = body['maxRestaurants'];
-    return OrderApiError(kind, statusCode: status, code: code, message: message, order: order, vendorId: vendorId is String && vendorId.isNotEmpty ? vendorId : null, maxRestaurants: max is num ? max.toInt() : null);
+    return OrderApiError(kind,
+        statusCode: status,
+        code: code,
+        message: message,
+        order: order,
+        vendorId: vendorId is String && vendorId.isNotEmpty ? vendorId : null,
+        maxRestaurants: max is num ? max.toInt() : null);
   }
 }
 
@@ -385,11 +466,14 @@ String orderErrorMessage(OrderApiError error, {String action = 'do that'}) {
     case OrderErrorKind.notFound:
       return 'We couldn\'t find this order.';
     case OrderErrorKind.conflict:
-      return error.message ?? 'This order changed in the meantime. We\'ve loaded its latest status.';
+      return error.message ??
+          'This order changed in the meantime. We\'ve loaded its latest status.';
     case OrderErrorKind.rateLimited:
-      return error.message ?? 'You already have several unpaid orders. Pay for or cancel one, or wait a minute, then try again.';
+      return error.message ??
+          'You already have several unpaid orders. Pay for or cancel one, or wait a minute, then try again.';
     case OrderErrorKind.rejected:
-      return error.message ?? '${BrandConfig.name} couldn\'t $action. Check your order and try again.';
+      return error.message ??
+          '${BrandConfig.name} couldn\'t $action. Check your order and try again.';
     case OrderErrorKind.server:
       return '${BrandConfig.name} is having trouble right now, so we couldn\'t $action. Please try again in a moment.';
     case OrderErrorKind.badResponse:
@@ -403,35 +487,51 @@ String orderErrorMessage(OrderApiError error, {String action = 'do that'}) {
 String invalidItemsMessage(String? serverMessage) {
   final m = serverMessage ?? '';
   if (m.contains('SOLD OUT')) {
-    final name = RegExp(r"^Item '(.+)' is currently SOLD OUT").firstMatch(m)?.group(1);
+    final name =
+        RegExp(r"^Item '(.+)' is currently SOLD OUT").firstMatch(m)?.group(1);
     final isId = name != null && RegExp(r'^[0-9a-fA-F-]{20,}$').hasMatch(name);
-    if (name != null && !isId) return 'Item \'$name\' is currently SOLD OUT. We refreshed the menu: please remove it from your cart and try again.';
+    if (name != null && !isId) {
+      return 'Item \'$name\' is currently SOLD OUT. We refreshed the catalog: please remove it from your cart and try again.';
+    }
   }
-  if (m.contains('Invalid quantity')) return 'You can order at most 20 of one dish. Please lower the quantity and try again.';
-  return 'Something in your cart is no longer available. We refreshed the menu: please check your cart and try again.';
+  if (m.contains('Invalid quantity')) {
+    return 'You can order at most 20 of one product. Please lower the quantity and try again.';
+  }
+  return 'Something in your cart is no longer available. We refreshed the catalog: please check your cart and try again.';
 }
 
 /// Customer-facing wording for the backend's error codes (backend/src/services/orderFlow.ts,
 /// routes/orders.ts). Codes that only partners/admins can get fall back to the server message.
 const Map<String, String> _codeMessages = {
-  'TOO_MANY_UNPAID_ORDERS': 'You already have 3 unpaid orders. Pay for one or cancel it before placing another.',
+  'TOO_MANY_UNPAID_ORDERS':
+      'You already have 3 unpaid orders. Pay for one or cancel it before placing another.',
   'ALREADY_PAID': 'This order is already paid.',
-  'PAYMENT_WINDOW_EXPIRED': 'The 15 minutes to pay for this order are over. Please place the order again.',
-  'ORDER_CANCELLED': 'This order was cancelled before your payment arrived. The money is refunded to you automatically.',
-  'PAYMENT_AMOUNT_MISMATCH': 'The amount paid doesn\'t match this order, so it wasn\'t accepted. ${BrandConfig.name} support will contact you about the money; you can also write to $kSupportEmail.',
-  'DUPLICATE_PAYMENT': 'This order was already paid. Your extra payment will be refunded by ${BrandConfig.name} support. Questions: $kSupportEmail.',
-  'BAD_SIGNATURE': 'We couldn\'t verify this payment. If money left your account, ${BrandConfig.name} confirms or refunds it automatically.',
-  'CANNOT_CANCEL': 'The restaurant has already accepted this order, so it can\'t be cancelled in the app. Please contact ${BrandConfig.name} support at $kSupportEmail.',
+  'PAYMENT_WINDOW_EXPIRED':
+      'The 15 minutes to pay for this order are over. Please place the order again.',
+  'ORDER_CANCELLED':
+      'This order was cancelled before your payment arrived. The money is refunded to you automatically.',
+  'PAYMENT_AMOUNT_MISMATCH':
+      'The amount paid doesn\'t match this order, so it wasn\'t accepted. ${BrandConfig.name} support will contact you about the money; you can also write to $kSupportEmail.',
+  'DUPLICATE_PAYMENT':
+      'This order was already paid. Your extra payment will be refunded by ${BrandConfig.name} support. Questions: $kSupportEmail.',
+  'BAD_SIGNATURE':
+      'We couldn\'t verify this payment. If money left your account, ${BrandConfig.name} confirms or refunds it automatically.',
+  'CANNOT_CANCEL':
+      'The store has already accepted this order, so it can\'t be cancelled in the app. Please contact ${BrandConfig.name} support at $kSupportEmail.',
   'ORDER_CLOSED': 'This order is already finished or cancelled.',
-  'ROLE_NOT_ALLOWED': 'This account can\'t do that in the ${BrandConfig.name} app.',
+  'ROLE_NOT_ALLOWED':
+      'This account can\'t do that in the ${BrandConfig.name} app.',
   'PARTNER_NOT_APPROVED': 'Partner accounts can\'t order in the customer app.',
-  'VENDOR_CLOSED': 'This restaurant is closed for new orders right now.',
-  'CLIENT_REQUEST_MISMATCH': 'Your order changed while it was being sent. Please tap the button again to place it.',
-  'VENDOR_UNAVAILABLE': 'This restaurant isn\'t available right now.',
+  'VENDOR_CLOSED': 'This store is closed for new orders right now.',
+  'CLIENT_REQUEST_MISMATCH':
+      'Your order changed while it was being sent. Please tap the button again to place it.',
+  'VENDOR_UNAVAILABLE': 'This store isn\'t available right now.',
   'AMOUNT_TOO_SMALL': 'The order total must be at least ₹1.',
-  'PROVIDER_UNAVAILABLE': 'The payment service is not responding right now. Please try again in a minute.',
+  'PROVIDER_UNAVAILABLE':
+      'The payment service is not responding right now. Please try again in a minute.',
   'NOT_FOUND': 'We couldn\'t find this order.',
-  'PAY_VIA_GROUP': 'This order is paid together with the other restaurants in it. Open the combined order to pay.',
+  'PAY_VIA_GROUP':
+      'This order is paid together with the other stores in it. Open the combined order to pay.',
 };
 
 /// RFC 4122 version-4 UUID from a cryptographically secure source. Used as the per-checkout
@@ -441,6 +541,9 @@ String newClientRequestId([Random? random]) {
   final b = List<int>.generate(16, (_) => r.nextInt(256));
   b[6] = (b[6] & 0x0f) | 0x40;
   b[8] = (b[8] & 0x3f) | 0x80;
-  String hex(int from, int to) => b.sublist(from, to).map((x) => x.toRadixString(16).padLeft(2, '0')).join();
+  String hex(int from, int to) => b
+      .sublist(from, to)
+      .map((x) => x.toRadixString(16).padLeft(2, '0'))
+      .join();
   return '${hex(0, 4)}-${hex(4, 6)}-${hex(6, 8)}-${hex(8, 10)}-${hex(10, 16)}';
 }

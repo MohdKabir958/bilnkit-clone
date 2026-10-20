@@ -32,14 +32,22 @@ class BillBreakdown extends StatelessWidget {
 
   /// The local estimate. [loading] says the server's price is on its way, [problem] is the
   /// server's reason when it refused the cart, [onRetry] asks again after a failure.
-  factory BillBreakdown.cart({Key? key, required CartProvider cart, bool loading = false, String? problem, VoidCallback? onRetry}) => BillBreakdown(
+  factory BillBreakdown.cart(
+          {Key? key,
+          required CartProvider cart,
+          bool loading = false,
+          String? problem,
+          VoidCallback? onRetry}) =>
+      BillBreakdown(
         key: key,
         subtotal: cart.subtotal,
         deliveryFee: cart.baseDeliveryFee,
         taxAndPackaging: cart.taxAndPackaging,
         extraRestaurantFee: cart.extraRestaurantFees,
-        extraRestaurants: cart.restaurantCount > 1 ? cart.restaurantCount - 1 : 0,
-        discount: cart.appliedCouponCode != null ? cart.couponDiscountAmount : 0,
+        extraRestaurants:
+            cart.restaurantCount > 1 ? cart.restaurantCount - 1 : 0,
+        discount:
+            cart.appliedCouponCode != null ? cart.couponDiscountAmount : 0,
         couponCode: cart.appliedCouponCode,
         total: cart.grandTotal,
         estimate: true,
@@ -49,7 +57,8 @@ class BillBreakdown extends StatelessWidget {
       );
 
   /// The server's price for the cart (`POST /orders/quote`).
-  factory BillBreakdown.quote({Key? key, required OrderQuote quote}) => BillBreakdown(
+  factory BillBreakdown.quote({Key? key, required OrderQuote quote}) =>
+      BillBreakdown(
         key: key,
         subtotal: quote.subtotal,
         deliveryFee: quote.baseFee,
@@ -63,11 +72,15 @@ class BillBreakdown extends StatelessWidget {
 
   /// The server's order. A combined order is the composite of its parts: the primary part carries
   /// the base fee, every other part the flat extra-restaurant fee.
-  factory BillBreakdown.order({Key? key, required OrderModel order, String? couponCode}) {
+  factory BillBreakdown.order(
+      {Key? key, required OrderModel order, String? couponCode}) {
     final parts = order.members;
     final combined = parts != null && parts.length > 1;
-    final base = combined ? parts.first.deliveryFee + parts.first.taxAndPackaging : order.deliveryFee;
-    final extra = combined ? order.deliveryFee + order.taxAndPackaging - base : 0.0;
+    final base = combined
+        ? parts.first.deliveryFee + parts.first.taxAndPackaging
+        : order.deliveryFee;
+    final extra =
+        combined ? order.deliveryFee + order.taxAndPackaging - base : 0.0;
     return BillBreakdown(
       key: key,
       subtotal: order.subtotal,
@@ -118,20 +131,31 @@ class BillBreakdown extends StatelessWidget {
         _Row('Items subtotal', rupee(subtotal)),
         // One all-in line (older orders may still carry a separate packaging amount: it is folded in, never hidden).
         _Row('Delivery & service fee', rupee(deliveryFee + taxAndPackaging)),
-        if (extraRestaurants > 0) _Row('Extra restaurant fee (x $extraRestaurants)', rupee(extraRestaurantFee)),
-        if (discount > 0) _Row(couponCode != null ? 'Coupon ($couponCode)' : 'Discount', '-${rupee(discount)}', discount: true),
+        if (extraRestaurants > 0)
+          _Row('Extra store fee (x $extraRestaurants)',
+              rupee(extraRestaurantFee)),
+        if (discount > 0)
+          _Row(couponCode != null ? 'Coupon ($couponCode)' : 'Discount',
+              '-${rupee(discount)}',
+              discount: true),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Divider(height: 1, color: k.line),
         ),
         Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          Expanded(child: Text('To pay', style: KraveoType.titleLg.copyWith(color: k.ink))),
-          KMoneyText(value: total, style: KraveoType.numeric.copyWith(color: k.ink, fontSize: 30)),
+          Expanded(
+              child: Text('To pay',
+                  style: KraveoType.titleLg.copyWith(color: k.ink))),
+          KMoneyText(
+              value: total,
+              style: KraveoType.numeric.copyWith(color: k.ink, fontSize: 30)),
         ]),
         if (estimate) ...[
           const SizedBox(height: 6),
           Text(
-            loading ? 'Estimate. ${BrandConfig.name} is working out the exact price...' : 'Estimate. ${BrandConfig.name} confirms the final amount when you place the order.',
+            loading
+                ? 'Estimate. ${BrandConfig.name} is working out the exact price...'
+                : 'Estimate. ${BrandConfig.name} confirms the final amount when you place the order.',
             style: KraveoType.caption.copyWith(color: k.inkFaint, fontSize: 12),
           ),
           if (onRetry != null && !loading) ...[
@@ -139,7 +163,11 @@ class BillBreakdown extends StatelessWidget {
             KPressable(
               onTap: onRetry,
               semanticLabel: 'Get the exact price again',
-              child: Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: Text('Get the exact price', style: KraveoType.label.copyWith(color: k.brand, fontSize: 13))),
+              child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Text('Get the exact price',
+                      style: KraveoType.label
+                          .copyWith(color: k.brand, fontSize: 13))),
             ),
           ],
         ],
@@ -150,7 +178,10 @@ class BillBreakdown extends StatelessWidget {
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Icon(LucideIcons.circleAlert, size: 16, color: kDangerInk),
               const SizedBox(width: 8),
-              Expanded(child: Text(problem!, style: KraveoType.bodySm.copyWith(color: kDangerInk, fontWeight: FontWeight.w600))),
+              Expanded(
+                  child: Text(problem!,
+                      style: KraveoType.bodySm.copyWith(
+                          color: kDangerInk, fontWeight: FontWeight.w600))),
             ]),
           ),
         ],
@@ -158,11 +189,16 @@ class BillBreakdown extends StatelessWidget {
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(color: k.brandSoft, borderRadius: BorderRadius.circular(KRadius.sm)),
+            decoration: BoxDecoration(
+                color: k.brandSoft,
+                borderRadius: BorderRadius.circular(KRadius.sm)),
             child: Row(children: [
               Icon(LucideIcons.sparkles, size: 16, color: k.brand),
               const SizedBox(width: 8),
-              Expanded(child: Text('You are saving ${rupee(discount)} on this order', style: KraveoType.bodySm.copyWith(color: k.brand, fontWeight: FontWeight.w700))),
+              Expanded(
+                  child: Text('You are saving ${rupee(discount)} on this order',
+                      style: KraveoType.bodySm.copyWith(
+                          color: k.brand, fontWeight: FontWeight.w700))),
             ]),
           ),
         ],
@@ -185,9 +221,15 @@ class _Row extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(children: [
-        Expanded(child: Text(label, style: KraveoType.body.copyWith(color: color, fontSize: 14))),
+        Expanded(
+            child: Text(label,
+                style: KraveoType.body.copyWith(color: color, fontSize: 14))),
         const SizedBox(width: 12),
-        Text(value, style: KraveoType.body.copyWith(color: discount ? k.brand : k.ink, fontWeight: FontWeight.w700, fontSize: 14)),
+        Text(value,
+            style: KraveoType.body.copyWith(
+                color: discount ? k.brand : k.ink,
+                fontWeight: FontWeight.w700,
+                fontSize: 14)),
       ]),
     );
   }

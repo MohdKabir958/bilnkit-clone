@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:kraveo_ui/kraveo_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -94,16 +95,22 @@ void main() {
                     child: const Text('Product'))))));
     await tester.tap(find.text('Product'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('MRP ₹70 · Save ₹4.55'), findsOneWidget);
+    expect(find.text('MRP ₹70'), findsOneWidget);
+    expect(find.text('Save ₹4.55 on this pack'), findsOneWidget);
     await tester.tap(find.byTooltip('More packs'));
     await tester.pumpAndSettle();
     expect(find.text('Add 2 · ₹130.90'), findsOneWidget);
     await tester.tap(find.byTooltip('More packs'));
     await tester.pumpAndSettle();
     expect(find.text('Add 2 · ₹130.90'), findsOneWidget);
+    await tester.scrollUntilVisible(find.textContaining('1000 ml · ₹125'), 180,
+        scrollable: find.byType(Scrollable).first);
     await tester.tap(find.textContaining('1000 ml · ₹125'));
     await tester.pumpAndSettle();
-    expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+    expect(
+        tester
+            .widget<KButton>(find.widgetWithText(KButton, 'Out of stock'))
+            .onPressed,
         isNull);
     await tester.tap(find.textContaining('500 ml · ₹65.45'));
     await tester.pumpAndSettle();

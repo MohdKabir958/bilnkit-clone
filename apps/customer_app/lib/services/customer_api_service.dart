@@ -14,7 +14,8 @@ class CustomerApiService {
   static int _tokenEpoch = 0;
 
   /// Message shown (and thrown) when an authenticated call is rejected with HTTP 401.
-  static const String sessionExpiredMessage = 'Session expired, please log in again';
+  static const String sessionExpiredMessage =
+      'Session expired, please log in again';
 
   /// Set by the app shell. Called after the stored token has been cleared because the
   /// backend answered 401 to an authenticated request.
@@ -24,24 +25,40 @@ class CustomerApiService {
   @visibleForTesting
   static http.Client? httpClientOverride;
 
-  static Future<http.Response> _get(Uri url, {Map<String, String>? headers, required Duration timeout}) {
+  static Future<http.Response> _get(Uri url,
+      {Map<String, String>? headers, required Duration timeout}) {
     final c = httpClientOverride;
-    return (c == null ? http.get(url, headers: headers) : c.get(url, headers: headers)).timeout(timeout);
+    return (c == null
+            ? http.get(url, headers: headers)
+            : c.get(url, headers: headers))
+        .timeout(timeout);
   }
 
-  static Future<http.Response> _post(Uri url, {Map<String, String>? headers, Object? body, required Duration timeout}) {
+  static Future<http.Response> _post(Uri url,
+      {Map<String, String>? headers, Object? body, required Duration timeout}) {
     final c = httpClientOverride;
-    return (c == null ? http.post(url, headers: headers, body: body) : c.post(url, headers: headers, body: body)).timeout(timeout);
+    return (c == null
+            ? http.post(url, headers: headers, body: body)
+            : c.post(url, headers: headers, body: body))
+        .timeout(timeout);
   }
 
-  static Future<http.Response> _put(Uri url, {Map<String, String>? headers, Object? body, required Duration timeout}) {
+  static Future<http.Response> _put(Uri url,
+      {Map<String, String>? headers, Object? body, required Duration timeout}) {
     final c = httpClientOverride;
-    return (c == null ? http.put(url, headers: headers, body: body) : c.put(url, headers: headers, body: body)).timeout(timeout);
+    return (c == null
+            ? http.put(url, headers: headers, body: body)
+            : c.put(url, headers: headers, body: body))
+        .timeout(timeout);
   }
 
-  static Future<http.Response> _delete(Uri url, {Map<String, String>? headers, Object? body, required Duration timeout}) {
+  static Future<http.Response> _delete(Uri url,
+      {Map<String, String>? headers, Object? body, required Duration timeout}) {
     final c = httpClientOverride;
-    return (c == null ? http.delete(url, headers: headers, body: body) : c.delete(url, headers: headers, body: body)).timeout(timeout);
+    return (c == null
+            ? http.delete(url, headers: headers, body: body)
+            : c.delete(url, headers: headers, body: body))
+        .timeout(timeout);
   }
 
   static Map<String, dynamic> _json(http.Response response) {
@@ -116,7 +133,8 @@ class CustomerApiService {
         timeout: const Duration(seconds: 10),
       );
       if (await _rejectIfUnauthorized(response)) {
-        return const ProfileResult(success: false, statusCode: 401, message: sessionExpiredMessage);
+        return const ProfileResult(
+            success: false, statusCode: 401, message: sessionExpiredMessage);
       }
       return _profileResult(response);
     } catch (e) {
@@ -128,7 +146,8 @@ class CustomerApiService {
   static ProfileResult _profileResult(http.Response response) {
     final body = _json(response);
     final user = body['user'];
-    final ok = response.statusCode == 200 && body['success'] != false && user is Map;
+    final ok =
+        response.statusCode == 200 && body['success'] != false && user is Map;
     return ProfileResult(
       success: ok,
       statusCode: response.statusCode,
@@ -164,7 +183,8 @@ class CustomerApiService {
         timeout: const Duration(seconds: 10),
       );
       if (await _rejectIfUnauthorized(response)) {
-        return const ProfileResult(success: false, statusCode: 401, message: sessionExpiredMessage);
+        return const ProfileResult(
+            success: false, statusCode: 401, message: sessionExpiredMessage);
       }
       return _profileResult(response);
     } catch (e) {
@@ -180,14 +200,19 @@ class CustomerApiService {
     try {
       final headers = <String, String>{'Content-Type': 'application/json'};
       final t = token ?? await getSavedToken();
-      if (t != null && t.isNotEmpty) headers['Authorization'] = t.startsWith('Bearer ') ? t : 'Bearer $t';
+      if (t != null && t.isNotEmpty) {
+        headers['Authorization'] = t.startsWith('Bearer ') ? t : 'Bearer $t';
+      }
       final response = await _post(
         Uri.parse('${ApiConfig.baseUrl}/auth/logout'),
         headers: headers,
         timeout: const Duration(seconds: 5),
       );
       final body = _json(response);
-      return ActionResult(success: response.statusCode == 200 && body['success'] != false, statusCode: response.statusCode, message: _msg(body));
+      return ActionResult(
+          success: response.statusCode == 200 && body['success'] != false,
+          statusCode: response.statusCode,
+          message: _msg(body));
     } catch (e) {
       debugPrint('[Customer API] Logout notice failed (ignored): $e');
       return const ActionResult(success: false, networkError: true);
@@ -203,10 +228,14 @@ class CustomerApiService {
         timeout: const Duration(seconds: 15),
       );
       if (await _rejectIfUnauthorized(response)) {
-        return const ActionResult(success: false, statusCode: 401, message: sessionExpiredMessage);
+        return const ActionResult(
+            success: false, statusCode: 401, message: sessionExpiredMessage);
       }
       final body = _json(response);
-      return ActionResult(success: response.statusCode == 200 && body['success'] != false, statusCode: response.statusCode, message: _msg(body));
+      return ActionResult(
+          success: response.statusCode == 200 && body['success'] != false,
+          statusCode: response.statusCode,
+          message: _msg(body));
     } catch (e) {
       debugPrint('[Customer API] Delete account failed: $e');
       return const ActionResult(success: false, networkError: true);
@@ -214,28 +243,54 @@ class CustomerApiService {
   }
 
   /// Loads the public restaurant catalog, including database-backed menu IDs.
-  static Future<List<Map<String, dynamic>>> fetchVendors() async {
+  static Future<List<Map<String, dynamic>>> fetchVendors(
+      {bool hydrateProducts = true}) async {
     final vendors = <Map<String, dynamic>>[];
     final addressId = selectedAddressId;
     String? after;
     do {
-      final query = Uri(queryParameters: {'limit': '50', if (addressId != null) 'addressId': addressId, if (after != null) 'after': after}).query;
-      final response = await authorizedRequest('GET', '/v1/vendors/nearby?$query');
+      final query = Uri(queryParameters: {
+        'limit': '50',
+        if (addressId != null) 'addressId': addressId,
+        if (after != null) 'after': after
+      }).query;
+      final response =
+          await authorizedRequest('GET', '/v1/vendors/nearby?$query');
       final body = jsonDecode(response.body);
-      if (response.statusCode != 200 || body is! Map || body['data'] is! List) throw Exception(body is Map ? body['message'] ?? 'Unable to load nearby stores.' : 'Unable to load nearby stores.');
-      vendors.addAll((body['data'] as List).whereType<Map>().map((v) => Map<String, dynamic>.from(v)));
+      if (response.statusCode != 200 || body is! Map || body['data'] is! List) {
+        throw Exception(body is Map
+            ? body['message'] ?? 'Unable to load nearby stores.'
+            : 'Unable to load nearby stores.');
+      }
+      vendors.addAll((body['data'] as List)
+          .whereType<Map>()
+          .map((v) => Map<String, dynamic>.from(v)));
       after = body['nextCursor'] as String?;
     } while (after != null);
     for (final vendor in vendors) {
-      if (vendor['hasMoreProducts'] != true) continue;
-      final items = (vendor['menuItems'] as List).map((r) => Map<String, dynamic>.from(r as Map)).toList();
+      if (!hydrateProducts || vendor['hasMoreProducts'] != true) continue;
+      final items = (vendor['menuItems'] as List)
+          .map((r) => Map<String, dynamic>.from(r as Map))
+          .toList();
       String? cursor = items.isEmpty ? null : items.last['id'] as String;
       do {
-        final query = Uri(queryParameters: {'limit': '50', if (addressId != null) 'addressId': addressId, if (cursor != null) 'after': cursor}).query;
-        final response = await authorizedRequest('GET', '/v1/vendors/${Uri.encodeComponent(vendor['id'] as String)}/products?$query');
+        final query = Uri(queryParameters: {
+          'limit': '50',
+          if (addressId != null) 'addressId': addressId,
+          if (cursor != null) 'after': cursor
+        }).query;
+        final response = await authorizedRequest('GET',
+            '/v1/vendors/${Uri.encodeComponent(vendor['id'] as String)}/products?$query');
         final body = jsonDecode(response.body);
-        if (response.statusCode != 200 || body is! Map || body['data'] is! List) throw Exception('Unable to load this store’s products. Retry before ordering.');
-        items.addAll((body['data'] as List).whereType<Map>().map((r) => Map<String, dynamic>.from(r)));
+        if (response.statusCode != 200 ||
+            body is! Map ||
+            body['data'] is! List) {
+          throw Exception(
+              'Unable to load this store’s products. Retry before ordering.');
+        }
+        items.addAll((body['data'] as List)
+            .whereType<Map>()
+            .map((r) => Map<String, dynamic>.from(r)));
         cursor = body['nextCursor'] as String?;
       } while (cursor != null);
       vendor['menuItems'] = items;
@@ -243,18 +298,50 @@ class CustomerApiService {
     return vendors;
   }
 
+  /// One serviceable product page. Address ownership and stock remain server-validated.
+  static Future<({List<Map<String, dynamic>> items, String? nextCursor})>
+      fetchProductPage(String vendorId,
+          {String query = '', String? after}) async {
+    final addressId = selectedAddressId;
+    final params = Uri(queryParameters: {
+      'limit': '50',
+      if (addressId != null) 'addressId': addressId,
+      if (query.isNotEmpty) 'q': query,
+      if (after != null) 'after': after
+    }).query;
+    final response = await authorizedRequest(
+        'GET', '/v1/vendors/${Uri.encodeComponent(vendorId)}/products?$params');
+    final body = jsonDecode(response.body);
+    if (response.statusCode != 200 || body is! Map || body['data'] is! List) {
+      throw Exception('Unable to load this store’s products. Please retry.');
+    }
+    return (
+      items: (body['data'] as List)
+          .whereType<Map>()
+          .map((row) => Map<String, dynamic>.from(row))
+          .toList(),
+      nextCursor: body['nextCursor'] as String?
+    );
+  }
+
   /// Managed categories (`GET /categories?for=home|dishes|restaurants`, public, no login). Returns the
   /// parsed rows in the server's order; unusable rows are dropped. Throws when the call does not
   /// work out (offline, timeout, 404 on an old server, non-JSON, `success` false or `data` not a
   /// list): the caller falls back to today's behaviour.
-  static Future<List<FoodCategory>> fetchCategories({String forWhat = 'home'}) async {
+  static Future<List<FoodCategory>> fetchCategories(
+      {String forWhat = 'home'}) async {
     final response = await _get(
-      Uri.parse('${ApiConfig.baseUrl}/categories').replace(queryParameters: {'for': forWhat}),
+      Uri.parse('${ApiConfig.baseUrl}/categories')
+          .replace(queryParameters: {'for': forWhat}),
       timeout: const Duration(seconds: 10),
     );
-    if (response.statusCode != 200) throw Exception('Categories unavailable (${response.statusCode}).');
+    if (response.statusCode != 200) {
+      throw Exception('Categories unavailable (${response.statusCode}).');
+    }
     final body = jsonDecode(response.body);
-    if (body is! Map || body['success'] == false || body['data'] is! List) throw Exception('Categories answer not understood.');
+    if (body is! Map || body['success'] == false || body['data'] is! List) {
+      throw Exception('Categories answer not understood.');
+    }
     return FoodCategory.parseList(body['data']);
   }
 
@@ -265,7 +352,8 @@ class CustomerApiService {
       'Content-Type': 'application/json',
     };
     if (token != null && token.isNotEmpty) {
-      headers['Authorization'] = token.startsWith('Bearer ') ? token : 'Bearer $token';
+      headers['Authorization'] =
+          token.startsWith('Bearer ') ? token : 'Bearer $token';
     }
     return headers;
   }
@@ -283,13 +371,24 @@ class CustomerApiService {
       final body = _json(response);
       final token = body['token'];
       final user = body['user'];
-      final ok = response.statusCode == 200 && body['success'] != false && token is String && token.isNotEmpty && user is Map;
+      final ok = response.statusCode == 200 &&
+          body['success'] != false &&
+          token is String &&
+          token.isNotEmpty &&
+          user is Map;
       if (!ok) {
-        return GoogleLoginResult(success: false, statusCode: response.statusCode, message: _msg(body));
+        return GoogleLoginResult(
+            success: false,
+            statusCode: response.statusCode,
+            message: _msg(body));
       }
       final userMap = Map<String, dynamic>.from(user);
       if (userMap['role'] != null && userMap['role'] != 'STUDENT') {
-        return const GoogleLoginResult(success: false, statusCode: 403, message: 'This Google account can\'t sign in to the ${BrandConfig.name} customer app.');
+        return const GoogleLoginResult(
+            success: false,
+            statusCode: 403,
+            message:
+                'This Google account can\'t sign in to the ${BrandConfig.name} customer app.');
       }
       await saveToken(token);
       return GoogleLoginResult(
@@ -321,7 +420,10 @@ class CustomerApiService {
   }) async {
     var uri = Uri.parse('${ApiConfig.baseUrl}$path');
     if (query != null && query.isNotEmpty) {
-      uri = uri.replace(queryParameters: {for (final e in query.entries) if (e.value != null) e.key: '${e.value}'});
+      uri = uri.replace(queryParameters: {
+        for (final e in query.entries)
+          if (e.value != null) e.key: '${e.value}'
+      });
     }
     final headers = await getAuthHeaders();
     final encoded = body == null ? null : jsonEncode(body);
@@ -330,11 +432,14 @@ class CustomerApiService {
       case 'GET':
         response = await _get(uri, headers: headers, timeout: timeout);
       case 'POST':
-        response = await _post(uri, headers: headers, body: encoded, timeout: timeout);
+        response =
+            await _post(uri, headers: headers, body: encoded, timeout: timeout);
       case 'PUT':
-        response = await _put(uri, headers: headers, body: encoded, timeout: timeout);
+        response =
+            await _put(uri, headers: headers, body: encoded, timeout: timeout);
       case 'DELETE':
-        response = await _delete(uri, headers: headers, body: encoded, timeout: timeout);
+        response = await _delete(uri,
+            headers: headers, body: encoded, timeout: timeout);
       default:
         throw ArgumentError.value(method, 'method');
     }

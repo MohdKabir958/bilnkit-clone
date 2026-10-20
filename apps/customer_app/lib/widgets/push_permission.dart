@@ -18,7 +18,8 @@ Future<void> askForNotificationsOnce(BuildContext context) async {
     final yes = await showKConfirm(
       context,
       title: 'Get order updates?',
-      message: 'We\'ll tell you when your food is on the way and when your rider is at the gate.',
+      message:
+          'We\'ll tell you when your order is on the way and when your rider is at your door.',
       confirmLabel: 'Turn on',
       cancelLabel: 'Not now',
     );
@@ -42,17 +43,22 @@ class NotificationsOffHint extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 14),
       child: Container(
         padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
-        decoration: BoxDecoration(color: k.surfaceAlt, borderRadius: BorderRadius.circular(KRadius.md)),
+        decoration: BoxDecoration(
+            color: k.surfaceAlt,
+            borderRadius: BorderRadius.circular(KRadius.md)),
         child: Row(children: [
           Icon(LucideIcons.bellOff, size: 18, color: k.inkMuted),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Notifications are off. You won\'t hear when your rider arrives.',
-              style: KraveoType.bodySm.copyWith(color: k.ink, fontWeight: FontWeight.w600),
+              style: KraveoType.bodySm
+                  .copyWith(color: k.ink, fontWeight: FontWeight.w600),
             ),
           ),
-          TextButton(onPressed: push.enableNotifications, child: const Text('Turn on')),
+          TextButton(
+              onPressed: push.enableNotifications,
+              child: const Text('Turn on')),
         ]),
       ),
     );

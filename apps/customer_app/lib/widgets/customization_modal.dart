@@ -10,7 +10,8 @@ import 'ui/veg_mark.dart';
 
 class CustomizationModal extends StatefulWidget {
   final MenuItemModel item;
-  final Function(List<CustomizationOption> selectedOptions, String? notes) onAddToCart;
+  final Function(List<CustomizationOption> selectedOptions, String? notes)
+      onAddToCart;
 
   const CustomizationModal({
     super.key,
@@ -21,9 +22,12 @@ class CustomizationModal extends StatefulWidget {
   static Future<void> show(
     BuildContext context, {
     required MenuItemModel item,
-    required Function(List<CustomizationOption> selectedOptions, String? notes) onAddToCart,
+    required Function(List<CustomizationOption> selectedOptions, String? notes)
+        onAddToCart,
   }) {
-    return showKSheet<void>(context, builder: (_) => CustomizationModal(item: item, onAddToCart: onAddToCart));
+    return showKSheet<void>(context,
+        builder: (_) =>
+            CustomizationModal(item: item, onAddToCart: onAddToCart));
   }
 
   @override
@@ -101,17 +105,21 @@ class _CustomizationModalState extends State<CustomizationModal> {
       subtitle: Row(children: [
         VegMark(isVeg: widget.item.isVeg, size: 14),
         const SizedBox(width: 8),
-        Text('Base price ${rupee(widget.item.price)}', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+        Text('Base price ${rupee(widget.item.price)}',
+            style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
       ]),
       children: [
-        for (final group in widget.item.customizationGroups) _buildGroup(context, group),
-        Text('Note for the kitchen', style: KraveoType.titleMd.copyWith(color: k.ink)),
+        for (final group in widget.item.customizationGroups)
+          _buildGroup(context, group),
+        Text('Note for the store',
+            style: KraveoType.titleMd.copyWith(color: k.ink)),
         const SizedBox(height: 8),
         TextField(
           controller: _notesController,
           maxLines: 2,
           textInputAction: TextInputAction.done,
-          decoration: const InputDecoration(hintText: 'e.g. less spicy, extra green chutney (optional)'),
+          decoration: const InputDecoration(
+              hintText: 'e.g. less spicy, extra green chutney (optional)'),
         ),
         const SizedBox(height: 8),
       ],
@@ -132,7 +140,9 @@ class _CustomizationModalState extends State<CustomizationModal> {
       padding: const EdgeInsets.only(bottom: 22),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Expanded(child: Text(group.title, style: KraveoType.titleMd.copyWith(color: k.ink))),
+          Expanded(
+              child: Text(group.title,
+                  style: KraveoType.titleMd.copyWith(color: k.ink))),
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -141,8 +151,14 @@ class _CustomizationModalState extends State<CustomizationModal> {
               borderRadius: BorderRadius.circular(KRadius.pill),
             ),
             child: Text(
-              group.isRequired ? 'Required' : (isSingleChoice ? 'Optional' : 'Optional · up to ${group.maxSelection}'),
-              style: KraveoType.caption.copyWith(color: group.isRequired ? k.brand : k.inkMuted, fontSize: 11.5),
+              group.isRequired
+                  ? 'Required'
+                  : (isSingleChoice
+                      ? 'Optional'
+                      : 'Optional · up to ${group.maxSelection}'),
+              style: KraveoType.caption.copyWith(
+                  color: group.isRequired ? k.brand : k.inkMuted,
+                  fontSize: 11.5),
             ),
           ),
         ]),
@@ -151,7 +167,9 @@ class _CustomizationModalState extends State<CustomizationModal> {
           Row(children: [
             Icon(LucideIcons.circleAlert, size: 14, color: kDangerInk),
             const SizedBox(width: 6),
-            Text('Pick at least one to continue', style: KraveoType.bodySm.copyWith(color: kDangerInk, fontWeight: FontWeight.w600)),
+            Text('Pick at least one to continue',
+                style: KraveoType.bodySm
+                    .copyWith(color: kDangerInk, fontWeight: FontWeight.w600)),
           ]),
         ],
         const SizedBox(height: 10),
@@ -179,11 +197,14 @@ class _CustomizationModalState extends State<CustomizationModal> {
                   setState(() => _missingGroupId = null);
                   ScaffoldMessenger.of(context)
                     ..hideCurrentSnackBar()
-                    ..showSnackBar(SnackBar(content: Text('You can pick up to ${group.maxSelection} for ${group.title}')));
+                    ..showSnackBar(SnackBar(
+                        content: Text(
+                            'You can pick up to ${group.maxSelection} for ${group.title}')));
                   return;
                 }
                 setState(() {
-                  final set = _multiSelections[group.id] ?? <CustomizationOption>{};
+                  final set =
+                      _multiSelections[group.id] ?? <CustomizationOption>{};
                   if (selected) {
                     set.removeWhere((o) => o.id == option.id);
                   } else {
@@ -200,7 +221,12 @@ class _CustomizationModalState extends State<CustomizationModal> {
 }
 
 class _OptionTile extends StatelessWidget {
-  const _OptionTile({required this.label, required this.price, required this.selected, required this.radio, required this.onTap});
+  const _OptionTile(
+      {required this.label,
+      required this.price,
+      required this.selected,
+      required this.radio,
+      required this.onTap});
 
   final String label;
   final double price;
@@ -216,7 +242,8 @@ class _OptionTile extends StatelessWidget {
       child: KPressable(
         onTap: onTap,
         scale: 0.985,
-        semanticLabel: '$label${price > 0 ? ', plus ${rupee(price)}' : ''}${selected ? ', selected' : ''}',
+        semanticLabel:
+            '$label${price > 0 ? ', plus ${rupee(price)}' : ''}${selected ? ', selected' : ''}',
         child: AnimatedContainer(
           duration: KMotion.base,
           curve: KMotion.emphasized,
@@ -224,7 +251,9 @@ class _OptionTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: selected ? k.brandSoft : k.surface,
             borderRadius: BorderRadius.circular(KRadius.md),
-            border: Border.all(color: selected ? k.brand : k.line, width: selected ? 1.6 : 1.2),
+            border: Border.all(
+                color: selected ? k.brand : k.line,
+                width: selected ? 1.6 : 1.2),
           ),
           child: Row(children: [
             AnimatedContainer(
@@ -235,19 +264,34 @@ class _OptionTile extends StatelessWidget {
                 color: selected ? k.brand : Colors.transparent,
                 shape: radio ? BoxShape.circle : BoxShape.rectangle,
                 borderRadius: radio ? null : BorderRadius.circular(7),
-                border: Border.all(color: selected ? k.brand : k.inkFaint, width: 1.6),
+                border: Border.all(
+                    color: selected ? k.brand : k.inkFaint, width: 1.6),
               ),
               child: selected
                   ? (radio
-                      ? Center(child: Container(width: 8, height: 8, decoration: BoxDecoration(color: k.onBrand, shape: BoxShape.circle)))
+                      ? Center(
+                          child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                  color: k.onBrand, shape: BoxShape.circle)))
                       : Icon(LucideIcons.check, size: 14, color: k.onBrand))
                   : null,
             ),
             const SizedBox(width: 12),
-            Expanded(child: Text(price > 0 ? label.replaceAll(RegExp(r'\s*\(\+\s*\u20B9\s*\d+\)'), '') : label, style: KraveoType.body.copyWith(color: k.ink, fontWeight: FontWeight.w600))),
+            Expanded(
+                child: Text(
+                    price > 0
+                        ? label.replaceAll(
+                            RegExp(r'\s*\(\+\s*\u20B9\s*\d+\)'), '')
+                        : label,
+                    style: KraveoType.body
+                        .copyWith(color: k.ink, fontWeight: FontWeight.w600))),
             if (price > 0) ...[
               const SizedBox(width: 8),
-              Text('+${rupee(price)}', style: KraveoType.body.copyWith(color: k.brand, fontWeight: FontWeight.w700)),
+              Text('+${rupee(price)}',
+                  style: KraveoType.body
+                      .copyWith(color: k.brand, fontWeight: FontWeight.w700)),
             ],
           ]),
         ),

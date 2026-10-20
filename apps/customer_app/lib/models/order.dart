@@ -40,7 +40,9 @@ extension OrderProgressStatusX on OrderProgressStatus {
     return null;
   }
 
-  bool get isTerminal => this == OrderProgressStatus.delivered || this == OrderProgressStatus.cancelled;
+  bool get isTerminal =>
+      this == OrderProgressStatus.delivered ||
+      this == OrderProgressStatus.cancelled;
 
   /// Position on the happy path (cancelled has none).
   int get stage => this == OrderProgressStatus.cancelled ? -1 : index;
@@ -49,7 +51,8 @@ extension OrderProgressStatusX on OrderProgressStatus {
 /// `Order.paymentStatus` (contract 1.2).
 enum PaymentStatus { pending, paid, failed, refunded }
 
-PaymentStatus _parsePayment(Object? raw) => switch (raw?.toString().trim().toUpperCase()) {
+PaymentStatus _parsePayment(Object? raw) =>
+    switch (raw?.toString().trim().toUpperCase()) {
       'PAID' => PaymentStatus.paid,
       'FAILED' => PaymentStatus.failed,
       'REFUNDED' => PaymentStatus.refunded,
@@ -59,7 +62,8 @@ PaymentStatus _parsePayment(Object? raw) => switch (raw?.toString().trim().toUpp
 /// Who cancelled (contract 1.3).
 enum CancelledBy { customer, vendor, admin, system }
 
-CancelledBy? _parseCancelledBy(Object? raw) => switch (raw?.toString().trim().toUpperCase()) {
+CancelledBy? _parseCancelledBy(Object? raw) =>
+    switch (raw?.toString().trim().toUpperCase()) {
       'CUSTOMER' => CancelledBy.customer,
       'VENDOR' => CancelledBy.vendor,
       'ADMIN' => CancelledBy.admin,
@@ -70,7 +74,8 @@ CancelledBy? _parseCancelledBy(Object? raw) => switch (raw?.toString().trim().to
 /// `refundStatus` (contract 1.3): where the refund of a cancelled, paid order stands.
 enum RefundStatus { none, pending, done, failed }
 
-RefundStatus _parseRefund(Object? raw) => switch (raw?.toString().trim().toUpperCase()) {
+RefundStatus _parseRefund(Object? raw) =>
+    switch (raw?.toString().trim().toUpperCase()) {
       'PENDING' => RefundStatus.pending,
       'DONE' => RefundStatus.done,
       'FAILED' => RefundStatus.failed,
@@ -108,11 +113,17 @@ DateTime? _date(Object? v) {
   return DateTime.tryParse(v)?.toUtc();
 }
 
-Map<String, dynamic>? _map(Object? v) => v is Map ? Map<String, dynamic>.from(v) : null;
+Map<String, dynamic>? _map(Object? v) =>
+    v is Map ? Map<String, dynamic>.from(v) : null;
 
 /// One line of the order, priced by the server at the time of ordering.
 class OrderLine {
-  const OrderLine({required this.id, required this.menuItemId, required this.name, required this.quantity, required this.price});
+  const OrderLine(
+      {required this.id,
+      required this.menuItemId,
+      required this.name,
+      required this.quantity,
+      required this.price});
 
   final String id;
   final String menuItemId;
@@ -127,8 +138,11 @@ class OrderLine {
   factory OrderLine.fromJson(Map<String, dynamic> json) => OrderLine(
         id: _str(json['id']) ?? '',
         menuItemId: _str(json['menuItemId'] ?? json['itemId']) ?? '',
-        name: '${_str(json['name']) ?? 'Item'}${json['productSnapshot'] is Map && json['productSnapshot']['sku'] != null ? ' · ${json['productSnapshot']['packSize']} ${json['productSnapshot']['unit']}' : ''}',
-        quantity: (json['quantity'] is num) ? (json['quantity'] as num).toInt() : int.tryParse('${json['quantity']}') ?? 1,
+        name:
+            '${_str(json['name']) ?? 'Item'}${json['productSnapshot'] is Map && json['productSnapshot']['sku'] != null ? ' · ${json['productSnapshot']['packSize']} ${json['productSnapshot']['unit']}' : ''}',
+        quantity: (json['quantity'] is num)
+            ? (json['quantity'] as num).toInt()
+            : int.tryParse('${json['quantity']}') ?? 1,
         price: _num(json['price']),
       );
 }
@@ -146,7 +160,10 @@ class OrderRider {
     if (json == null) return null;
     final id = _str(json['id']);
     if (id == null) return null;
-    return OrderRider(id: id, name: _str(json['name']) ?? 'Your rider', phone: _str(json['phone']));
+    return OrderRider(
+        id: id,
+        name: _str(json['name']) ?? 'Your rider',
+        phone: _str(json['phone']));
   }
 }
 
@@ -154,7 +171,14 @@ class OrderRider {
 /// exactly `{orderId, driverId, lat, lng, heading, at}` (backend/src/realtime.ts
 /// `recordRiderLocation`).
 class RiderLocation {
-  const RiderLocation({required this.orderId, required this.lat, required this.lng, required this.receivedAt, this.driverId, this.heading, this.at});
+  const RiderLocation(
+      {required this.orderId,
+      required this.lat,
+      required this.lng,
+      required this.receivedAt,
+      this.driverId,
+      this.heading,
+      this.at});
 
   final String orderId;
   final String? driverId;
@@ -174,7 +198,13 @@ class RiderLocation {
     final orderId = _str(json['orderId']);
     final lat = _numOrNull(json['lat']);
     final lng = _numOrNull(json['lng']);
-    if (orderId == null || lat == null || lng == null || lat.abs() > 90 || lng.abs() > 180) return null;
+    if (orderId == null ||
+        lat == null ||
+        lng == null ||
+        lat.abs() > 90 ||
+        lng.abs() > 180) {
+      return null;
+    }
     return RiderLocation(
       orderId: orderId,
       driverId: _str(json['driverId']),
@@ -201,18 +231,27 @@ class OrderPlace {
     if (json == null) return null;
     final lat = _numOrNull(json['lat']);
     final lng = _numOrNull(json['lng']);
-    if (lat == null || lng == null || lat.abs() > 90 || lng.abs() > 180) return null;
+    if (lat == null || lng == null || lat.abs() > 90 || lng.abs() > 180) {
+      return null;
+    }
     return OrderPlace(name: _str(json['name']) ?? '', lat: lat, lng: lng);
   }
 }
 
 /// Text the server puts on the siblings of the restaurant that cancelled a combined order
 /// (Docs/22 4.4: `Another restaurant in your order could not take it: <reason>`).
-const String kReasonSiblingPrefix = 'Another restaurant in your order could not take it';
+const String kReasonSiblingPrefix =
+    'Another restaurant in your order could not take it';
 
 /// One restaurant of a combined order as `OrderView.group.stops[]` lists it (Docs/22 10.4).
 class GroupStop {
-  const GroupStop({required this.orderId, required this.index, required this.status, required this.vendorName, this.address, this.itemCount = 0});
+  const GroupStop(
+      {required this.orderId,
+      required this.index,
+      required this.status,
+      required this.vendorName,
+      this.address,
+      this.itemCount = 0});
 
   final String orderId;
   final int index;
@@ -236,7 +275,7 @@ class GroupStop {
       orderId: orderId,
       index: index is num ? index.toInt() : 0,
       status: status,
-      vendorName: _str(vendor?['name']) ?? 'Restaurant',
+      vendorName: _str(vendor?['name']) ?? 'Store',
       address: _str(vendor?['address']),
       itemCount: count is num ? count.toInt() : 0,
     );
@@ -246,7 +285,12 @@ class GroupStop {
 /// `OrderView.group` for the customer: which combined order this child belongs to. A single
 /// restaurant order has no `group` key at all; a restaurant's own copy has no `id` (never ours).
 class OrderGroupRef {
-  const OrderGroupRef({required this.id, required this.index, required this.size, required this.primary, this.stops = const []});
+  const OrderGroupRef(
+      {required this.id,
+      required this.index,
+      required this.size,
+      required this.primary,
+      this.stops = const []});
 
   final String id;
 
@@ -262,21 +306,35 @@ class OrderGroupRef {
     final id = _str(json['id']);
     if (id == null) return null;
     final rawStops = json['stops'];
-    final stops = rawStops is List ? (rawStops.map(GroupStop.tryParse).whereType<GroupStop>().toList()..sort((a, b) => a.index.compareTo(b.index))) : <GroupStop>[];
+    final stops = rawStops is List
+        ? (rawStops.map(GroupStop.tryParse).whereType<GroupStop>().toList()
+          ..sort((a, b) => a.index.compareTo(b.index)))
+        : <GroupStop>[];
     final index = json['index'] is num ? (json['index'] as num).toInt() : 0;
-    final size = json['size'] is num ? (json['size'] as num).toInt() : stops.length;
-    return OrderGroupRef(id: id, index: index, size: size < 1 ? (stops.isEmpty ? 1 : stops.length) : size, primary: json['primary'] is bool ? json['primary'] as bool : index == 0, stops: List.unmodifiable(stops));
+    final size =
+        json['size'] is num ? (json['size'] as num).toInt() : stops.length;
+    return OrderGroupRef(
+        id: id,
+        index: index,
+        size: size < 1 ? (stops.isEmpty ? 1 : stops.length) : size,
+        primary: json['primary'] is bool ? json['primary'] as bool : index == 0,
+        stops: List.unmodifiable(stops));
   }
 }
 
 /// Status of a combined order from its children. Docs/22 4.4: every cancel path cancels the
 /// whole group, so one cancelled child means a cancelled order (even while the other children's
 /// updates are still on their way). Otherwise the least advanced child leads.
-OrderProgressStatus deriveGroupProgress(Iterable<OrderProgressStatus> children) {
+OrderProgressStatus deriveGroupProgress(
+    Iterable<OrderProgressStatus> children) {
   final list = children.toList();
   if (list.isEmpty) return OrderProgressStatus.placed;
-  if (list.any((s) => s == OrderProgressStatus.cancelled)) return OrderProgressStatus.cancelled;
-  if (list.every((s) => s == OrderProgressStatus.delivered)) return OrderProgressStatus.delivered;
+  if (list.any((s) => s == OrderProgressStatus.cancelled)) {
+    return OrderProgressStatus.cancelled;
+  }
+  if (list.every((s) => s == OrderProgressStatus.delivered)) {
+    return OrderProgressStatus.delivered;
+  }
   return list.reduce((a, b) => b.stage < a.stage ? b : a);
 }
 
@@ -391,13 +449,16 @@ class OrderModel {
     var json = _map(raw);
     if (json == null) return null;
     // Tolerate `{data: OrderView}` / `{order: OrderView}` envelopes (socket payloads).
-    if (json['id'] == null) json = _map(json['data']) ?? _map(json['order']) ?? json;
+    if (json['id'] == null) {
+      json = _map(json['data']) ?? _map(json['order']) ?? json;
+    }
     final id = _str(json['id']);
     final status = OrderProgressStatusX.parse(json['status']);
     if (id == null || status == null) return null;
 
     final vendor = _map(json['vendor']);
-    final created = _date(json['createdAt']) ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+    final created = _date(json['createdAt']) ??
+        DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
     final otp = _str(json['otpCode']);
     final rawItems = json['items'];
     return OrderModel(
@@ -409,7 +470,9 @@ class OrderModel {
       taxAndPackaging: _num(json['taxAndPackaging']),
       discount: _num(json['discount']),
       totalAmount: _num(json['totalAmount']),
-      dropoffHostel: _str(_map(json['deliveryAddress'])?['formatted']) ?? _str(json['dropoffHostel']) ?? '',
+      dropoffHostel: _str(_map(json['deliveryAddress'])?['formatted']) ??
+          _str(json['dropoffHostel']) ??
+          '',
       dropoffNotes: _str(json['dropoffNotes']) ?? '',
       createdAt: created,
       updatedAt: _date(json['updatedAt']) ?? created,
@@ -420,18 +483,29 @@ class OrderModel {
       cancelledAt: _date(json['cancelledAt']),
       cancelledBy: _parseCancelledBy(json['cancelledBy']),
       cancelReason: _str(json['cancelReason']),
-      items: rawItems is List ? rawItems.whereType<Map>().map((m) => OrderLine.fromJson(Map<String, dynamic>.from(m))).toList(growable: false) : const [],
+      items: rawItems is List
+          ? rawItems
+              .whereType<Map>()
+              .map((m) => OrderLine.fromJson(Map<String, dynamic>.from(m)))
+              .toList(growable: false)
+          : const [],
       vendorId: _str(json['vendorId']) ?? _str(vendor?['id']) ?? '',
-      vendorName: _str(vendor?['name']) ?? 'Restaurant',
+      vendorName: _str(vendor?['name']) ?? 'Store',
       vendorAddress: _str(vendor?['address']),
       vendorLat: _numOrNull(vendor?['lat']),
       vendorLng: _numOrNull(vendor?['lng']),
-      vendorHasLocation: vendor?['hasLocation'] == true && _numOrNull(vendor?['lat']) != null && _numOrNull(vendor?['lng']) != null,
+      vendorHasLocation: vendor?['hasLocation'] == true &&
+          _numOrNull(vendor?['lat']) != null &&
+          _numOrNull(vendor?['lng']) != null,
       dropoff: OrderPlace.fromJson(json['dropoff']),
       rider: OrderRider.fromJson(json['driver']),
       // Defence in depth: an OTP is only meaningful (and only shown) at the gate, and only if it
       // looks like the server's 4-digit code.
-      otpCode: status == OrderProgressStatus.arrivedAtGate && otp != null && RegExp(r'^\d{4,6}$').hasMatch(otp) ? otp : null,
+      otpCode: status == OrderProgressStatus.arrivedAtGate &&
+              otp != null &&
+              RegExp(r'^\d{4,6}$').hasMatch(otp)
+          ? otp
+          : null,
       payBy: _date(json['payBy']),
       acceptBy: _date(json['acceptBy']),
       refundStatus: _parseRefund(json['refundStatus']),
@@ -447,13 +521,19 @@ class OrderModel {
   /// (from `GET /order-groups/:id`) stands in for the sum while some children are not loaded yet.
   static OrderModel composite(List<OrderModel> children, {double? groupTotal}) {
     assert(children.isNotEmpty);
-    final list = [...children]..sort((a, b) => (a.group?.index ?? 0).compareTo(b.group?.index ?? 0));
-    final primary = list.firstWhere((o) => o.group?.primary == true, orElse: () => list.first);
+    final list = [...children]
+      ..sort((a, b) => (a.group?.index ?? 0).compareTo(b.group?.index ?? 0));
+    final primary = list.firstWhere((o) => o.group?.primary == true,
+        orElse: () => list.first);
     final ref = primary.group;
     final byId = {for (final o in list) o.id: o};
     final stops = ref?.stops ?? const <GroupStop>[];
-    final statuses = stops.isEmpty ? [for (final o in list) o.status] : [for (final s in stops) byId[s.orderId]?.status ?? s.status];
-    final names = stops.isEmpty ? [for (final o in list) o.vendorName] : [for (final s in stops) byId[s.orderId]?.vendorName ?? s.vendorName];
+    final statuses = stops.isEmpty
+        ? [for (final o in list) o.status]
+        : [for (final s in stops) byId[s.orderId]?.status ?? s.status];
+    final names = stops.isEmpty
+        ? [for (final o in list) o.vendorName]
+        : [for (final s in stops) byId[s.orderId]?.vendorName ?? s.vendorName];
     T? firstOf<T>(T? Function(OrderModel o) pick) {
       for (final o in list) {
         final v = pick(o);
@@ -462,10 +542,16 @@ class OrderModel {
       return null;
     }
 
-    double sum(double Function(OrderModel o) f) => list.fold(0.0, (a, o) => a + f(o));
+    double sum(double Function(OrderModel o) f) =>
+        list.fold(0.0, (a, o) => a + f(o));
     final complete = ref == null || list.length >= ref.size;
-    final cancelled = list.where((o) => o.status == OrderProgressStatus.cancelled).toList();
-    final trigger = cancelled.isEmpty ? null : cancelled.firstWhere((o) => !(o.cancelReason ?? '').startsWith(kReasonSiblingPrefix), orElse: () => cancelled.first);
+    final cancelled =
+        list.where((o) => o.status == OrderProgressStatus.cancelled).toList();
+    final trigger = cancelled.isEmpty
+        ? null
+        : cancelled.firstWhere(
+            (o) => !(o.cancelReason ?? '').startsWith(kReasonSiblingPrefix),
+            orElse: () => cancelled.first);
     DateTime? earliest(DateTime? Function(OrderModel o) f) {
       DateTime? best;
       for (final o in list) {
@@ -483,11 +569,14 @@ class OrderModel {
       deliveryFee: sum((o) => o.deliveryFee),
       taxAndPackaging: sum((o) => o.taxAndPackaging),
       discount: sum((o) => o.discount),
-      totalAmount: !complete && groupTotal != null ? groupTotal : sum((o) => o.totalAmount),
+      totalAmount: !complete && groupTotal != null
+          ? groupTotal
+          : sum((o) => o.totalAmount),
       dropoffHostel: primary.dropoffHostel,
       dropoffNotes: primary.dropoffNotes,
       createdAt: primary.createdAt,
-      updatedAt: list.map((o) => o.updatedAt).reduce((a, b) => b.isAfter(a) ? b : a),
+      updatedAt:
+          list.map((o) => o.updatedAt).reduce((a, b) => b.isAfter(a) ? b : a),
       items: [for (final o in list) ...o.items],
       vendorId: primary.vendorId,
       vendorName: names.join(' + '),
@@ -503,7 +592,10 @@ class OrderModel {
       cancelledAt: earliest((o) => o.cancelledAt),
       cancelledBy: trigger?.cancelledBy,
       cancelReason: trigger?.cancelReason,
-      cancelTriggerName: trigger != null && trigger.cancelledBy == CancelledBy.vendor ? trigger.vendorName : null,
+      cancelTriggerName:
+          trigger != null && trigger.cancelledBy == CancelledBy.vendor
+              ? trigger.vendorName
+              : null,
       rider: firstOf((o) => o.rider),
       otpCode: firstOf((o) => o.otpCode),
       payBy: primary.payBy,
@@ -516,7 +608,7 @@ class OrderModel {
   }
 
   /// "2 restaurants" for a combined order, else the restaurant's name.
-  String get title => isGroup ? '${group!.size} restaurants' : vendorName;
+  String get title => isGroup ? '${group!.size} stores' : vendorName;
 
   /// Where the order goes: the server's `dropoff` when present, else the app's own table of
   /// drop points looked up by [dropoffHostel] (legacy spellings included). Null when unknown.
@@ -528,20 +620,29 @@ class OrderModel {
   }
 
   /// The restaurant pin, only when the server says it is a real one.
-  OrderPlace? get vendorPlace => vendorHasLocation && vendorLat != null && vendorLng != null ? OrderPlace(name: vendorName, lat: vendorLat!, lng: vendorLng!) : null;
+  OrderPlace? get vendorPlace =>
+      vendorHasLocation && vendorLat != null && vendorLng != null
+          ? OrderPlace(name: vendorName, lat: vendorLat!, lng: vendorLng!)
+          : null;
 
   bool get isTerminal => status.isTerminal;
   bool get isLive => !isTerminal;
   bool get isPaid => paymentStatus == PaymentStatus.paid;
 
   /// PLACED and not paid yet: the student still has to pay (or it expires).
-  bool get awaitsPayment => status == OrderProgressStatus.placed && (paymentStatus == PaymentStatus.pending || paymentStatus == PaymentStatus.failed);
+  bool get awaitsPayment =>
+      status == OrderProgressStatus.placed &&
+      (paymentStatus == PaymentStatus.pending ||
+          paymentStatus == PaymentStatus.failed);
 
   /// The student may cancel only while PLACED (contract 1.3); a combined order only while EVERY
   /// restaurant is still PLACED (Docs/22 4.4).
   bool get canCancel {
     final all = members;
-    if (all != null) return all.isNotEmpty && all.every((m) => m.status == OrderProgressStatus.placed);
+    if (all != null) {
+      return all.isNotEmpty &&
+          all.every((m) => m.status == OrderProgressStatus.placed);
+    }
     return status == OrderProgressStatus.placed;
   }
 
@@ -552,9 +653,14 @@ class OrderModel {
   /// A cancelled order that was paid and whose refund has neither finished nor failed yet: the
   /// server publishes the refund result as a second event shortly after the cancellation.
   bool get isRefundInProgress =>
-      status == OrderProgressStatus.cancelled && paymentStatus == PaymentStatus.paid && refundStatus != RefundStatus.failed && refundStatus != RefundStatus.done;
+      status == OrderProgressStatus.cancelled &&
+      paymentStatus == PaymentStatus.paid &&
+      refundStatus != RefundStatus.failed &&
+      refundStatus != RefundStatus.done;
 
-  bool get isPaymentNotCompletedCancel => status == OrderProgressStatus.cancelled && cancelReason == kReasonPaymentNotCompleted;
+  bool get isPaymentNotCompletedCancel =>
+      status == OrderProgressStatus.cancelled &&
+      cancelReason == kReasonPaymentNotCompleted;
 
   int get itemCount => items.fold(0, (sum, i) => sum + i.quantity);
 
@@ -566,10 +672,15 @@ class OrderModel {
   bool isNewerThan(OrderModel other) {
     final cmp = updatedAt.compareTo(other.updatedAt);
     if (cmp != 0) return cmp > 0;
-    if (other.status == OrderProgressStatus.cancelled) return status == OrderProgressStatus.cancelled;
+    if (other.status == OrderProgressStatus.cancelled) {
+      return status == OrderProgressStatus.cancelled;
+    }
     if (status == OrderProgressStatus.cancelled) return true;
-    if (status.stage != other.status.stage) return status.stage > other.status.stage;
+    if (status.stage != other.status.stage) {
+      return status.stage > other.status.stage;
+    }
     // Same status and timestamp: never "un-pay" an order.
-    return !(other.paymentStatus != PaymentStatus.pending && paymentStatus == PaymentStatus.pending);
+    return !(other.paymentStatus != PaymentStatus.pending &&
+        paymentStatus == PaymentStatus.pending);
   }
 }

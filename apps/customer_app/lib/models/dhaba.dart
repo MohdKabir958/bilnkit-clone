@@ -36,7 +36,8 @@ class Dhaba {
   });
 
   /// What cards, the menu header and search show: the cuisines joined with " • ", else the legacy `category` text.
-  String get cuisineLabel => cuisines.isEmpty ? category : cuisines.map((c) => c.name).join(' • ');
+  String get cuisineLabel =>
+      cuisines.isEmpty ? category : cuisines.map((c) => c.name).join(' • ');
 
   Dhaba copyWith({
     String? id,
@@ -77,16 +78,23 @@ class Dhaba {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       category: json['category'] ?? '',
-      rating: (json['rating'] ?? 4.5).toDouble(),
+      rating: (json['rating'] ?? 0).toDouble(),
       eta: json['eta'] ?? '',
       distanceKm: (json['distanceKm'] as num?)?.toDouble(),
       bannerUrl: json['bannerImage'] ?? json['bannerUrl'] ?? '',
       isAcceptingOrders: json['isAcceptingOrders'] ?? true,
       address: json['address'] ?? '',
-      deliveryFee: json['feePaise'] is num ? (json['feePaise'] as num).toDouble() / 100 : (json['deliveryFee'] ?? 25.0).toDouble(),
+      deliveryFee: json['feePaise'] is num
+          ? (json['feePaise'] as num).toDouble() / 100
+          : (json['deliveryFee'] ?? 25.0).toDouble(),
       minOrder: (json['minOrder'] ?? 99.0).toDouble(),
       isFavorite: json['isFavorite'] ?? false,
-      tags: json['tags'] is List ? [for (final t in json['tags'] as List) if (t != null) t.toString()] : [],
+      tags: json['tags'] is List
+          ? [
+              for (final t in json['tags'] as List)
+                if (t != null) t.toString()
+            ]
+          : [],
       cuisines: Cuisine.parseList(json['cuisines']),
     );
   }

@@ -6,7 +6,8 @@ import '../models/order_group.dart';
 
 /// The lines of one restaurant in the cart (Docs/22: a cart can hold several restaurants).
 class CartRestaurant {
-  const CartRestaurant({required this.id, required this.name, required this.items});
+  const CartRestaurant(
+      {required this.id, required this.name, required this.items});
 
   final String id;
   final String name;
@@ -21,11 +22,12 @@ class CartProvider with ChangeNotifier {
   static const int maxQuantityPerDish = 20;
 
   /// Friendly text for the snackbar shown when a dish is already at [maxQuantityPerDish].
-  static const String maxQuantityMessage = 'You can order at most 20 of one dish at a time.';
+  static const String maxQuantityMessage =
+      'You can order at most 20 of one product at a time.';
 
   /// Shown instead of adding a dish when the cart already holds [maxRestaurants] other restaurants.
   String get maxRestaurantsMessage =>
-      'You can order from at most $maxRestaurants restaurants at once. Remove one restaurant from your cart to add this one.';
+      'You can order from at most $maxRestaurants stores at once. Remove one store from your cart to add this one.';
 
   /// Restaurants in the order they were added: the first is the primary one (it carries the base
   /// fee, the coupon and the payment of a combined order).
@@ -50,7 +52,8 @@ class CartProvider with ChangeNotifier {
 
   /// The primary (first-added) restaurant. Null for an empty cart.
   String? get dhabaId => _restaurantIds.isEmpty ? null : _restaurantIds.first;
-  String? get dhabaName => _restaurantIds.isEmpty ? null : _restaurantNames[_restaurantIds.first];
+  String? get dhabaName =>
+      _restaurantIds.isEmpty ? null : _restaurantNames[_restaurantIds.first];
   List<CartItem> get items => List.unmodifiable(_items);
   int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
 
@@ -59,20 +62,28 @@ class CartProvider with ChangeNotifier {
   /// The cart's lines grouped by restaurant, in the order the restaurants were added.
   List<CartRestaurant> get restaurants => [
         for (final id in _restaurantIds)
-          CartRestaurant(id: id, name: _restaurantNames[id] ?? '', items: List.unmodifiable(_items.where((i) => i.dhabaId == id))),
+          CartRestaurant(
+              id: id,
+              name: _restaurantNames[id] ?? '',
+              items: List.unmodifiable(_items.where((i) => i.dhabaId == id))),
       ];
   int get restaurantCount => _restaurantIds.length;
   bool get isMultiRestaurant => _restaurantIds.length > 1;
   bool hasRestaurant(String id) => _restaurantIds.contains(id);
 
   /// The cart holds something from a restaurant other than [dhabaId].
-  bool hasOtherRestaurant(String dhabaId) => _restaurantIds.any((r) => r != dhabaId);
+  bool hasOtherRestaurant(String dhabaId) =>
+      _restaurantIds.any((r) => r != dhabaId);
 
   /// True when a dish of [dhabaId] can be added without replacing or refusing anything.
-  bool canAddRestaurant(String dhabaId) => _restaurantIds.isEmpty || _restaurantIds.contains(dhabaId) || (_maxRestaurants > 1 && _restaurantIds.length < _maxRestaurants);
+  bool canAddRestaurant(String dhabaId) =>
+      _restaurantIds.isEmpty ||
+      _restaurantIds.contains(dhabaId) ||
+      (_maxRestaurants > 1 && _restaurantIds.length < _maxRestaurants);
 
   /// Adding from [dhabaId] would replace the cart (the combined-order feature is off).
-  bool wouldReplaceCart(String dhabaId) => _maxRestaurants <= 1 && hasOtherRestaurant(dhabaId);
+  bool wouldReplaceCart(String dhabaId) =>
+      _maxRestaurants <= 1 && hasOtherRestaurant(dhabaId);
 
   String? get appliedCouponCode => _appliedCouponCode;
   double get couponDiscountAmount => _couponDiscountAmount;
@@ -86,7 +97,9 @@ class CartProvider with ChangeNotifier {
   /// server's quote (`POST /orders/quote`) is the real number; this only fills in while it is
   /// loading or unavailable.
   double get baseDeliveryFee => _items.isEmpty ? 0.0 : kEstimateBaseFee;
-  double get extraRestaurantFees => _restaurantIds.length <= 1 ? 0.0 : kEstimateExtraRestaurantFee * (_restaurantIds.length - 1);
+  double get extraRestaurantFees => _restaurantIds.length <= 1
+      ? 0.0
+      : kEstimateExtraRestaurantFee * (_restaurantIds.length - 1);
   double get deliveryFee => baseDeliveryFee + extraRestaurantFees;
   // Docs/21: delivery, GST, packaging and the restaurant charge are one all-in Rs 25 (deliveryFee), so there is no second fee line.
   double get taxAndPackaging => 0.0;
@@ -95,13 +108,15 @@ class CartProvider with ChangeNotifier {
   /// and always charges the server's totals.
   double get grandTotal {
     if (_items.isEmpty) return 0.0;
-    final total = subtotal + deliveryFee + taxAndPackaging - _couponDiscountAmount;
+    final total =
+        subtotal + deliveryFee + taxAndPackaging - _couponDiscountAmount;
     return total < 0 ? 0.0 : total;
   }
 
   /// True when one more of [itemId] fits under [maxQuantityPerDish] (all option variants of the
   /// dish count together, because the order sums them up).
-  bool canAddMore(String itemId) => getItemQuantityInCart(itemId) < maxQuantityPerDish;
+  bool canAddMore(String itemId) =>
+      getItemQuantityInCart(itemId) < maxQuantityPerDish;
 
   /// Sets the restaurant limit from the server's quote. A cart that already holds more than the
   /// new limit is kept as it is (checkout tells the student what to remove).
@@ -296,7 +311,6 @@ class CartProvider with ChangeNotifier {
     _couponError = null;
     notifyListeners();
   }
-
 
   int getItemQuantityInCart(String itemId) {
     return _items

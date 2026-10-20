@@ -15,7 +15,8 @@ class SplitBillModal extends StatefulWidget {
   const SplitBillModal({super.key, required this.order});
 
   static Future<void> show(BuildContext context, {required OrderModel order}) {
-    return showKSheet<void>(context, builder: (_) => SplitBillModal(order: order));
+    return showKSheet<void>(context,
+        builder: (_) => SplitBillModal(order: order));
   }
 
   @override
@@ -33,17 +34,19 @@ class _SplitBillModalState extends State<SplitBillModal> {
     final perPerson = _formattedPerPerson;
     final buffer = StringBuffer();
     buffer.writeln('*GROZO BILL SPLIT*');
-    buffer.writeln('Kitchen: ${widget.order.vendorName}');
+    buffer.writeln('Store: ${widget.order.vendorName}');
     buffer.writeln('Drop-off: ${widget.order.dropoffHostel}');
     buffer.writeln('--------------------------------');
     if (widget.order.items.isNotEmpty) {
       for (final item in widget.order.items) {
-        buffer.writeln('- ${item.quantity}x ${item.name} - ${rupee(item.lineTotal)}');
+        buffer.writeln(
+            '- ${item.quantity}x ${item.name} - ${rupee(item.lineTotal)}');
       }
       buffer.writeln('--------------------------------');
     }
     buffer.writeln('Total bill: ${rupee(widget.order.totalAmount)}');
-    buffer.writeln('Split among $_roommateCount roommates: *₹$perPerson per person*');
+    buffer.writeln(
+        'Split among $_roommateCount roommates: *₹$perPerson per person*');
     buffer.writeln('Pay via UPI to the one who ordered.');
     return buffer.toString();
   }
@@ -55,19 +58,26 @@ class _SplitBillModalState extends State<SplitBillModal> {
 
     return KSheetFrame(
       title: 'Split the bill',
-      subtitle: Text('Share what each roommate owes, ready for WhatsApp.', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+      subtitle: Text('Share what each roommate owes, ready for WhatsApp.',
+          style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
       children: [
         Row(children: [
-          Expanded(child: Text('How many people are sharing?', style: KraveoType.titleMd.copyWith(color: k.ink))),
+          Expanded(
+              child: Text('How many people are sharing?',
+                  style: KraveoType.titleMd.copyWith(color: k.ink))),
           const SizedBox(width: 8),
           KIconButton(
             icon: LucideIcons.minus,
             semanticLabel: 'One fewer person',
-            onTap: _roommateCount > 1 ? () => setState(() => _roommateCount--) : null,
+            onTap: _roommateCount > 1
+                ? () => setState(() => _roommateCount--)
+                : null,
           ),
           SizedBox(
             width: 44,
-            child: Text('$_roommateCount', textAlign: TextAlign.center, style: KraveoType.numericSm.copyWith(color: k.ink)),
+            child: Text('$_roommateCount',
+                textAlign: TextAlign.center,
+                style: KraveoType.numericSm.copyWith(color: k.ink)),
           ),
           KIconButton(
             icon: LucideIcons.plus,
@@ -78,27 +88,39 @@ class _SplitBillModalState extends State<SplitBillModal> {
         const SizedBox(height: 18),
         Container(
           padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(color: k.brandSoft, borderRadius: BorderRadius.circular(KRadius.xl)),
+          decoration: BoxDecoration(
+              color: k.brandSoft,
+              borderRadius: BorderRadius.circular(KRadius.xl)),
           child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('EACH PERSON PAYS', style: KraveoType.label.copyWith(color: k.brand)),
-                const SizedBox(height: 4),
-                Text('₹$perPersonAmount', style: KraveoType.displayMd.copyWith(color: k.ink)),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('EACH PERSON PAYS',
+                        style: KraveoType.label.copyWith(color: k.brand)),
+                    const SizedBox(height: 4),
+                    Text('₹$perPersonAmount',
+                        style: KraveoType.displayMd.copyWith(color: k.ink)),
+                  ]),
             ),
             const SizedBox(width: 12),
-            Text('of ${rupee(widget.order.totalAmount)}', style: KraveoType.body.copyWith(color: k.inkMuted, fontWeight: FontWeight.w700)),
+            Text('of ${rupee(widget.order.totalAmount)}',
+                style: KraveoType.body
+                    .copyWith(color: k.inkMuted, fontWeight: FontWeight.w700)),
           ]),
         ),
         const SizedBox(height: 18),
-        Text('Message preview', style: KraveoType.label.copyWith(color: k.inkMuted)),
+        Text('Message preview',
+            style: KraveoType.label.copyWith(color: k.inkMuted)),
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(color: k.surfaceAlt, borderRadius: BorderRadius.circular(KRadius.md)),
-          child: Text(_splitSummaryText, style: KraveoType.bodySm.copyWith(color: k.ink, height: 1.5)),
+          decoration: BoxDecoration(
+              color: k.surfaceAlt,
+              borderRadius: BorderRadius.circular(KRadius.md)),
+          child: Text(_splitSummaryText,
+              style: KraveoType.bodySm.copyWith(color: k.ink, height: 1.5)),
         ),
         const SizedBox(height: 4),
       ],
@@ -111,7 +133,9 @@ class _SplitBillModalState extends State<SplitBillModal> {
           Navigator.pop(context);
           messenger
             ..hideCurrentSnackBar()
-            ..showSnackBar(buildKSnack('Bill copied. Paste it in your roommates’ WhatsApp group.', icon: LucideIcons.copyCheck));
+            ..showSnackBar(buildKSnack(
+                'Bill copied. Paste it in your roommates’ WhatsApp group.',
+                icon: LucideIcons.copyCheck));
         },
       ),
     );

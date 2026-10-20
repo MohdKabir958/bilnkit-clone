@@ -3,7 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Icons for the fixed set of category icon keys the admin portal offers (Docs/23).
 const Map<String, IconData> kCategoryIconKeys = {
-  'restaurant': LucideIcons.utensils,
+  'restaurant': LucideIcons.store,
   'thali': LucideIcons.cookingPot,
   'rice': LucideIcons.wheat,
   'biryani': LucideIcons.soup,
@@ -34,7 +34,21 @@ const Map<String, IconData> kCategoryIconKeys = {
 IconData categoryIconForLabel(String label) {
   switch (label.toLowerCase()) {
     case 'all':
-      return LucideIcons.utensilsCrossed;
+      return LucideIcons.layoutGrid;
+    case 'dairy':
+    case 'dairy & eggs':
+      return LucideIcons.milk;
+    case 'fruit & vegetables':
+    case 'fruits & vegetables':
+      return LucideIcons.carrot;
+    case 'staples':
+      return LucideIcons.wheat;
+    case 'breakfast':
+      return LucideIcons.wheat;
+    case 'household':
+      return LucideIcons.sprayCan;
+    case 'personal care':
+      return LucideIcons.heart;
     case 'night mess':
       return LucideIcons.moon;
     case 'thalis':
@@ -48,7 +62,7 @@ IconData categoryIconForLabel(String label) {
     case 'parathas':
       return LucideIcons.wheat;
     default:
-      return LucideIcons.utensils;
+      return LucideIcons.shoppingBasket;
   }
 }
 

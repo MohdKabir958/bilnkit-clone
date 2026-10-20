@@ -30,7 +30,8 @@ class AnimatedRiderMap extends StatefulWidget {
   State<AnimatedRiderMap> createState() => _AnimatedRiderMapState();
 }
 
-class _AnimatedRiderMapState extends State<AnimatedRiderMap> with SingleTickerProviderStateMixin {
+class _AnimatedRiderMapState extends State<AnimatedRiderMap>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -67,7 +68,7 @@ class _AnimatedRiderMapState extends State<AnimatedRiderMap> with SingleTickerPr
   }
 
   String get _caption => switch (widget.status) {
-        OrderProgressStatus.placed => 'Waiting for the kitchen',
+        OrderProgressStatus.placed => 'Waiting for the store',
         OrderProgressStatus.accepted => 'Accepted',
         OrderProgressStatus.preparing => 'Being cooked',
         OrderProgressStatus.readyForPickup => 'Ready for pickup',
@@ -104,17 +105,27 @@ class _AnimatedRiderMapState extends State<AnimatedRiderMap> with SingleTickerPr
           builder: (context, child) {
             final progress = _animation.value.clamp(0.0, 1.0);
             return Stack(children: [
-              Positioned.fill(child: CustomPaint(painter: _MapPainter(progress: progress, trackColor: KraveoPalette.g700, activeColor: statusColor))),
+              Positioned.fill(
+                  child: CustomPaint(
+                      painter: _MapPainter(
+                          progress: progress,
+                          trackColor: KraveoPalette.g700,
+                          activeColor: statusColor))),
               Positioned(
                 top: 14,
                 left: 14,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(KRadius.pill)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(KRadius.pill)),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
                     Icon(LucideIcons.navigation, size: 14, color: statusColor),
                     const SizedBox(width: 6),
-                    Text(_caption, style: KraveoType.label.copyWith(color: Colors.white, fontSize: 12.5)),
+                    Text(_caption,
+                        style: KraveoType.label
+                            .copyWith(color: Colors.white, fontSize: 12.5)),
                   ]),
                 ),
               ),
@@ -123,15 +134,35 @@ class _AnimatedRiderMapState extends State<AnimatedRiderMap> with SingleTickerPr
                   top: 14,
                   right: 14,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(KRadius.pill)),
-                    child: Text(_liveLabel(widget.liveLocation!, widget.clock()), style: KraveoType.label.copyWith(color: Colors.white, fontSize: 11.5)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(KRadius.pill)),
+                    child: Text(
+                        _liveLabel(widget.liveLocation!, widget.clock()),
+                        style: KraveoType.label
+                            .copyWith(color: Colors.white, fontSize: 11.5)),
                   ),
                 ),
               // Start pin: kitchen
-              Positioned(left: 20, bottom: 14, width: 92, child: _Pin(icon: LucideIcons.store, label: widget.dhabaName, color: KraveoPalette.g400)),
+              Positioned(
+                  left: 20,
+                  bottom: 14,
+                  width: 92,
+                  child: _Pin(
+                      icon: LucideIcons.store,
+                      label: widget.dhabaName,
+                      color: KraveoPalette.g400)),
               // End pin: gate
-              Positioned(right: 20, bottom: 14, width: 92, child: _Pin(icon: LucideIcons.doorOpen, label: widget.hostel, color: statusColor)),
+              Positioned(
+                  right: 20,
+                  bottom: 14,
+                  width: 92,
+                  child: _Pin(
+                      icon: LucideIcons.doorOpen,
+                      label: widget.hostel,
+                      color: statusColor)),
               // Rider
               Positioned.fill(
                 child: LayoutBuilder(builder: (context, constraints) {
@@ -148,9 +179,15 @@ class _AnimatedRiderMapState extends State<AnimatedRiderMap> with SingleTickerPr
                         decoration: BoxDecoration(
                           color: statusColor,
                           shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: statusColor.withValues(alpha: 0.55), blurRadius: 16, spreadRadius: 1)],
+                          boxShadow: [
+                            BoxShadow(
+                                color: statusColor.withValues(alpha: 0.55),
+                                blurRadius: 16,
+                                spreadRadius: 1)
+                          ],
                         ),
-                        child: const Icon(LucideIcons.bike, size: 20, color: Colors.white),
+                        child: const Icon(LucideIcons.bike,
+                            size: 20, color: Colors.white),
                       ),
                     ),
                   ]);
@@ -177,17 +214,28 @@ class _Pin extends StatelessWidget {
       Container(
         width: 30,
         height: 30,
-        decoration: BoxDecoration(color: color.withValues(alpha: 0.25), shape: BoxShape.circle, border: Border.all(color: color, width: 1.6)),
+        decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.25),
+            shape: BoxShape.circle,
+            border: Border.all(color: color, width: 1.6)),
         child: Icon(icon, size: 15, color: Colors.white),
       ),
       const SizedBox(height: 4),
-      Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: KraveoType.caption.copyWith(color: Colors.white.withValues(alpha: 0.75), fontSize: 11)),
+      Text(label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: KraveoType.caption.copyWith(
+              color: Colors.white.withValues(alpha: 0.75), fontSize: 11)),
     ]);
   }
 }
 
 class _MapPainter extends CustomPainter {
-  _MapPainter({required this.progress, required this.trackColor, required this.activeColor});
+  _MapPainter(
+      {required this.progress,
+      required this.trackColor,
+      required this.activeColor});
 
   final double progress;
   final Color trackColor;
@@ -220,9 +268,13 @@ class _MapPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     canvas.drawLine(start, end, track);
-    canvas.drawLine(start, Offset(start.dx + (end.dx - start.dx) * progress, y), active);
+    canvas.drawLine(
+        start, Offset(start.dx + (end.dx - start.dx) * progress, y), active);
   }
 
   @override
-  bool shouldRepaint(covariant _MapPainter old) => old.progress != progress || old.activeColor != activeColor || old.trackColor != trackColor;
+  bool shouldRepaint(covariant _MapPainter old) =>
+      old.progress != progress ||
+      old.activeColor != activeColor ||
+      old.trackColor != trackColor;
 }

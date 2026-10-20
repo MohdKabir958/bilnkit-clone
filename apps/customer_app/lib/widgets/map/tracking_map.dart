@@ -64,7 +64,8 @@ class TrackingMap extends StatefulWidget {
 
 enum _Mode { checking, loading, ready, fallback }
 
-class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStateMixin {
+class _TrackingMapState extends State<TrackingMap>
+    with SingleTickerProviderStateMixin {
   late final RiderMarkerAnimator _animator = RiderMarkerAnimator(vsync: this);
   _Mode _mode = _Mode.checking;
   Timer? _timeout;
@@ -82,7 +83,9 @@ class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStat
   MapViewFactory get _factory => widget.factory ?? const GoogleMapViewFactory();
 
   /// The rider marker is only shown while the rider is carrying the food to the student.
-  bool get _riderPhase => widget.order.status == OrderProgressStatus.pickedUp || widget.order.status == OrderProgressStatus.arrivedAtGate;
+  bool get _riderPhase =>
+      widget.order.status == OrderProgressStatus.pickedUp ||
+      widget.order.status == OrderProgressStatus.arrivedAtGate;
 
   GeoPoint? get _dropoff {
     final p = widget.order.dropoffPlace;
@@ -100,7 +103,8 @@ class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStat
     widget.rider.addListener(_onFix);
     _onFix();
     if (_dropoff == null || widget.order.isTerminal) {
-      _mode = _Mode.fallback; // nothing to draw, or the trip is over: the plain strip is enough
+      _mode = _Mode
+          .fallback; // nothing to draw, or the trip is over: the plain strip is enough
     } else {
       unawaited(_probe());
     }
@@ -119,14 +123,16 @@ class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStat
       return;
     }
     setState(() => _mode = _Mode.loading);
-    _timeout = Timer(widget.readyTimeout, () => _fail('The map did not start in time.'));
+    _timeout = Timer(
+        widget.readyTimeout, () => _fail('The map did not start in time.'));
   }
 
   /// setState is not allowed while the framework is building; a map callback that fires in
   /// that window is applied right after the frame instead.
   void _apply(_Mode mode) {
     if (!mounted) return;
-    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
       SchedulerBinding.instance.addPostFrameCallback((_) => _apply(mode));
       return;
     }
@@ -157,7 +163,8 @@ class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStat
     _recheckAge();
   }
 
-  bool _isStale(RiderLocation? loc) => loc != null && widget.clock().difference(loc.receivedAt) > kStaleFix;
+  bool _isStale(RiderLocation? loc) =>
+      loc != null && widget.clock().difference(loc.receivedAt) > kStaleFix;
 
   /// Re-evaluates how old the last fix is (on a new fix, a status change and every
   /// [TrackingMap.staleCheckInterval]) and repaints only the ETA line, the strip's GPS chip and
@@ -168,7 +175,8 @@ class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStat
     _tick.value++;
     final needed = _riderPhase && loc != null;
     if (needed && _staleTimer == null) {
-      _staleTimer = Timer.periodic(widget.staleCheckInterval, (_) => _recheckAge());
+      _staleTimer =
+          Timer.periodic(widget.staleCheckInterval, (_) => _recheckAge());
     } else if (!needed) {
       _staleTimer?.cancel();
       _staleTimer = null;
@@ -182,8 +190,13 @@ class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStat
       old.rider.removeListener(_onFix);
       widget.rider.addListener(_onFix);
     }
-    if (old.order.status != widget.order.status || !identical(old.rider, widget.rider)) _onFix();
-    if (widget.order.isTerminal && _mode != _Mode.fallback) _fail('Order finished.');
+    if (old.order.status != widget.order.status ||
+        !identical(old.rider, widget.rider)) {
+      _onFix();
+    }
+    if (widget.order.isTerminal && _mode != _Mode.fallback) {
+      _fail('Order finished.');
+    }
   }
 
   @override
@@ -201,12 +214,18 @@ class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStat
   MapViewSpec _specFor(GeoPoint dropoff) {
     final restaurant = _restaurant;
     final cached = _spec;
-    if (cached != null && _specDropoff == dropoff && _specRestaurant == restaurant) return cached;
+    if (cached != null &&
+        _specDropoff == dropoff &&
+        _specRestaurant == restaurant) {
+      return cached;
+    }
     _specDropoff = dropoff;
     _specRestaurant = restaurant;
     return _spec = MapViewSpec(
       dropoff: dropoff,
-      dropoffName: widget.order.dropoffPlace?.name.isNotEmpty == true ? widget.order.dropoffPlace!.name : widget.order.dropoffHostel,
+      dropoffName: widget.order.dropoffPlace?.name.isNotEmpty == true
+          ? widget.order.dropoffPlace!.name
+          : widget.order.dropoffHostel,
       restaurant: restaurant,
       restaurantName: widget.order.vendorName,
       rider: _animator.position,
@@ -220,7 +239,9 @@ class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStat
         listenable: Listenable.merge([widget.rider, _tick]),
         builder: (context, _) => AnimatedRiderMap(
           status: widget.order.status,
-          hostel: widget.order.dropoffHostel.isEmpty ? 'Campus gate' : displayDropPoint(widget.order.dropoffHostel),
+          hostel: widget.order.dropoffHostel.isEmpty
+              ? 'Local area gate'
+              : displayDropPoint(widget.order.dropoffHostel),
           dhabaName: widget.order.vendorName,
           // The GPS chip only makes sense while the rider carries the food to the student.
           liveLocation: _riderPhase ? widget.rider.value : null,
@@ -261,19 +282,27 @@ class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStat
               borderRadius: BorderRadius.circular(KRadius.xl),
               child: Stack(children: [
                 // Visible until the real map reports it is drawing, so there is never a blank box.
-                if (_mode == _Mode.loading) Positioned(top: 0, left: 0, right: 0, child: _stylised()),
+                if (_mode == _Mode.loading)
+                  Positioned(top: 0, left: 0, right: 0, child: _stylised()),
                 Positioned.fill(child: map),
                 if (_mode == _Mode.ready)
                   Positioned(
                     top: 12,
                     left: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                      decoration: BoxDecoration(color: k.surface.withValues(alpha: 0.94), borderRadius: BorderRadius.circular(KRadius.pill), boxShadow: KShadow.soft(k.shadowTint)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 7),
+                      decoration: BoxDecoration(
+                          color: k.surface.withValues(alpha: 0.94),
+                          borderRadius: BorderRadius.circular(KRadius.pill),
+                          boxShadow: KShadow.soft(k.shadowTint)),
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(LucideIcons.navigation, size: 14, color: widget.order.status.kStatus.color),
+                        Icon(LucideIcons.navigation,
+                            size: 14, color: widget.order.status.kStatus.color),
                         const SizedBox(width: 6),
-                        Text(widget.order.status.pillLabel, style: KraveoType.label.copyWith(color: k.ink, fontSize: 12.5)),
+                        Text(widget.order.status.pillLabel,
+                            style: KraveoType.label
+                                .copyWith(color: k.ink, fontSize: 12.5)),
                       ]),
                     ),
                   ),
@@ -289,9 +318,16 @@ class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStat
         builder: (context, _) {
           final loc = widget.rider.value;
           final minutes = _etaMinutes(loc);
-          if (minutes != null) return Padding(padding: const EdgeInsets.only(top: 10), child: EtaLine(minutes: minutes));
-          if (loc != null && widget.order.status == OrderProgressStatus.pickedUp && _isStale(loc)) {
-            return const Padding(padding: EdgeInsets.only(top: 10), child: StaleRiderLine());
+          if (minutes != null) {
+            return Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: EtaLine(minutes: minutes));
+          }
+          if (loc != null &&
+              widget.order.status == OrderProgressStatus.pickedUp &&
+              _isStale(loc)) {
+            return const Padding(
+                padding: EdgeInsets.only(top: 10), child: StaleRiderLine());
           }
           return const SizedBox.shrink();
         },
@@ -302,7 +338,9 @@ class _TrackingMapState extends State<TrackingMap> with SingleTickerProviderStat
   /// "About N min" while the rider carries the food to the drop point, from a recent fix and
   /// the straight-line distance at a fixed speed. Null when it cannot be computed honestly.
   int? _etaMinutes(RiderLocation? loc) {
-    if (loc == null || widget.order.status != OrderProgressStatus.pickedUp) return null;
+    if (loc == null || widget.order.status != OrderProgressStatus.pickedUp) {
+      return null;
+    }
     if (widget.clock().difference(loc.receivedAt) > kStaleFix) return null;
     return approxMinutes(GeoPoint(loc.lat, loc.lng), _dropoff);
   }
@@ -319,14 +357,20 @@ class StaleRiderLine extends StatelessWidget {
       liveRegion: true,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(color: k.surfaceAlt, borderRadius: BorderRadius.circular(KRadius.lg)),
+        decoration: BoxDecoration(
+            color: k.surfaceAlt,
+            borderRadius: BorderRadius.circular(KRadius.lg)),
         child: Row(children: [
           Icon(LucideIcons.clock, size: 18, color: k.inkMuted),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Rider\'s location isn\'t updating', style: KraveoType.titleMd.copyWith(color: k.ink)),
-              Text('The map shows where they were last seen. Your order is still on its way.', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Rider\'s location isn\'t updating',
+                  style: KraveoType.titleMd.copyWith(color: k.ink)),
+              Text(
+                  'The map shows where they were last seen. Your order is still on its way.',
+                  style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
             ]),
           ),
         ]),
@@ -348,14 +392,19 @@ class EtaLine extends StatelessWidget {
       liveRegion: true,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(color: k.brandSoft, borderRadius: BorderRadius.circular(KRadius.lg)),
+        decoration: BoxDecoration(
+            color: k.brandSoft,
+            borderRadius: BorderRadius.circular(KRadius.lg)),
         child: Row(children: [
           Icon(LucideIcons.clock, size: 18, color: k.brand),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Rider is about $minutes min away', style: KraveoType.titleMd.copyWith(color: k.ink)),
-              Text('Rough estimate from the straight-line distance', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Rider is about $minutes min away',
+                  style: KraveoType.titleMd.copyWith(color: k.ink)),
+              Text('Rough estimate from the straight-line distance',
+                  style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
             ]),
           ),
         ]),

@@ -20,23 +20,35 @@ import 'ui/snack.dart';
 /// The kitchen is looked up in the full catalog (never in Home's filtered list), and a cart that
 /// already holds something is only replaced after the student confirms.
 /// [selectedHostel] is the drop-off the cart sheet shows; it falls back to the old order's.
-Future<void> reorderOrder(BuildContext context, OrderModel order, {String? selectedHostel}) async {
+Future<void> reorderOrder(BuildContext context, OrderModel order,
+    {String? selectedHostel}) async {
   final cart = context.read<CartProvider>();
   final dhabas = context.read<DhabaProvider>();
   final hostel = selectedHostel ?? order.dropoffHostel;
   // Each restaurant's part of the order (a single order is its own only part).
-  final parts = order.members != null && order.members!.length > 1 ? order.members! : [order];
+  final parts = order.members != null && order.members!.length > 1
+      ? order.members!
+      : [order];
   final combined = parts.length > 1;
-  final live = [for (final p in parts) if (dhabas.byId(p.vendorId) != null && dhabas.isLiveVendor(p.vendorId)) p];
+  final live = [
+    for (final p in parts)
+      if (dhabas.byId(p.vendorId) != null && dhabas.isLiveVendor(p.vendorId)) p
+  ];
   if (live.isEmpty) {
-    showKSnack(context, combined ? 'None of these restaurants is taking orders in the app right now.' : '${order.vendorName} isn\'t taking orders in the app right now.', error: true);
+    showKSnack(
+        context,
+        combined
+            ? 'None of these stores is taking orders in the app right now.'
+            : '${order.vendorName} isn\'t taking orders in the app right now.',
+        error: true);
     return;
   }
   if (cart.items.isNotEmpty) {
     final replace = await showKConfirm(
       context,
       title: 'Replace your cart?',
-      message: 'Your cart has ${cart.itemCount} ${cart.itemCount == 1 ? 'item' : 'items'} from ${cart.restaurantCount > 1 ? '${cart.restaurantCount} restaurants' : (cart.dhabaName ?? 'another kitchen')}. Reordering replaces them with the dishes from this order.',
+      message:
+          'Your cart has ${cart.itemCount} ${cart.itemCount == 1 ? 'item' : 'items'} from ${cart.restaurantCount > 1 ? '${cart.restaurantCount} stores' : (cart.dhabaName ?? 'another store')}. Reordering replaces them with the products from this order.',
       confirmLabel: 'Replace cart',
       cancelLabel: 'Keep my cart',
     );
@@ -56,7 +68,9 @@ Future<void> reorderOrder(BuildContext context, OrderModel order, {String? selec
       leftOut.add(part.vendorName); // more restaurants than one order may hold
       continue;
     }
-    final menu = {for (final m in dhabas.getMenuItemsForDhaba(part.vendorId)) m.id: m};
+    final menu = {
+      for (final m in dhabas.getMenuItemsForDhaba(part.vendorId)) m.id: m
+    };
     var addedHere = 0;
     for (final line in part.items) {
       final item = menu[line.menuItemId];
@@ -65,7 +79,10 @@ Future<void> reorderOrder(BuildContext context, OrderModel order, {String? selec
         continue;
       }
       for (var i = 0; i < line.quantity; i++) {
-        if (!cart.addItem(item: item, dhabaId: part.vendorId, dhabaName: kitchen.name)) break;
+        if (!cart.addItem(
+            item: item, dhabaId: part.vendorId, dhabaName: kitchen.name)) {
+          break;
+        }
       }
       addedHere++;
     }
@@ -73,14 +90,28 @@ Future<void> reorderOrder(BuildContext context, OrderModel order, {String? selec
     added += addedHere;
   }
   if (added > 0) {
-    if (skipped > 0) showKSnack(context, '$skipped ${skipped == 1 ? 'dish is' : 'dishes are'} no longer available and ${skipped == 1 ? 'was' : 'were'} left out.', icon: LucideIcons.info);
+    if (skipped > 0) {
+      showKSnack(context,
+          '$skipped ${skipped == 1 ? 'product is' : 'products are'} no longer available and ${skipped == 1 ? 'was' : 'were'} left out.',
+          icon: LucideIcons.info);
+    }
     if (combined && leftOut.isNotEmpty) {
-      showKSnack(context, '${leftOut.join(', ')} ${leftOut.length == 1 ? 'was' : 'were'} left out: closed, unavailable or over the limit of ${cart.maxRestaurants} restaurants per order.', icon: LucideIcons.info);
+      showKSnack(context,
+          '${leftOut.join(', ')} ${leftOut.length == 1 ? 'was' : 'were'} left out: closed, unavailable or over the limit of ${cart.maxRestaurants} stores per order.',
+          icon: LucideIcons.info);
     }
     CartSheet.show(context, selectedHostel: hostel);
     return;
   }
   final kitchen = dhabas.byId(live.first.vendorId);
-  showKSnack(context, 'These dishes aren\'t available now. Pick something from ${live.first.vendorName}.', icon: LucideIcons.utensils);
-  if (kitchen != null) Navigator.push(context, MaterialPageRoute(builder: (_) => DhabaMenuScreen(dhaba: kitchen, selectedHostel: hostel)));
+  showKSnack(context,
+      'These products aren\'t available now. Pick something from ${live.first.vendorName}.',
+      icon: LucideIcons.utensils);
+  if (kitchen != null) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) =>
+                DhabaMenuScreen(dhaba: kitchen, selectedHostel: hostel)));
+  }
 }

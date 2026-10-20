@@ -31,15 +31,18 @@ import 'support/category_fixtures.dart';
 
 class _NoGoogle implements GoogleAuthService {
   @override
-  Future<GoogleAuthResult> signIn() async => const GoogleAuthResult.failed(GoogleAuthFailure.cancelled);
+  Future<GoogleAuthResult> signIn() async =>
+      const GoogleAuthResult.failed(GoogleAuthFailure.cancelled);
   @override
   Future<void> signOut() async {}
 }
 
 Future<void> _loadKraveoFonts() async {
   const fonts = {
-    'packages/kraveo_ui/Bricolage': 'packages/kraveo_ui/assets/fonts/BricolageGrotesque.ttf',
-    'packages/kraveo_ui/Jakarta': 'packages/kraveo_ui/assets/fonts/PlusJakartaSans.ttf',
+    'packages/kraveo_ui/Bricolage':
+        'packages/kraveo_ui/assets/fonts/BricolageGrotesque.ttf',
+    'packages/kraveo_ui/Jakarta':
+        'packages/kraveo_ui/assets/fonts/PlusJakartaSans.ttf',
   };
   for (final entry in fonts.entries) {
     final loader = FontLoader(entry.key)..addFont(rootBundle.load(entry.value));
@@ -47,8 +50,19 @@ Future<void> _loadKraveoFonts() async {
   }
 }
 
-SessionProvider _student() => SessionProvider(initial: SessionStatus.checking, googleAuth: _NoGoogle())
-  ..beginForTest({'id': 'u1', 'name': 'Aarav Sharma', 'email': 'a@x.com', 'phone': '+91 9876543210', 'role': 'STUDENT', 'isStudent': true, 'hostelBlock': 'BH2', 'avatarId': 3, 'kraveoCoins': 120});
+SessionProvider _student() =>
+    SessionProvider(initial: SessionStatus.checking, googleAuth: _NoGoogle())
+      ..beginForTest({
+        'id': 'u1',
+        'name': 'Aarav Sharma',
+        'email': 'a@x.com',
+        'phone': '+91 9876543210',
+        'role': 'STUDENT',
+        'isStudent': true,
+        'hostelBlock': 'BH2',
+        'avatarId': 3,
+        'kraveoCoins': 120
+      });
 
 Future<void> _settle(WidgetTester tester) async {
   await tester.pump();
@@ -56,7 +70,8 @@ Future<void> _settle(WidgetTester tester) async {
   await tester.pump(const Duration(seconds: 2));
 }
 
-Future<void> _pump(WidgetTester tester, Widget child, DhabaProvider dhabas, {Size size = const Size(360, 640), double textScale = 1.3}) async {
+Future<void> _pump(WidgetTester tester, Widget child, DhabaProvider dhabas,
+    {Size size = const Size(360, 640), double textScale = 1.3}) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
   tester.platformDispatcher.textScaleFactorTestValue = textScale;
@@ -77,10 +92,26 @@ Future<void> _pump(WidgetTester tester, Widget child, DhabaProvider dhabas, {Siz
   await _settle(tester);
 }
 
-Dhaba _dhaba(String id, String name, {String category = 'Campus kitchen', List<Cuisine> cuisines = const [], List<String> tags = const []}) =>
-    Dhaba(id: id, name: name, category: category, rating: 4.5, eta: '20 min', bannerUrl: '', isAcceptingOrders: true, address: 'Kothri', cuisines: cuisines, tags: tags);
+Dhaba _dhaba(String id, String name,
+        {String category = 'Campus kitchen',
+        List<Cuisine> cuisines = const [],
+        List<String> tags = const []}) =>
+    Dhaba(
+        id: id,
+        name: name,
+        category: category,
+        rating: 4.5,
+        eta: '20 min',
+        bannerUrl: '',
+        isAcceptingOrders: true,
+        address: 'Kothri',
+        cuisines: cuisines,
+        tags: tags);
 
-List<FoodCategory> _cats(List<(String, int, String)> rows) => [for (final r in rows) FoodCategory(id: 'id-${r.$1}', name: r.$1, icon: r.$3, sortOrder: r.$2)];
+List<FoodCategory> _cats(List<(String, int, String)> rows) => [
+      for (final r in rows)
+        FoodCategory(id: 'id-${r.$1}', name: r.$1, icon: r.$3, sortOrder: r.$2)
+    ];
 
 void main() {
   setUpAll(_loadKraveoFonts);
@@ -89,7 +120,9 @@ void main() {
 
   // ======================================================================================= models ====
   group('FoodCategory / Cuisine / Dhaba parsing (real payloads)', () {
-    test('the real GET /categories rows parse with name, Hindi name, icon key and sort order', () {
+    test(
+        'the real GET /categories rows parse with name, Hindi name, icon key and sort order',
+        () {
       final list = FoodCategory.parseList(realHomeCategories()['data']);
       expect(list.map((c) => c.name), ['Biryani', 'North Indian']);
       expect(list.first.nameHi, 'बिरयानी');
@@ -98,7 +131,9 @@ void main() {
       expect(list.map((c) => c.sortOrder), [25, 26]);
     });
 
-    test('garbled rows are dropped, garbled fields get defaults, a non-list is empty', () {
+    test(
+        'garbled rows are dropped, garbled fields get defaults, a non-list is empty',
+        () {
       final list = FoodCategory.parseList([
         'text',
         null,
@@ -114,12 +149,20 @@ void main() {
       expect(list.first.nameHi, isNull);
       expect(list.last.icon, 'tea');
       expect(list.last.sortOrder, 3);
-      for (final bad in [null, 'x', 5, <String, dynamic>{}, {'data': []}]) {
+      for (final bad in [
+        null,
+        'x',
+        5,
+        <String, dynamic>{},
+        {'data': []}
+      ]) {
         expect(FoodCategory.parseList(bad), isEmpty);
       }
     });
 
-    test('Dhaba.fromJson reads the real cuisines + tags and shows them joined with " • "', () {
+    test(
+        'Dhaba.fromJson reads the real cuisines + tags and shows them joined with " • "',
+        () {
       final d = Dhaba.fromJson(realVendorWithCuisines());
       expect(d.cuisines.map((c) => c.name), ['North Indian', 'Biryani']);
       expect(d.cuisines.map((c) => c.icon), ['restaurant', 'biryani']);
@@ -128,9 +171,24 @@ void main() {
       expect(d.cuisineLabel, 'North Indian • Biryani');
     });
 
-    test('missing, empty or garbled cuisines fall back to the legacy category text and never throw', () {
+    test(
+        'missing, empty or garbled cuisines fall back to the legacy category text and never throw',
+        () {
       final base = realVendorWithCuisines();
-      for (final cuisines in [null, <dynamic>[], 'nope', 5, {'a': 1}, [null, 3, 'x', <String, dynamic>{}, {'name': ''}]]) {
+      for (final cuisines in [
+        null,
+        <dynamic>[],
+        'nope',
+        5,
+        {'a': 1},
+        [
+          null,
+          3,
+          'x',
+          <String, dynamic>{},
+          {'name': ''}
+        ]
+      ]) {
         final json = {...base, 'category': 'Fast Food • Maggi'};
         if (cuisines == null) {
           json.remove('cuisines');
@@ -143,24 +201,36 @@ void main() {
       }
       // tags garbled too
       expect(Dhaba.fromJson({...base, 'tags': 'oops'}).tags, isEmpty);
-      expect(Dhaba.fromJson({...base, 'tags': [1, null, 'Thali']}).tags, ['1', 'Thali']);
+      expect(
+          Dhaba.fromJson({
+            ...base,
+            'tags': [1, null, 'Thali']
+          }).tags,
+          ['1', 'Thali']);
     });
 
     test('copyWith keeps and replaces cuisines', () {
       final d = Dhaba.fromJson(realVendorWithCuisines());
       expect(d.copyWith(isFavorite: true).cuisines.length, 2);
-      expect(d.copyWith(cuisines: const []).cuisineLabel, 'North Indian • Biryani', reason: 'legacy text');
+      expect(
+          d.copyWith(cuisines: const []).cuisineLabel, 'North Indian • Biryani',
+          reason: 'legacy text');
     });
   });
 
   // ======================================================================================== client ====
   group('CustomerApiService.fetchCategories', () {
-    Future<List<FoodCategory>> fetch(http.Response Function(http.Request) respond, {String forWhat = 'home'}) {
-      CustomerApiService.httpClientOverride = MockClient((req) async => respond(req));
+    Future<List<FoodCategory>> fetch(
+        http.Response Function(http.Request) respond,
+        {String forWhat = 'home'}) {
+      CustomerApiService.httpClientOverride =
+          MockClient((req) async => respond(req));
       return CustomerApiService.fetchCategories(forWhat: forWhat);
     }
 
-    test('asks GET /api/categories?for=home (no login) and parses the real answer', () async {
+    test(
+        'asks GET /api/categories?for=home (no login) and parses the real answer',
+        () async {
       late Uri url;
       Map<String, String>? headers;
       CustomerApiService.httpClientOverride = MockClient((req) async {
@@ -176,10 +246,15 @@ void main() {
     });
 
     test('an empty list is a valid, empty answer', () async {
-      expect(await fetch((_) => http.Response(jsonEncode(categoriesBody([])), 200)), isEmpty);
+      expect(
+          await fetch(
+              (_) => http.Response(jsonEncode(categoriesBody([])), 200)),
+          isEmpty);
     });
 
-    test('404 (old server), 500, HTML, non-JSON, success:false and a non-list data all throw so the caller falls back', () async {
+    test(
+        '404 (old server), 500, HTML, non-JSON, success:false and a non-list data all throw so the caller falls back',
+        () async {
       for (final r in [
         () => http.Response('{"success":false,"message":"Not found"}', 404),
         () => http.Response('', 500),
@@ -204,7 +279,9 @@ void main() {
           },
         );
 
-    test('before any server list the chips are exactly the derived ones (most common first)', () {
+    test(
+        'before any server list the chips are exactly the derived ones (most common first)',
+        () {
       final p = DhabaProvider(
         dhabas: [_dhaba('v1', 'Alpha'), _dhaba('v2', 'Beta')],
         menus: {
@@ -217,19 +294,25 @@ void main() {
       expect(p.categoryChips.every((c) => c.iconKey == null), isTrue);
     });
 
-    test('loading the real answer gives All + the server list in the server order, with icon keys', () async {
+    test(
+        'loading the real answer gives All + the server list in the server order, with icon keys',
+        () async {
       final server = FakeCatalogServer()..answer('home', realHomeCategories());
       CustomerApiService.httpClientOverride = server.client;
       final p = withMenus();
       await p.loadCategories();
       expect(p.categories, ['All', 'Biryani', 'North Indian']);
-      expect(p.categoryChips.map((c) => c.iconKey), [null, 'biryani', 'restaurant']);
+      expect(p.categoryChips.map((c) => c.iconKey),
+          [null, 'biryani', 'restaurant']);
       expect(p.hasServerCategories, isTrue);
       expect(server.categoryRequests.toSet(), {'home', 'dishes'});
     });
 
-    test('at most 10 server chips are shown after All; names repeated in another case count once', () async {
-      final rows = [for (var i = 0; i < 14; i++) categoryRow('Cat $i', i)]..insert(3, categoryRow('CAT 0', 99));
+    test(
+        'at most 10 server chips are shown after All; names repeated in another case count once',
+        () async {
+      final rows = [for (var i = 0; i < 14; i++) categoryRow('Cat $i', i)]
+        ..insert(3, categoryRow('CAT 0', 99));
       final server = FakeCatalogServer()..answer('home', categoriesBody(rows));
       CustomerApiService.httpClientOverride = server.client;
       final p = withMenus();
@@ -239,7 +322,9 @@ void main() {
       expect(p.categories.sublist(1), [for (var i = 0; i < 10; i++) 'Cat $i']);
     });
 
-    test('404, an empty list, malformed JSON and a failing network all keep the derived chips', () async {
+    test(
+        '404, an empty list, malformed JSON and a failing network all keep the derived chips',
+        () async {
       for (final setup in <void Function(FakeCatalogServer)>[
         (s) {}, // 404 for both
         (s) => s.answer('home', categoriesBody([])),
@@ -253,16 +338,20 @@ void main() {
         CustomerApiService.httpClientOverride = server.client;
         final p = withMenus();
         await p.loadCategories();
-        expect(p.categories, ['All', 'Beverages', 'Rolls', 'Thalis'], reason: 'derived');
+        expect(p.categories, ['All', 'Beverages', 'Rolls', 'Thalis'],
+            reason: 'derived');
         expect(p.hasServerCategories, isFalse);
       }
-      CustomerApiService.httpClientOverride = MockClient((_) async => throw const SocketLikeException());
+      CustomerApiService.httpClientOverride =
+          MockClient((_) async => throw const SocketLikeException());
       final p = withMenus();
       await p.loadCategories();
       expect(p.categories, ['All', 'Beverages', 'Rolls', 'Thalis']);
     });
 
-    test('a failed refresh keeps the last good list; an empty refresh returns to the derived chips', () async {
+    test(
+        'a failed refresh keeps the last good list; an empty refresh returns to the derived chips',
+        () async {
       final server = FakeCatalogServer()..answer('home', realHomeCategories());
       CustomerApiService.httpClientOverride = server.client;
       final p = withMenus();
@@ -272,14 +361,17 @@ void main() {
       server.answer('home', 'garbage', status: 502);
       server.answer('dishes', 'garbage', status: 502);
       await p.loadCategories();
-      expect(p.categories, ['All', 'Biryani', 'North Indian'], reason: 'cached in memory');
+      expect(p.categories, ['All', 'Biryani', 'North Indian'],
+          reason: 'cached in memory');
 
       server.answer('home', categoriesBody([]));
       await p.loadCategories();
       expect(p.categories, ['All', 'Beverages', 'Rolls', 'Thalis']);
     });
 
-    test('refreshHome never waits for the categories and never fails because of them', () async {
+    test(
+        'refreshHome never waits for the categories and never fails because of them',
+        () async {
       final server = FakeCatalogServer()..vendors = [vendorJson('v1', 'Alpha')];
       final gate = Completer<void>();
       CustomerApiService.httpClientOverride = MockClient((req) async {
@@ -292,30 +384,38 @@ void main() {
       final p = DhabaProvider();
       expect(await p.refreshHome(), isTrue, reason: 'vendors are enough');
       expect(p.catalogStatus, CatalogStatus.ready);
-      expect(p.hasServerCategories, isFalse, reason: 'still waiting for the categories');
+      expect(p.hasServerCategories, isFalse,
+          reason: 'still waiting for the categories');
       gate.complete();
       await Future<void>.delayed(const Duration(milliseconds: 50));
-      expect(p.hasServerCategories, isTrue, reason: 'they arrive later and the chips update');
+      expect(p.hasServerCategories, isTrue,
+          reason: 'they arrive later and the chips update');
     });
 
-    test('refreshHome (open, resume, pull-to-refresh) also refreshes the categories and tolerates an old server; loadCatalog alone does not', () async {
+    test(
+        'refreshHome (open, resume, pull-to-refresh) also refreshes the categories and tolerates an old server; loadCatalog alone does not',
+        () async {
       final server = FakeCatalogServer()..vendors = [vendorJson('v1', 'Alpha')];
       CustomerApiService.httpClientOverride = server.client; // categories 404
       final p = DhabaProvider();
       expect(await p.loadCatalog(), isTrue);
       await Future<void>.delayed(const Duration(milliseconds: 20));
-      expect(server.categoryRequests, isEmpty, reason: 'the menu screen reloads the catalog only');
+      expect(server.categoryRequests, isEmpty,
+          reason: 'the menu screen reloads the catalog only');
       expect(await p.refreshHome(), isTrue);
       await Future<void>.delayed(const Duration(milliseconds: 20));
       expect(server.categoryRequests.toSet(), {'home', 'dishes'});
       expect(p.hasServerCategories, isFalse);
     });
 
-    test('concurrent loads share one request pair; disposing during a load does not throw', () async {
+    test(
+        'concurrent loads share one request pair; disposing during a load does not throw',
+        () async {
       final server = FakeCatalogServer()..answer('home', realHomeCategories());
       CustomerApiService.httpClientOverride = server.client;
       final p = withMenus();
-      await Future.wait([p.loadCategories(), p.loadCategories(), p.loadCategories()]);
+      await Future.wait(
+          [p.loadCategories(), p.loadCategories(), p.loadCategories()]);
       expect(server.categoryRequests.length, 2);
       final q = withMenus();
       final f = q.loadCategories();
@@ -329,21 +429,32 @@ void main() {
     DhabaProvider catalog() {
       final p = DhabaProvider(
         dhabas: [
-          _dhaba('tagged', 'Tagged Kitchen', category: 'North Indian • Biryani', cuisines: const [Cuisine(id: '1', name: 'Biryani', icon: 'biryani')], tags: const ['Biryani']),
+          _dhaba('tagged', 'Tagged Kitchen',
+              category: 'North Indian • Biryani',
+              cuisines: const [
+                Cuisine(id: '1', name: 'Biryani', icon: 'biryani')
+              ],
+              tags: const [
+                'Biryani'
+              ]),
           _dhaba('byDish', 'Dish Kitchen', category: 'Campus kitchen'),
           _dhaba('legacyTag', 'Tag Only Kitchen', tags: const ['biryani']),
-          _dhaba('none', 'Plain Kitchen', cuisines: const [Cuisine(id: '2', name: 'Chai')]),
+          _dhaba('none', 'Plain Kitchen',
+              cuisines: const [Cuisine(id: '2', name: 'Chai')]),
         ],
         menus: {
           'byDish': [dishModel('byDish', 'biryani')],
           'none': [dishModel('none', 'Thalis')],
         },
       );
-      p.setCategoriesForTest(home: _cats([('Biryani', 1, 'biryani'), ('Chai', 2, 'tea')]));
+      p.setCategoriesForTest(
+          home: _cats([('Biryani', 1, 'biryani'), ('Chai', 2, 'tea')]));
       return p;
     }
 
-    test('a chip matches a restaurant tagged with the category (cuisine or tag, any case) OR having a dish in it', () {
+    test(
+        'a chip matches a restaurant tagged with the category (cuisine or tag, any case) OR having a dish in it',
+        () {
       final p = catalog();
       p.setSelectedCategoryIndex(p.categories.indexOf('Biryani'));
       expect(p.dhabas.map((d) => d.id), ['tagged', 'byDish', 'legacyTag']);
@@ -353,7 +464,8 @@ void main() {
       expect(p.dhabas.length, 4);
     });
 
-    test('a selected chip that disappears after a refresh falls back to All', () {
+    test('a selected chip that disappears after a refresh falls back to All',
+        () {
       final p = catalog();
       p.setSelectedCategoryIndex(p.categories.indexOf('Chai'));
       p.setCategoriesForTest(home: _cats([('Biryani', 1, 'biryani')]));
@@ -361,7 +473,9 @@ void main() {
       expect(p.dhabas.length, 4);
     });
 
-    test('search also matches cuisine names (case-insensitive, partial) next to name, legacy text, tags and dishes', () {
+    test(
+        'search also matches cuisine names (case-insensitive, partial) next to name, legacy text, tags and dishes',
+        () {
       final p = catalog();
       p.setSearchQuery('chai');
       expect(p.dhabas.map((d) => d.id), ['none']);
@@ -380,107 +494,213 @@ void main() {
   group('Dish category tabs inside a restaurant', () {
     test('without a server list the menu order is kept', () {
       final p = DhabaProvider();
-      expect(p.orderDishCategories(['Snacks', 'Beverages', 'Main Course']), ['Snacks', 'Beverages', 'Main Course']);
+      expect(p.orderDishCategories(['Snacks', 'Beverages', 'Main Course']),
+          ['Snacks', 'Beverages', 'Main Course']);
     });
 
-    test('with a server list: by sortOrder, then unknown/legacy last alphabetically', () {
+    test(
+        'with a server list: by sortOrder, then unknown/legacy last alphabetically',
+        () {
       final p = DhabaProvider();
-      p.setCategoriesForTest(home: _cats([('Thali', 5, 'thali'), ('Biryani', 1, 'biryani')]), dishes: _cats([('Snacks', 3, 'snack'), ('Thali', 5, 'thali'), ('Biryani', 1, 'biryani')]));
-      expect(p.orderDishCategories(['zebra dish', 'Snacks', 'Thali', 'Apple Pie', 'Biryani']), ['Biryani', 'Snacks', 'Thali', 'Apple Pie', 'zebra dish']);
-      expect(p.orderDishCategories(['thali ', 'BIRYANI']), ['BIRYANI', 'thali '], reason: 'case and spaces are ignored when matching');
+      p.setCategoriesForTest(
+          home: _cats([('Thali', 5, 'thali'), ('Biryani', 1, 'biryani')]),
+          dishes: _cats([
+            ('Snacks', 3, 'snack'),
+            ('Thali', 5, 'thali'),
+            ('Biryani', 1, 'biryani')
+          ]));
+      expect(
+          p.orderDishCategories(
+              ['zebra dish', 'Snacks', 'Thali', 'Apple Pie', 'Biryani']),
+          ['Biryani', 'Snacks', 'Thali', 'Apple Pie', 'zebra dish']);
+      expect(
+          p.orderDishCategories(['thali ', 'BIRYANI']), ['BIRYANI', 'thali '],
+          reason: 'case and spaces are ignored when matching');
     });
 
-    test('ties in sortOrder are alphabetical; the dishes list order is used for categories that are not on Home', () async {
+    test(
+        'ties in sortOrder are alphabetical; the dishes list order is used for categories that are not on Home',
+        () async {
       final server = FakeCatalogServer()
         ..answer('home', categoriesBody([categoryRow('Biryani', 10)]))
-        ..answer('dishes', categoriesBody([categoryRow('Breads', 20, dishes: true, home: false), categoryRow('Biryani', 10), categoryRow('Chai', 20, home: false)]));
+        ..answer(
+            'dishes',
+            categoriesBody([
+              categoryRow('Breads', 20, dishes: true, home: false),
+              categoryRow('Biryani', 10),
+              categoryRow('Chai', 20, home: false)
+            ]));
       CustomerApiService.httpClientOverride = server.client;
       final p = DhabaProvider();
       await p.loadCategories();
-      expect(p.orderDishCategories(['Chai', 'Legacy', 'Breads', 'Biryani']), ['Biryani', 'Breads', 'Chai', 'Legacy']);
+      expect(p.orderDishCategories(['Chai', 'Legacy', 'Breads', 'Biryani']),
+          ['Biryani', 'Breads', 'Chai', 'Legacy']);
     });
 
-    test('if only the dishes request fails, the Home list still orders the tabs', () async {
-      final server = FakeCatalogServer()..answer('home', categoriesBody([categoryRow('Thali', 2), categoryRow('Biryani', 1)]));
+    test(
+        'if only the dishes request fails, the Home list still orders the tabs',
+        () async {
+      final server = FakeCatalogServer()
+        ..answer(
+            'home',
+            categoriesBody(
+                [categoryRow('Thali', 2), categoryRow('Biryani', 1)]));
       CustomerApiService.httpClientOverride = server.client;
       final p = DhabaProvider();
       await p.loadCategories();
       expect(p.orderDishCategories(['Thali', 'Biryani']), ['Biryani', 'Thali']);
     });
 
-    testWidgets('the menu screen shows its tabs in the admin order', (tester) async {
+    testWidgets('the menu screen shows its tabs in the admin order',
+        (tester) async {
       final p = DhabaProvider(
         dhabas: [_dhaba('v1', 'Alpha')],
-        menus: {'v1': [dishModel('v1', 'Mystery'), dishModel('v1', 'Thali'), dishModel('v1', 'Biryani')]},
+        menus: {
+          'v1': [
+            dishModel('v1', 'Mystery'),
+            dishModel('v1', 'Thali'),
+            dishModel('v1', 'Biryani')
+          ]
+        },
       );
-      p.setCategoriesForTest(home: _cats([('Biryani', 1, 'biryani'), ('Thali', 2, 'thali'), ('Beverages', 3, 'tea')]));
+      p.setCategoriesForTest(
+          home: _cats([
+        ('Biryani', 1, 'biryani'),
+        ('Thali', 2, 'thali'),
+        ('Beverages', 3, 'tea')
+      ]));
       final server = FakeCatalogServer()
-        ..vendors = [vendorJson('v1', 'Alpha', menu: [for (final c in ['Mystery', 'Thali', 'Biryani']) dishJson('d$c', 'v1', 'Dish $c', c)])]
-        ..answer('home', categoriesBody([categoryRow('Biryani', 1), categoryRow('Thali', 2), categoryRow('Beverages', 3)]));
+        ..vendors = [
+          vendorJson('v1', 'Alpha', menu: [
+            for (final c in ['Mystery', 'Thali', 'Biryani'])
+              dishJson('d$c', 'v1', 'Dish $c', c)
+          ])
+        ]
+        ..answer(
+            'home',
+            categoriesBody([
+              categoryRow('Biryani', 1),
+              categoryRow('Thali', 2),
+              categoryRow('Beverages', 3)
+            ]));
       CustomerApiService.httpClientOverride = server.client;
-      await _pump(tester, DhabaMenuScreen(dhaba: p.byId('v1')!, selectedHostel: 'BH2'), p);
-      final labels = tester.widgetList<KChoiceChip>(find.byType(KChoiceChip)).map((c) => c.label).toList();
+      await _pump(tester,
+          DhabaMenuScreen(dhaba: p.byId('v1')!, selectedHostel: 'BH2'), p);
+      final labels = tester
+          .widgetList<KChoiceChip>(find.byType(KChoiceChip))
+          .map((c) => c.label)
+          .toList();
       expect(labels, ['All', 'Biryani', 'Thali', 'Mystery']);
     });
   });
 
   // ======================================================================================== screens ====
   group('Screens', () {
-    testWidgets('Home shows the server chips with their icons, All first, and filters by the chip', (tester) async {
+    testWidgets(
+        'Home shows the server chips with their icons, All first, and filters by the chip',
+        (tester) async {
       final server = FakeCatalogServer()
         ..vendors = [
-          vendorJson('v1', 'Biryani House', category: 'North Indian • Biryani', cuisines: [
-            {'id': '1', 'name': 'North Indian', 'icon': 'restaurant'},
-            {'id': '2', 'name': 'Biryani', 'icon': 'biryani'},
-          ], tags: ['North Indian', 'Biryani']),
+          vendorJson('v1', 'Biryani House',
+              category: 'North Indian • Biryani',
+              cuisines: [
+                {'id': '1', 'name': 'North Indian', 'icon': 'restaurant'},
+                {'id': '2', 'name': 'Biryani', 'icon': 'biryani'},
+              ],
+              tags: [
+                'North Indian',
+                'Biryani'
+              ]),
           vendorJson('v2', 'Chai Corner', cuisines: [
             {'id': '3', 'name': 'Chai', 'icon': 'tea'}
-          ], tags: ['Chai']),
+          ], tags: [
+            'Chai'
+          ]),
         ]
-        ..answer('home', categoriesBody([categoryRow('Biryani', 1, icon: 'biryani'), categoryRow('Chai', 2, icon: 'tea'), categoryRow('Mystery', 3, icon: 'zzz-unknown')]));
+        ..answer(
+            'home',
+            categoriesBody([
+              categoryRow('Biryani', 1, icon: 'biryani'),
+              categoryRow('Chai', 2, icon: 'tea'),
+              categoryRow('Mystery', 3, icon: 'zzz-unknown')
+            ]));
       CustomerApiService.httpClientOverride = server.client;
       final p = DhabaProvider();
       await _pump(tester, const HomeScreen(), p);
-      final chips = tester.widgetList<KChoiceChip>(find.byType(KChoiceChip)).where((c) => ['All', 'Biryani', 'Chai', 'Mystery'].contains(c.label)).toList();
+      final chips = tester
+          .widgetList<KChoiceChip>(find.byType(KChoiceChip))
+          .where((c) => ['All', 'Biryani', 'Chai', 'Mystery'].contains(c.label))
+          .toList();
       expect(chips.map((c) => c.label), ['All', 'Biryani', 'Chai', 'Mystery']);
-      expect(chips.map((c) => c.icon), [LucideIcons.utensilsCrossed, LucideIcons.soup, LucideIcons.coffee, LucideIcons.utensils], reason: 'unknown key -> keyword fallback -> generic');
+      expect(
+          chips.map((c) => c.icon),
+          [
+            LucideIcons.layoutGrid,
+            LucideIcons.soup,
+            LucideIcons.coffee,
+            LucideIcons.shoppingBasket
+          ],
+          reason: 'unknown key -> keyword fallback -> generic');
       expect(find.text('Biryani House'), findsOneWidget);
-      expect(find.text('North Indian • Biryani'), findsOneWidget, reason: 'cards show the cuisines joined with a bullet');
+      expect(find.text('North Indian • Biryani'), findsOneWidget,
+          reason: 'cards show the cuisines joined with a bullet');
 
       await tester.tap(find.widgetWithText(KChoiceChip, 'Chai'));
       await _settle(tester);
-      await tester.scrollUntilVisible(find.text('Chai Corner'), 200, scrollable: find.byType(Scrollable).first);
+      await tester.scrollUntilVisible(find.text('Chai Corner'), 200,
+          scrollable: find.byType(Scrollable).first);
       expect(find.text('Chai Corner'), findsOneWidget);
       expect(find.text('Biryani House'), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('on an old server (404) Home still shows the derived chips and the legacy category text', (tester) async {
+    testWidgets(
+        'on an old server (404) Home still shows the derived chips and the legacy category text',
+        (tester) async {
       final server = FakeCatalogServer()
         ..vendors = [
-          vendorJson('v1', 'Alpha Dhaba', category: 'Fast Food • Maggi', menu: [dishJson('a1', 'v1', 'Thali', 'Thalis'), dishJson('a2', 'v1', 'Lassi', 'Beverages')]),
+          vendorJson('v1', 'Alpha Dhaba', category: 'Fast Food • Maggi', menu: [
+            dishJson('a1', 'v1', 'Thali', 'Thalis'),
+            dishJson('a2', 'v1', 'Lassi', 'Beverages')
+          ]),
         ];
       CustomerApiService.httpClientOverride = server.client;
       await _pump(tester, const HomeScreen(), DhabaProvider());
-      expect(tester.widgetList<KChoiceChip>(find.byType(KChoiceChip)).map((c) => c.label).take(3).toList(), ['All', 'Beverages', 'Thalis']);
+      expect(
+          tester
+              .widgetList<KChoiceChip>(find.byType(KChoiceChip))
+              .map((c) => c.label)
+              .take(3)
+              .toList(),
+          ['All', 'Beverages', 'Thalis']);
+      await tester.scrollUntilVisible(find.text('Fast Food • Maggi'), 250,
+          scrollable: find.byType(Scrollable).first);
       expect(find.text('Fast Food • Maggi'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('the restaurant card and the menu header show cuisines joined with " • " (legacy text when none)', (tester) async {
+    testWidgets(
+        'the restaurant card and the menu header show cuisines joined with " • " (legacy text when none)',
+        (tester) async {
       final withCuisines = Dhaba.fromJson(realVendorWithCuisines());
       final legacy = _dhaba('v9', 'Old Kitchen', category: 'Thalis • Parathas');
       await _pump(
         tester,
-        Scaffold(body: ListView(children: [DhabaCard(dhaba: withCuisines, onTap: () {}), DhabaCard(dhaba: legacy, onTap: () {})])),
+        Scaffold(
+            body: ListView(children: [
+          DhabaCard(dhaba: withCuisines, onTap: () {}),
+          DhabaCard(dhaba: legacy, onTap: () {})
+        ])),
         DhabaProvider(),
       );
       expect(find.text('North Indian • Biryani'), findsOneWidget);
       expect(find.text('Thalis • Parathas'), findsOneWidget);
 
       final p = DhabaProvider(dhabas: [withCuisines], menus: const {});
-      CustomerApiService.httpClientOverride = (FakeCatalogServer()..vendors = [realVendorWithCuisines()]).client;
-      await _pump(tester, DhabaMenuScreen(dhaba: withCuisines, selectedHostel: 'BH2'), p);
+      CustomerApiService.httpClientOverride =
+          (FakeCatalogServer()..vendors = [realVendorWithCuisines()]).client;
+      await _pump(tester,
+          DhabaMenuScreen(dhaba: withCuisines, selectedHostel: 'BH2'), p);
       expect(find.text('North Indian • Biryani'), findsWidgets);
     });
   });
@@ -488,8 +708,31 @@ void main() {
   // ========================================================================================= icons ====
   group('Category icons', () {
     const keys = [
-      'restaurant', 'thali', 'rice', 'biryani', 'dosa', 'noodles', 'roll', 'burger', 'pizza', 'snack', 'bread', 'tandoor', 'egg',
-      'chicken', 'fish', 'veg', 'sweet', 'dessert', 'icecream', 'tea', 'coffee', 'juice', 'shake', 'healthy', 'latenight',
+      'restaurant',
+      'thali',
+      'rice',
+      'biryani',
+      'dosa',
+      'noodles',
+      'roll',
+      'burger',
+      'pizza',
+      'snack',
+      'bread',
+      'tandoor',
+      'egg',
+      'chicken',
+      'fish',
+      'veg',
+      'sweet',
+      'dessert',
+      'icecream',
+      'tea',
+      'coffee',
+      'juice',
+      'shake',
+      'healthy',
+      'latenight',
     ];
 
     test('all 25 server keys map to an icon', () {
@@ -501,30 +744,42 @@ void main() {
       expect(categoryIcon(key: ' LateNight ', label: 'x'), LucideIcons.moon);
     });
 
-    test('an unknown or missing key uses the keyword table on the label, then the generic icon', () {
-      expect(categoryIcon(key: 'rocket', label: 'Fast Food'), LucideIcons.sandwich);
+    test(
+        'an unknown or missing key uses the keyword table on the label, then the generic icon',
+        () {
+      expect(categoryIcon(key: 'rocket', label: 'Fast Food'),
+          LucideIcons.sandwich);
       expect(categoryIcon(key: null, label: 'Beverages'), LucideIcons.cupSoda);
       expect(categoryIcon(key: '', label: 'Night Mess'), LucideIcons.moon);
-      expect(categoryIcon(key: 'rocket', label: 'Something new'), LucideIcons.utensils);
-      expect(categoryIcon(key: null, label: 'All'), LucideIcons.utensilsCrossed);
+      expect(categoryIcon(key: 'rocket', label: 'Something new'),
+          LucideIcons.shoppingBasket);
+      expect(categoryIcon(key: null, label: 'All'), LucideIcons.layoutGrid);
     });
   });
 
   // ===================================================================================== image cache ====
   group('KImage decode size (memory)', () {
-    test('decodeSize: longest side x pixel ratio, rounded up to 100, capped at 1200', () {
+    test(
+        'decodeSize: longest side x pixel ratio, rounded up to 100, capped at 1200',
+        () {
       expect(KImage.decodeSize(360, 255, 3), 1100);
       expect(KImage.decodeSize(360, 255, 1), 400);
       expect(KImage.decodeSize(100, 100, 2), 200);
       expect(KImage.decodeSize(400, 300, 3), 1200);
-      expect(KImage.decodeSize(1000, 1000, 3), KImage.maxDecodePixels, reason: 'capped');
+      expect(KImage.decodeSize(1000, 1000, 3), KImage.maxDecodePixels,
+          reason: 'capped');
       expect(KImage.decodeSize(10, 10, 1), 100, reason: 'at least 100');
-      expect(KImage.decodeSize(0, 0, 2), KImage.maxDecodePixels, reason: 'no size known: still capped');
+      expect(KImage.decodeSize(0, 0, 2), KImage.maxDecodePixels,
+          reason: 'no size known: still capped');
       expect(KImage.decodeSize(double.infinity, 200, 2), 400);
-      expect(KImage.decodeSize(300, 300, 0), 300, reason: 'bad pixel ratio -> 1');
+      expect(KImage.decodeSize(300, 300, 0), 300,
+          reason: 'bad pixel ratio -> 1');
     });
 
-    Future<ResizeImage> decodedImage(WidgetTester tester, {required Size box, required double dpr, String url = 'https://example.com/huge-banner.jpg'}) async {
+    Future<ResizeImage> decodedImage(WidgetTester tester,
+        {required Size box,
+        required double dpr,
+        String url = 'https://example.com/huge-banner.jpg'}) async {
       tester.view.physicalSize = const Size(1200, 2000);
       tester.view.devicePixelRatio = dpr;
       addTearDown(() {
@@ -533,14 +788,18 @@ void main() {
       });
       await tester.pumpWidget(MaterialApp(
         theme: KraveoTheme.customer(),
-        home: Align(alignment: Alignment.topLeft, child: SizedBox(width: box.width, height: box.height, child: KImage(url))),
+        home: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+                width: box.width, height: box.height, child: KImage(url))),
       ));
       final image = tester.widget<Image>(find.byType(Image));
       expect(image.image, isA<ResizeImage>());
       return image.image as ResizeImage;
     }
 
-    testWidgets('a banner is decoded no larger than its box x pixel ratio', (tester) async {
+    testWidgets('a banner is decoded no larger than its box x pixel ratio',
+        (tester) async {
       final r = await decodedImage(tester, box: const Size(300, 200), dpr: 2);
       expect(r.width, 600);
       expect(r.height, 600);
@@ -553,11 +812,20 @@ void main() {
       expect(r.height, KImage.maxDecodePixels);
     });
 
-    testWidgets('placeholder, empty-url fallback and error fallback are unchanged', (tester) async {
-      await tester.pumpWidget(MaterialApp(theme: KraveoTheme.customer(), home: const SizedBox(width: 100, height: 100, child: KImage(''))));
+    testWidgets(
+        'placeholder, empty-url fallback and error fallback are unchanged',
+        (tester) async {
+      await tester.pumpWidget(MaterialApp(
+          theme: KraveoTheme.customer(),
+          home: const SizedBox(width: 100, height: 100, child: KImage(''))));
       expect(find.byType(Image), findsNothing);
-      expect(find.byIcon(LucideIcons.utensils), findsOneWidget);
-      await tester.pumpWidget(MaterialApp(theme: KraveoTheme.customer(), home: const SizedBox(width: 100, height: 100, child: KImage('https://example.com/x.jpg'))));
+      expect(find.byIcon(LucideIcons.package), findsOneWidget);
+      await tester.pumpWidget(MaterialApp(
+          theme: KraveoTheme.customer(),
+          home: const SizedBox(
+              width: 100,
+              height: 100,
+              child: KImage('https://example.com/x.jpg'))));
       await tester.pump();
       final image = tester.widget<Image>(find.byType(Image));
       expect(image.errorBuilder, isNotNull);
@@ -571,5 +839,12 @@ class SocketLikeException implements Exception {
 }
 
 int _n = 0;
-MenuItemModel dishModel(String vendorId, String category) =>
-    MenuItemModel(id: 'm-${_n++}', vendorId: vendorId, name: 'Dish $category', price: 100, category: category, description: 'd', imageUrl: '', isAvailable: true);
+MenuItemModel dishModel(String vendorId, String category) => MenuItemModel(
+    id: 'm-${_n++}',
+    vendorId: vendorId,
+    name: 'Dish $category',
+    price: 100,
+    category: category,
+    description: 'd',
+    imageUrl: '',
+    isAvailable: true);

@@ -32,9 +32,12 @@ class CategoryChip {
 
 class DhabaProvider with ChangeNotifier {
   /// Starts with no kitchens. Tests may pass a catalog (treated as freshly loaded from the server).
-  DhabaProvider({List<Dhaba>? dhabas, Map<String, List<MenuItemModel>>? menus}) {
+  DhabaProvider(
+      {List<Dhaba>? dhabas, Map<String, List<MenuItemModel>>? menus}) {
     if (dhabas != null) {
       _dhabas.addAll(dhabas);
+      _favoriteDhabaIds
+          .addAll(dhabas.where((d) => d.isFavorite).map((d) => d.id));
       _menuItems.addAll(menus ?? const {});
       _liveVendorIds.addAll(dhabas.map((d) => d.id));
       _status = CatalogStatus.ready;
@@ -44,7 +47,7 @@ class DhabaProvider with ChangeNotifier {
   String _searchQuery = '';
   String _selectedCategory = _all;
   bool _showFavoritesOnly = false;
-  static const Set<String> _defaultFavoriteIds = {'ven-1', 'ven-3'};
+  static const Set<String> _defaultFavoriteIds = {};
   final Set<String> _favoriteDhabaIds = {..._defaultFavoriteIds};
 
   static const String _all = 'All';
@@ -66,6 +69,109 @@ class DhabaProvider with ChangeNotifier {
   Future<void>? _loadingCategories;
   bool _disposed = false;
   int _catalogGeneration = 0;
+  Timer? _searchDebounce;
+  final Map<(String, String), String?> _productCursors = {};
+  final Map<(String, String), List<MenuItemModel>> _productQueries = {};
+  final Set<(String, String)> _productLoading = {}, _productErrors = {};
+  int _searchGeneration = 0;
+  int _productGeneration = 0;
+  bool _scheduledSearch = false;
+
+  bool get searchingProducts =>
+      _scheduledSearch ||
+      _productLoading.any((key) => key.$2 == _searchQuery.trim());
+  bool get productSearchFailed =>
+      _productErrors.any((key) => key.$2 == _searchQuery.trim());
+  bool hasMoreProducts(String storeId, {String query = ''}) =>
+      _productCursors[(storeId, query.trim())] != null;
+  bool productPageLoading(String storeId, {String query = ''}) =>
+      _productLoading.contains((storeId, query.trim()));
+  bool productPageFailed(String storeId, {String query = ''}) =>
+      _productErrors.contains((storeId, query.trim()));
+  List<MenuItemModel> productsForQuery(String storeId, String query) =>
+      _productQueries[(storeId, query.trim())] ?? getMenuItemsForDhaba(storeId);
+  List<MenuItemModel> homeProducts(String storeId) =>
+      productsForQuery(storeId, _searchQuery);
+
+  /// At most three serviceable store requests at once, including global search.
+  Future<void> _productBatch(List<Dhaba> stores, {bool reset = false}) async {
+    final query = _searchQuery.trim();
+    final searchGeneration = _searchGeneration;
+    for (var i = 0; i < stores.length; i += 3) {
+      if (_disposed || searchGeneration != _searchGeneration) return;
+      await Future.wait(stores.skip(i).take(3).map((store) => loadProductPage(
+          store.id,
+          query: query,
+          reset: reset,
+          searchGeneration: searchGeneration)));
+    }
+  }
+
+  Future<void> loadMoreHomeProducts() => _productBatch(allDhabas
+      .where((store) => hasMoreProducts(store.id, query: _searchQuery))
+      .toList());
+
+  Future<bool> loadProductPage(String storeId,
+      {String query = '', bool reset = false, int? searchGeneration}) async {
+    final key = (storeId, query.trim());
+    if (_productLoading.contains(key) ||
+        (!reset && !hasMoreProducts(storeId, query: key.$2))) {
+      return false;
+    }
+    final generation = _catalogGeneration;
+    final productGeneration = _productGeneration;
+    _productLoading.add(key);
+    _productErrors.remove(key);
+    notifyListeners();
+    try {
+      final store = byId(storeId);
+      final effectiveQuery = store != null &&
+              store.name.toLowerCase().contains(key.$2.toLowerCase())
+          ? ''
+          : key.$2;
+      final page = await CustomerApiService.fetchProductPage(storeId,
+          query: effectiveQuery, after: reset ? null : _productCursors[key]);
+      if (_disposed ||
+          generation != _catalogGeneration ||
+          productGeneration != _productGeneration ||
+          (searchGeneration != null && searchGeneration != _searchGeneration)) {
+        return false;
+      }
+      final items = page.items.map(MenuItemModel.fromJson).toList();
+      final merged = <String, MenuItemModel>{
+        if (!reset)
+          for (final item in _productQueries[key] ??
+              (key.$2.isEmpty ? _menuItems[storeId] ?? [] : <MenuItemModel>[]))
+            item.id: item,
+        for (final item in items) item.id: item
+      };
+      _productQueries[key] = merged.values.toList();
+      _productCursors[key] = page.nextCursor;
+      // Keep selected/search-discovered SKUs available to checkout and reorder validation.
+      _menuItems[storeId] = {
+        for (final item in _menuItems[storeId] ?? <MenuItemModel>[])
+          item.id: item,
+        for (final item in items) item.id: item
+      }.values.toList();
+      return true;
+    } catch (_) {
+      if (generation == _catalogGeneration &&
+          productGeneration == _productGeneration &&
+          !_disposed &&
+          (searchGeneration == null || searchGeneration == _searchGeneration)) {
+        _productErrors.add(key);
+      }
+      return false;
+    } finally {
+      if (generation == _catalogGeneration &&
+          productGeneration == _productGeneration &&
+          !_disposed &&
+          (searchGeneration == null || searchGeneration == _searchGeneration)) {
+        _productLoading.remove(key);
+        notifyListeners();
+      }
+    }
+  }
 
   final List<Dhaba> _dhabas = [];
   final Map<String, List<MenuItemModel>> _menuItems = {};
@@ -81,13 +187,16 @@ class DhabaProvider with ChangeNotifier {
 
   /// Test seam: pretend these server categories were loaded.
   @visibleForTesting
-  void setCategoriesForTest({List<FoodCategory> home = const [], List<FoodCategory> dishes = const []}) {
+  void setCategoriesForTest(
+      {List<FoodCategory> home = const [],
+      List<FoodCategory> dishes = const []}) {
     _applyCategories(home, dishes);
   }
 
   @override
   void dispose() {
     _disposed = true;
+    _searchDebounce?.cancel();
     super.dispose();
   }
 
@@ -103,19 +212,25 @@ class DhabaProvider with ChangeNotifier {
   CatalogStatus get catalogStatus => _status;
 
   /// The very first catalog request is still running (show skeletons).
-  bool get isCatalogLoading => _status == CatalogStatus.idle || _status == CatalogStatus.loading;
+  bool get isCatalogLoading =>
+      _status == CatalogStatus.idle || _status == CatalogStatus.loading;
 
   /// The first request failed and nothing is on screen (show "Can't load kitchens" + Try again).
   bool get hasCatalogFailed => _status == CatalogStatus.failed;
 
   /// Every kitchen the server returned, ignoring Home's search / category / favourites filters.
-  List<Dhaba> get allDhabas => [for (final d in _dhabas) d.copyWith(isFavorite: _favoriteDhabaIds.contains(d.id))];
+  List<Dhaba> get allDhabas => [
+        for (final d in _dhabas)
+          d.copyWith(isFavorite: _favoriteDhabaIds.contains(d.id))
+      ];
 
   /// One kitchen from the unfiltered list, or null when the server no longer lists it.
   Dhaba? byId(String? id) {
     if (id == null) return null;
     for (final d in _dhabas) {
-      if (d.id == id) return d.copyWith(isFavorite: _favoriteDhabaIds.contains(d.id));
+      if (d.id == id) {
+        return d.copyWith(isFavorite: _favoriteDhabaIds.contains(d.id));
+      }
     }
     return null;
   }
@@ -129,7 +244,9 @@ class DhabaProvider with ChangeNotifier {
       final chips = <CategoryChip>[const CategoryChip(_all)];
       for (final c in _homeCategories) {
         if (chips.length > maxServerChips) break;
-        if (seen.add(c.name.toLowerCase())) chips.add(CategoryChip(c.name, iconKey: c.icon));
+        if (seen.add(c.name.toLowerCase())) {
+          chips.add(CategoryChip(c.name, iconKey: c.icon));
+        }
       }
       return chips;
     }
@@ -145,8 +262,14 @@ class DhabaProvider with ChangeNotifier {
         if (seen.add(key)) counts[key] = (counts[key] ?? 0) + 1;
       }
     }
-    final keys = counts.keys.toList()..sort((a, b) => counts[b] != counts[a] ? counts[b]!.compareTo(counts[a]!) : a.compareTo(b));
-    return [const CategoryChip(_all), for (final key in keys.take(8)) CategoryChip(spelling[key]!)];
+    final keys = counts.keys.toList()
+      ..sort((a, b) => counts[b] != counts[a]
+          ? counts[b]!.compareTo(counts[a]!)
+          : a.compareTo(b));
+    return [
+      const CategoryChip(_all),
+      for (final key in keys.take(8)) CategoryChip(spelling[key]!)
+    ];
   }
 
   /// The chip labels of [categoryChips].
@@ -164,11 +287,14 @@ class DhabaProvider with ChangeNotifier {
     final known = <String>[];
     final unknown = <String>[];
     for (final n in list) {
-      (_categoryOrder.containsKey(n.trim().toLowerCase()) ? known : unknown).add(n);
+      (_categoryOrder.containsKey(n.trim().toLowerCase()) ? known : unknown)
+          .add(n);
     }
-    int byName(String a, String b) => a.toLowerCase().compareTo(b.toLowerCase());
+    int byName(String a, String b) =>
+        a.toLowerCase().compareTo(b.toLowerCase());
     known.sort((a, b) {
-      final c = _categoryOrder[a.trim().toLowerCase()]!.compareTo(_categoryOrder[b.trim().toLowerCase()]!);
+      final c = _categoryOrder[a.trim().toLowerCase()]!
+          .compareTo(_categoryOrder[b.trim().toLowerCase()]!);
       return c != 0 ? c : byName(a, b);
     });
     unknown.sort(byName);
@@ -177,15 +303,22 @@ class DhabaProvider with ChangeNotifier {
 
   /// Index of the selected chip in [categories] (0 = All; also 0 when that category disappeared).
   int get selectedCategoryIndex {
-    final i = categories.indexWhere((c) => c.toLowerCase() == _selectedCategory.toLowerCase());
+    final i = categories
+        .indexWhere((c) => c.toLowerCase() == _selectedCategory.toLowerCase());
     return i < 0 ? 0 : i;
   }
 
   bool _matchesCategory(Dhaba d, String category) {
     final wanted = category.toLowerCase();
-    if ((_menuItems[d.id] ?? const <MenuItemModel>[]).any((i) => i.category.trim().toLowerCase() == wanted)) return true;
-    if (d.cuisines.any((c) => c.name.trim().toLowerCase() == wanted)) return true;
-    return d.category.toLowerCase().contains(wanted) || d.tags.any((t) => t.trim().toLowerCase() == wanted);
+    if ((_menuItems[d.id] ?? const <MenuItemModel>[])
+        .any((i) => i.category.trim().toLowerCase() == wanted)) {
+      return true;
+    }
+    if (d.cuisines.any((c) => c.name.trim().toLowerCase() == wanted)) {
+      return true;
+    }
+    return d.category.toLowerCase().contains(wanted) ||
+        d.tags.any((t) => t.trim().toLowerCase() == wanted);
   }
 
   /// The kitchens Home shows: [allDhabas] narrowed by favourites, the selected chip and the search text.
@@ -204,9 +337,11 @@ class DhabaProvider with ChangeNotifier {
             d.cuisines.any((c) => c.name.toLowerCase().contains(query));
 
         // Also search in dhaba menu items!
-        final items = _menuItems[d.id] ?? [];
+        final items = homeProducts(d.id);
         final itemMatch = items.any((item) =>
-            item.name.toLowerCase().contains(query) || item.description.toLowerCase().contains(query));
+            item.name.toLowerCase().contains(query) ||
+            item.description.toLowerCase().contains(query) ||
+            (item.sku?.toLowerCase().contains(query) ?? false));
 
         if (!nameMatch && !catMatch && !tagMatch && !itemMatch) {
           return false;
@@ -227,7 +362,9 @@ class DhabaProvider with ChangeNotifier {
   Future<bool> loadCatalog() {
     if (_loading != null) return _loading!;
     final generation = _catalogGeneration;
-    return _loading = _loadCatalog().whenComplete(() { if (generation == _catalogGeneration) _loading = null; });
+    return _loading = _loadCatalog().whenComplete(() {
+      if (generation == _catalogGeneration) _loading = null;
+    });
   }
 
   /// What Home refreshes together (open / resume / pull-to-refresh): the categories start in the
@@ -240,7 +377,8 @@ class DhabaProvider with ChangeNotifier {
   /// Loads the managed categories (`GET /categories?for=home` for the chips and `?for=dishes` for the
   /// tab order). Never throws and never blocks Home: on any failure the last good list stays (none on
   /// the first load = the fallback chips). Concurrent calls share one request.
-  Future<void> loadCategories() => _loadingCategories ??= _loadCategories().whenComplete(() => _loadingCategories = null);
+  Future<void> loadCategories() => _loadingCategories ??=
+      _loadCategories().whenComplete(() => _loadingCategories = null);
 
   Future<void> _loadCategories() async {
     Future<List<FoodCategory>?> fetch(String forWhat) async {
@@ -277,21 +415,35 @@ class DhabaProvider with ChangeNotifier {
       notifyListeners();
     }
     try {
-      final vendors = await CustomerApiService.fetchVendors();
+      final vendors =
+          await CustomerApiService.fetchVendors(hydrateProducts: false);
       if (generation != _catalogGeneration || _disposed) return false;
 
       final loadedDhabas = <Dhaba>[];
       final loadedMenus = <String, List<MenuItemModel>>{};
       for (final vendor in vendors) {
         final dhaba = Dhaba.fromJson(vendor);
-        final rawMenu = (vendor['menuItems'] ?? vendor['menu'] ?? []) as List<dynamic>;
+        final rawMenu =
+            (vendor['menuItems'] ?? vendor['menu'] ?? []) as List<dynamic>;
         loadedDhabas.add(dhaba);
         loadedMenus[dhaba.id] = rawMenu
             .whereType<Map>()
-            .map((item) => MenuItemModel.fromJson(Map<String, dynamic>.from(item)))
+            .map((item) =>
+                MenuItemModel.fromJson(Map<String, dynamic>.from(item)))
             .toList();
       }
 
+      _productGeneration++;
+      _productLoading.clear();
+      _productQueries.clear();
+      _productCursors.clear();
+      _productErrors.clear();
+      for (final vendor in vendors) {
+        final items = loadedMenus[vendor['id']] ?? [];
+        if (vendor['hasMoreProducts'] == true && items.isNotEmpty) {
+          _productCursors[(vendor['id'] as String, '')] = items.last.id;
+        }
+      }
       _dhabas
         ..clear()
         ..addAll(loadedDhabas);
@@ -302,6 +454,7 @@ class DhabaProvider with ChangeNotifier {
         ..clear()
         ..addAll(loadedDhabas.map((d) => d.id));
       _status = CatalogStatus.ready;
+      if (_searchQuery.trim().isNotEmpty) setSearchQuery(_searchQuery);
       notifyListeners();
       return true;
     } catch (error) {
@@ -327,6 +480,14 @@ class DhabaProvider with ChangeNotifier {
 
   void resetForAddress() {
     _catalogGeneration++;
+    _searchGeneration++;
+    _productGeneration++;
+    _scheduledSearch = false;
+    _searchDebounce?.cancel();
+    _productQueries.clear();
+    _productCursors.clear();
+    _productLoading.clear();
+    _productErrors.clear();
     _loading = null;
     _dhabas.clear();
     _menuItems.clear();
@@ -337,7 +498,24 @@ class DhabaProvider with ChangeNotifier {
 
   void setSearchQuery(String query) {
     _searchQuery = query;
+    _searchGeneration++;
+    _searchDebounce?.cancel();
+    _scheduledSearch = query.trim().isNotEmpty;
+    _productLoading.removeWhere((key) => key.$2.isNotEmpty);
+    // Retain the base/selected SKU cache, but bound search response caches to the current query.
+    _productQueries.removeWhere((key, _) => key.$2.isNotEmpty);
+    _productCursors.removeWhere((key, _) => key.$2.isNotEmpty);
+    _productErrors.removeWhere((key) => key.$2.isNotEmpty);
     notifyListeners();
+    if (query.trim().isNotEmpty) {
+      _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+        if (!_disposed) {
+          _scheduledSearch = false;
+          unawaited(_productBatch(allDhabas, reset: true));
+          notifyListeners();
+        }
+      });
+    }
   }
 
   void setSelectedCategoryIndex(int index) {

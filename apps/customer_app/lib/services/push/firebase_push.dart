@@ -40,34 +40,45 @@ class FirebasePushMessaging implements PushMessaging {
       _ready = true;
     } catch (e) {
       _ready = false;
-      debugPrint('[Push] Firebase unavailable, push disabled: ${e.runtimeType}');
+      debugPrint(
+          '[Push] Firebase unavailable, push disabled: ${e.runtimeType}');
     }
     return _ready;
   }
 
   PushPermission _map(AuthorizationStatus s) =>
-      s == AuthorizationStatus.authorized || s == AuthorizationStatus.provisional ? PushPermission.granted : PushPermission.denied;
+      s == AuthorizationStatus.authorized ||
+              s == AuthorizationStatus.provisional
+          ? PushPermission.granted
+          : PushPermission.denied;
 
   @override
-  Future<PushPermission> permission() async => _map((await _fm.getNotificationSettings()).authorizationStatus);
+  Future<PushPermission> permission() async =>
+      _map((await _fm.getNotificationSettings()).authorizationStatus);
 
   @override
-  Future<PushPermission> requestPermission() async => _map((await _fm.requestPermission()).authorizationStatus);
+  Future<PushPermission> requestPermission() async =>
+      _map((await _fm.requestPermission()).authorizationStatus);
 
   @override
   Future<String?> token() => _fm.getToken();
 
   @override
-  Stream<String> get tokenRefreshes => _ready ? _fm.onTokenRefresh : const Stream.empty();
+  Stream<String> get tokenRefreshes =>
+      _ready ? _fm.onTokenRefresh : const Stream.empty();
 
   @override
   Future<void> deleteToken() => _fm.deleteToken();
 
   @override
-  Stream<PushMessage> get foregroundMessages => _ready ? FirebaseMessaging.onMessage.map(_toPushMessage) : const Stream.empty();
+  Stream<PushMessage> get foregroundMessages => _ready
+      ? FirebaseMessaging.onMessage.map(_toPushMessage)
+      : const Stream.empty();
 
   @override
-  Stream<PushMessage> get openedMessages => _ready ? FirebaseMessaging.onMessageOpenedApp.map(_toPushMessage) : const Stream.empty();
+  Stream<PushMessage> get openedMessages => _ready
+      ? FirebaseMessaging.onMessageOpenedApp.map(_toPushMessage)
+      : const Stream.empty();
 
   @override
   Future<PushMessage?> initialMessage() async {
@@ -80,7 +91,8 @@ class FirebasePushMessaging implements PushMessaging {
 class PlatformLocalNotifier implements LocalNotifier {
   static const String _icon = 'ic_stat_grozo';
 
-  final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
   final StreamController<String?> _taps = StreamController<String?>.broadcast();
   bool _ready = false;
 
@@ -91,10 +103,12 @@ class PlatformLocalNotifier implements LocalNotifier {
   Future<void> initialize() async {
     try {
       await _plugin.initialize(
-        settings: const InitializationSettings(android: AndroidInitializationSettings(_icon)),
+        settings: const InitializationSettings(
+            android: AndroidInitializationSettings(_icon)),
         onDidReceiveNotificationResponse: (r) => _taps.add(r.payload),
       );
-      final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
       await android?.createNotificationChannel(const AndroidNotificationChannel(
         PushChannels.orderUpdates,
         'Order updates',
@@ -104,7 +118,8 @@ class PlatformLocalNotifier implements LocalNotifier {
       await android?.createNotificationChannel(const AndroidNotificationChannel(
         PushChannels.orderAttention,
         'Rider and order alerts',
-        description: 'Your rider is on the way or at the gate, and cancelled orders.',
+        description:
+            'Your rider is on the way or at your door, and cancelled orders.',
         importance: Importance.high,
       ));
       _ready = true;
@@ -119,14 +134,21 @@ class PlatformLocalNotifier implements LocalNotifier {
     if (!_ready) return null;
     try {
       final d = await _plugin.getNotificationAppLaunchDetails();
-      return d != null && d.didNotificationLaunchApp ? d.notificationResponse?.payload : null;
+      return d != null && d.didNotificationLaunchApp
+          ? d.notificationResponse?.payload
+          : null;
     } catch (_) {
       return null;
     }
   }
 
   @override
-  Future<void> show({required int id, required String title, required String body, required String channelId, required String payload}) async {
+  Future<void> show(
+      {required int id,
+      required String title,
+      required String body,
+      required String channelId,
+      required String payload}) async {
     if (!_ready) return;
     final attention = channelId == PushChannels.orderAttention;
     await _plugin.show(
@@ -137,7 +159,8 @@ class PlatformLocalNotifier implements LocalNotifier {
         android: AndroidNotificationDetails(
           channelId,
           attention ? 'Rider and order alerts' : 'Order updates',
-          importance: attention ? Importance.high : Importance.defaultImportance,
+          importance:
+              attention ? Importance.high : Importance.defaultImportance,
           priority: attention ? Priority.high : Priority.defaultPriority,
           icon: _icon,
         ),
@@ -149,7 +172,8 @@ class PlatformLocalNotifier implements LocalNotifier {
 
 /// Real [SystemSettings] backed by `MainActivity.kt`.
 class MethodChannelSystemSettings implements SystemSettings {
-  static const MethodChannel _channel = MethodChannel('site.kraveo.customer/system');
+  static const MethodChannel _channel =
+      MethodChannel('site.kraveo.customer/system');
 
   @override
   Future<bool> hasPermissionDialog() async {
@@ -163,7 +187,8 @@ class MethodChannelSystemSettings implements SystemSettings {
   @override
   Future<bool> openNotificationSettings() async {
     try {
-      return await _channel.invokeMethod<bool>('openNotificationSettings') ?? false;
+      return await _channel.invokeMethod<bool>('openNotificationSettings') ??
+          false;
     } catch (_) {
       return false;
     }
