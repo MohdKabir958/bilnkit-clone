@@ -1,0 +1,35 @@
+[
+  {
+    "file": "Grozo-Customer-arm64-preview.apk",
+    "bytes": 37832830,
+    "sha256": "04c89f3dbebd062ae8684f6efe2c3a2d31c97d114fa950c13e7ef400ff5f7c43",
+    "applicationId": "in.grozo.customer",
+    "kind": "profile, development signed, UI-only preview",
+    "backend": "http://10.0.2.2:5000/api",
+    "firebaseConfigured": false,
+    "signerSHA1": "4dcdebe19c17dae70c855a76f07ace1042c9720b",
+    "package": "package: name='in.grozo.customer' versionCode='2015' versionName='1.9.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'"
+  },
+  {
+    "file": "Grozo-Vendor-arm64-preview.apk",
+    "bytes": 36330072,
+    "sha256": "6a2e0aed82ba81140b2ca572f3b5c64e5b0cb956584ce6ed0f51d758bbc680bd",
+    "applicationId": "in.grozo.vendor",
+    "kind": "profile, development signed, UI-only preview",
+    "backend": "http://10.0.2.2:5000/api",
+    "firebaseConfigured": false,
+    "signerSHA1": "4dcdebe19c17dae70c855a76f07ace1042c9720b",
+    "package": "package: name='in.grozo.vendor' versionCode='2015' versionName='1.9.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'"
+  },
+  {
+    "file": "Grozo-Delivery-arm64-preview.apk",
+    "bytes": 36129345,
+    "sha256": "68b878380bd401753571cc82de2875c8d05241eb5819b01417d9cb137a3bf32c",
+    "applicationId": "in.grozo.driver",
+    "kind": "profile, development signed, UI-only preview",
+    "backend": "http://10.0.2.2:5000/api",
+    "firebaseConfigured": false,
+    "signerSHA1": "4dcdebe19c17dae70c855a76f07ace1042c9720b",
+    "package": "package: name='in.grozo.driver' versionCode='2014' versionName='1.8.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'"
+  }
+]
