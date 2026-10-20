@@ -11,6 +11,7 @@ import 'package:vendor_app/screens/sales_analytics.dart';
 import 'package:vendor_app/services/product_api.dart';
 import 'package:vendor_app/services/partner_auth_service.dart';
 import 'package:vendor_app/models/dish_model.dart';
+import 'package:vendor_app/models/order_model.dart';
 import '../../../packages/kraveo_ui/test_support/visual_capture.dart';
 import 'support/fakes.dart';
 
@@ -64,20 +65,36 @@ void main() {
       (tester) async {
     await prepareVisual(tester);
     SharedPreferences.setMockInitialValues({});
+    OrderModel visualOrder(String id, String status, {bool milk = true}) {
+      final subtotal = milk ? 64.0 : 62.0;
+      final data =
+          orderJson(id: id, status: status, total: subtotal + 40, items: [
+        {
+          'id': 'line-$id',
+          'menuItemId': milk ? 'sku-0' : 'sku-1',
+          'name': milk ? 'Toned milk 500 ml' : 'Whole wheat flour 1 kg',
+          'quantity': milk ? 2 : 1,
+          'price': milk ? 32.0 : 62.0,
+        }
+      ])
+            ..['subtotal'] = subtotal
+            ..['dropoffHostel'] = 'Indiranagar'
+            ..['dropoffNotes'] = null
+            ..['customer'] = {
+              'id': 'visual-customer',
+              'name': 'Meera',
+              'phone': null,
+              'hostelBlock': 'Indiranagar'
+            };
+      return OrderModel.fromJson(data)!;
+    }
+
     final backend = FakeBackend()
       ..menu = [
         DishModel(id: 'sku-0', name: 'Toned milk', category: 'Dairy', price: 32)
       ]
-      ..put(order(id: 'visual-301', status: 'PREPARING', items: [
-        {
-          'id': 'milk',
-          'menuItemId': 'milk',
-          'name': 'Toned milk 500 ml',
-          'quantity': 2,
-          'price': 32.0
-        }
-      ]))
-      ..put(order(id: 'visual-302', status: 'READY_FOR_PICKUP'));
+      ..put(visualOrder('visual-301', 'PREPARING'))
+      ..put(visualOrder('visual-302', 'READY_FOR_PICKUP', milk: false));
     Widget host(Widget child) => captureRoot(MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: KraveoTheme.vendor(),

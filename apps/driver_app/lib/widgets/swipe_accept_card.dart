@@ -117,6 +117,7 @@ class _OfferCardState extends State<OfferCard> {
       padding: const EdgeInsets.all(20),
       borderColor: k.brand.withValues(alpha: 0.55),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (seconds != null)
