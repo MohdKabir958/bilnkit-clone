@@ -1,0 +1,41 @@
+[
+  {
+    "file": "Grozo-Customer-arm64-preview.apk",
+    "bytes": 48069863,
+    "sha256": "04805c3ac704e37ddc9125eea2f18b03e111a35b5df00e339ce13698ebf068c8",
+    "applicationId": "in.grozo.customer",
+    "kind": "profile, development signed, UI-only preview",
+    "backend": "http://10.0.2.2:5000/api",
+    "firebaseConfigured": false,
+    "signerSHA256": "7e7927c909310c5ff55ecc744c7a742c13fa8fd9a4a1d7efa7b387a5967f19fe",
+    "sourceCommit": "64941d0368c06f686fee37cbcabe923f92bf02ac",
+    "date": "2026-10-20",
+    "package": "package: name='in.grozo.customer' versionCode='2015' versionName='1.9.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'"
+  },
+  {
+    "file": "Grozo-Vendor-arm64-preview.apk",
+    "bytes": 46105856,
+    "sha256": "aaca42e54784619b5d202e77a0971a59a245b34dad92d58dc56b3dabb7556b92",
+    "applicationId": "in.grozo.vendor",
+    "kind": "profile, development signed, UI-only preview",
+    "backend": "http://10.0.2.2:5000/api",
+    "firebaseConfigured": false,
+    "signerSHA256": "7e7927c909310c5ff55ecc744c7a742c13fa8fd9a4a1d7efa7b387a5967f19fe",
+    "sourceCommit": "64941d0368c06f686fee37cbcabe923f92bf02ac",
+    "date": "2026-10-20",
+    "package": "package: name='in.grozo.vendor' versionCode='2015' versionName='1.9.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'"
+  },
+  {
+    "file": "Grozo-Delivery-arm64-preview.apk",
+    "bytes": 45705857,
+    "sha256": "b5416c23b782b8dbc4168f4ab2328708076320add413f1f0f369edfece28d362",
+    "applicationId": "in.grozo.driver",
+    "kind": "profile, development signed, UI-only preview",
+    "backend": "http://10.0.2.2:5000/api",
+    "firebaseConfigured": false,
+    "signerSHA256": "7e7927c909310c5ff55ecc744c7a742c13fa8fd9a4a1d7efa7b387a5967f19fe",
+    "sourceCommit": "64941d0368c06f686fee37cbcabe923f92bf02ac",
+    "date": "2026-10-20",
+    "package": "package: name='in.grozo.driver' versionCode='2014' versionName='1.8.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'"
+  }
+]

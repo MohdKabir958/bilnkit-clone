@@ -1,0 +1,26 @@
+[
+  {
+    "file": "Grozo-Customer-arm64-preview.apk",
+    "url": "https://github.com/MohdKabir958/bilnkit-clone/raw/refs/heads/artifacts/grozo-android-preview/Grozo-Customer-arm64-preview.apk",
+    "httpStatus": "206",
+    "rangeBytes": 4,
+    "totalBytes": 48069863,
+    "apkZipSignature": true
+  },
+  {
+    "file": "Grozo-Vendor-arm64-preview.apk",
+    "url": "https://github.com/MohdKabir958/bilnkit-clone/raw/refs/heads/artifacts/grozo-android-preview/Grozo-Vendor-arm64-preview.apk",
+    "httpStatus": "206",
+    "rangeBytes": 4,
+    "totalBytes": 46105856,
+    "apkZipSignature": true
+  },
+  {
+    "file": "Grozo-Delivery-arm64-preview.apk",
+    "url": "https://github.com/MohdKabir958/bilnkit-clone/raw/refs/heads/artifacts/grozo-android-preview/Grozo-Delivery-arm64-preview.apk",
+    "httpStatus": "206",
+    "rangeBytes": 4,
+    "totalBytes": 45705857,
+    "apkZipSignature": true
+  }
+]

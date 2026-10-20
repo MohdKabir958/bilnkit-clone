@@ -1,0 +1,26 @@
+[
+  {
+    "file": "build/ui-debug/Grozo-customer-arm64-debug.apk",
+    "bytes": 124717722,
+    "sha256": "4f31714a2b8f99b304e19e4bb0edd75ea69a4211d588ae1e882bb35d63c2802c",
+    "applicationId": "in.grozo.customer",
+    "kind": "arm64 debug; development signed; explicit local Firebase bypass",
+    "package": "package: name='in.grozo.customer' versionCode='2015' versionName='1.9.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'"
+  },
+  {
+    "file": "build/ui-debug/Grozo-vendor-arm64-debug.apk",
+    "bytes": 96754079,
+    "sha256": "d265178fe47ca0f77894fe2fa53cdf8cd7d725a3cf6ee72081f72aeb116375a5",
+    "applicationId": "in.grozo.vendor",
+    "kind": "arm64 debug; development signed; explicit local Firebase bypass",
+    "package": "package: name='in.grozo.vendor' versionCode='2015' versionName='1.9.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'"
+  },
+  {
+    "file": "build/ui-debug/Grozo-driver-arm64-debug.apk",
+    "bytes": 122993800,
+    "sha256": "d03909fcd6e4a5bb5824bd23900ba916ac76371a994f86a54a6a7f8189af11d5",
+    "applicationId": "in.grozo.driver",
+    "kind": "arm64 debug; development signed; explicit local Firebase bypass",
+    "package": "package: name='in.grozo.driver' versionCode='2014' versionName='1.8.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'"
+  }
+]

@@ -1,0 +1,802 @@
+[
+  {
+    "path": "before/customer/cart.png",
+    "role": "customer",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/customer/categories.png",
+    "role": "customer",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/customer/checkout.png",
+    "role": "customer",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/customer/home.png",
+    "role": "customer",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/customer/login.png",
+    "role": "customer",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/customer/product-details.png",
+    "role": "customer",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/customer/tracking.png",
+    "role": "customer",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/vendor/add-product.png",
+    "role": "vendor",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/vendor/dashboard.png",
+    "role": "vendor",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/vendor/inventory.png",
+    "role": "vendor",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/vendor/login.png",
+    "role": "vendor",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/vendor/orders.png",
+    "role": "vendor",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/vendor/products.png",
+    "role": "vendor",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/vendor/sales.png",
+    "role": "vendor",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/delivery/active-delivery.png",
+    "role": "delivery",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/delivery/delivery-offer.png",
+    "role": "delivery",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/delivery/delivery-verification.png",
+    "role": "delivery",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/delivery/earnings.png",
+    "role": "delivery",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/delivery/home.png",
+    "role": "delivery",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/delivery/login.png",
+    "role": "delivery",
+    "phase": "before",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/admin/coverage.png",
+    "role": "admin",
+    "phase": "before",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/admin/dashboard.png",
+    "role": "admin",
+    "phase": "before",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/admin/finance.png",
+    "role": "admin",
+    "phase": "before",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/admin/inventory.png",
+    "role": "admin",
+    "phase": "before",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/admin/login.png",
+    "role": "admin",
+    "phase": "before",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/admin/orders.png",
+    "role": "admin",
+    "phase": "before",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/admin/riders.png",
+    "role": "admin",
+    "phase": "before",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "before/admin/vendors.png",
+    "role": "admin",
+    "phase": "before",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/cart.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/categories.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/checkout.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/home-empty.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/home-loading.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/home-offline.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/home.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/login.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/product-details.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/product-grid-320-text-1.0.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 320,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/product-grid-320-text-1.3.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 320,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/product-grid-320-text-2.0.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 320,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/product-grid-430-text-1.0.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 430,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/product-grid-430-text-1.3.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 430,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/product-grid-430-text-2.0.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 430,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/customer/tracking.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/vendor/add-product.png",
+    "role": "vendor",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/vendor/dashboard.png",
+    "role": "vendor",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/vendor/inventory-320-text-1.0.png",
+    "role": "vendor",
+    "phase": "after",
+    "width": 320,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/vendor/inventory-320-text-2.0.png",
+    "role": "vendor",
+    "phase": "after",
+    "width": 320,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/vendor/inventory.png",
+    "role": "vendor",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/vendor/login.png",
+    "role": "vendor",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/vendor/orders.png",
+    "role": "vendor",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/vendor/products.png",
+    "role": "vendor",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/vendor/sales.png",
+    "role": "vendor",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/delivery/active-delivery.png",
+    "role": "delivery",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/delivery/delivery-offer.png",
+    "role": "delivery",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/delivery/delivery-verification.png",
+    "role": "delivery",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/delivery/earnings.png",
+    "role": "delivery",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/delivery/home.png",
+    "role": "delivery",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/delivery/login.png",
+    "role": "delivery",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/delivery/offer-320-text-1.0.png",
+    "role": "delivery",
+    "phase": "after",
+    "width": 320,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/delivery/offer-320-text-2.0.png",
+    "role": "delivery",
+    "phase": "after",
+    "width": 320,
+    "height": 844,
+    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/coverage-1024.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1024,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/coverage-1440.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1440,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/coverage-1920.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1920,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/coverage.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/dashboard-1024.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1024,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/dashboard-1440.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1440,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/dashboard-1920.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1920,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/dashboard.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/finance.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/inventory-1024.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1024,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/inventory-1440.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1440,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/inventory-1920.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1920,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/inventory-edit-1024.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1024,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/inventory-text-200.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1024,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/inventory.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/login.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/orders.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/riders.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  },
+  {
+    "path": "after/admin/vendors.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1280,
+    "height": 900,
+    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "physicalDevice": false,
+    "livePayments": false
+  }
+]

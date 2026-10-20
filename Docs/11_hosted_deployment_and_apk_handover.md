@@ -17,7 +17,7 @@ The previous APK links referenced cloud-workspace files, not published attachmen
 
 ## Published UI-only phone previews
 
-Three smaller development-signed ARM64 profile APKs are published on [artifacts/grozo-android-preview](https://github.com/MohdKabir958/bilnkit-clone/tree/artifacts/grozo-android-preview), isolated from application-source history. Customer is 37.8 MB, Vendor 36.3 MB and Delivery 36.1 MB. Their ZIP integrity, signatures and package IDs passed inspection. All three GitHub download URLs returned HTTP 206 for a four-byte range with the expected APK ZIP signature. The branch includes hashes, package/signing metadata, installation instructions and the original MIT notice.
+Three smaller development-signed ARM64 profile APKs are published on [artifacts/grozo-android-preview](https://github.com/MohdKabir958/bilnkit-clone/tree/artifacts/grozo-android-preview), isolated from application-source history. The refreshed UI builds are Customer 48.1 MB, Vendor 46.1 MB and Delivery 45.7 MB. Their ZIP integrity, signatures and package IDs passed inspection. All three GitHub download URLs returned HTTP 206 for a four-byte range with the expected APK ZIP signature. The branch includes hashes, package/signing metadata, installation instructions and the original MIT notice.
 
 These are **UI-only snapshots** using the existing emulator API address. They allow startup/sign-in screen inspection; they do not establish phone-to-server login, ordering, payment or notification functionality. Hosted resources and owned client credentials remain prerequisites for connected builds. See that branch's README for direct APK links and `SHA256SUMS.txt` for integrity checks.
 
