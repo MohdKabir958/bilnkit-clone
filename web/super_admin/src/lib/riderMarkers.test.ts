@@ -161,7 +161,8 @@ describe('campus helpers', () => {
     expect(parseLocationInput('23.0745')).toMatchObject({ ok: false });
     expect(parseLocationInput('95, 76.8')).toMatchObject({ ok: false, message: expect.stringContaining('Latitude') });
     expect(parseLocationInput('23.07, 190')).toMatchObject({ ok: false, message: expect.stringContaining('Longitude') });
-    expect(parseLocationInput('28.6139, 77.2090')).toMatchObject({ ok: false, message: expect.stringContaining('km from the campus') });
+    expect(parseLocationInput('28.6139, 77.2090')).toEqual({ ok: true, lat: 28.6139, lng: 77.209 });
+    expect(parseLocationInput('-28.6139, 77.2090')).toMatchObject({ ok: false, message: expect.stringContaining('India') });
     expect(parseLocationInput('76.8590, 23.0745')).toMatchObject({ ok: false }); // swapped
   });
   it('knows the placeholder pin is not a real location', () => {
@@ -192,7 +193,7 @@ describe('parseLocationInput: degrees-minutes-seconds', () => {
   });
   it('rejects two latitudes and far-away points; decimals still work', () => {
     expect(parseLocationInput('23°04\'53.4"N 23°04\'53.4"N').ok).toBe(false);
-    expect(parseLocationInput('28°04\'53.4"N 77°50\'35.0"E').ok).toBe(false);
+    expect(parseLocationInput('28°04\'53.4"S 77°50\'35.0"E').ok).toBe(false);
     expect(parseLocationInput('23.0745, 76.8590')).toEqual({ ok: true, lat: 23.0745, lng: 76.859 });
   });
 });

@@ -7,6 +7,7 @@ import '../models/auth_results.dart';
 import '../models/food_category.dart';
 
 class CustomerApiService {
+  static String? selectedAddressId;
   static const String _tokenPrefKey = 'kraveo_customer_jwt_token';
   static String? _cachedToken;
 
@@ -88,6 +89,7 @@ class CustomerApiService {
 
   /// Clears the persisted student session after logout or token rejection.
   static Future<void> clearToken() async {
+    selectedAddressId = null;
     _cachedToken = null;
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -209,15 +211,18 @@ class CustomerApiService {
 
   /// Loads the public restaurant catalog, including database-backed menu IDs.
   static Future<List<Map<String, dynamic>>> fetchVendors() async {
-    final response = await _get(Uri.parse('${ApiConfig.baseUrl}/vendors'), timeout: const Duration(seconds: 15));
-    final body = jsonDecode(response.body);
-    if (response.statusCode != 200 || body is! Map || body['data'] is! List) {
-      throw Exception(body is Map ? body['message'] ?? 'Unable to load restaurants.' : 'Unable to load restaurants.');
-    }
-    return (body['data'] as List)
-        .whereType<Map>()
-        .map((vendor) => Map<String, dynamic>.from(vendor))
-        .toList();
+    final vendors = <Map<String, dynamic>>[];
+    final addressId = selectedAddressId;
+    String? after;
+    do {
+      final query = Uri(queryParameters: {'limit': '50', if (addressId != null) 'addressId': addressId, if (after != null) 'after': after}).query;
+      final response = await authorizedRequest('GET', '/v1/vendors/nearby?$query');
+      final body = jsonDecode(response.body);
+      if (response.statusCode != 200 || body is! Map || body['data'] is! List) throw Exception(body is Map ? body['message'] ?? 'Unable to load nearby stores.' : 'Unable to load nearby stores.');
+      vendors.addAll((body['data'] as List).whereType<Map>().map((v) => Map<String, dynamic>.from(v)));
+      after = body['nextCursor'] as String?;
+    } while (after != null);
+    return vendors;
   }
 
   /// Managed categories (`GET /categories?for=home|dishes|restaurants`, public, no login). Returns the
@@ -308,6 +313,8 @@ class CustomerApiService {
         response = await _get(uri, headers: headers, timeout: timeout);
       case 'POST':
         response = await _post(uri, headers: headers, body: encoded, timeout: timeout);
+      case 'PUT':
+        response = await _put(uri, headers: headers, body: encoded, timeout: timeout);
       case 'DELETE':
         response = await _delete(uri, headers: headers, body: encoded, timeout: timeout);
       default:

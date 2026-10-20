@@ -223,15 +223,15 @@ class CartProvider with ChangeNotifier {
       return false;
     }
 
-    if (cleanCode == 'VITFIRST') {
+    if (cleanCode == 'WELCOME20') {
       if (subtotal < 100) {
         _appliedCouponCode = null;
         _couponDiscountAmount = 0.0;
-        _couponError = 'Minimum subtotal of ₹100 required for VITFIRST';
+        _couponError = 'Minimum subtotal of ₹100 required for WELCOME20';
         notifyListeners();
         return false;
       }
-      _appliedCouponCode = 'VITFIRST';
+      _appliedCouponCode = 'WELCOME20';
       // 20% off up to max ₹50
       _couponDiscountAmount = (subtotal * 0.20).clamp(0.0, 50.0);
       notifyListeners();

@@ -5,6 +5,7 @@
  * Reuses the existing harness (app, auth tokens, socket client) and the provider seam of the backend.
  */
 import { randomUUID } from 'crypto';
+import { ensureFixtureGeography } from './geography';
 import supertest from 'supertest';
 import { io, Socket } from 'socket.io-client';
 import { Role } from '@prisma/client';
@@ -44,6 +45,8 @@ export const purgeWorld = async (prefix: string) => {
   await prisma.vendor.deleteMany({ where: { id: { startsWith: p } } });
   await prisma.driverPartner.deleteMany({ where: { id: { startsWith: p } } });
   await prisma.user.deleteMany({ where: { id: { startsWith: p } } });
+  await prisma.deliveryZone.deleteMany({ where: { id: `${prefix}-zone` } });
+  await prisma.city.deleteMany({ where: { id: `${prefix}-city` } });
 };
 
 /** `digit` is a single digit that keeps phone numbers of different suites apart. */
@@ -80,6 +83,7 @@ export const createWorld = async (prefix: string, digit: string, size: { custome
     await prisma.driverPartner.create({ data: { id: profileId, userId: r.id, name: r.name, phone: r.phone, runnerCode: `RUN-${prefix.toUpperCase()}${i}`.slice(0, 20), vehicleType: 'Bike', dutyStatus: 'ONLINE', approvalStatus: 'APPROVED' } });
     world.riders.push({ ...r, profileId });
   }
+  await ensureFixtureGeography(prefix, world.customers.map((c) => c.id), world.vendors.map((v) => v.vendorId));
   return world;
 };
 

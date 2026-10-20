@@ -65,6 +65,7 @@ class DhabaProvider with ChangeNotifier {
 
   Future<void>? _loadingCategories;
   bool _disposed = false;
+  int _catalogGeneration = 0;
 
   final List<Dhaba> _dhabas = [];
   final Map<String, List<MenuItemModel>> _menuItems = {};
@@ -223,7 +224,11 @@ class DhabaProvider with ChangeNotifier {
   /// and sold-out dishes. Concurrent calls share one request. Returns true when the server
   /// answered. A failed refresh keeps what is already on screen; only a failed first load
   /// switches to [CatalogStatus.failed].
-  Future<bool> loadCatalog() => _loading ??= _loadCatalog().whenComplete(() => _loading = null);
+  Future<bool> loadCatalog() {
+    if (_loading != null) return _loading!;
+    final generation = _catalogGeneration;
+    return _loading = _loadCatalog().whenComplete(() { if (generation == _catalogGeneration) _loading = null; });
+  }
 
   /// What Home refreshes together (open / resume / pull-to-refresh): the categories start in the
   /// background and never delay or fail the catalog; the result is the catalog's.
@@ -266,12 +271,14 @@ class DhabaProvider with ChangeNotifier {
   }
 
   Future<bool> _loadCatalog() async {
+    final generation = _catalogGeneration;
     if (_status != CatalogStatus.ready) {
       _status = CatalogStatus.loading;
       notifyListeners();
     }
     try {
       final vendors = await CustomerApiService.fetchVendors();
+      if (generation != _catalogGeneration || _disposed) return false;
 
       final loadedDhabas = <Dhaba>[];
       final loadedMenus = <String, List<MenuItemModel>>{};
@@ -298,6 +305,7 @@ class DhabaProvider with ChangeNotifier {
       notifyListeners();
       return true;
     } catch (error) {
+      if (generation != _catalogGeneration || _disposed) return false;
       debugPrint('[Catalog] Live catalog unavailable: ${error.runtimeType}');
       if (_status != CatalogStatus.ready) _status = CatalogStatus.failed;
       notifyListeners();
@@ -307,12 +315,23 @@ class DhabaProvider with ChangeNotifier {
 
   /// Clears per-student browsing state (search, filters, favourites) on logout.
   void resetForLogout() {
+    resetForAddress();
     _searchQuery = '';
     _selectedCategory = _all;
     _showFavoritesOnly = false;
     _favoriteDhabaIds
       ..clear()
       ..addAll(_defaultFavoriteIds);
+    notifyListeners();
+  }
+
+  void resetForAddress() {
+    _catalogGeneration++;
+    _loading = null;
+    _dhabas.clear();
+    _menuItems.clear();
+    _liveVendorIds.clear();
+    _status = CatalogStatus.idle;
     notifyListeners();
   }
 

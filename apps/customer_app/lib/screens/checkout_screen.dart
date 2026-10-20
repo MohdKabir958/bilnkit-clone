@@ -14,12 +14,13 @@ import '../services/order_api.dart';
 import '../models/cart_item.dart';
 import '../models/drop_point.dart';
 import '../widgets/coupon_box.dart';
+import '../models/delivery_address.dart';
 import '../widgets/delivery_confirm_sheet.dart';
+import 'addresses_screen.dart';
 import '../widgets/push_permission.dart';
 import '../widgets/ui/bill_breakdown.dart';
 import '../widgets/ui/coins_toggle.dart';
 import '../widgets/ui/format.dart';
-import '../widgets/ui/hostel_pill.dart';
 import '../widgets/ui/k_icon_button.dart';
 import '../widgets/ui/scroll_empty.dart';
 import '../widgets/ui/sheet_chrome.dart';
@@ -93,7 +94,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.initState();
     // Legacy spellings ("Block 2") become the canonical name; an unknown value (the removed
     // "VIT Main Gate") means the student has to choose again.
-    _currentHostel = normalizeDropPoint(widget.selectedHostel ?? context.read<SessionProvider>().deliveryPoint);
+    _currentHostel = widget.selectedHostel ?? context.read<SessionProvider>().deliveryPoint;
     _deliveryNoteController.text = 'Call when reaching hostel gate';
     // Back in checkout with the same cart: show the unpaid order it already created.
     final cart = context.read<CartProvider>();
@@ -144,7 +145,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   /// Why a cart with several restaurants cannot be ordered as it is, or null.
   String? _blockMessage(CartProvider cart) {
-    if (!cart.isMultiRestaurant) return null;
+    if (!cart.isMultiRestaurant) return _quote.blocksCheckout ? _quote.problem : null;
     if (cart.maxRestaurants <= 1) return 'Ordering from several restaurants at once is not available right now. Go back and keep one restaurant in your cart.';
     if (cart.restaurantCount > cart.maxRestaurants) return 'You can order from at most ${cart.maxRestaurants} restaurants at once. Go back and remove a restaurant from your cart.';
     if (_quote.blocksCheckout) return _quote.problem;
@@ -191,9 +192,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       }
       if (cart.dhabaId != null && cart.items.isNotEmpty) {
         final confirmed = await showConfirmDeliveryPoint(context, current: current);
-        if (confirmed == null || !mounted) return; // cancelled: nothing placed, nothing charged
-        // Applies to this order only; the saved profile point is never changed here.
-        if (confirmed != _currentHostel) setState(() => _currentHostel = confirmed);
+        if (confirmed == null || !mounted) return;
       }
       final placed = await _placeOrder(cart, orders);
       if (placed == null) return;
@@ -474,7 +473,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           if (blockMessage != null && !keyboardOpen) _NoticeLine(message: blockMessage, error: true),
           if (_notice != null && !keyboardOpen && _notice != blockMessage) _NoticeLine(message: _notice!, error: true),
           KButton(
-            label: _currentHostel == null ? 'Choose drop-off' : 'Pay ${rupee(_shownTotal(cart))}',
+            label: _currentHostel == null ? 'Choose address' : 'Pay ${rupee(_shownTotal(cart))}',
             icon: _currentHostel == null ? LucideIcons.mapPin : LucideIcons.lock,
             kind: _currentHostel == null ? KButtonKind.accent : KButtonKind.primary,
             loading: busy,
@@ -555,7 +554,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           title: 'Drop-off',
           icon: LucideIcons.mapPin,
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(order.dropoffHostel.isEmpty ? 'Campus gate' : displayDropPoint(order.dropoffHostel), style: KraveoType.titleLg.copyWith(color: k.ink)),
+            Text(order.dropoffHostel.isEmpty ? 'Delivery address' : displayDropPoint(order.dropoffHostel), style: KraveoType.titleLg.copyWith(color: k.ink)),
             if (order.dropoffNotes.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(order.dropoffNotes, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
@@ -639,21 +638,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   /// Opens the picker. Students keep their saved default; everyone else's choice is remembered
   /// for this session so the next checkout is pre-filled.
   Future<void> _chooseDropoff() async {
-    if (_pickerOpen) return;
+    if (_pickerOpen || _busy || _orderId != null) return;
     _pickerOpen = true;
     try {
-      final picked = await showHostelPicker(context, blocks: kHostelBlocks, selected: _currentHostel ?? '');
-      if (picked != null) _setDropoff(picked);
-    } finally {
-      _pickerOpen = false;
-    }
-  }
-
-  void _setDropoff(String block) {
-    if (!mounted) return;
-    setState(() => _currentHostel = block);
-    final session = context.read<SessionProvider>();
-    if (session.user?.isStudent != true) session.changeHostel(block); // in-memory only
+      final selected = await Navigator.push<DeliveryAddress>(context, MaterialPageRoute(builder: (_) => const AddressesScreen()));
+      if (!mounted) return;
+      if (selected != null) { context.read<SessionProvider>().selectDeliveryAddress(selected); }
+      else { await context.read<SessionProvider>().refreshDeliveryAddress(); }
+      if (mounted) setState(() => _currentHostel = context.read<SessionProvider>().deliveryPoint);
+      if (mounted) {
+        context.read<DhabaProvider>().resetForAddress();
+        unawaited(context.read<DhabaProvider>().refreshHome());
+      }
+    } finally { _pickerOpen = false; }
   }
 
   Widget _buildDropoff(BuildContext context, KraveoTokens k) {
@@ -662,7 +659,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (chosen == null)
         KPressable(
           onTap: _chooseDropoff,
-          semanticLabel: 'Choose a drop-off point. Required before you can pay',
+          semanticLabel: 'Choose a saved delivery address before checkout',
           child: AnimatedContainer(
             duration: KMotion.base,
             padding: const EdgeInsets.all(16),
@@ -682,7 +679,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Choose drop-off point', style: KraveoType.titleLg.copyWith(color: k.ink)),
+                    Text('Choose address point', style: KraveoType.titleLg.copyWith(color: k.ink)),
                     const SizedBox(height: 2),
                     Text('Required before you can pay', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
                   ]),

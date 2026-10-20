@@ -1,8 +1,7 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Bike, Clock, Crosshair, MapPin, PackageCheck, Radio, Timer, UserX, Users } from 'lucide-react';
 import { DriverPartner, DriverPin, Order, OrderStatus, Vendor } from '../types';
-import { apiService } from '../services/api';
-import { DropPointInfo, FALLBACK_DROP_POINTS, LatLng, campusCenter } from '../lib/campus';
+import { DropPointInfo, LatLng } from '../lib/campus';
 import { averageDeliveryMinutes, isMapVendor, trackedRiders } from '../lib/dashboardStats';
 import { RIDER_STATE_META, RIDER_STATE_ORDER, RiderMarkerState, countByState, riderMarkerState } from '../lib/riderMarkers';
 import type { MapRider, MapVendor } from './CampusMap';
@@ -124,13 +123,8 @@ export const LiveCommandCenter: React.FC<LiveCommandCenterProps> = ({ drivers, o
   const plottable = useMemo(() => tracked.filter((driver) => Number.isFinite(driver.lat) && Number.isFinite(driver.lng)), [tracked]);
   const stateCounts = useMemo(() => countByState(plottable.map((driver) => riderStates.get(driver.id) ?? 'stale')), [plottable, riderStates]);
 
-  // Campus data: built-in copy first, the server's answer replaces it when it arrives.
-  const [campus, setCampus] = useState<{ center: LatLng; dropPoints: DropPointInfo[] }>(() => ({ center: campusCenter(), dropPoints: FALLBACK_DROP_POINTS }));
-  useEffect(() => {
-    let alive = true;
-    apiService.fetchCampus().then((data) => { if (alive && data) setCampus(data); });
-    return () => { alive = false; };
-  }, []);
+  // Nationwide map: live vendor pins determine bounds. Historic campus drop points are not injected.
+  const campus: { center: LatLng; dropPoints: DropPointInfo[] } = { center: { lat: 23.5, lng: 80 }, dropPoints: [] };
 
   const mapRiders = useMemo<MapRider[]>(() => plottable.map((driver) => {
     const order = activeByDriver.get(driver.id);

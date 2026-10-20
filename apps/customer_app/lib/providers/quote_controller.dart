@@ -38,7 +38,7 @@ class QuoteController extends ChangeNotifier {
   final void Function(int max)? onMaxRestaurants;
 
   /// Codes after which a combined order cannot succeed until the cart changes.
-  static const Set<String> blockingCodes = {'MULTI_DISABLED', 'TOO_MANY_RESTAURANTS', 'DUPLICATE_RESTAURANT', 'USE_SINGLE_ORDER'};
+  static const Set<String> blockingCodes = {'MULTI_DISABLED', 'TOO_MANY_RESTAURANTS', 'DUPLICATE_RESTAURANT', 'USE_SINGLE_ORDER', 'AREA_UNSUPPORTED', 'ADDRESS_REQUIRED', 'STORE_UNAVAILABLE'};
 
   QuoteStatus _status = QuoteStatus.idle;
   OrderQuote? _quote;

@@ -5,6 +5,8 @@ import '../models/customer_user.dart';
 import '../services/customer_api_service.dart';
 import '../services/google_auth_service.dart';
 import '../widgets/ui/hostel_pill.dart';
+import '../models/delivery_address.dart';
+import '../services/address_api.dart';
 
 /// Where the app is in the account lifecycle. `AuthGate` renders one screen per state.
 enum SessionStatus {
@@ -57,9 +59,32 @@ class SessionProvider with ChangeNotifier {
   String? _googleName;
   bool _newAccount = false;
 
-  /// Drop point picked by a non-student. The server keeps no hostel for them, so it lives only
-  /// for this session and is re-asked at checkout after a restart.
-  String? _localDropPoint;
+  /// Selected server-owned delivery address, cleared when the account changes.
+  bool _disposed = false;
+  @override
+  void dispose() { _disposed = true; super.dispose(); }
+  int _addressEpoch = 0;
+  DeliveryAddress? _address;
+  DeliveryAddress? get selectedAddress => _address;
+  void selectDeliveryAddress(DeliveryAddress address) {
+    if (_disposed || address.customerId != _user?.id) return;
+    _addressEpoch++;
+    _address = address;
+    CustomerApiService.selectedAddressId = address.id;
+    notifyListeners();
+  }
+  Future<void> refreshDeliveryAddress() async {
+    final userId = _user?.id;
+    final epoch = _addressEpoch;
+    if (userId == null) return;
+    try {
+      final rows = await AddressApi.list();
+      if (_disposed || _user?.id != userId || epoch != _addressEpoch) return;
+      final defaults = rows.where((a) => a.isDefault);
+      if (defaults.isNotEmpty) { selectDeliveryAddress(defaults.first); }
+      else { _address = null; CustomerApiService.selectedAddressId = null; notifyListeners(); }
+    } catch (_) { /* Keep the selection on a transient network failure. */ }
+  }
 
   SessionStatus get status => _status;
   CustomerUser? get user => _user;
@@ -71,11 +96,11 @@ class SessionProvider with ChangeNotifier {
 
   /// Where the next order goes, or null when the student has not chosen yet
   /// (non-students choose at checkout).
-  String? get deliveryPoint => hostel ?? _localDropPoint;
+  String? get deliveryPoint => _address?.formatted;
 
   /// Display fallback for places that must always show a block; Block 1 until one is chosen.
   /// Checkout uses [deliveryPoint] and forces an explicit choice instead.
-  String get selectedHostel => deliveryPoint ?? kHostelBlocks.first;
+  String get selectedHostel => deliveryPoint ?? 'Choose delivery address';
 
   /// Name to pre-fill in sign-up step 1.
   String? get suggestedName => _newAccount ? (_googleName ?? _user?.name) : (_user?.name ?? _googleName);
@@ -178,9 +203,11 @@ class SessionProvider with ChangeNotifier {
   }
 
   void _begin(CustomerUser user, {required bool needsProfile}) {
+    if (_user?.id != user.id) { _addressEpoch++; _address = null; CustomerApiService.selectedAddressId = null; }
     _user = user;
     _status = needsProfile ? SessionStatus.needsProfile : SessionStatus.signedIn;
     onUserLoaded?.call(user);
+    if (!needsProfile) unawaited(refreshDeliveryAddress());
     notifyListeners();
   }
 
@@ -194,32 +221,6 @@ class SessionProvider with ChangeNotifier {
     if (_user != null && result.success && result.user != null) {
       _user = CustomerUser.fromJson(result.user!);
       _status = result.needsProfile ? SessionStatus.needsProfile : SessionStatus.signedIn;
-    }
-    notifyListeners();
-    return result;
-  }
-
-  /// Switches the drop-off point. Students save it to their profile (optimistic, reverts on
-  /// failure); non-students keep it for this session only because the server stores no hostel
-  /// for them.
-  Future<ProfileResult> changeHostel(String block) async {
-    final current = _user;
-    if (current == null) return const ProfileResult(success: false, message: 'Please log in again.');
-    if (block == deliveryPoint) return const ProfileResult(success: true);
-    if (current.isStudent != true) {
-      _localDropPoint = block;
-      notifyListeners();
-      return const ProfileResult(success: true);
-    }
-    final previous = current;
-    _user = current.copyWith(hostelBlock: block);
-    notifyListeners();
-    final result = await CustomerApiService.updateProfile(hostelBlock: block);
-    if (_user == null) return result; // signed out meanwhile
-    if (result.success && result.user != null) {
-      _user = CustomerUser.fromJson(result.user!);
-    } else {
-      _user = previous;
     }
     notifyListeners();
     return result;
@@ -264,7 +265,8 @@ class SessionProvider with ChangeNotifier {
     _user = null;
     _googleName = null;
     _newAccount = false;
-    _localDropPoint = null;
+    _address = null;
+    CustomerApiService.selectedAddressId = null;
     _savingProfile = false;
     _status = SessionStatus.signedOut;
     if (wasActive) onSignedOut?.call();

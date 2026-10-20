@@ -108,10 +108,10 @@ export function vendorHasLocation(lat: unknown, lng: unknown): boolean {
 
 export type LocationCheck = { ok: true; lat: number; lng: number } | { ok: false; field: 'lat' | 'lng' | 'location'; message: string };
 
-/** Validates a restaurant pin from untrusted input: numbers (not strings), real ranges, and on campus. */
+/** Validates a restaurant pin from untrusted input: numbers (not strings), real ranges, and within India. Delivery zones are checked separately. */
 export function checkVendorLocation(lat: unknown, lng: unknown): LocationCheck {
   if (typeof lat !== 'number' || !Number.isFinite(lat) || lat < -90 || lat > 90) return { ok: false, field: 'lat', message: 'Latitude must be a number between -90 and 90.' };
   if (typeof lng !== 'number' || !Number.isFinite(lng) || lng < -180 || lng > 180) return { ok: false, field: 'lng', message: 'Longitude must be a number between -180 and 180.' };
-  if (!isNearCampus(lat, lng)) return { ok: false, field: 'location', message: `The location must be within ${NEAR_CAMPUS_KM} km of the campus.` };
+  if (lat < 6 || lat > 38 || lng < 68 || lng > 98) return { ok: false, field: 'location', message: 'Choose a store location in India. Delivery requires configured enabled city coverage.' };
   return { ok: true, lat, lng };
 }

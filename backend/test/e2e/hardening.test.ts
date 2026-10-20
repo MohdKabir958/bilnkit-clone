@@ -254,8 +254,8 @@ describe('Backend hardening', () => {
         { id: 'hd-thr-a', vendorId: v1.vendorId, name: 'thr a', price: 0.7, vendorPrice: 0.7, category: 't', description: '', imageUrl: '' },
         { id: 'hd-thr-b', vendorId: v1.vendorId, name: 'thr b', price: 8.2, vendorPrice: 8.2, category: 't', description: '', imageUrl: '' },
       ] });
-      const r = await validateAndCalculateOrder(v1.vendorId, [{ itemId: 'hd-thr-a', quantity: 14 }, { itemId: 'hd-thr-b', quantity: 11 }], 'VITFIRST');
-      expect([r.calculatedSubtotal, r.calculatedDiscount, r.calculatedTotalAmount, r.appliedCoupon]).toEqual([100, 20, 105, 'VITFIRST']);
+      const r = await validateAndCalculateOrder(v1.vendorId, [{ itemId: 'hd-thr-a', quantity: 14 }, { itemId: 'hd-thr-b', quantity: 11 }], 'WELCOME20');
+      expect([r.calculatedSubtotal, r.calculatedDiscount, r.calculatedTotalAmount, r.appliedCoupon]).toEqual([100, 20, 105, 'WELCOME20']);
     });
 
     test('an unknown code or a cart under the minimum is a 400 COUPON_NOT_APPLICABLE with a readable message; no order is created', async () => {
@@ -613,7 +613,7 @@ describe('Backend hardening', () => {
       const bin = path.join(__dirname, '../../node_modules/.bin/ts-node');
       const script = path.join(__dirname, '../../src/index.ts');
       for (const nodeEnv of ['production', '']) {
-        const env: Record<string, string> = { PATH: process.env.PATH ?? '', HOME: os.tmpdir(), TS_NODE_TRANSPILE_ONLY: 'true', TS_NODE_PROJECT: path.join(__dirname, '../../tsconfig.json'), PORT: '0', ADMIN_PASSCODE: '' }; // Prisma loads backend/.env into the child whatever its cwd; this one is forced empty so it can never boot
+        const env: Record<string, string> = { PATH: process.env.PATH ?? '', HOME: os.tmpdir(), TS_NODE_TRANSPILE_ONLY: 'true', TS_NODE_PROJECT: path.join(__dirname, '../../tsconfig.json'), PORT: '0', ADMIN_PASSCODE: '', PAYMENT_PROVIDER: 'razorpay' }; // Prisma loads backend/.env into the child whatever its cwd; this one is forced empty so it can never boot
         if (nodeEnv) env.NODE_ENV = nodeEnv;
         const r = spawnSync(bin, [script], { cwd: os.tmpdir(), env, encoding: 'utf8', timeout: 60_000 }); // cwd without a .env file
         expect([nodeEnv, r.status === 0]).toEqual([nodeEnv, false]);
@@ -1001,11 +1001,13 @@ describe('Backend hardening', () => {
       const t2 = await api.raw('c', 'post', '/api/orders', c1.token, { vendorId: v1.vendorId, dropoffHostel: 'Block 2', clientRequestId: twoLines.clientRequestId, items: [...twoLines.items].reverse() });
       expect([t2.status, t2.body.data.id]).toEqual([200, t1.body.data.id]);
 
+      const originalAddress = await prisma.address.findFirstOrThrow({ where: { customerId: c1.id } });
+      const secondAddress = await prisma.address.create({ data: { customerId: c1.id, cityId: originalAddress.cityId, label: 'Work', pinCode: originalAddress.pinCode, locality: originalAddress.locality, houseNumber: 'Office 5', street: originalAddress.street, lat: originalAddress.lat, lng: originalAddress.lng, isDefault: false } });
       const variants: [string, () => Promise<any>][] = [
         ['quantity', () => api.place(c1, v1, body, 0, 3)],
         ['item', () => api.place(c1, v1, body, 1, 2)],
         ['vendor', () => api.place(c1, v2, body, 0, 2)],
-        ['dropoff', () => api.place(c1, v1, { ...body, dropoffHostel: 'Block 5' }, 0, 2)],
+        ['dropoff', () => api.place(c1, v1, { ...body, addressId: secondAddress.id }, 0, 2)],
         ['notes', () => api.place(c1, v1, { ...body, dropoffNotes: 'Other room' }, 0, 2)],
         ['coupon', () => api.place(c1, v1, { ...body, couponCode: 'KRAVEO50' }, 0, 2)],
         ['extra line', () => api.raw('c', 'post', '/api/orders', c1.token, { vendorId: v1.vendorId, dropoffHostel: 'Block 2', dropoffNotes: 'Room 214', clientRequestId: key, items: [{ itemId: v1.items[0].id, quantity: 2 }, { itemId: v1.items[1].id, quantity: 1 }] })],

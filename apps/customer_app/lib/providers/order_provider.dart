@@ -65,7 +65,7 @@ class CheckoutDraft {
   List<RestaurantCart> get restaurants => [RestaurantCart(vendorId: vendorId, items: items), ...extraRestaurants];
 
   /// The same cart as a price-quote request (`POST /orders/quote`).
-  QuoteRequest get quoteRequest => QuoteRequest(restaurants: restaurants, couponCode: couponCode);
+  QuoteRequest get quoteRequest => QuoteRequest(restaurants: restaurants, couponCode: couponCode, addressId: CustomerApiService.selectedAddressId);
 
   static List<({String itemId, int quantity})> _aggregate(List<({String itemId, int quantity})> raw) {
     final totals = <String, int>{};
@@ -300,7 +300,7 @@ class OrderProvider with ChangeNotifier {
 
   /// True only when the student's orders are loaded and none of them counts as an earlier order
   /// for the first-order coupon (the server ignores cancelled ones). False while unknown, so the
-  /// VITFIRST promo never shows to someone it would be refused for.
+  /// WELCOME20 promo never shows to someone it would be refused for.
   bool get isFirstTimeCustomer {
     if (!_historyLoaded || !_activeLoaded) return false;
     if (_orders.values.any((o) => o.status != OrderProgressStatus.cancelled)) return false;

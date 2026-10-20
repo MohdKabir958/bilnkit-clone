@@ -134,7 +134,7 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
     final fix = result.fix!;
     setState(() {
       _result = result;
-      // A spot outside the campus area is shown, not saved: the server would refuse it anyway.
+      // Only a valid Indian store location can be saved; coverage is configured separately.
       _phase = isNearCampus(fix.lat, fix.lng) ? _Phase.result : _Phase.outside;
     });
   }
@@ -406,15 +406,13 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
 
   List<Widget> _outsideView(KraveoTokens k) {
     final fix = _result!.fix!;
-    final km = distanceToCampusKm(fix.lat, fix.lng);
-    final away = km < 10 ? km.toStringAsFixed(1) : km.round().toString();
     return [
       _badge(LucideIcons.mapPinOff, KraveoPalette.warning),
       const SizedBox(height: 16),
-      ..._heading(k, 'This is not near the campus', 'यह जगह कैम्पस के पास नहीं है', key: kLocationOutsideKey),
+      ..._heading(k, 'Choose a location in India', 'भारत में दुकान की जगह चुनें', key: kLocationOutsideKey),
       const SizedBox(height: 12),
-      _body(k, 'Your phone says you are about $away km from the campus, so this was not saved. Go to your kitchen and try again.',
-          'आपका फ़ोन कैम्पस से करीब $away किमी दूर बता रहा है, इसलिए सेव नहीं हुई। रसोई पर जाकर फिर कोशिश करें।'),
+      _body(k, 'This location is outside India’s supported coordinate range, so it was not saved. Check the location or try again at your store.',
+          'यह जगह समर्थित क्षेत्र में नहीं है। दुकान पर जाकर फिर कोशिश करें।'),
       const SizedBox(height: 14),
       _coordsCard(k, fix),
       const SizedBox(height: 20),

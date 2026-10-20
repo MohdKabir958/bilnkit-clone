@@ -47,7 +47,7 @@ const until = async (fn: () => boolean | Promise<boolean>, ms = 4000) => {
  * Numbers chosen so that none of them can appear by accident in a restaurant payload:
  *   dish A: restaurant Rs 100, commission 20%  -> customer Rs 120
  *   dish B: restaurant Rs 33.33, commission 12.5% -> 37.50 -> rounded up to Rs 38
- *   fee Rs 37, coupon VITFIRST (20% capped at Rs 50)
+ *   fee Rs 37, coupon WELCOME20 (20% capped at Rs 50)
  * order of A x2 + B x1: subtotal 278, discount 50, fee 37, total 265, restaurant earns 233.33, Kraveo keeps 44.67
  */
 const LEAKY = [120, 38, 240, 278, 265, 37, 50, 44.67, 55.6, 20, 12.5, 228, 315, 87];
@@ -91,7 +91,7 @@ describe('Pricing: money and visibility', () => {
   let sim: ReturnType<typeof createSimulatedProvider>;
   let fake: FakeProvider;
   const sockets: Socket[] = [];
-  // A brand-new customer for every test: VITFIRST is first-order only, and nobody hits the unpaid-orders limit.
+  // A brand-new customer for every test: WELCOME20 is first-order only, and nobody hits the unpaid-orders limit.
   let cur = { id: '', token: '' };
   let cur2 = { id: '', token: '' };
   const freshStudent = async () => {
@@ -200,7 +200,7 @@ describe('Pricing: money and visibility', () => {
       expect(r.status).toBe(201);
       expect(r.body.data).toMatchObject({ subtotal: 278, deliveryFee: 37, taxAndPackaging: 0, discount: 50, totalAmount: 265, paymentStatus: 'PENDING' });
       const row = await prisma.order.findUniqueOrThrow({ where: { id: r.body.data.id }, include: { items: { orderBy: { name: 'asc' } } } });
-      expect(row).toMatchObject({ subtotal: 278, vendorSubtotal: 233.33, commissionTotal: 44.67, deliveryFee: 37, taxAndPackaging: 0, discount: 50, totalAmount: 265, couponCode: 'VITFIRST' });
+      expect(row).toMatchObject({ subtotal: 278, vendorSubtotal: 233.33, commissionTotal: 44.67, deliveryFee: 37, taxAndPackaging: 0, discount: 50, totalAmount: 265, couponCode: 'WELCOME20' });
       expect(row.feeBreakdown).toEqual({ version: 1, total: 37, baseFee: 37, baseWaived: false, smallOrderFee: 0, restaurants: 1, extraRestaurantFee: 0, extraRestaurants: 0, lines: [] });
       expect(row.items.map((i) => [i.name, i.quantity, i.price, i.vendorUnitPrice, i.commissionUnit])).toEqual([['Dish A', 2, 120, 100, 20], ['Dish B', 1, 38, 33.33, 4.67]]);
       // the money invariant in paise: customer total = food + fee - discount; food = restaurant + Kraveo's part
@@ -243,7 +243,7 @@ describe('Pricing: money and visibility', () => {
     });
 
     test('payment amount, captured amount and refund are the customer total in paise; the restaurant part never decides money in or out', async () => {
-      const placed = await place(cur.token, { couponCode: 'VITFIRST' });
+      const placed = await place(cur.token, { couponCode: 'WELCOME20' });
       const id = placed.body.data.id;
       const paid = await pay(id);
       expect(paid.amountInPaise).toBe(26500);
@@ -257,10 +257,10 @@ describe('Pricing: money and visibility', () => {
     });
 
     test('the second use of a single-use coupon is refused, and the failure changes no totals', async () => {
-      const first = await place(cur2.token, { couponCode: 'VITFIRST' });
+      const first = await place(cur2.token, { couponCode: 'WELCOME20' });
       expect(first.status).toBe(201);
       await pay(first.body.data.id, cur2.token); // an unpaid first checkout would be replaced by the next one and release the code
-      const again = await place(cur2.token, { couponCode: 'VITFIRST', clientRequestId: randomUUID() });
+      const again = await place(cur2.token, { couponCode: 'WELCOME20', clientRequestId: randomUUID() });
       expect([again.status, again.body.code]).toEqual([400, 'COUPON_NOT_APPLICABLE']);
     });
   });
@@ -278,7 +278,7 @@ describe('Pricing: money and visibility', () => {
       const aLog = record(as, ['order_updated', 'new_order_alert']);
       const cLog = record(cs, ['order_updated']);
       const rLog = record(rs, ['order_updated', 'order_available']);
-      const placed = await place(cur.token, { couponCode: 'VITFIRST' });
+      const placed = await place(cur.token, { couponCode: 'WELCOME20' });
       expect(placed.status).toBe(201);
       const id = placed.body.data.id as string;
       expect((await cs.emitWithAck('join_room', `order_${id}`)).ok).toBe(true);
@@ -332,7 +332,7 @@ describe('Pricing: money and visibility', () => {
     });
 
     test('RESTAURANT: the other restaurant, an unpaid order and every admin / payment endpoint give it nothing', async () => {
-      const placed = await place(cur.token, { couponCode: 'VITFIRST' });
+      const placed = await place(cur.token, { couponCode: 'WELCOME20' });
       const id = placed.body.data.id;
       // unpaid: invisible
       expect((await request.get(`/api/orders/${id}`).set(H(tVendor))).status).toBe(404);
@@ -375,7 +375,7 @@ describe('Pricing: money and visibility', () => {
     test('ADMIN sees everything: customer money, restaurant part, commission, fee breakdown, coupon, per-item snapshots, over REST and sockets', async () => {
       const { id, aLog } = await drive();
       const admin = (await request.get(`/api/orders/${id}`).set(H(tAdmin))).body.data;
-      expect(admin).toMatchObject({ subtotal: 278, deliveryFee: 37, taxAndPackaging: 0, discount: 50, totalAmount: 265, vendorSubtotal: 233.33, commissionTotal: 44.67, couponCode: 'VITFIRST' });
+      expect(admin).toMatchObject({ subtotal: 278, deliveryFee: 37, taxAndPackaging: 0, discount: 50, totalAmount: 265, vendorSubtotal: 233.33, commissionTotal: 44.67, couponCode: 'WELCOME20' });
       expect(admin.feeBreakdown).toMatchObject({ total: 37, baseFee: 37 });
       expect(admin.items.map((i: any) => [i.name, i.price, i.vendorUnitPrice, i.commissionUnit]).sort()).toEqual([['Dish A', 120, 100, 20], ['Dish B', 38, 33.33, 4.67]]);
       expect(admin.payments).toHaveLength(1);
@@ -402,7 +402,7 @@ describe('Pricing: money and visibility', () => {
     });
 
     test('RIDER keeps the old shape (pool and own order) and gets no commission or restaurant-side fields', async () => {
-      const placed = await place(cur.token, { couponCode: 'VITFIRST' });
+      const placed = await place(cur.token, { couponCode: 'WELCOME20' });
       const id = placed.body.data.id;
       await pay(id);
       for (const st of ['ACCEPTED', 'PREPARING']) await status(id, st, tVendor);

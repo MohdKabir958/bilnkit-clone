@@ -73,7 +73,7 @@ class _Server {
   _Server install() {
     CustomerApiService.httpClientOverride = MockClient((req) async {
       final path = req.url.path.replaceFirst(RegExp(r'^/api'), '');
-      if (path == '/vendors') {
+      if (path == '/v1/vendors/nearby') {
         vendorRequests++;
         if (fail) return http.Response('<html>502 Bad Gateway</html>', 502);
         return http.Response(jsonEncode({'success': true, 'data': vendors}), 200, headers: {'content-type': 'application/json'});
@@ -290,13 +290,13 @@ void main() {
     testWidgets('the first-order promo is shown only to a student with no orders; unknown history hides it', (tester) async {
       _Server(vendors: [_vendor('v1', 'Real Dhaba')]).install();
       await _pump(tester, const HomeScreen(), dhabas: sampleCatalogProvider(), orders: OrderProvider());
-      expect(find.text('VITFIRST'), findsNothing, reason: 'orders not loaded yet: hidden');
+      expect(find.text('WELCOME20'), findsNothing, reason: 'orders not loaded yet: hidden');
 
       await _pump(tester, const HomeScreen(), dhabas: sampleCatalogProvider(), orders: await ordersLoaded());
-      expect(find.text('VITFIRST'), findsOneWidget);
+      expect(find.text('WELCOME20'), findsOneWidget);
 
       await _pump(tester, const HomeScreen(), dhabas: sampleCatalogProvider(), orders: await ordersLoaded(history: [orderModel(id: 'h1', status: 'DELIVERED', paymentStatus: 'PAID')]));
-      expect(find.text('VITFIRST'), findsNothing, reason: 'a student who already ordered is refused VITFIRST by the server');
+      expect(find.text('WELCOME20'), findsNothing, reason: 'a student who already ordered is refused WELCOME20 by the server');
       expect(find.text('FIRST ORDER'), findsNothing);
     });
 
@@ -433,16 +433,16 @@ void main() {
     }
 
     testWidgets('the server refuses the coupon: it is removed, checkout stays open, one line gives the reason and the new total', (tester) async {
-      final cart = _cartWith(price: 120)..applyCoupon('VITFIRST'); // 120 + 25 - 24 = 121
+      final cart = _cartWith(price: 120)..applyCoupon('WELCOME20'); // 120 + 25 - 24 = 121
       final (api, _) = await open(tester, cart: cart);
-      api.onCreate = (r) async => const OrderResult.fail(OrderApiError(OrderErrorKind.rejected, statusCode: 400, code: 'COUPON_NOT_APPLICABLE', message: 'VITFIRST is only for your first order.'));
+      api.onCreate = (r) async => const OrderResult.fail(OrderApiError(OrderErrorKind.rejected, statusCode: 400, code: 'COUPON_NOT_APPLICABLE', message: 'WELCOME20 is only for your first order.'));
       expect(_button('Pay ₹121'), findsOneWidget);
 
       await pay(tester, 'Pay ₹121');
       expect(cart.appliedCouponCode, isNull, reason: 'the refused coupon is dropped by itself');
       expect(find.text('Checkout'), findsOneWidget, reason: 'still on the checkout screen');
       expect(_button('Pay ₹145'), findsOneWidget, reason: 'the button shows the new total');
-      expect(find.textContaining('Coupon removed. VITFIRST is only for your first order. Your total is now ₹145.'), findsWidgets);
+      expect(find.textContaining('Coupon removed. WELCOME20 is only for your first order. Your total is now ₹145.'), findsWidgets);
       expect(tester.takeException(), isNull);
 
       // The next tap places the order without the coupon (new idempotency key).
@@ -474,7 +474,7 @@ void main() {
     });
 
     testWidgets('paise are shown everywhere: Pay button, bill rows and total (₹175.40)', (tester) async {
-      final cart = _cartWith(price: 188)..applyCoupon('VITFIRST'); // 37.6 off -> 175.40
+      final cart = _cartWith(price: 188)..applyCoupon('WELCOME20'); // 37.6 off -> 175.40
       await open(tester, cart: cart);
       expect(_button('Pay ₹175.40'), findsOneWidget);
       await tester.scrollUntilVisible(find.text('To pay'), 200, scrollable: find.byType(Scrollable).first);
@@ -847,6 +847,8 @@ void main() {
       final row = find.byWidgetPredicate((w) => w is KPressable && (w.semanticLabel ?? '').startsWith('Contact Kraveo support'));
       await tester.scrollUntilVisible(row, 200, scrollable: find.byType(Scrollable).first);
       expect(find.text(kSupportEmail), findsOneWidget);
+      await tester.ensureVisible(row);
+      await tester.pump();
       await tester.tap(row);
       await tester.pump();
       expect(opened.single.scheme, 'mailto');

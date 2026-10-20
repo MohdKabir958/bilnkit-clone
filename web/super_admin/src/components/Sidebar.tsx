@@ -17,6 +17,7 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS: Array<{ id: TabType; label: string; hint: string; icon: React.ElementType }> = [
+  { id: 'coverage', label: 'Delivery coverage', hint: 'Cities, zones and store opening hours', icon: MapPinned },
   { id: 'map', label: 'Live map', hint: 'Dispatch and runner positions', icon: MapPinned },
   { id: 'orders', label: 'Orders', hint: 'Every order and its status', icon: ShoppingBag },
   { id: 'attention', label: 'Needs attention', hint: 'Failed refunds, locked OTPs, stuck orders', icon: TriangleAlert },

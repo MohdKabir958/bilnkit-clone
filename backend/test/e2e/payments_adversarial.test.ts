@@ -1,3 +1,4 @@
+import { ensureFixtureGeography } from '../harness/geography';
 /**
  * Payments & money-integrity audit (adversarial). Companion to order_flow_v1.test.ts.
  *
@@ -577,7 +578,7 @@ describe('Payments adversarial audit', () => {
       let thresholdDisagreements = 0;
       for (let n = 0; n < 600; n++) {
         const lines = Array.from({ length: 1 + Math.floor(rnd() * 4) }, () => ({ itemId: `adv-p-${Math.floor(rnd() * PRICES.length)}`, quantity: 1 + Math.floor(rnd() * 20) }));
-        const coupon = ['', 'VITFIRST', 'KRAVEO20', 'KRAVEO50'][Math.floor(rnd() * 4)];
+        const coupon = ['', 'WELCOME20', 'KRAVEO20', 'KRAVEO50'][Math.floor(rnd() * 4)];
         const r = await validateAndCalculateOrder('ven-1', lines, coupon);
         expect(r.isValid).toBe(true);
         const subP = lines.reduce((s, l) => s + Math.round(PRICES[Number(l.itemId.slice(6))] * 100) * l.quantity, 0);
@@ -585,7 +586,7 @@ describe('Payments adversarial audit', () => {
         expect(Math.round(r.calculatedSubtotal * 100)).toBe(subP);
         const discP = Math.round(r.calculatedDiscount * 100);
         expect(Math.round(r.calculatedTotalAmount * 100)).toBe(subP + 2500 - discP);
-        const expectedDisc = coupon === 'VITFIRST' ? (subP >= 10000 ? Math.min(Math.round(subP * 0.2), 5000) : 0)
+        const expectedDisc = coupon === 'WELCOME20' ? (subP >= 10000 ? Math.min(Math.round(subP * 0.2), 5000) : 0)
           : coupon === 'KRAVEO20' ? (subP >= 8000 ? 2000 : 0) : coupon === 'KRAVEO50' ? (subP >= 15000 ? 5000 : 0) : 0;
         if (expectedDisc !== discP) thresholdDisagreements++; // reported by the BUG threshold test below
         expect(r.calculatedTotalAmount).toBeGreaterThanOrEqual(25 - 50 + 100 / 100); // never below Rs 1 with positive prices
@@ -593,20 +594,21 @@ describe('Payments adversarial audit', () => {
       expect(thresholdDisagreements).toBeGreaterThanOrEqual(0);
     });
 
-    test('PROVE: coupon threshold is checked on the rounded subtotal, so a cart worth exactly Rs 100.00 gets VITFIRST (0.7x14 + 8.2x11 = 99.99999999999999)', async () => {
+    test('PROVE: coupon threshold is checked on the rounded subtotal, so a cart worth exactly Rs 100.00 gets WELCOME20 (0.7x14 + 8.2x11 = 99.99999999999999)', async () => {
       await prisma.menuItem.create({ data: { id: 'adv-p-thr1', vendorId: 'ven-1', name: 'adv-thr-0.7', price: 0.7, vendorPrice: 0.7, category: 'adv', description: '', imageUrl: '' } });
       await prisma.menuItem.create({ data: { id: 'adv-p-thr2', vendorId: 'ven-1', name: 'adv-thr-8.2', price: 8.2, vendorPrice: 8.2, category: 'adv', description: '', imageUrl: '' } });
-      const r = await validateAndCalculateOrder('ven-1', [{ itemId: 'adv-p-thr1', quantity: 14 }, { itemId: 'adv-p-thr2', quantity: 11 }], 'VITFIRST');
+      const r = await validateAndCalculateOrder('ven-1', [{ itemId: 'adv-p-thr1', quantity: 14 }, { itemId: 'adv-p-thr2', quantity: 11 }], 'WELCOME20');
       expect(r.calculatedSubtotal).toBe(100);
       expect(r.calculatedDiscount).toBe(20); // was 0 before the fix (threshold compared on 99.99999999999999)
     });
 
-    test('PROVE: end to end 33.33 x 7 with VITFIRST: stored total, Razorpay order amount, captured amount and refund amount are all the same integer paise (21165)', async () => {
-      // VITFIRST is for a first order only: use a brand-new customer (the shared student has many earlier orders).
+    test('PROVE: end to end 33.33 x 7 with WELCOME20: stored total, Razorpay order amount, captured amount and refund amount are all the same integer paise (21165)', async () => {
+      // WELCOME20 is for a first order only: use a brand-new customer (the shared student has many earlier orders).
       const vit = { id: 'usr-adv-vit', phone: '+91 9999800777' };
       await prisma.user.upsert({ where: { id: vit.id }, update: {}, create: { id: vit.id, name: 'Vit First', phone: vit.phone, role: 'STUDENT', hostelBlock: 'Block 3' } });
+      await ensureFixtureGeography('seed', [vit.id], ['ven-1']);
       const tVit = getStudentToken(vit.id, vit.phone);
-      const placed = await place(tVit, { items: [{ itemId: 'adv-p-7', quantity: 7 }], couponCode: 'VITFIRST' });
+      const placed = await place(tVit, { items: [{ itemId: 'adv-p-7', quantity: 7 }], couponCode: 'WELCOME20' });
       expect(placed.status).toBe(201);
       expect(placed.body.data.totalAmount).toBe(211.65); // 233.31 + 25 - 46.66
       const id = placed.body.data.id;
@@ -621,7 +623,7 @@ describe('Payments adversarial audit', () => {
       await __waitForBackgroundWork();
       expect(P.calls.refund[0].amountPaise).toBe(21165);
       expect((await db(id)).payments[0].capturedAmountPaise).toBe(21165);
-      expect((await db(id)).couponCode).toBe('VITFIRST');
+      expect((await db(id)).couponCode).toBe('WELCOME20');
     });
 
     test('PROVE: wrong-unit webhooks (rupees instead of paise, 10x, or 0) are never marked paid and are visible to the admin', async () => {
@@ -663,7 +665,7 @@ describe('Payments adversarial audit', () => {
       }
     });
 
-    test('PROVE: KRAVEO20 ("redeem 50 coins") is refused (400 COUPON_NOT_APPLICABLE) without a redemption, consumes nothing, and KRAVEO50 / VITFIRST are single use', async () => {
+    test('PROVE: KRAVEO20 ("redeem 50 coins") is refused (400 COUPON_NOT_APPLICABLE) without a redemption, consumes nothing, and KRAVEO50 / WELCOME20 are single use', async () => {
       await prisma.user.update({ where: { id: STUDENT.id }, data: { kraveoCoins: 0, kraveo20Redeemed: 0 } });
       const r = await place(tStudent, { couponCode: 'KRAVEO20' });
       expect([r.status, r.body.code]).toEqual([400, 'COUPON_NOT_APPLICABLE']);
@@ -700,38 +702,39 @@ describe('Payments adversarial audit', () => {
       expect([unknown.status, unknown.body.code]).toEqual([400, 'COUPON_NOT_APPLICABLE']);
     });
 
-    test('PROVE: VITFIRST is only for a first order and single use: later orders, a second use and 6 concurrent checkouts get no discount (400); cancelling releases it', async () => {
+    test('PROVE: WELCOME20 is only for a first order and single use: later orders, a second use and 6 concurrent checkouts get no discount (400); cancelling releases it', async () => {
       const mk = async (n: number) => {
         const u = { id: `usr-adv-vit${n}`, phone: `+91 99998008${String(n).padStart(2, '0')}` };
         await prisma.user.upsert({ where: { id: u.id }, update: { }, create: { id: u.id, name: `Vit Tester${n}`, phone: u.phone, role: 'STUDENT', hostelBlock: 'Block 3' } });
         await prisma.order.deleteMany({ where: { customerId: u.id } });
+        await ensureFixtureGeography('seed', [u.id], ['ven-1']);
         return getStudentToken(u.id, u.phone);
       };
       // a) first order gets it, the second use is refused, cancelling the first releases it
       const t1 = await mk(1);
-      const a1 = await place(t1, { couponCode: 'VITFIRST' });
+      const a1 = await place(t1, { couponCode: 'WELCOME20' });
       expect([a1.status, a1.body.data.discount]).toEqual([201, 36]); // 20% of 180
       expect((await createPayment(a1.body.data.id, t1)).status).toBe(200); // payment opened: the order is live (an abandoned one would be replaced, BE1-01)
-      const a2 = await place(t1, { couponCode: 'VITFIRST' });
+      const a2 = await place(t1, { couponCode: 'WELCOME20' });
       expect([a2.status, a2.body.code]).toEqual([400, 'COUPON_NOT_APPLICABLE']);
       expect((await request.post(`/api/orders/${a1.body.data.id}/cancel`).set(H(t1)).send({})).status).toBe(200);
-      const a3 = await place(t1, { couponCode: 'VITFIRST' });
+      const a3 = await place(t1, { couponCode: 'WELCOME20' });
       expect([a3.status, a3.body.data.discount]).toEqual([201, 36]);
       // b) a customer who already has an order (no coupon) is not a first-time customer
       const t2 = await mk(2);
       const first2 = await place(t2);
       expect(first2.status).toBe(201);
       expect((await createPayment(first2.body.data.id, t2)).status).toBe(200);
-      const b = await place(t2, { couponCode: 'VITFIRST' });
+      const b = await place(t2, { couponCode: 'WELCOME20' });
       expect([b.status, b.body.code]).toEqual([400, 'COUPON_NOT_APPLICABLE']);
       expect(b.body.message).toMatch(/first order/);
       // c) concurrent checkouts with the same single-use code: exactly one wins
       const t3 = await mk(3);
-      const race = await Promise.all(Array.from({ length: 6 }, () => place(t3, { couponCode: 'VITFIRST' })));
+      const race = await Promise.all(Array.from({ length: 6 }, () => place(t3, { couponCode: 'WELCOME20' })));
       // Since BE1-01 each checkout replaces the previous abandoned one: all 6 are accepted, but only ONE order can hold the code at the end.
       expect(race.every((r) => r.status === 201)).toBe(true);
-      expect(await prisma.order.count({ where: { customerId: 'usr-adv-vit3', couponCode: 'VITFIRST', status: { not: 'CANCELLED' } } })).toBe(1);
-      expect(await prisma.order.count({ where: { customerId: 'usr-adv-vit3', couponCode: 'VITFIRST', status: 'CANCELLED', cancelledBy: 'SYSTEM' } })).toBe(5);
+      expect(await prisma.order.count({ where: { customerId: 'usr-adv-vit3', couponCode: 'WELCOME20', status: { not: 'CANCELLED' } } })).toBe(1);
+      expect(await prisma.order.count({ where: { customerId: 'usr-adv-vit3', couponCode: 'WELCOME20', status: 'CANCELLED', cancelledBy: 'SYSTEM' } })).toBe(5);
     });
 
     test('PROVE: vendor menu prices are validated (negative, non-numeric, sub-paise, huge are 400) so an item cannot make an order cost less than its food', async () => {
@@ -996,6 +999,20 @@ describe('Payments adversarial audit', () => {
       expect(second.expired).toHaveLength(30);
       expect(new Set([...first.expired, ...second.expired]).size).toBe(130);
       expect((await runOrderMaintenance()).expired).toHaveLength(0);
+    });
+
+    test('PROVE: capture after checkout deadline cancels and refunds even before maintenance runs', async () => {
+      const o = await mkOrder({ ageMin: 20 });
+      const paymentId = `pay_late_deadline_${randomUUID().slice(0, 6)}`;
+      const result = await verify(o.rzp, paymentId);
+      expect([result.status, result.body.code]).toEqual([409, 'ORDER_CANCELLED']);
+      await __waitForBackgroundWork();
+      const row = await db(o.id);
+      expect([row.status, row.paymentStatus]).toEqual(['CANCELLED', 'REFUNDED']);
+      expect(row.paidAt).toBeNull();
+      expect(P.sim.refunds.get(paymentId)).toHaveLength(1);
+      await verify(o.rzp, paymentId);
+      expect(P.sim.refunds.get(paymentId)).toHaveLength(1);
     });
 
     test('PROVE: expiry vs late payment vs vendor accept, 15 rounds of a three-way race: never "cancelled and money kept", never "accepted and refunded"', async () => {

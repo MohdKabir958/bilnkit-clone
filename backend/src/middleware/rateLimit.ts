@@ -90,10 +90,12 @@ type Rule = {
  * same handler as `/orders`. Every rule below therefore matches on this normalised form, never on `req.path` directly,
  * otherwise a client could skip a limit just by changing the spelling of the URL.
  */
-export const normalizedPath = (rawPath: string): string => (rawPath || '/').toLowerCase().replace(/\/{2,}/g, '/').replace(/\/+$/, '') || '/';
+export const normalizedPath = (rawPath: string): string => (rawPath || '/').toLowerCase().replace(/\/{2,}/g, '/').replace(/\/+$/, '').replace(/^\/v1(?=\/|$)/, '') || '/';
 
 const MIN = 60_000;
 const RULES: Rule[] = [
+  { name: 'MAPS_SEARCH', scope: 'user', max: 30, windowMs: MIN, applies: (r, p) => r.method === 'GET' && p === '/maps/search', message: 'Too many location searches. Please wait a minute.' },
+  { name: 'ADDRESS_WRITE', scope: 'user', max: 30, windowMs: 10 * MIN, applies: (r, p) => ['POST', 'PUT', 'DELETE'].includes(r.method) && /^\/addresses(?:\/|$)/.test(p), message: 'Too many address changes. Please wait a few minutes.' },
   { name: 'ORDER_CREATE', scope: 'user', max: 8, windowMs: 10 * MIN, applies: (r, p) => r.method === 'POST' && p === '/orders', message: 'You are placing orders too fast. Please wait a few minutes.' },
   // Docs/22: a combined order is placed (and priced) through its own endpoints; same budget as a single order, and a quote is a read-only price check.
   { name: 'ORDER_GROUP_CREATE', scope: 'user', max: 8, windowMs: 10 * MIN, applies: (r, p) => r.method === 'POST' && p === '/order-groups', message: 'You are placing orders too fast. Please wait a few minutes.' },

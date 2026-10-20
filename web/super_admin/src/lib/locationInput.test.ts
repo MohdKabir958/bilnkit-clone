@@ -62,12 +62,15 @@ describe('parseLocationInput: every way an admin might paste a point (all must g
     ['only one number', `23°04'53.4"N`, /Could not read/],
     ['plain text', `abc`, /Could not read/],
     ['a plus code', `7JF3+2X Bhopal`, /Could not read/],
-    ['southern/western hemisphere (not India)', `23°04'53.4"S 76°50'35.0"W`, /3 km/],
-    ['another city', `28°36'50.0"N 77°12'32.0"E`, /3 km/],
-    ['negative degrees', `-23°04'53.4" 76°50'35.0"`, /3 km/],
+    ['southern/western hemisphere (not India)', `23°04'53.4"S 76°50'35.0"W`, /India/],
+    ['negative degrees', `-23°04'53.4" 76°50'35.0"`, /India/],
     ['swapped decimals, with a hint', `76.8431, 23.0815`, /look swapped.*23\.08150, 76\.84310/],
     ['empty', ``, /Paste the coordinates/],
   ];
+  it('accepts a store in Delhi without a campus radius restriction', () => {
+    expect(parseLocationInput('28.6139, 77.2090')).toEqual({ ok: true, lat: 28.6139, lng: 77.209 });
+    expect(parseLocationInput('12.9716, 77.5946')).toEqual({ ok: true, lat: 12.9716, lng: 77.5946 });
+  });
   it.each(refused)('refuses %s with a clear message', (_n, text, msg) => {
     const r = parseLocationInput(text);
     expect(r.ok).toBe(false);

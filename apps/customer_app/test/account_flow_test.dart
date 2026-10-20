@@ -1,5 +1,8 @@
+import 'package:customer_app/models/delivery_address.dart';
+import 'package:customer_app/screens/addresses_screen.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show SocketException;
 
 import 'package:customer_app/main.dart';
 import 'package:customer_app/models/customer_user.dart';
@@ -73,6 +76,11 @@ Map<String, dynamic> userJson({
       'kraveoCoins': coins,
     };
 
+Map<String, dynamic> addressJson({String id = 'address-home', String label = 'Home', String house = 'Flat 14', bool selected = true}) => {
+  'id': id, 'customerId': 'u1', 'cityId': 'blr', 'city': {'id': 'blr', 'name': 'Bengaluru', 'state': 'Karnataka'}, 'country': 'IN', 'label': label,
+  'pinCode': '560001', 'locality': 'Central', 'houseNumber': house, 'street': 'Main Road', 'lat': 12.97, 'lng': 77.59, 'isDefault': selected,
+};
+
 /// A brand-new Google account: nothing but e-mail filled in.
 Map<String, dynamic> blankUserJson() => userJson(name: null, phone: null, hostel: null, isStudent: null, avatarId: null);
 
@@ -116,7 +124,8 @@ class FakeServer {
       }
       return reply(200, {'success': true, 'user': user, 'needsProfile': needsProfile});
     });
-    backend.on('GET /vendors', (_) => reply(500, {'success': false}));
+    backend.on('GET /v1/addresses', (_) => reply(200, {'success': true, 'data': [], 'nextCursor': null}));
+    backend.on('GET /v1/vendors/nearby', (_) => reply(500, {'success': false}));
     backend.on('POST /auth/logout', (_) => reply(200, {'success': true}));
   }
 
@@ -127,7 +136,7 @@ class FakeServer {
 
   bool get needsProfile =>
       user['role'] == 'STUDENT' &&
-      (user['name'] == null || user['phone'] == null || user['avatarId'] == null || user['isStudent'] == null || (user['isStudent'] == true && user['hostelBlock'] == null));
+      (user['name'] == null || user['phone'] == null || user['avatarId'] == null);
 }
 
 Future<void> loadKraveoFonts() async {
@@ -161,6 +170,7 @@ Future<void> pumpWithProviders(
   SessionProvider? session,
   CartProvider? cart,
   OrderProvider? orders,
+  double textScale = 1,
 }) async {
   smallPhone(tester);
   await tester.pumpWidget(
@@ -171,7 +181,7 @@ Future<void> pumpWithProviders(
         ChangeNotifierProvider<CartProvider>.value(value: cart ?? CartProvider()),
         ChangeNotifierProvider<OrderProvider>.value(value: orders ?? OrderProvider()),
       ],
-      child: MaterialApp(theme: KraveoTheme.customer(), home: child),
+      child: MaterialApp(theme: KraveoTheme.customer(), builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)), child: child!), home: child),
     ),
   );
   await tester.pump(const Duration(milliseconds: 800));
@@ -386,7 +396,7 @@ void main() {
     test('HTTP 401 on authenticated calls clears the token and fires onUnauthorized', () async {
       var fired = 0;
       CustomerApiService.onUnauthorized = () => fired++;
-      backend.on('POST /orders', (_) => reply(401, {'success': false, 'message': 'jwt expired'}));
+      backend.on('POST /v1/orders', (_) => reply(401, {'success': false, 'message': 'jwt expired'}));
       backend.on('POST /payments/create-order', (_) => reply(401, {'success': false}));
       backend.on('POST /payments/verify-signature', (_) => reply(401, {'success': false}));
       backend.on('GET /auth/profile', (_) => reply(401, {'success': false}));
@@ -586,21 +596,22 @@ void main() {
       expect(s.status, SessionStatus.signedIn);
     });
 
-    test('non-students keep their drop point in memory only; students persist it', () async {
+    test('structured address selection is isolated to the signed-in account and cleared on logout', () async {
       FakeServer(backend, seed: userJson(isStudent: false, hostel: null), isNewUser: false);
       final s = newSession();
       await s.signInWithGoogle();
       expect(s.deliveryPoint, isNull);
-      final r = await s.changeHostel('BH5');
-      expect(r.success, isTrue);
-      expect(s.deliveryPoint, 'BH5');
-      expect(backend.to('PUT /auth/profile'), isEmpty, reason: 'the server keeps no hostel for non-students');
+      final a = DeliveryAddress({'id': 'address-a', 'customerId': 'u1', 'label': 'Home', 'houseNumber': 'Flat 14', 'street': 'Main Road', 'locality': 'Central', 'city': {'name': 'Bengaluru'}, 'pinCode': '560001'});
+      s.selectDeliveryAddress(a);
+      expect(s.deliveryPoint, 'Flat 14, Main Road, Central, Bengaluru 560001');
+      expect(CustomerApiService.selectedAddressId, 'address-a');
+      s.selectDeliveryAddress(DeliveryAddress({...a.data, 'id': 'stolen', 'customerId': 'someone-else'}));
+      expect(CustomerApiService.selectedAddressId, 'address-a');
       await s.logout();
-      expect(s.deliveryPoint, isNull, reason: 'cleared with the session');
-
-      final student = newSession()..beginForTest(userJson());
-      expect(student.deliveryPoint, 'BH2');
+      expect(s.deliveryPoint, isNull);
+      expect(CustomerApiService.selectedAddressId, isNull);
     });
+
   });
 
   group('AuthScreen', () {
@@ -679,40 +690,21 @@ void main() {
       s.beginForTest(user ?? blankUserJson(), needsProfile: true, googleName: googleName, isNewAccount: true);
       return s;
     }
-
     Future<void> fillStep1(WidgetTester tester, {String name = 'Aarav Sharma', String phone = '9876543210'}) async {
       await tester.enterText(find.byKey(const ValueKey('name-field')), name);
       await tester.enterText(find.byKey(const ValueKey('phone-field')), phone);
-      await tester.pump();
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
+      await tester.tap(find.text('Continue')); await settle(tester);
     }
-
-    Future<void> chooseHostel(WidgetTester tester, String block) async {
-      await tester.ensureVisible(find.byKey(const ValueKey('hostel-field')));
-      await tester.tap(find.byKey(const ValueKey('hostel-field')));
-      await settle(tester);
-      expect(find.text('Where should we deliver?'), findsOneWidget);
-      await tester.tap(find.text(block));
-      await settle(tester);
-    }
-
     Future<void> pickAvatar(WidgetTester tester, int id) async {
-      await tester.ensureVisible(kAvatarWithId(id));
-      await tester.tap(kAvatarWithId(id));
-      await tester.pump();
+      await tester.ensureVisible(kAvatarWithId(id)); await tester.tap(kAvatarWithId(id)); await tester.pump();
     }
-
-    testWidgets('step 1 is prefilled from Google and shows the +91 prefix and progress', (tester) async {
+    testWidgets('name and phone are prefilled, with two steps and no campus classification', (tester) async {
       await pumpWithProviders(tester, const ProfileSetupScreen(), session: needsProfileSession(googleName: 'Meera Rao'));
-      expect(find.text('Meera Rao'), findsOneWidget);
-      expect(find.text('+91'), findsOneWidget);
-      expect(find.text('aarav@example.com'), findsOneWidget);
-      expect(find.bySemanticsLabel('Step 1 of 3'), findsOneWidget);
-      expect(find.byIcon(LucideIcons.arrowLeft), findsNothing, reason: 'no back on the first step');
+      expect(find.text('Meera Rao'), findsOneWidget); expect(find.text('+91'), findsOneWidget);
+      expect(find.bySemanticsLabel('Step 1 of 2'), findsOneWidget);
+      expect(find.byKey(const ValueKey('student-yes')), findsNothing);
       expect(tester.takeException(), isNull);
     });
-
     testWidgets('step 1 blocks empty, too-short, non-letter and non-Indian numbers with clear text', (tester) async {
       await pumpWithProviders(tester, const ProfileSetupScreen(), session: needsProfileSession(googleName: null));
       await tester.tap(find.text('Continue'));
@@ -748,239 +740,80 @@ void main() {
       expect(tester.widget<TextField>(find.byKey(const ValueKey('phone-field'))).controller!.text, '9876543210');
     });
 
-    testWidgets('step 2: Continue stays disabled until Yes (+ hostel) or No is chosen', (tester) async {
+
+    testWidgets('the second step requires an explicit avatar and never asks for a hostel', (tester) async {
       await pumpWithProviders(tester, const ProfileSetupScreen(), session: needsProfileSession());
       await fillStep1(tester);
-      expect(find.textContaining('student?'), findsOneWidget);
-      expect(isDisabled(tester, 'Continue'), isTrue);
-      expect(find.text('Choose your hostel block'), findsNothing, reason: 'hostel only after Yes');
-
-      await tester.tap(find.byKey(const ValueKey('student-yes')));
-      await settle(tester);
-      expect(find.text('Choose your hostel block'), findsOneWidget);
-      expect(find.text('Pick your block to continue.'), findsOneWidget);
-      expect(isDisabled(tester, 'Continue'), isTrue, reason: 'Yes needs a hostel block');
-
-      await chooseHostel(tester, 'BH3');
-      expect(find.text('BH3'), findsOneWidget);
-      expect(isDisabled(tester, 'Continue'), isFalse);
-
-      await tester.tap(find.byKey(const ValueKey('student-no')));
-      await settle(tester);
-      expect(find.text('BH3'), findsNothing, reason: 'hostel field hides for No');
-      expect(isDisabled(tester, 'Continue'), isFalse, reason: 'No skips the hostel');
-
-      await tester.tap(find.byKey(const ValueKey('student-yes')));
-      await settle(tester);
-      expect(find.text('BH3'), findsOneWidget, reason: 'the earlier hostel pick is remembered');
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('step 3: Finish needs an avatar; none is pre-selected', (tester) async {
-      await pumpWithProviders(tester, const ProfileSetupScreen(), session: needsProfileSession());
-      await fillStep1(tester);
-      await tester.tap(find.byKey(const ValueKey('student-no')));
-      await settle(tester);
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-
-      expect(find.text('Pick your\navatar'), findsOneWidget);
-      expect(find.byType(KAvatarPicker), findsOneWidget);
+      expect(find.bySemanticsLabel('Step 2 of 2'), findsOneWidget);
       expect(tester.widget<KAvatarPicker>(find.byType(KAvatarPicker)).selectedId, isNull);
       expect(isDisabled(tester, 'Finish'), isTrue);
-      expect(find.text('Choose one to finish.'), findsOneWidget);
-
-      await pickAvatar(tester, 6);
-      expect(tester.widget<KAvatarPicker>(find.byType(KAvatarPicker)).selectedId, 6);
-      expect(isDisabled(tester, 'Finish'), isFalse);
-      expect(tester.takeException(), isNull);
+      expect(find.byKey(const ValueKey('hostel-field')), findsNothing);
+      await pickAvatar(tester, 6); expect(isDisabled(tester, 'Finish'), isFalse);
     });
-
-    testWidgets('going back never loses what was typed or picked', (tester) async {
+    testWidgets('back and forward preserve the name, phone and selected avatar', (tester) async {
       await pumpWithProviders(tester, const ProfileSetupScreen(), session: needsProfileSession());
-      await fillStep1(tester, name: 'Riya Kapoor', phone: '9123456780');
-      await tester.tap(find.byKey(const ValueKey('student-yes')));
-      await settle(tester);
-      await chooseHostel(tester, 'GH2');
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-      await pickAvatar(tester, 11);
-
-      // Step 3 -> 2 (button) -> 1 (system back).
-      await tester.tap(find.byIcon(LucideIcons.arrowLeft));
-      await settle(tester);
-      expect(find.text('GH2'), findsOneWidget);
-      expect(tester.widget<KButton>(find.widgetWithText(KButton, 'Continue')).onPressed, isNotNull);
-      await tester.binding.handlePopRoute();
-      await settle(tester);
-      expect(find.text('Riya Kapoor'), findsOneWidget);
-      expect(tester.widget<TextField>(find.byKey(const ValueKey('phone-field'))).controller!.text, '9123456780');
-      expect(find.byIcon(LucideIcons.arrowLeft), findsNothing);
-
-      // Forward again: everything is still selected.
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-      expect(find.text('GH2'), findsOneWidget);
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-      expect(tester.widget<KAvatarPicker>(find.byType(KAvatarPicker)).selectedId, 11);
-
-      // System back on the first step does nothing (no exit, no sign-out).
-      await tester.binding.handlePopRoute();
-      await tester.binding.handlePopRoute();
-      await settle(tester);
-      await tester.binding.handlePopRoute();
-      await settle(tester);
-      expect(find.text('Riya Kapoor'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('student path: one PUT with everything, then the session enters the app', (tester) async {
-      await CustomerApiService.saveToken('jwt-setup');
-      final server = FakeServer(backend);
-      final session = needsProfileSession();
-      await pumpWithProviders(tester, const ProfileSetupScreen(), session: session);
-
-      await fillStep1(tester, name: '  Aarav   Sharma ', phone: '+91 98765 43210');
-      await tester.tap(find.byKey(const ValueKey('student-yes')));
-      await settle(tester);
-      await chooseHostel(tester, 'BH3');
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-      expect(backend.to('PUT /auth/profile'), isEmpty, reason: 'nothing is saved until Finish');
-      await pickAvatar(tester, 9);
-      await tester.tap(find.text('Finish'));
-      await settle(tester);
-
-      final put = backend.to('PUT /auth/profile').single;
-      expect(backend.bodyOf(put), {'name': 'Aarav Sharma', 'phone': '9876543210', 'isStudent': true, 'hostelBlock': 'BH3', 'avatarId': 9});
-      expect(put.headers['Authorization'], 'Bearer jwt-setup');
-      expect(server.putBodies, hasLength(1));
-      expect(session.status, SessionStatus.signedIn);
-      expect(session.user?.avatarId, 9);
-      expect(session.user?.isStudent, isTrue);
-      expect(session.deliveryPoint, 'BH3');
-    });
-
-    testWidgets('non-student path: hostel is skipped and not sent', (tester) async {
-      await CustomerApiService.saveToken('jwt-setup');
-      FakeServer(backend);
-      final session = needsProfileSession();
-      await pumpWithProviders(tester, const ProfileSetupScreen(), session: session);
-
-      await fillStep1(tester);
-      await tester.tap(find.byKey(const ValueKey('student-yes')));
-      await settle(tester);
-      await chooseHostel(tester, 'BH1'); // picked, then changed their mind
-      await tester.tap(find.byKey(const ValueKey('student-no')));
-      await settle(tester);
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-      await pickAvatar(tester, 2);
-      await tester.tap(find.text('Finish'));
-      await settle(tester);
-
-      expect(backend.bodyOf(backend.to('PUT /auth/profile').single), {'name': 'Aarav Sharma', 'phone': '9876543210', 'isStudent': false, 'avatarId': 2});
-      expect(session.status, SessionStatus.signedIn);
-      expect(session.user?.isStudent, isFalse);
-      expect(session.user?.hostelBlock, isNull);
-      expect(session.deliveryPoint, isNull, reason: 'a non-student chooses at checkout');
-    });
-
-    testWidgets('a server field error jumps back to the right step and keeps all answers', (tester) async {
-      backend.on('PUT /auth/profile', (_) => reply(400, {'success': false, 'message': 'That number is already in use', 'field': 'phone'}));
-      final session = needsProfileSession();
-      await pumpWithProviders(tester, const ProfileSetupScreen(), session: session);
-      await fillStep1(tester);
-      await tester.tap(find.byKey(const ValueKey('student-no')));
-      await settle(tester);
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-      await pickAvatar(tester, 4);
-      await tester.tap(find.text('Finish'));
-      await settle(tester);
-      await settle(tester); // the page animates back to step 1
-
-      expect(find.text('That number is already in use'), findsOneWidget);
-      expect(tester.widget<TextField>(find.byKey(const ValueKey('phone-field'))).controller!.text, '9876543210');
-      expect(find.text('Aarav Sharma'), findsOneWidget);
-      expect(session.status, SessionStatus.needsProfile);
-
-      // Fix it and go through again: answers on steps 2 and 3 survived.
-      backend.on('PUT /auth/profile', (_) => reply(200, {'success': true, 'user': userJson(), 'needsProfile': false}));
-      await tester.enterText(find.byKey(const ValueKey('phone-field')), '9123456780');
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
+      await fillStep1(tester, name: 'Meera Rao', phone: '9123456780'); await pickAvatar(tester, 4);
+      await tester.tap(find.byIcon(LucideIcons.arrowLeft)); await settle(tester);
+      expect(find.text('Meera Rao'), findsOneWidget); expect(find.text('9123456780'), findsOneWidget);
+      await tester.tap(find.text('Continue')); await settle(tester);
       expect(tester.widget<KAvatarPicker>(find.byType(KAvatarPicker)).selectedId, 4);
-      await tester.tap(find.text('Finish'));
-      await settle(tester);
-      expect(session.status, SessionStatus.signedIn);
+      expect(backend.to('PUT /auth/profile'), isEmpty);
     });
-
-    testWidgets('offline on Finish explains why and stays on the avatar step, ready to retry', (tester) async {
-      backend.on('PUT /auth/profile', (_) => throw http.ClientException('offline'));
-      final session = needsProfileSession();
+    testWidgets('one authenticated save sends only name, phone and avatar and enters the app', (tester) async {
+      await CustomerApiService.saveToken('jwt-setup'); final server = FakeServer(backend);
+      final session = needsProfileSession(); await pumpWithProviders(tester, const ProfileSetupScreen(), session: session);
+      await fillStep1(tester, name: '  Aarav   Sharma ', phone: '+91 98765 43210'); await pickAvatar(tester, 9);
+      await tester.tap(find.text('Finish')); await settle(tester);
+      final put = backend.to('PUT /auth/profile').single;
+      expect(backend.bodyOf(put), {'name': 'Aarav Sharma', 'phone': '9876543210', 'avatarId': 9});
+      expect(put.headers['Authorization'], 'Bearer jwt-setup'); expect(server.putBodies, hasLength(1));
+      expect(session.status, SessionStatus.signedIn); expect(session.user?.avatarId, 9);
+      expect(session.deliveryPoint, isNull, reason: 'delivery addresses are selected separately');
+    });
+    testWidgets('a customer with an old student flag has the same general profile flow', (tester) async {
+      FakeServer(backend, seed: userJson(avatarId: null));
+      final session = needsProfileSession(user: userJson(avatarId: null));
       await pumpWithProviders(tester, const ProfileSetupScreen(), session: session);
-      await fillStep1(tester);
-      await tester.tap(find.byKey(const ValueKey('student-no')));
-      await settle(tester);
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-      await pickAvatar(tester, 4);
-      await tester.tap(find.text('Finish'));
-      await settle(tester);
-
-      expect(find.textContaining('couldn\'t reach Kraveo'), findsOneWidget);
-      expect(find.text('Pick your\navatar'), findsOneWidget);
-      expect(isDisabled(tester, 'Finish'), isFalse);
-      expect(session.status, SessionStatus.needsProfile);
+      await fillStep1(tester); await pickAvatar(tester, 2); await tester.tap(find.text('Finish')); await settle(tester);
+      expect(backend.bodyOf(backend.to('PUT /auth/profile').single).keys, containsAll(['name', 'phone', 'avatarId']));
+      expect(backend.bodyOf(backend.to('PUT /auth/profile').single).containsKey('hostelBlock'), isFalse);
     });
-
-    testWidgets('an account that was left half set-up resumes with what the server already has', (tester) async {
-      final session = needsProfileSession(
-        user: userJson(name: 'Meera Rao', phone: '+91 9123456780', hostel: 'Block 4', isStudent: true, avatarId: null),
-        googleName: null,
-      );
-      await pumpWithProviders(tester, const ProfileSetupScreen(), session: session);
-      expect(find.text('Meera Rao'), findsOneWidget);
-      expect(tester.widget<TextField>(find.byKey(const ValueKey('phone-field'))).controller!.text, '9123456780');
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-      expect(find.text('BH4'), findsOneWidget);
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-      expect(tester.widget<KAvatarPicker>(find.byType(KAvatarPicker)).selectedId, isNull);
-    });
-
-    testWidgets('Switch account signs the Google account out', (tester) async {
-      final google = FakeGoogleAuth();
-      final session = SessionProvider(initial: SessionStatus.checking, googleAuth: google)..beginForTest(blankUserJson(), needsProfile: true);
-      await pumpWithProviders(tester, const ProfileSetupScreen(), session: session);
-      await tester.ensureVisible(find.text('Switch'));
-      await tester.tap(find.text('Switch'));
-      await settle(tester);
-      expect(session.status, SessionStatus.signedOut);
-      expect(google.signOutCalls, 1);
-    });
-
-    testWidgets('every step fits 360x640 at 1.3x text, also with the keyboard up', (tester) async {
+    testWidgets('a server phone validation error returns to the field and preserves the avatar', (tester) async {
+      FakeServer(backend);
+      backend.on('PUT /auth/profile', (_) => reply(400, {'success': false, 'field': 'phone', 'message': 'This phone is already in use.'}));
       await pumpWithProviders(tester, const ProfileSetupScreen(), session: needsProfileSession());
-      tester.view.viewInsets = const FakeViewPadding(bottom: 260);
-      addTearDown(tester.view.resetViewInsets);
-      await settle(tester);
-      expect(tester.takeException(), isNull);
-      tester.view.resetViewInsets();
-      await fillStep1(tester);
-      await tester.tap(find.byKey(const ValueKey('student-yes')));
-      await settle(tester);
-      expect(tester.takeException(), isNull);
-      await chooseHostel(tester, 'GH2');
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
-      expect(tester.takeException(), isNull);
+      await fillStep1(tester); await pickAvatar(tester, 7); await tester.tap(find.text('Finish')); await settle(tester); await settle(tester);
+      await tester.ensureVisible(find.byKey(const ValueKey('phone-field'))); await settle(tester);
+      expect(find.text('This phone is already in use.'), findsOneWidget);
+      expect(find.byKey(const ValueKey('phone-field')), findsOneWidget);
+      await tester.tap(find.text('Continue')); await settle(tester);
+      expect(tester.widget<KAvatarPicker>(find.byType(KAvatarPicker)).selectedId, 7);
     });
+    testWidgets('a network failure on Finish preserves data and allows a real retry', (tester) async {
+      final server = FakeServer(backend);
+      backend.on('PUT /auth/profile', (_) => throw const SocketException('offline'));
+      final session = needsProfileSession(); await pumpWithProviders(tester, const ProfileSetupScreen(), session: session);
+      await fillStep1(tester); await pickAvatar(tester, 3); await tester.tap(find.text('Finish')); await settle(tester);
+      expect(session.status, SessionStatus.needsProfile); expect(isDisabled(tester, 'Finish'), isFalse);
+      backend.on('PUT /auth/profile', (r) { final body = backend.bodyOf(r); return reply(200, {'success': true, 'user': {...server.user, ...body}, 'needsProfile': false}); });
+      await tester.tap(find.text('Finish')); await settle(tester); expect(session.status, SessionStatus.signedIn);
+    });
+    testWidgets('a partially completed profile restores its saved details without a student question', (tester) async {
+      final session = needsProfileSession(googleName: null, user: userJson(name: 'Meera Rao', phone: '+91 9123456780', avatarId: 8));
+      await pumpWithProviders(tester, const ProfileSetupScreen(), session: session);
+      expect(find.text('Meera Rao'), findsOneWidget); expect(find.text('9123456780'), findsOneWidget);
+      await tester.tap(find.text('Continue')); await settle(tester);
+      expect(tester.widget<KAvatarPicker>(find.byType(KAvatarPicker)).selectedId, 8);
+      expect(isDisabled(tester, 'Finish'), isFalse);
+    });
+    for (final scale in [1.3, 2.0]) {
+      testWidgets('both profile steps fit 360x640 at text scale $scale', (tester) async {
+        await pumpWithProviders(tester, const ProfileSetupScreen(), session: needsProfileSession(), textScale: scale);
+        expect(tester.takeException(), isNull); await fillStep1(tester);
+        expect(tester.takeException(), isNull); await pickAvatar(tester, 1);
+        expect(isDisabled(tester, 'Finish'), isFalse);
+      });
+    }
   });
 
   group('ProfileScreen', () {
@@ -1005,8 +838,9 @@ void main() {
       expect(find.text('+91 98••• ••210'), findsOneWidget);
       expect(find.text('9876543210'), findsNothing);
       expect(find.text('120'), findsOneWidget);
-      expect(find.text('I\'m a student'), findsOneWidget);
-      expect(find.text('BH2'), findsOneWidget);
+      expect(find.text('Delivery addresses'), findsOneWidget);
+      expect(find.text('Add or select an address'), findsOneWidget);
+      expect(find.text('I\'m a student'), findsNothing);
       await tester.scrollUntilVisible(find.text('Kraveo v$kAppVersion'), 200, scrollable: find.byType(Scrollable).first);
       expect(find.text('Kraveo v$kAppVersion'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -1016,7 +850,7 @@ void main() {
       final session = signedIn(user: userJson(isStudent: false, hostel: null, phone: null));
       await pumpWithProviders(tester, const ProfileScreen(), session: session);
       await tester.pump(const Duration(seconds: 1));
-      expect(find.text('Chosen at checkout for each order'), findsOneWidget);
+      expect(find.text('Add or select an address'), findsOneWidget);
       expect(find.text('Hostel block'), findsNothing);
       expect(find.text('Add your number'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -1109,81 +943,67 @@ void main() {
       expect(find.text('Your details'), findsOneWidget);
     });
 
-    testWidgets('turning the student switch off saves isStudent=false and hides the hostel row', (tester) async {
-      await CustomerApiService.saveToken('jwt-me');
-      final server = FakeServer(backend, seed: userJson());
-      final session = signedIn();
-      await pumpWithProviders(tester, const ProfileScreen(), session: session);
-
-      await tapScrolled(tester, find.text('I\'m a student'));
-      expect(server.putBodies.single, {'isStudent': false});
-      expect(session.user?.isStudent, isFalse);
-      expect(session.deliveryPoint, isNull);
-      expect(find.text('Chosen at checkout for each order'), findsOneWidget);
-      expect(find.textContaining('choose your drop-off point at checkout'), findsWidgets);
-    });
-
-    testWidgets('turning it on asks for a hostel block first and saves both together', (tester) async {
-      await CustomerApiService.saveToken('jwt-me');
-      final server = FakeServer(backend, seed: userJson(isStudent: false, hostel: null));
-      final session = signedIn(user: userJson(isStudent: false, hostel: null));
-      await pumpWithProviders(tester, const ProfileScreen(), session: session);
-
-      await tapScrolled(tester, find.text('I\'m a student'));
-      expect(find.text('Where should we deliver?'), findsOneWidget);
-      await tester.tap(find.text('BH4'));
-      await settle(tester);
-      expect(server.putBodies.single, {'isStudent': true, 'hostelBlock': 'BH4'});
-      expect(session.user?.isStudent, isTrue);
-      expect(session.hostel, 'BH4');
-      expect(find.text('Hostel block'), findsOneWidget);
-    });
-
-    testWidgets('dismissing the hostel picker leaves the switch off and sends nothing', (tester) async {
-      final session = signedIn(user: userJson(isStudent: false, hostel: null));
-      await pumpWithProviders(tester, const ProfileScreen(), session: session);
-      await tapScrolled(tester, find.text('I\'m a student'));
-      await tester.tap(find.byIcon(LucideIcons.x));
-      await settle(tester);
-      expect(backend.requests, isEmpty);
-      expect(session.user?.isStudent, isFalse);
-    });
-
-    testWidgets('changing the hostel saves it through PUT /auth/profile (hostel only)', (tester) async {
-      await CustomerApiService.saveToken('jwt-me');
-      final server = FakeServer(backend, seed: userJson());
-      final session = signedIn();
-      await pumpWithProviders(tester, const ProfileScreen(), session: session);
-
-      await tapScrolled(tester, find.text('BH2'));
-      await tester.tap(find.text('BH5'));
-      await settle(tester);
-
-      expect(server.putBodies.single, {'hostelBlock': 'BH5'});
-      expect(session.selectedHostel, 'BH5');
-      expect(find.text('Drop-off point set to BH5'), findsOneWidget);
-    });
-
-    testWidgets('a failed save reverts the hostel and says so', (tester) async {
-      backend.on('PUT /auth/profile', (_) => reply(400, {'success': false, 'message': 'Pick a valid drop-off', 'field': 'hostelBlock'}));
-      final session = signedIn();
-      await pumpWithProviders(tester, const ProfileScreen(), session: session);
-      await tapScrolled(tester, find.text('BH2'));
-      await tester.tap(find.text('BH5'));
-      await settle(tester);
-      expect(session.selectedHostel, 'BH2');
-      expect(find.text('Pick a valid drop-off'), findsOneWidget);
-    });
-
-    testWidgets('a 401 while saving fires the session-expired flow', (tester) async {
-      var expired = 0;
-      CustomerApiService.onUnauthorized = () => expired++;
-      await CustomerApiService.saveToken('jwt-old');
-      backend.on('PUT /auth/profile', (_) => reply(401, {'success': false}));
+    testWidgets('opens saved structured addresses without a student-only switch', (tester) async {
+      FakeServer(backend, seed: userJson());
+      backend.on('GET /v1/addresses', (_) => reply(200, {'success': true, 'data': [addressJson()], 'nextCursor': null}));
       await pumpWithProviders(tester, const ProfileScreen(), session: signedIn());
-      await tapScrolled(tester, find.text('I\'m a student'));
-      expect(expired, 1);
-      expect(await CustomerApiService.getSavedToken(), isNull);
+      await tapScrolled(tester, find.text('Delivery addresses'));
+      expect(find.byType(AddressesScreen), findsOneWidget);
+      expect(find.text('Home · Selected'), findsOneWidget);
+      expect(find.textContaining('Flat 14, Main Road, Central, Bengaluru 560001'), findsOneWidget);
+      expect(find.text('Hostel block'), findsNothing);
+    });
+    testWidgets('selecting another saved address persists its default and updates the session', (tester) async {
+      FakeServer(backend, seed: userJson());
+      final work = addressJson(id: 'address-work', label: 'Work', house: 'Office 9', selected: false);
+      backend.on('GET /v1/addresses', (_) => reply(200, {'success': true, 'data': [addressJson(), work], 'nextCursor': null}));
+      backend.on('PUT /v1/addresses/address-work', (r) => reply(200, {'success': true, 'data': {...work, ...backend.bodyOf(r)}}));
+      final session = signedIn(); await pumpWithProviders(tester, const ProfileScreen(), session: session);
+      await tapScrolled(tester, find.text('Delivery addresses')); await tester.tap(find.text('Work')); await settle(tester);
+      final write = backend.bodyOf(backend.to('PUT /v1/addresses/address-work').single);
+      expect(write['isDefault'], true); expect(write['cityId'], 'blr');
+      expect(session.selectedAddress?.id, 'address-work'); expect(session.deliveryPoint, contains('Office 9'));
+      expect(backend.to('PUT /auth/profile'), isEmpty);
+    });
+    testWidgets('closing the picker leaves the current saved address selected and sends no writes', (tester) async {
+      FakeServer(backend, seed: userJson());
+      backend.on('GET /v1/addresses', (_) => reply(200, {'success': true, 'data': [addressJson()], 'nextCursor': null}));
+      final session = signedIn(); await pumpWithProviders(tester, const ProfileScreen(), session: session);
+      await tapScrolled(tester, find.text('Delivery addresses')); await tester.pageBack(); await settle(tester);
+      expect(session.selectedAddress?.id, 'address-home');
+      expect(backend.requests.where((r) => r.method == 'PUT'), isEmpty);
+    });
+    testWidgets('deletion requires confirmation and then chooses the server’s remaining default', (tester) async {
+      FakeServer(backend, seed: userJson());
+      var rows = [addressJson()];
+      backend.on('GET /v1/addresses', (_) => reply(200, {'success': true, 'data': rows, 'nextCursor': null}));
+      backend.on('DELETE /v1/addresses/address-home', (_) { rows = []; return reply(200, {'success': true, 'data': {'deleted': true}}); });
+      final session = signedIn(); await pumpWithProviders(tester, const ProfileScreen(), session: session);
+      await tapScrolled(tester, find.text('Delivery addresses')); await tester.tap(find.text('Delete')); await settle(tester);
+      expect(backend.to('DELETE /v1/addresses/address-home'), isEmpty);
+      await tester.tap(find.widgetWithText(TextButton, 'Delete').last); await settle(tester);
+      expect(backend.to('DELETE /v1/addresses/address-home'), hasLength(1));
+      await tester.pageBack(); await settle(tester); expect(session.deliveryPoint, isNull);
+    });
+    testWidgets('a refused address save keeps the old selection and the picker explains why', (tester) async {
+      FakeServer(backend, seed: userJson());
+      final work = addressJson(id: 'address-work', label: 'Work', selected: false);
+      backend.on('GET /v1/addresses', (_) => reply(200, {'success': true, 'data': [addressJson(), work], 'nextCursor': null}));
+      backend.on('PUT /v1/addresses/address-work', (_) => reply(500, {'success': false, 'message': 'Address service busy. Try again.'}));
+      final session = signedIn(); await pumpWithProviders(tester, const ProfileScreen(), session: session);
+      await tapScrolled(tester, find.text('Delivery addresses')); await tester.tap(find.text('Work')); await settle(tester);
+      expect(find.textContaining('Address service busy'), findsOneWidget);
+      expect(session.selectedAddress?.id, 'address-home'); expect(find.byType(AddressesScreen), findsOneWidget);
+    });
+    testWidgets('a 401 while selecting an address clears the token and expires the session', (tester) async {
+      await CustomerApiService.saveToken('jwt-address'); FakeServer(backend, seed: userJson());
+      backend.on('GET /v1/addresses', (_) => reply(200, {'success': true, 'data': [addressJson()], 'nextCursor': null}));
+      backend.on('PUT /v1/addresses/address-home', (_) => reply(401, {'success': false, 'message': 'Session expired'}));
+      final session = signedIn(); CustomerApiService.onUnauthorized = session.expire;
+      await pumpWithProviders(tester, const ProfileScreen(), session: session);
+      await tapScrolled(tester, find.text('Delivery addresses')); await tester.tap(find.text('Home · Selected')); await settle(tester);
+      expect(await CustomerApiService.getSavedToken(), isNull); expect(session.status, SessionStatus.signedOut);
+      CustomerApiService.onUnauthorized = null;
     });
 
     testWidgets('log out asks first, notifies the backend, ends the session and signs Google out', (tester) async {
@@ -1289,37 +1109,24 @@ void main() {
       return cart;
     }
 
-    testWidgets('no saved hostel: a prominent required chooser replaces the pill and payment cannot start', (tester) async {
-      final session = SessionProvider(initial: SessionStatus.checking, googleAuth: FakeGoogleAuth())..beginForTest(userJson(isStudent: false, hostel: null));
-      await pumpWithProviders(tester, const CheckoutScreen(selectedHostel: null), session: session, cart: cartWithItem());
-      expect(find.text('Choose drop-off point'), findsOneWidget);
-      expect(find.text('Required before you can pay'), findsOneWidget);
-      expect(find.text('Choose drop-off'), findsOneWidget);
-      expect(find.textContaining('Pay ₹'), findsNothing);
-
-      // Tapping the pay button opens the picker instead of creating an order.
-      await tester.tap(find.text('Choose drop-off'));
-      await settle(tester);
-      expect(find.text('Where should we deliver?'), findsOneWidget);
-      // Docs/22: checkout now asks the server for the price (POST /orders/quote, writes nothing); no order is created.
-      expect(backend.requests.where((r) => !r.url.path.endsWith('/orders/quote')), isEmpty);
-
-      await tester.tap(find.text('BH6'));
-      await settle(tester);
-      expect(find.text('Choose drop-off point'), findsNothing);
-      expect(find.text('BH6'), findsOneWidget);
-      expect(find.textContaining('Pay ₹'), findsOneWidget);
-      expect(session.deliveryPoint, 'BH6', reason: 'remembered for the next checkout this session');
-      expect(backend.requests.where((r) => !r.url.path.endsWith('/orders/quote')), isEmpty, reason: 'a non-student\'s choice is never sent to the server');
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('a student with a saved hostel sees it pre-selected and a normal Pay button', (tester) async {
+    testWidgets('checkout with no saved address opens address selection before any payment', (tester) async {
+      FakeServer(backend, seed: userJson());
       final session = SessionProvider(initial: SessionStatus.checking, googleAuth: FakeGoogleAuth())..beginForTest(userJson());
-      await pumpWithProviders(tester, const CheckoutScreen(selectedHostel: 'Block 2'), session: session, cart: cartWithItem());
-      expect(find.text('Choose drop-off point'), findsNothing);
-      expect(find.text('BH2'), findsOneWidget);
-      expect(find.textContaining('Pay ₹'), findsOneWidget);
+      await pumpWithProviders(tester, const CheckoutScreen(selectedHostel: null), session: session, cart: cartWithItem());
+      final choose = find.bySemanticsLabel('Choose a saved delivery address before checkout');
+      expect(choose, findsOneWidget); await tester.tap(choose); await settle(tester);
+      expect(find.byType(AddressesScreen), findsOneWidget);
+      expect(find.text('Add address'), findsOneWidget);
+      expect(backend.to('POST /v1/orders'), isEmpty); expect(tester.takeException(), isNull);
+    });
+    testWidgets('a selected structured address is shown in checkout and permits price confirmation', (tester) async {
+      FakeServer(backend, seed: userJson());
+      backend.on('GET /v1/addresses', (_) => reply(200, {'success': true, 'data': [addressJson()], 'nextCursor': null}));
+      final session = SessionProvider(initial: SessionStatus.checking, googleAuth: FakeGoogleAuth())..beginForTest(userJson());
+      session.selectDeliveryAddress(DeliveryAddress(addressJson()));
+      await pumpWithProviders(tester, CheckoutScreen(selectedHostel: session.deliveryPoint), session: session, cart: cartWithItem());
+      expect(find.textContaining('Flat 14, Main Road, Central, Bengaluru 560001'), findsWidgets);
+      expect(find.textContaining('Pay ₹'), findsOneWidget); expect(tester.takeException(), isNull);
     });
   });
 
@@ -1337,7 +1144,7 @@ void main() {
       expect(backend.requests, isEmpty);
     });
 
-    testWidgets('brand-new student: Google -> 3 sign-up steps -> Home with avatar, hostel and coins', (tester) async {
+    testWidgets('brand-new student: Google -> name/phone and avatar -> Home with address selection', (tester) async {
       final server = FakeServer(backend);
       final google = FakeGoogleAuth();
       await launch(tester, google: google);
@@ -1349,16 +1156,6 @@ void main() {
       await tester.enterText(find.byKey(const ValueKey('phone-field')), '9876543210');
       await tester.tap(find.text('Continue'));
       await settle(tester);
-      await tester.tap(find.byKey(const ValueKey('student-yes')));
-      await settle(tester);
-      await tester.ensureVisible(find.text('Choose your hostel block'));
-      await tester.pump();
-      await tester.tap(find.text('Choose your hostel block'));
-      await settle(tester);
-      await tester.tap(find.text('BH3'));
-      await settle(tester);
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
       await tester.ensureVisible(kAvatarWithId(5));
       await tester.tap(kAvatarWithId(5));
       await tester.pump();
@@ -1368,7 +1165,7 @@ void main() {
 
       expect(server.putBodies, hasLength(1));
       expect(find.text('DELIVERING TO'), findsOneWidget);
-      expect(find.text('BH3'), findsWidgets);
+      expect(find.text('Choose delivery address'), findsWidgets);
       expect(kAvatarWithId(5), findsWidgets, reason: 'greeting shows the chosen avatar');
       expect(google.signInCalls, 1);
     });
@@ -1382,7 +1179,7 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
 
       expect(find.text('DELIVERING TO'), findsOneWidget);
-      expect(find.text('BH3'), findsWidgets);
+      expect(find.text('Choose delivery address'), findsWidgets);
       expect(find.textContaining(', AARAV'), findsOneWidget);
       final ctx = tester.element(find.byType(Scaffold).first);
       expect(ctx.read<CartProvider>().userKraveoCoins, 120, reason: 'seeded from the backend');
@@ -1415,9 +1212,8 @@ void main() {
       FakeServer(backend, seed: userJson(isStudent: false, hostel: null), isNewUser: false);
       await launch(tester);
       await tester.pump(const Duration(seconds: 5));
-      expect(find.text('DELIVERY POINT'), findsOneWidget);
-      expect(find.text('Choose drop point'), findsOneWidget);
-      expect(find.text('DELIVERING TO'), findsNothing);
+      expect(find.text('Choose delivery address'), findsOneWidget);
+      expect(find.text('DELIVERING TO'), findsOneWidget);
     });
 
     testWidgets('a session that still needs a profile lands on sign-up step 1', (tester) async {
@@ -1440,7 +1236,7 @@ void main() {
     testWidgets('HTTP 401 in the middle of a session closes pushed screens and shows the welcome', (tester) async {
       SharedPreferences.setMockInitialValues({'kraveo_customer_jwt_token': 'jwt-live'});
       FakeServer(backend, seed: userJson(hostel: 'Block 3'), isNewUser: false);
-      backend.on('POST /orders', (_) => reply(401, {'success': false, 'message': 'jwt expired'}));
+      backend.on('POST /v1/orders', (_) => reply(401, {'success': false, 'message': 'jwt expired'}));
       final google = FakeGoogleAuth();
       await launch(tester, google: google);
       await tester.pump(const Duration(seconds: 5));
@@ -1469,10 +1265,6 @@ void main() {
       await tester.enterText(find.byKey(const ValueKey('phone-field')), '9876543210');
       await tester.tap(find.text('Continue'));
       await settle(tester);
-      await tester.tap(find.byKey(const ValueKey('student-no')));
-      await settle(tester);
-      await tester.tap(find.text('Continue'));
-      await settle(tester);
       await tester.ensureVisible(kAvatarWithId(1));
       await tester.tap(kAvatarWithId(1));
       await tester.pump();
@@ -1487,7 +1279,7 @@ void main() {
       SharedPreferences.setMockInitialValues({'kraveo_customer_jwt_token': 'jwt-live'});
       var online = false;
       backend.on('GET /auth/profile', (_) => online ? reply(200, {'success': true, 'user': userJson(), 'needsProfile': false}) : throw http.ClientException('offline'));
-      backend.on('GET /vendors', (_) => reply(500, {'success': false}));
+      backend.on('GET /v1/vendors/nearby', (_) => reply(500, {'success': false}));
       await launch(tester);
       expect(find.text('Can\'t reach Kraveo'), findsOneWidget);
       expect(find.text('Use a different account'), findsOneWidget);

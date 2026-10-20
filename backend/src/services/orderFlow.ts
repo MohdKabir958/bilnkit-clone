@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { createHmac, randomInt, timingSafeEqual } from 'crypto';
 import { prisma } from '../db';
 import { MAX_ACTIVE_ORDERS_PER_RIDER, MAX_UNPAID_OPEN_ORDERS, OTP_MAX_ATTEMPTS, RECONCILE_MIN_AGE_MS, paymentWindowMin } from '../config/orderFlow';
-import { normalizeDropPoint } from '../config/campus';
+import { ownedAddress, addressLabel, addressSnapshot, deliveryEligibility } from './geography';
 import { ORDER_VIEW_INCLUDE, OrderWithRelations, ACTIVE_RIDER_STATUSES, isPoolEligible, isVendorVisible, payableAmount, groupAllAccepted } from './orderView';
 import { lockGroupRows } from './groupLock';
 import { publishOrderChange, getIo } from '../realtime';
@@ -205,6 +205,7 @@ export const refreshRiderDuty = async (riderUserId: string) => {
 // Customer: place an order
 // ----------------------------------------------------------------------------
 export type PlaceOrderInput = {
+  addressId?: string;
   vendorId: string;
   items: { itemId: string; quantity: number }[];
   dropoffHostel: string;
@@ -231,8 +232,9 @@ export const sameItems = (o: { items: { id: string; menuItemId: string | null; q
 /** Same checkout attempt = same request: vendor, items (by id and quantity), drop point, notes and coupon must all match. */
 const sameRequest = (o: OrderWithRelations, input: PlaceOrderInput): boolean => {
   if (o.vendorId !== input.vendorId) return false;
-  // Compare canonical names: an order stored before the campus migration may still say `Block 2` for what is now `BH2`.
-  if ((normalizeDropPoint(o.dropoffHostel) ?? o.dropoffHostel) !== (normalizeDropPoint(input.dropoffHostel) ?? input.dropoffHostel)) return false;
+  if (input.addressId) {
+    if ((o.addressSnapshot as any)?.id !== input.addressId && o.addressId !== input.addressId) return false;
+  } else if (input.dropoffHostel && o.dropoffHostel !== input.dropoffHostel) return false;
   if ((o.dropoffNotes ?? '') !== (input.dropoffNotes ?? '')) return false;
   if ((o.couponCode ?? null) !== normaliseCoupon(input.couponCode)) return false;
   return sameItems(o, input.items);
@@ -293,7 +295,9 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
   if (!vendor || vendor.approvalStatus !== 'APPROVED') throw new OrderFlowError(400, 'VENDOR_UNAVAILABLE', 'This restaurant is not available right now.');
   if (!vendor.isAcceptingOrders) throw new OrderFlowError(400, 'VENDOR_CLOSED', 'This Dhaba is currently CLOSED for new orders.');
 
-  const priced = await validateAndCalculateOrder(input.vendorId, input.items, input.couponCode);
+  const selectedAddress = await ownedAddress(prisma, customerId, input.addressId);
+  const delivery = await deliveryEligibility(prisma, selectedAddress, input.vendorId);
+  let priced = await validateAndCalculateOrder(input.vendorId, input.items, input.couponCode, delivery.feePaise);
   if (!priced.isValid) throw new OrderFlowError(400, 'INVALID_ITEMS', priced.errorMessage || 'Some items are not available.', { field: 'items' });
   // A coupon that was sent but gives nothing is an error the customer must see, not a silently ignored field.
   if (priced.couponProblem) throw new OrderFlowError(400, 'COUPON_NOT_APPLICABLE', priced.couponProblem, { field: 'couponCode' });
@@ -315,6 +319,11 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
             return { order: twin, replay: true };
           }
         }
+
+        const address = await ownedAddress(tx, customerId, input.addressId, true);
+        const eligible = await deliveryEligibility(tx, address, input.vendorId, true);
+        priced = await validateAndCalculateOrder(input.vendorId, input.items, input.couponCode, eligible.feePaise);
+        if (!priced.isValid || priced.couponProblem) throw new OrderFlowError(409, 'CART_CHANGED', priced.errorMessage || priced.couponProblem || 'The cart changed. Refresh the quote.');
 
         // A new checkout replaces this customer's own abandoned, never-paid orders at the same restaurant, so their coupon and
         // the unpaid-orders limit are free again (they used to stay locked until the 15-minute expiry). Only this customer's orders
@@ -356,7 +365,9 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
             discount: priced.calculatedDiscount,
             couponCode: priced.appliedCoupon ?? null,
             totalAmount: priced.calculatedTotalAmount,
-            dropoffHostel: input.dropoffHostel,
+            dropoffHostel: address.label,
+            addressId: address.id,
+            addressSnapshot: { id: address.id, ...addressSnapshot(address) },
             dropoffNotes: input.dropoffNotes,
             status: 'PLACED',
             paymentStatus: 'PENDING',
@@ -486,13 +497,18 @@ export const markOrderPaid = async (input: {
       return { ...base, outcome: 'DUPLICATE_PAYMENT', extra };
     }
 
+    // A delayed capture must not revive checkout after its deadline, even when it wins
+    // the lock before the maintenance worker. Cancellation and captured-money evidence
+    // commit together; the existing refund worker then returns the payment exactly once.
+    const expired = order.status === 'PLACED' && Date.now() - order.createdAt.getTime() >= paymentWindowMin() * 60_000;
+    if (expired) await cancelInTx(tx, order, { id: 'system', role: 'SYSTEM' }, 'SYSTEM', 'Payment completed after checkout expired', {}, group);
     await tx.payment.update({ where: { id: p.id }, data: { status: 'PAID', razorpayPaymentId: paymentId, capturedAmountPaise: paidPaise } });
     if (group) {
       // Combined order: the whole group becomes paid (or, when it was cancelled before the money arrived, the whole group is marked paid
       // and ONLY the primary carries the refund: one payment, exactly one refund).
       const primary = group[0];
       const ids = group.map((c) => c.id);
-      if (group.some((c) => c.status === 'CANCELLED')) {
+      if (expired || group.some((c) => c.status === 'CANCELLED')) {
         await tx.order.updateMany({ where: { groupId: order.groupId!, paymentStatus: { in: ['PENDING', 'FAILED'] } }, data: { paymentStatus: 'PAID' } });
         await tx.order.update({ where: { id: primary.id }, data: { refundStatus: 'PENDING', refundError: null } });
         return { ...base, ...(await groupResult(tx, order, group, ids, { refundNeeded: true, refundOrderId: primary.id })), outcome: 'LATE_PAYMENT_REFUND' };
@@ -500,7 +516,7 @@ export const markOrderPaid = async (input: {
       await tx.order.updateMany({ where: { groupId: order.groupId!, paymentStatus: { in: ['PENDING', 'FAILED'] } }, data: { paymentStatus: 'PAID', paidAt: new Date() } });
       return { ...base, ...(await groupResult(tx, order, group, ids, { newOrderAlert: true })), outcome: 'PAID' };
     }
-    if (order.status === 'CANCELLED') {
+    if (expired || order.status === 'CANCELLED') {
       // Customer gave up / order expired / restaurant rejected before the money arrived: refund it.
       // paidAt stays null so the restaurant never sees this order.
       await tx.order.update({ where: { id: order.id }, data: { paymentStatus: 'PAID', refundStatus: 'PENDING', refundError: null } });

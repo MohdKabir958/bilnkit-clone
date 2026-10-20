@@ -12,7 +12,8 @@ import '../widgets/ui/category_icons.dart';
 import '../widgets/ui/display_text.dart';
 import '../widgets/ui/format.dart';
 import '../widgets/ui/floating_bar.dart';
-import '../widgets/ui/hostel_pill.dart';
+import '../models/delivery_address.dart';
+import 'addresses_screen.dart';
 import '../widgets/ui/k_icon_button.dart';
 import '../widgets/ui/snack.dart';
 import '../widgets/ui/status_map.dart';
@@ -60,7 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
     showKSnack(context, 'Couldn\'t refresh the kitchens. Check your connection and try again.', error: true);
   }
 
-  final List<String> hostelBlocks = kHostelBlocks;
 
   @override
   void dispose() {
@@ -73,14 +73,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Drop-off point changes made from Home are saved to the profile too, so the Me tab,
   /// checkout and the next launch all agree. Reverts (with a message) if saving fails.
-  Future<void> _changeHostel(String block) async {
-    final result = await context.read<SessionProvider>().changeHostel(block);
-    if (!mounted || result.success || result.unauthorized) return;
-    showKSnack(
-      context,
-      result.networkError ? 'Couldn\'t save your drop-off point. Check your connection.' : (result.message ?? 'Couldn\'t save your drop-off point.'),
-      error: true,
-    );
+  Future<void> _chooseAddress() async {
+    final selected = await Navigator.push<DeliveryAddress>(context, MaterialPageRoute(builder: (_) => const AddressesScreen()));
+    if (!mounted) return;
+    if (selected != null) { context.read<SessionProvider>().selectDeliveryAddress(selected); }
+    else { await context.read<SessionProvider>().refreshDeliveryAddress(); }
+    if (mounted) {
+      context.read<DhabaProvider>().resetForAddress();
+      await context.read<DhabaProvider>().refreshHome();
+    }
   }
 
   @override
@@ -171,10 +172,10 @@ class _HomeScreenState extends State<HomeScreen> {
               titleSpacing: KSpace.gutter,
               title: Align(
                 alignment: Alignment.centerLeft,
-                child: HostelPill(
-                  selectedHostel: selectedHostel,
-                  hostelBlocks: hostelBlocks,
-                  onChanged: _changeHostel,
+                child: TextButton.icon(
+                  onPressed: _chooseAddress,
+                  icon: const Icon(LucideIcons.mapPin),
+                  label: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('DELIVERING TO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)), Text(selectedHostel ?? 'Choose delivery address', maxLines: 1, overflow: TextOverflow.ellipsis)]),
                 ),
               ),
               actions: [
@@ -228,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 // The first-order promo is only shown to a student who has no earlier order (the
-                // server refuses VITFIRST otherwise); while that is unknown it stays hidden.
+                // server refuses WELCOME20 otherwise); while that is unknown it stays hidden.
                 if (!filtering && orderProvider.isFirstTimeCustomer) const KReveal(index: 2, child: _PromoCard()) else const SizedBox(height: 16),
                 // Chips come from the live menus; with nothing to choose between there is no row.
                 if (chips.length > 1)
@@ -258,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
                     Expanded(
                       child: Text(
-                        dhabaProvider.showFavoritesOnly ? 'Your favourites' : 'Kitchens near campus',
+                        dhabaProvider.showFavoritesOnly ? 'Your favourites' : 'Stores near you',
                         style: KraveoType.headlineSm.copyWith(color: k.ink),
                       ),
                     ),
@@ -290,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: KEmptyState(
                   icon: LucideIcons.store,
                   title: 'No kitchens are open right now',
-                  message: 'Kitchens near campus will show up here as soon as they open. Pull down to check again.',
+                  message: 'Stores near you will appear here when they serve your delivery address. Pull down to check again.',
                   action: KButton(
                     label: 'Refresh',
                     kind: KButtonKind.tonal,
@@ -407,11 +408,11 @@ class _SearchField extends StatelessWidget {
   }
 }
 
-/// The one promo we actually have: the VITFIRST coupon that the cart understands.
+/// The one promo we actually have: the WELCOME20 coupon that the cart understands.
 class _PromoCard extends StatelessWidget {
   const _PromoCard();
 
-  static const String _code = 'VITFIRST';
+  static const String _code = 'WELCOME20';
 
   @override
   Widget build(BuildContext context) {

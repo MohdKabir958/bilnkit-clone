@@ -143,7 +143,7 @@ const driverFields = (b: any, ownPhone: string, requirePlate = true): { ok: true
 };
 
 /**
- * Optional restaurant pin sent with sign-up (Docs/20): `lat` + `lng` (both or neither, JSON numbers, within 3 km of the campus)
+ * Optional restaurant pin sent with sign-up (Docs/20): `lat` + `lng` (both or neither, JSON numbers, within India; delivery still requires enabled city/zone coverage)
  * and an optional `locationAccuracyM` (0..5000). null/absent = no location, exactly as before. An accuracy without coordinates is ignored.
  */
 const signupLocation = (b: any): { ok: true; pin: { lat: number; lng: number; accuracyM: number | null } | null } | { ok: false; error: Fail } => {

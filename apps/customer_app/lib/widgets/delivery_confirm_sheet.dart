@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:kraveo_ui/kraveo_ui.dart';
-import '../models/drop_point.dart';
 import 'ui/hostel_pill.dart';
 import 'ui/sheet_chrome.dart';
 
@@ -12,7 +11,7 @@ import 'ui/sheet_chrome.dart';
 Future<String?> showConfirmDeliveryPoint(BuildContext context, {required String current, List<String>? blocks}) {
   return showKSheet<String>(
     context,
-    builder: (ctx) => _ConfirmDeliveryBody(current: current, blocks: blocks ?? kDropPointNames),
+    builder: (ctx) => _ConfirmDeliveryBody(current: current, blocks: blocks ?? [current]),
   );
 }
 
@@ -56,7 +55,7 @@ class _ConfirmDeliveryBodyState extends State<_ConfirmDeliveryBody> {
     final k = context.k;
     return KSheetFrame(
       title: 'Confirm your delivery point',
-      subtitle: Text('Your runner meets you at this gate.', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+      subtitle: Text('Your delivery partner will deliver to this address.', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
       footer: Column(mainAxisSize: MainAxisSize.min, children: [
         KButton(label: 'Confirm and pay', onPressed: _armed ? () => Navigator.of(context).pop(_selected) : null),
         const SizedBox(height: 4),
@@ -72,7 +71,10 @@ class _ConfirmDeliveryBodyState extends State<_ConfirmDeliveryBody> {
         ),
       ]),
       children: [
-        DropPointChips(blocks: widget.blocks, selected: _selected, onSelected: (b) => setState(() => _selected = b)),
+        if (widget.blocks.length == 1)
+          Text(_selected, style: KraveoType.titleLg.copyWith(color: k.ink))
+        else
+          DropPointChips(blocks: widget.blocks, selected: _selected, onSelected: (b) => setState(() => _selected = b)),
         const SizedBox(height: 8),
       ],
     );

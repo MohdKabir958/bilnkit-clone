@@ -85,9 +85,9 @@ export const buildCopy = (event: PushEvent, o: OrderWithRelations): { title: str
       }
       return { title: 'Order cancelled', body: `Order ${orderRef(o.id)} was cancelled.` };
     case 'NEW_DELIVERY':
-      return { title: 'New delivery', body: `${placeLabel(o, vendor)} to ${safeText(o.dropoffHostel, 30)}. Tap to accept.` };
+      return { title: 'New delivery', body: `${placeLabel(o, vendor)} to ${safeText(o.addressSnapshot ? `${(o.addressSnapshot as any).locality}, ${(o.addressSnapshot as any).city}` : o.dropoffHostel, 30)}. Tap to accept.` };
     case 'DELIVERY_ASSIGNED':
-      return { title: 'Delivery assigned', body: `${placeLabel(o, vendor)} to ${safeText(o.dropoffHostel, 30)}.` };
+      return { title: 'Delivery assigned', body: `${placeLabel(o, vendor)} to ${safeText(o.addressSnapshot ? `${(o.addressSnapshot as any).locality}, ${(o.addressSnapshot as any).city}` : o.dropoffHostel, 30)}.` };
     case 'DELIVERY_CANCELLED':
       return { title: 'Delivery cancelled', body: `Order ${orderRef(o.id)} was cancelled.` };
     case 'ORDER_ACCEPTED':
@@ -97,7 +97,7 @@ export const buildCopy = (event: PushEvent, o: OrderWithRelations): { title: str
     case 'ORDER_PICKED_UP':
       return { title: 'On the way', body: `${firstName(o.driver?.name) || 'Your rider'} picked up your order.` };
     case 'RIDER_AT_GATE':
-      return { title: 'Your rider is at the gate', body: 'Open Kraveo to see your code.' };
+      return { title: 'Your rider has arrived', body: 'Open the app to see your delivery code.' };
     case 'ORDER_DELIVERED':
       return { title: 'Delivered', body: 'Enjoy your meal! Rate your order.' };
     case 'ORDER_CANCELLED': {

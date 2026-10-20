@@ -86,6 +86,7 @@ model User {
   reviewsReceived ReviewRecord[] @relation("DriverReviews")
   deviceTokens    DeviceToken[]
   payoutAccount   PayoutAccount?
+  addresses       Address[]
 }
 
 model Vendor {
@@ -99,8 +100,12 @@ model Vendor {
   bannerImage       String
   address           String
   isAcceptingOrders Boolean  @default(true)
-  lat               Float    @default(23.0768)
-  lng               Float    @default(76.8524)
+  lat               Float    @default(0)
+  lng               Float    @default(0)
+  cityId            String?
+  pinCode           String?
+  locality          String?
+  operatingHours    Json?
   // Where the pin came from (Docs/20): DEVICE = the restaurant's own phone, ADMIN = typed by Kraveo, null = never set / legacy.
   locationSource    String?
   locationSetAt     DateTime?
@@ -124,8 +129,11 @@ model Vendor {
   settlements Settlement[]
   // Docs/23: the managed categories (cuisines) of this restaurant, ordered by `position` (first = main). `category` above is DERIVED from them.
   cuisines  VendorCategory[]
+  city      City? @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  coverage  VendorCoverage[]
 
   @@index([approvalStatus])
+  @@index([cityId, approvalStatus, isAcceptingOrders, lat, lng])
 }
 
 model MenuItem {
@@ -217,6 +225,9 @@ model Order {
   deliveryFee   Float         @default(30.0)
   dropoffHostel String
   dropoffNotes  String?
+  addressId     String?
+  addressSnapshot Json?
+  deliveryAddress Address? @relation(fields: [addressId], references: [id], onDelete: SetNull)
   status        OrderStatus   @default(PLACED)
   paymentStatus PaymentStatus @default(PENDING)
   otpCode       String?
@@ -369,6 +380,7 @@ model DriverPartner {
   onTimeRatePercent        Float      @default(100.0)
   rating                   Float      @default(5.0)
   upiId                    String?
+  cityId                   String?
   approvalStatus           ApprovalStatus @default(APPROVED)
   rejectionReason          String?
   appliedAt                DateTime?
@@ -377,8 +389,75 @@ model DriverPartner {
   updatedAt                DateTime   @updatedAt
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  city City? @relation(fields: [cityId], references: [id], onDelete: Restrict)
 
   @@index([approvalStatus])
+}
+
+// India-wide serviceability. Existing stores are deliberately not auto-enabled in a city.
+model City {
+  id String @id @default(uuid())
+  code String @unique
+  name String
+  state String
+  country String @default("IN")
+  active Boolean @default(false)
+  createdAt DateTime @default(now())
+  zones DeliveryZone[]
+  vendors Vendor[]
+  addresses Address[]
+  drivers DriverPartner[]
+}
+
+model DeliveryZone {
+  id String @id @default(uuid())
+  cityId String
+  name String
+  centerLat Float
+  centerLng Float
+  radiusKm Float
+  baseFeePaise Int @default(0)
+  perKmFeePaise Int @default(0)
+  active Boolean @default(false)
+  createdAt DateTime @default(now())
+  city City @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  vendors VendorCoverage[]
+  @@index([cityId, active])
+}
+
+model VendorCoverage {
+  vendorId String
+  zoneId String
+  active Boolean @default(true)
+  radiusKm Float?
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  zone DeliveryZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  @@id([vendorId, zoneId])
+  @@index([zoneId, active])
+}
+
+model Address {
+  id String @id @default(uuid())
+  customerId String
+  cityId String
+  label String
+  country String @default("IN")
+  pinCode String
+  locality String
+  houseNumber String
+  street String
+  landmark String?
+  instructions String?
+  lat Float
+  lng Float
+  isDefault Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  customer User @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  city City @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  orders Order[]
+  @@index([customerId, createdAt, id])
+  @@index([cityId, lat, lng])
 }
 
 // Who did what in the admin portal (approvals, suspensions, password resets, manual account creation).

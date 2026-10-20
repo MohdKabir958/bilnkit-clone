@@ -75,10 +75,10 @@ describe('VendorLocationEditor', () => {
     const h = await mount(<VendorLocationEditor id="v1" name="Sharma Dhaba" pin={{ hasLocation: false }} onSaved={onSaved} />);
     await click(h.querySelector('button')!); // "Set location"
     const input = h.querySelector('input') as HTMLInputElement;
-    await type(input, '28.6139, 77.2090'); // Delhi
+    await type(input, '-28.6139, 77.2090'); // Outside India
     await act(async () => { h.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
     expect(spy).not.toHaveBeenCalled();
-    expect(h.textContent).toMatch(/more than 3 km from the campus/);
+    expect(h.textContent).toMatch(/valid store location in India/);
     await type(input, '23.0745, 76.8590');
     await act(async () => { h.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
     await flush();

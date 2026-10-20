@@ -225,14 +225,14 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       expect((await api.raw('c', 'post', '/api/orders/quote', c.token, { restaurants: [cartOf(v1)], couponCode: 5 })).status).toBe(400);
     });
 
-    test('coupon eligibility is reported for THIS customer (VITFIRST only for a first order, single use)', async () => {
+    test('coupon eligibility is reported for THIS customer (WELCOME20 only for a first order, single use)', async () => {
       const [c1, c2] = W.customers;
       const [v1, v2] = W.vendors;
-      expect((await api.quote(c1, [cartOf(v1), cartOf(v2)], 'VITFIRST')).body.data).toMatchObject({ couponCode: 'VITFIRST', discount: 50 }); // 20% of 360 = 72 -> max 50
+      expect((await api.quote(c1, [cartOf(v1), cartOf(v2)], 'WELCOME20')).body.data).toMatchObject({ couponCode: 'WELCOME20', discount: 50 }); // 20% of 360 = 72 -> max 50
       expect((await api.place(c1, v1)).status).toBe(201); // c1 now has an order
-      const r = await api.quote(c1, [cartOf(v1), cartOf(v2)], 'VITFIRST');
+      const r = await api.quote(c1, [cartOf(v1), cartOf(v2)], 'WELCOME20');
       expect([r.status, r.body.code]).toEqual([400, 'COUPON_NOT_APPLICABLE']);
-      expect((await api.quote(c2, [cartOf(v1), cartOf(v2)], 'VITFIRST')).status).toBe(200);
+      expect((await api.quote(c2, [cartOf(v1), cartOf(v2)], 'WELCOME20')).status).toBe(200);
     });
 
     test('rate limited (ORDER_QUOTE)', async () => {
@@ -253,7 +253,7 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
         const n = 2 + Math.floor(rnd() * 4);
         const picked = [...W.vendors].sort(() => rnd() - 0.5).slice(0, n);
         const carts = picked.map((v) => cartOf(v, [[Math.floor(rnd() * 5), 1 + Math.floor(rnd() * 3)], ...(rnd() < 0.5 ? [[Math.floor(rnd() * 5), 1] as [number, number]] : [])].filter((l, i, a) => a.findIndex((x) => x[0] === l[0]) === i) as [number, number][]));
-        const coupon = ['', 'KRAVEO50', 'VITFIRST', 'NOPE'][Math.floor(rnd() * 4)];
+        const coupon = ['', 'KRAVEO50', 'WELCOME20', 'NOPE'][Math.floor(rnd() * 4)];
         const q = await api.quote(c, carts, coupon || undefined);
         const placed = await api.placeGroup(c, carts, coupon ? { couponCode: coupon } : {});
         if (q.status !== 200) { // the same cart is refused identically when placing
@@ -448,7 +448,7 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       expect(next.id).not.toBe(protectedG.id);
     });
 
-    test('coupons: single use per customer through the group (child 0 holds the code), a cancelled group releases it, VITFIRST only for a first order', async () => {
+    test('coupons: single use per customer through the group (child 0 holds the code), a cancelled group releases it, WELCOME20 only for a first order', async () => {
       const c = W.customers[0];
       const [v1, v2, v3, v4] = W.vendors;
       const g1 = await placeG(c, [cartOf(v1), cartOf(v2)], { couponCode: 'KRAVEO50' });
@@ -459,10 +459,10 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       expect(used.body.message).toContain('already used');
       expect((await api.cancel(c, g1.payOrderId)).status).toBe(200);
       expect((await api.placeGroup(c, [cartOf(v3), cartOf(v4)], { couponCode: 'KRAVEO50' })).status).toBe(201);
-      // VITFIRST: refused when the customer has any earlier non-cancelled order, even inside the same account's single orders
+      // WELCOME20: refused when the customer has any earlier non-cancelled order, even inside the same account's single orders
       const c2 = W.customers[1];
       expect((await api.place(c2, v1)).status).toBe(201);
-      const vit = await api.placeGroup(c2, [cartOf(v3), cartOf(v4)], { couponCode: 'VITFIRST' });
+      const vit = await api.placeGroup(c2, [cartOf(v3), cartOf(v4)], { couponCode: 'WELCOME20' });
       expect([vit.status, vit.body.code]).toEqual([400, 'COUPON_NOT_APPLICABLE']);
       // KRAVEO20 needs a coin redemption
       const k20 = await api.placeGroup(W.customers[2], [cartOf(v1), cartOf(v2)], { couponCode: 'KRAVEO20' });

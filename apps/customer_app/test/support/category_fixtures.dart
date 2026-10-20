@@ -125,7 +125,7 @@ class FakeCatalogServer {
 
   MockClient get client => MockClient((req) async {
         final path = req.url.path.replaceFirst(RegExp(r'^/api'), '');
-        if (path == '/vendors') return jsonResponse({'success': true, 'data': vendors});
+        if (path == '/v1/vendors/nearby') return jsonResponse({'success': true, 'data': vendors});
         if (path == '/categories') {
           final forWhat = req.url.queryParameters['for'] ?? '';
           categoryRequests.add(forWhat);

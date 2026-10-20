@@ -7,7 +7,6 @@ import {
   POOL_LIMIT, RECENTLY_FINISHED_MIN, vendorAcceptWindowMin, READY_NO_RIDER_ALERT_MIN, DELIVERY_STUCK_ALERT_MIN, MAX_REFUND_ATTEMPTS,
   RIDER_PICKUP_ALERT_MIN, REFUND_PENDING_ALERT_MIN,
 } from '../config/orderFlow';
-import { normalizeDropPoint } from '../config/campus';
 import { orderView, ORDER_VIEW_INCLUDE, OrderWithRelations, payableAmount } from '../services/orderView';
 import {
   OrderFlowError, placeOrder, cancelOrder, advanceStatus, claimOrder, releaseOrder, reassignOrder, verifyGateOtp, resetOtpLock,
@@ -62,14 +61,7 @@ orderRouter.post('/orders', requireAuth, requireRole('STUDENT'), async (req: Aut
     if (typeof b.vendorId !== 'string' || !ID_RE.test(b.vendorId)) return bad(res, 'vendorId is required.', 'vendorId');
     if (!Array.isArray(b.items) || b.items.length === 0) return bad(res, 'Cart items must be a non-empty array.', 'items');
 
-    let dropoffHostel = typeof b.dropoffHostel === 'string' ? b.dropoffHostel.trim() : '';
-    if (!dropoffHostel && b.dropoffHostel === undefined) {
-      const me = await prisma.user.findUnique({ where: { id: req.user!.id }, select: { hostelBlock: true } });
-      dropoffHostel = me?.hostelBlock ?? '';
-    }
-    const canonicalDropoff = normalizeDropPoint(dropoffHostel);
-    if (!canonicalDropoff) return bad(res, 'Choose one of the campus drop points.', 'dropoffHostel');
-    dropoffHostel = canonicalDropoff;
+    if (b.addressId !== undefined && (typeof b.addressId !== 'string' || !ID_RE.test(b.addressId))) return bad(res, 'Choose a saved address.', 'addressId');
 
     const dropoffNotes = optionalReason(b.dropoffNotes, 300);
     if (dropoffNotes === false) return bad(res, 'Delivery notes can be at most 300 characters.', 'dropoffNotes');
@@ -83,7 +75,8 @@ orderRouter.post('/orders', requireAuth, requireRole('STUDENT'), async (req: Aut
     const { order, replay } = await placeOrder(req.user!.id, {
       vendorId: b.vendorId,
       items: b.items,
-      dropoffHostel,
+      addressId: b.addressId,
+      dropoffHostel: '',
       dropoffNotes,
       couponCode: b.couponCode ?? undefined,
       clientRequestId,
@@ -128,7 +121,7 @@ orderRouter.post('/orders/quote', requireAuth, requireRole('STUDENT'), async (re
     if (!parsed.ok) return bad(res, parsed.message, parsed.field, parsed.code);
     const coupon = parseCoupon(b.couponCode);
     if (!coupon.ok) return bad(res, 'Invalid coupon code.', 'couponCode');
-    const data = await quoteOrder(req.user!.id, { restaurants: parsed.restaurants, couponCode: coupon.couponCode });
+    const data = await quoteOrder(req.user!.id, { restaurants: parsed.restaurants, couponCode: coupon.couponCode, addressId: b.addressId });
     return res.json({ success: true, data });
   } catch (err) {
     return fail(res, err, 'quote order');
@@ -141,13 +134,7 @@ orderRouter.post('/order-groups', requireAuth, requireRole('STUDENT'), async (re
     const parsed = parseRestaurants(b.restaurants);
     if (!parsed.ok) return bad(res, parsed.message, parsed.field, parsed.code);
 
-    let dropoffHostel = typeof b.dropoffHostel === 'string' ? b.dropoffHostel.trim() : '';
-    if (!dropoffHostel && b.dropoffHostel === undefined) {
-      const me = await prisma.user.findUnique({ where: { id: req.user!.id }, select: { hostelBlock: true } });
-      dropoffHostel = me?.hostelBlock ?? '';
-    }
-    const canonicalDropoff = normalizeDropPoint(dropoffHostel);
-    if (!canonicalDropoff) return bad(res, 'Choose one of the campus drop points.', 'dropoffHostel');
+    if (b.addressId !== undefined && (typeof b.addressId !== 'string' || !ID_RE.test(b.addressId))) return bad(res, 'Choose a saved address.', 'addressId');
 
     const dropoffNotes = optionalReason(b.dropoffNotes, 300);
     if (dropoffNotes === false) return bad(res, 'Delivery notes can be at most 300 characters.', 'dropoffNotes');
@@ -158,7 +145,8 @@ orderRouter.post('/order-groups', requireAuth, requireRole('STUDENT'), async (re
 
     const placed = await placeGroup(req.user!.id, {
       restaurants: parsed.restaurants,
-      dropoffHostel: canonicalDropoff,
+      addressId: b.addressId,
+      dropoffHostel: '',
       dropoffNotes,
       couponCode: coupon.couponCode,
       clientRequestId: b.clientRequestId,

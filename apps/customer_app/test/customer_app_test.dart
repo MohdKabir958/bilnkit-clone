@@ -98,9 +98,9 @@ void main() {
       expect(cart.items.first.item.name, equals('Paneer Roll'));
     });
 
-    test('Promo Code VITFIRST - minimum subtotal validation', () {
+    test('Promo Code WELCOME20 - minimum subtotal validation', () {
       cart.addItem(item: dummyItem2, dhabaId: 'ven-1', dhabaName: 'Sharma Dhaba'); // ₹50 subtotal
-      final result = cart.applyCoupon('VITFIRST');
+      final result = cart.applyCoupon('WELCOME20');
 
       expect(result, isFalse);
       expect(cart.appliedCouponCode, isNull);
@@ -108,20 +108,20 @@ void main() {
       expect(cart.couponError, contains('Minimum subtotal of ₹100 required'));
     });
 
-    test('Promo Code VITFIRST - 20% discount calculation', () {
+    test('Promo Code WELCOME20 - 20% discount calculation', () {
       cart.addItem(item: dummyItem1, dhabaId: 'ven-1', dhabaName: 'Sharma Dhaba'); // ₹180 subtotal
-      final result = cart.applyCoupon('VITFIRST');
+      final result = cart.applyCoupon('WELCOME20');
 
       expect(result, isTrue);
-      expect(cart.appliedCouponCode, equals('VITFIRST'));
+      expect(cart.appliedCouponCode, equals('WELCOME20'));
       expect(cart.couponDiscountAmount, equals(36.0)); // 20% of 180
       expect(cart.grandTotal, equals(169.0)); // 180 + 25 - 36
     });
 
-    test('Promo Code VITFIRST - discount capped at ₹50', () {
+    test('Promo Code WELCOME20 - discount capped at ₹50', () {
       cart.addItem(item: dummyItem1, dhabaId: 'ven-1', dhabaName: 'Sharma Dhaba');
       cart.addItem(item: dummyItem1, dhabaId: 'ven-1', dhabaName: 'Sharma Dhaba'); // 2x 180 = 360 subtotal
-      final result = cart.applyCoupon('VITFIRST');
+      final result = cart.applyCoupon('WELCOME20');
 
       expect(result, isTrue);
       expect(cart.couponDiscountAmount, equals(50.0)); // 20% of 360 = 72, capped at 50
@@ -175,8 +175,8 @@ void main() {
 
     test('Decrementing item invalidates coupon when subtotal falls below threshold', () {
       cart.addItem(item: dummyItem1, dhabaId: 'ven-1', dhabaName: 'Sharma Dhaba'); // ₹180
-      cart.applyCoupon('VITFIRST');
-      expect(cart.appliedCouponCode, equals('VITFIRST'));
+      cart.applyCoupon('WELCOME20');
+      expect(cart.appliedCouponCode, equals('WELCOME20'));
 
       // Decrement item 1 quantity by switching to lesser item
       cart.removeItem(cart.items.first.cartItemId);

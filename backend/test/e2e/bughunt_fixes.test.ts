@@ -417,14 +417,14 @@ describe('Pre-demo bug hunt fixes', () => {
     });
     const post = (c: Customer, b: object) => request.post('/api/orders').set(bearer(c.token)).send(b);
 
-    test('same clientRequestId with VITFIRST, 6 at once: one order, everybody gets it', async () => {
+    test('same clientRequestId with WELCOME20, 6 at once: one order, everybody gets it', async () => {
       const [c1] = W.customers; const [v1] = W.vendors;
-      const b = sameBody(v1, { couponCode: 'VITFIRST' });
+      const b = sameBody(v1, { couponCode: 'WELCOME20' });
       const rs = await Promise.all(Array.from({ length: 6 }, () => post(c1, b)));
       expect(rs.map((r) => r.status).sort()).toEqual([200, 200, 200, 200, 200, 201]);
       expect(new Set(rs.map((r) => r.body.data.id)).size).toBe(1);
       expect(await prisma.order.count({ where: { customerId: c1.id } })).toBe(1);
-      expect((await row(rs[0].body.data.id)).couponCode).toBe('VITFIRST');
+      expect((await row(rs[0].body.data.id)).couponCode).toBe('WELCOME20');
     });
 
     test('same clientRequestId when the customer already has 2 unpaid orders elsewhere (3rd allowed, its twin must replay, not 429)', async () => {
@@ -455,14 +455,14 @@ describe('Pre-demo bug hunt fixes', () => {
   describe('8. a new checkout replaces the customer\'s own abandoned unpaid orders at the same restaurant', () => {
     const backdatePayments = (orderId: string, minutes: number) => prisma.payment.updateMany({ where: { orderId }, data: { createdAt: new Date(Date.now() - minutes * 60_000) } });
 
-    test('VITFIRST: the second checkout works, the first order is cancelled by SYSTEM with its coupon released', async () => {
+    test('WELCOME20: the second checkout works, the first order is cancelled by SYSTEM with its coupon released', async () => {
       const [c1] = W.customers; const [v1] = W.vendors;
       const wc = await watch(c1);
-      const a = await place(c1, v1, { couponCode: 'VITFIRST' });
+      const a = await place(c1, v1, { couponCode: 'WELCOME20' });
       await wc.join(`order_${a}`);
-      const b = await place(c1, v1, { couponCode: 'VITFIRST' });
+      const b = await place(c1, v1, { couponCode: 'WELCOME20' });
       expect(await row(a)).toMatchObject({ status: 'CANCELLED', cancelledBy: 'SYSTEM', cancelReason: 'Replaced by a newer order', paymentStatus: 'PENDING', paidAt: null });
-      expect(await row(b)).toMatchObject({ status: 'PLACED', paymentStatus: 'PENDING', couponCode: 'VITFIRST' });
+      expect(await row(b)).toMatchObject({ status: 'PLACED', paymentStatus: 'PENDING', couponCode: 'WELCOME20' });
       expect((await row(a)).refundStatus).toBeNull(); // nothing was paid, nothing to refund
       expect(await prisma.adminAuditLog.count({ where: { targetId: a, action: 'ORDER_CANCELLED' } })).toBe(1);
       await wc.flush();
@@ -471,7 +471,7 @@ describe('Pre-demo bug hunt fixes', () => {
       await pay(c1, b);
       expect(await row(b)).toMatchObject({ status: 'PLACED', paymentStatus: 'PAID' });
       // the coupon is now really used: a third checkout with it is refused
-      const third = await api.place(c1, v1, { couponCode: 'VITFIRST' });
+      const third = await api.place(c1, v1, { couponCode: 'WELCOME20' });
       expect([third.status, third.body.code]).toEqual([400, 'COUPON_NOT_APPLICABLE']);
     });
 
@@ -511,13 +511,13 @@ describe('Pre-demo bug hunt fixes', () => {
 
     test('a payment opened less than 2 minutes ago is "in flight": nothing is cancelled and the coupon stays held; after 2 minutes it is replaced', async () => {
       const [c1] = W.customers; const [v1] = W.vendors;
-      const a = await place(c1, v1, { couponCode: 'VITFIRST' });
+      const a = await place(c1, v1, { couponCode: 'WELCOME20' });
       expect((await api.createPayment(c1, a)).status).toBe(200);
-      const blocked = await api.place(c1, v1, { couponCode: 'VITFIRST' });
+      const blocked = await api.place(c1, v1, { couponCode: 'WELCOME20' });
       expect([blocked.status, blocked.body.code]).toEqual([400, 'COUPON_NOT_APPLICABLE']);
       expect((await row(a)).status).toBe('PLACED');
       await backdatePayments(a, 3);
-      const b = await place(c1, v1, { couponCode: 'VITFIRST' });
+      const b = await place(c1, v1, { couponCode: 'WELCOME20' });
       expect((await row(a)).status).toBe('CANCELLED');
       expect((await row(b)).status).toBe('PLACED');
     });
@@ -565,7 +565,7 @@ describe('Pre-demo bug hunt fixes', () => {
 
     test('a customer cannot affect another customer\'s orders, and a failed checkout rolls the replacement back', async () => {
       const [c1, c2] = W.customers; const [v1] = W.vendors;
-      const other = await place(c2, v1, { couponCode: 'VITFIRST' });
+      const other = await place(c2, v1, { couponCode: 'WELCOME20' });
       const mine = await place(c1, v1);
       // c1 checks out again: c2's order is not part of it
       await place(c1, v1);

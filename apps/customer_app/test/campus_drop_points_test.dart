@@ -4,6 +4,7 @@
 import 'dart:async';
 
 import 'package:customer_app/models/customer_user.dart';
+import 'package:customer_app/models/delivery_address.dart';
 import 'package:customer_app/models/drop_point.dart';
 import 'package:customer_app/models/geo.dart';
 import 'package:customer_app/models/order.dart';
@@ -208,9 +209,12 @@ void main() {
 
     test('the saved profile value is shown normalised (SessionProvider)', () {
       expect(signedIn(hostel: 'Boys Hostel Block 3').hostel, 'BH3');
-      expect(signedIn(hostel: 'Girls Gate 1').deliveryPoint, 'GH1');
+      expect(signedIn(hostel: 'Girls Gate 1').deliveryPoint, isNull, reason: 'legacy profile labels cannot select an owned delivery address');
       expect(signedIn(hostel: 'VIT Main Gate').deliveryPoint, isNull, reason: 'removed point: the student chooses again');
-      expect(signedIn(hostel: 'GH2').selectedHostel, 'GH2');
+      expect(signedIn(hostel: 'GH2').selectedHostel, 'Choose delivery address');
+      final s = signedIn();
+      s.selectDeliveryAddress(DeliveryAddress({'id': 'a1', 'customerId': 'u1', 'houseNumber': '12', 'street': 'Church Street', 'locality': 'Central', 'city': {'name': 'Bengaluru'}, 'pinCode': '560001'}));
+      expect(s.deliveryPoint, '12, Church Street, Central, Bengaluru 560001');
     });
   });
 
@@ -278,7 +282,7 @@ void main() {
   });
 
   group('Checkout: delivering to + confirm sheet', () {
-    Future<(FakeOrderApi, OrderProvider, FakeGateway, CartProvider, SessionProvider)> open(WidgetTester tester, {String selected = 'Block 2', FakeOrderApi? api, SessionProvider? session}) async {
+    Future<(FakeOrderApi, OrderProvider, FakeGateway, CartProvider, SessionProvider)> open(WidgetTester tester, {String selected = 'House 2, Main Road, Kothri, Bhopal 466114', FakeOrderApi? api, SessionProvider? session}) async {
       api ??= FakeOrderApi();
       final gateway = FakeGateway()..next = const GatewayResult.cancelled();
       final orders = fakeOrders(api, gateway: gateway);
@@ -288,60 +292,34 @@ void main() {
       return (api, orders, gateway, cart, s);
     }
 
-    testWidgets('shows a "Delivering to <point>" row with Change, never the old pill', (tester) async {
+    testWidgets('shows the full delivery address and offers Change without campus choices', (tester) async {
       await open(tester);
       expect(find.text('Delivering to'), findsOneWidget);
-      expect(find.text('BH2'), findsOneWidget, reason: 'the stored "Block 2" is shown as BH2');
+      expect(find.text('House 2, Main Road, Kothri, Bhopal 466114'), findsOneWidget);
       expect(find.text('Change'), findsOneWidget);
       expect(find.byType(HostelPill), findsNothing);
-
-      await tester.tap(find.text('Change'));
-      await settle(tester);
-      expect(find.text('Where should we deliver?'), findsOneWidget);
-      await tapChip(tester, 'BH5');
-      await settle(tester);
-      expect(find.text('BH5'), findsOneWidget);
-      expect(find.text('BH2'), findsNothing);
+      expect(find.byType(KChoiceChip), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('Pay opens the sheet: title, grouped chips, current point preselected, nothing is placed yet', (tester) async {
+    testWidgets('Pay confirms the selected address before placing an order or opening payment', (tester) async {
       final (api, _, gateway, _, _) = await open(tester);
       await tapButton(tester, 'Pay ₹145');
       expect(find.text(sheetTitle), findsOneWidget);
-      expect(find.text('BOYS'), findsOneWidget);
-      expect(find.text('GIRLS'), findsOneWidget);
-      expect(find.byType(KChoiceChip), findsNWidgets(11));
-      expect(tester.widgetList<KChoiceChip>(find.byType(KChoiceChip)).where((c) => c.selected).map((c) => c.label), ['BH2']);
+      expect(find.text('Your delivery partner will deliver to this address.'), findsOneWidget);
+      expect(find.byType(KChoiceChip), findsNothing);
       expect(button('Confirm and pay'), findsOneWidget);
-      expect(find.text('Cancel'), findsOneWidget);
       expect(api.creates, isEmpty);
       expect(gateway.opened, isEmpty);
-      expect(tester.takeException(), isNull, reason: 'no overflow at 360x640 with 1.3x text');
+      expect(tester.takeException(), isNull);
     });
 
-    testWidgets('Confirm and pay keeps the current point; the order is created for it', (tester) async {
+    testWidgets('Confirm and pay preserves the full address without rewriting the profile', (tester) async {
       final (api, _, _, _, session) = await open(tester);
       await tapButton(tester, 'Pay ₹145');
       await tapButton(tester, 'Confirm and pay');
-      expect(find.text(sheetTitle), findsNothing);
-      expect(api.creates, hasLength(1));
-      expect(api.creates.single.dropoffHostel, 'BH2');
-      expect(session.hostel, 'BH2');
-    });
-
-    testWidgets('choosing another point places the order there and never touches the saved profile point', (tester) async {
-      final (api, orders, _, _, session) = await open(tester);
-      await tapButton(tester, 'Pay ₹145');
-      await tapChip(tester, 'GH1');
-      expect(tester.widget<KChoiceChip>(chip('GH1')).selected, isTrue);
-      expect(tester.widget<KChoiceChip>(chip('BH2')).selected, isFalse);
-      await tapButton(tester, 'Confirm and pay');
-      expect(api.creates.single.dropoffHostel, 'GH1');
-      expect(session.hostel, 'BH2', reason: 'the profile point is unchanged');
-      expect(session.user?.hostelBlock, 'Block 2', reason: 'and nothing was saved to the server');
-      expect(orders.orderById('order-1'), isNotNull);
-      expect(tester.takeException(), isNull);
+      expect(api.creates.single.dropoffHostel, 'House 2, Main Road, Kothri, Bhopal 466114');
+      expect(session.user?.hostelBlock, 'Block 2');
     });
 
     testWidgets('Cancel (and the close button) place nothing and charge nothing; paying again works', (tester) async {
@@ -394,33 +372,16 @@ void main() {
       await tapButton(tester, 'Confirm and pay');
       expect(api.creates, hasLength(2));
       expect(api.creates[1].clientRequestId, api.creates[0].clientRequestId, reason: 'a retry of the same request is safe');
-      expect(api.creates[1].dropoffHostel, 'BH2');
+      expect(api.creates[1].dropoffHostel, 'House 2, Main Road, Kothri, Bhopal 466114');
 
-      await tapButton(tester, 'Pay ₹145');
-      await tapChip(tester, 'GH2');
-      await tapButton(tester, 'Confirm and pay');
-      expect(api.creates, hasLength(3));
-      expect(api.creates[2].dropoffHostel, 'GH2');
-      expect(api.creates[2].clientRequestId, isNot(api.creates[0].clientRequestId), reason: 'a different point is a different order');
     });
 
-    testWidgets('a legacy saved value is normalised: preselected and sent as the new name', (tester) async {
-      final (api, _, _, _, _) = await open(tester, selected: 'Boys Hostel Block 3');
-      expect(find.text('BH3'), findsOneWidget);
+    testWidgets('a saved India address is used exactly as selected', (tester) async {
+      final (api, _, _, _, _) = await open(tester, selected: '12, Church Street, Bengaluru 560001');
+      expect(find.text('12, Church Street, Bengaluru 560001'), findsOneWidget);
       await tapButton(tester, 'Pay ₹145');
-      expect(tester.widgetList<KChoiceChip>(find.byType(KChoiceChip)).where((c) => c.selected).map((c) => c.label), ['BH3']);
       await tapButton(tester, 'Confirm and pay');
-      expect(api.creates.single.dropoffHostel, 'BH3');
-    });
-
-    testWidgets('a removed point ("VIT Main Gate") asks the student to choose again, no sheet and no order', (tester) async {
-      final (api, _, _, _, _) = await open(tester, selected: 'VIT Main Gate', session: signedIn(hostel: 'VIT Main Gate'));
-      expect(find.text('Choose drop-off point'), findsOneWidget);
-      expect(find.text('Delivering to'), findsNothing);
-      await tapButton(tester, 'Choose drop-off');
-      expect(find.text('Where should we deliver?'), findsOneWidget);
-      expect(find.text(sheetTitle), findsNothing);
-      expect(api.creates, isEmpty);
+      expect(api.creates.single.dropoffHostel, '12, Church Street, Bengaluru 560001');
     });
   });
 

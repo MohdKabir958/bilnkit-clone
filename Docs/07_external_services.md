@@ -15,3 +15,5 @@ FCM is retained in all three mobile apps and the backend. Source inspection foun
 Keep external secrets out of Git, generated branding, test outputs and frontend bundles. Root MIT licensing does not confer rights to the upstream operator's Firebase project, logos, domain names or photos.
 
 Cloud setup uses registry.npmjs.org, GitHub, binaries.prisma.sh, deb.debian.org, pub.dev and storage.googleapis.com. The two custom download domains were saved in the environment draft. Production service network destinations should be added only when the chosen integration is configured.
+
+Maps adapters now have bounded timeouts/payloads and authorization for order routes. Their unit tests use an explicit mock provider. No live geocoder, router, production tile provider or on-device GPS has been verified in this workspace. Manual/GPS address entry does not prove postal deliverability; operators must configure coverage and verify pilot locations.

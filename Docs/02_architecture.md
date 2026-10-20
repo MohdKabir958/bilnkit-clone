@@ -11,6 +11,6 @@ All clients use `/api` REST endpoints and JWT bearer authentication. The interna
 | STUDENT (customer) | Own profile/orders/checkout/tracking/reviews |
 | DRIVER | Eligible pool, assigned deliveries, own earnings and authorized tracking |
 
-Phase 2 must introduce backend-validated structured addresses and enabled geography. Phase 3 must extend MenuItem compatibility into grocery products/variants and transactional inventory. Phase 4 must tighten assignment offers, location retention, support, observability and deployment. These planned features are not represented as implemented architecture.
+Phase 2 introduces backend-validated structured addresses, enabled cities/zones and explicit store coverage; versioned APIs reuse existing authentication, checkout/payment and order views. The customer app selects owned addresses and reloads nearby stores; admin Coverage configures geography/hours/fees. Manual entry/GPS remain available without a maps provider. Phase 3 must extend MenuItem compatibility into grocery products/variants and transactional inventory. Phase 4 must tighten assignment offers, location retention, support, observability and deployment. These planned features are not represented as implemented architecture.
 
 Local `PAYMENT_PROVIDER=disabled` is allowed only with `NODE_ENV=development`. It cannot produce a paid order; payment callbacks fail closed. Jest's injected payment simulator is isolated from the normal entrypoint. Production continues to require gateway credentials.

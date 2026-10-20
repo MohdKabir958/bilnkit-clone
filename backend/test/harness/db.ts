@@ -1,5 +1,6 @@
 import { prisma } from '../../src/db';
 import { Role, OrderStatus, PaymentStatus, DutyStatus } from '@prisma/client';
+import { ensureFixtureGeography } from './geography';
 
 export { prisma };
 
@@ -152,6 +153,7 @@ export const seedTestDatabase = async () => {
     }
   });
 
+  await ensureFixtureGeography('seed', [student.id], [vendor.id]);
   return { student, vendorUser, driverUser, adminUser, vendor, menuItem1, menuItem2 };
 };
 

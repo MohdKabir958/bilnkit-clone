@@ -1,0 +1,11 @@
+/tmp/backend-phase2-gate.log
+Test Suites: 11 passed, 11 total
+Tests:       301 passed, 301 total
+/tmp/admin-phase2-gate.log
+ Test Files  46 passed (46)
+      Tests  798 passed (798)
+/tmp/customer-phase2-gate.log
+01:01 +434: All tests passed!
+Runtime smoke: PASSED database-backed geography/cities/catalog and admin login/authorization.
+Focused late-capture case: 1 passed; verifies ORDER_CANCELLED response, persisted CANCELLED/REFUNDED state and exactly one refund across replay.
+Final customer analysis: no issues. Backend/admin builds passed. Repeat migration: no pending migrations.

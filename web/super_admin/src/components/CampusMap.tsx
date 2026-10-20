@@ -30,7 +30,7 @@ interface Props {
 
 interface RiderEntry { marker: L.Marker; root: HTMLElement; label: HTMLElement; data: MapRider; aria: string }
 
-const OSM_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+const OSM_URL = import.meta.env.VITE_MAP_TILE_URL || (import.meta.env.DEV ? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png' : '');
 const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors';
 /** After this many tile errors in a row the map says the background is unavailable (markers keep working). */
 const TILE_ERROR_LIMIT = 3;
@@ -77,16 +77,19 @@ const CampusMap: React.FC<Props> = ({ riders, vendors, dropPoints, center, now, 
     selectedRef.current = null;
     let map: L.Map;
     try {
-      map = L.map(host, { center: [center.lat, center.lng], zoom: 16, minZoom: 12, maxZoom: 19, zoomSnap: 0.5, attributionControl: true });
+      map = L.map(host, { center: [center.lat, center.lng], zoom: 5, minZoom: 4, maxZoom: 19, zoomSnap: 0.5, attributionControl: true });
     } catch {
       return undefined; // Leaflet could not start (very old browser): the list beside the map keeps working
     }
     map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener noreferrer">Leaflet</a>');
-    const tiles = L.tileLayer(OSM_URL, { maxZoom: 19, attribution: OSM_ATTRIBUTION });
-    let errors = 0;
-    tiles.on('tileerror', () => { errors += 1; if (errors >= TILE_ERROR_LIMIT) setTilesFailed(true); });
-    tiles.on('tileload', () => { errors = 0; setTilesFailed(false); });
-    tiles.addTo(map);
+    if (OSM_URL) {
+      const tiles = L.tileLayer(OSM_URL, { maxZoom: 19, attribution: import.meta.env.VITE_MAP_ATTRIBUTION || OSM_ATTRIBUTION });
+      let errors = 0;
+      tiles.on('tileerror', () => { errors += 1; if (errors >= TILE_ERROR_LIMIT) setTilesFailed(true); });
+      tiles.on('tileload', () => { errors = 0; setTilesFailed(false); });
+      tiles.addTo(map);
+    } else { setTilesFailed(true); }
+
     staticLayerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
 
@@ -250,7 +253,7 @@ const CampusMap: React.FC<Props> = ({ riders, vendors, dropPoints, center, now, 
         ref={hostRef}
         className="absolute inset-0"
         role="region"
-        aria-label="Live campus map. Drop points, restaurants and riders. The list beside the map has the same riders."
+        aria-label="Live delivery map. Stores and riders. The list beside the map has the same riders."
       />
       {tilesFailed && (
         <p role="status" className="pointer-events-none absolute bottom-7 left-2 z-[500] max-w-[16rem] rounded-md border border-kraveo-line bg-kraveo-night/90 px-2.5 py-1.5 text-[11px] text-kraveo-ink2">

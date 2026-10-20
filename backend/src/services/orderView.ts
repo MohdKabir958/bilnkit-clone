@@ -135,10 +135,10 @@ const buildView = (o: OrderWithRelations) => ({
   subtotal: o.subtotal,
   taxAndPackaging: o.taxAndPackaging,
   discount: o.discount,
-  dropoffHostel: o.dropoffHostel,
+  dropoffHostel: o.addressSnapshot ? `${(o.addressSnapshot as any).locality}, ${(o.addressSnapshot as any).city}` : o.dropoffHostel,
   // Docs/19: the canonical drop point with its pin; null for stored text that is not a drop point (very old data). Same visibility as dropoffHostel.
-  dropoff: dropoffView(o.dropoffHostel),
-  dropoffNotes: (o.dropoffNotes ?? null) as string | null,
+  dropoff: o.addressSnapshot ? null : dropoffView(o.dropoffHostel),
+  dropoffNotes: (o.addressSnapshot ? null : o.dropoffNotes ?? null) as string | null,
   createdAt: o.createdAt.toISOString(),
   updatedAt: o.updatedAt.toISOString(),
   paidAt: iso(o.paidAt),
@@ -165,11 +165,17 @@ const payByOf = (o: OrderWithRelations) =>
 const acceptByOf = (o: OrderWithRelations) =>
   o.status === 'PLACED' && o.paymentStatus === 'PAID' && o.paidAt ? addMinutes(o.paidAt, vendorAcceptWindowMin()).toISOString() : null;
 
+const privateDelivery = (o: OrderWithRelations): Record<string, unknown> => {
+  const a = o.addressSnapshot as any;
+  if (!a || typeof a !== 'object') return {};
+  return { deliveryAddress: a, dropoffHostel: o.dropoffHostel, dropoffNotes: o.dropoffNotes, dropoff: { id: a.id ?? o.id, name: a.formatted ?? o.dropoffHostel, lat: a.lat, lng: a.lng } };
+};
 export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string, viewerId: string): Record<string, unknown> | null {
   switch (viewerRole) {
     case 'ADMIN': {
       return {
         ...buildView(o),
+        ...privateDelivery(o),
         vendor: { id: o.vendor.id, name: o.vendor.name, address: o.vendor.address, lat: o.vendor.lat, lng: o.vendor.lng, hasLocation: vendorHasLocation(o.vendor.lat, o.vendor.lng), phone: o.vendor.user?.phone ?? null },
         customer: { id: o.customer.id, name: o.customer.name, phone: o.customer.phone ?? null, hostelBlock: o.customer.hostelBlock ?? null },
         driver: driverOf(o),
@@ -209,6 +215,7 @@ export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string
       if (o.customerId !== viewerId) return null;
       return {
         ...buildView(o),
+        ...privateDelivery(o),
         customer: { id: o.customer.id, name: o.customer.name, phone: o.customer.phone ?? null, hostelBlock: o.customer.hostelBlock ?? null },
         driver: driverOf(o),
         otpCode: o.status === 'ARRIVED_AT_GATE' ? realOtp(o.otpCode) : null,
@@ -240,6 +247,7 @@ export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string
       if (o.driverId === viewerId) {
         return {
           ...buildView(o),
+          ...privateDelivery(o),
           customer: { id: o.customer.id, name: o.customer.name, phone: o.customer.phone ?? null, hostelBlock: o.customer.hostelBlock ?? null },
           driver: driverOf(o),
           ...withGroup(groupFull(o)),

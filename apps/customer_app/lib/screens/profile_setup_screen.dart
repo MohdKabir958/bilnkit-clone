@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kraveo_ui/kraveo_ui.dart';
@@ -7,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../providers/session_provider.dart';
 import '../widgets/ui/display_text.dart';
 import '../widgets/ui/error_line.dart';
-import '../widgets/ui/hostel_pill.dart';
 import '../widgets/ui/k_icon_button.dart';
 import '../widgets/ui/phone_input.dart';
 
@@ -49,19 +47,15 @@ class ProfileSetupScreen extends StatefulWidget {
 }
 
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
-  static const int _steps = 3;
+  static const int _steps = 2;
 
   final PageController _pages = PageController();
   late final TextEditingController _name;
   late final TextEditingController _phone;
   final _nameFocus = FocusNode();
   final _phoneFocus = FocusNode();
-  final _hostelKey = GlobalKey();
-  Timer? _revealTimer;
 
   int _step = 0;
-  bool? _isStudent;
-  String? _hostel;
   int? _avatarId;
 
   String? _nameError;
@@ -76,14 +70,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final user = session.user;
     _name = TextEditingController(text: session.suggestedName ?? '');
     _phone = TextEditingController(text: normalizeIndianPhone(user?.phone ?? ''));
-    _isStudent = user?.isStudent;
-    _hostel = session.hostel;
     _avatarId = user?.avatarId;
   }
 
   @override
   void dispose() {
-    _revealTimer?.cancel();
     _pages.dispose();
     _name.dispose();
     _phone.dispose();
@@ -95,11 +86,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   String get _cleanName => _name.text.trim().replaceAll(RegExp(r'\s+'), ' ');
   String get _phoneDigits => normalizeIndianPhone(_phone.text);
 
-  bool get _studentStepDone => _isStudent != null && (_isStudent == false || _hostel != null);
 
   bool get _canContinue => switch (_step) {
         0 => true, // validated with messages on tap
-        1 => _studentStepDone,
         _ => _avatarId != null,
       };
 
@@ -132,39 +121,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           return;
         }
         _goTo(1);
-      case 1:
-        if (_studentStepDone) _goTo(2);
       default:
         await _submit();
     }
   }
 
-  void _chooseYes() {
-    setState(() => _isStudent = true);
-    // The hostel field opens below the cards and can start off-screen on small phones:
-    // bring it into view once it has its final size.
-    _revealTimer?.cancel();
-    _revealTimer = Timer(KMotion.base + const Duration(milliseconds: 40), () {
-      final ctx = _hostelKey.currentContext;
-      if (mounted && ctx != null) Scrollable.ensureVisible(ctx, duration: KMotion.base, curve: KMotion.emphasized);
-    });
-  }
-
-  Future<void> _pickHostel() async {
-    FocusScope.of(context).unfocus();
-    final picked = await showHostelPicker(context, blocks: kHostelBlocks, selected: _hostel ?? '');
-    if (picked != null && mounted) {
-      setState(() {
-        _hostel = picked;
-        _formError = null;
-      });
-    }
-  }
-
   Future<void> _submit() async {
     final avatar = _avatarId;
-    final student = _isStudent;
-    if (avatar == null || student == null) return;
+    if (avatar == null) return;
     setState(() {
       _saving = true;
       _formError = null;
@@ -173,8 +137,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final result = await session.saveProfile(
       name: _cleanName,
       phone: _phoneDigits,
-      isStudent: student,
-      hostelBlock: student ? _hostel : null,
       avatarId: avatar,
     );
     if (!mounted) return; // success: AuthGate swaps this screen for Home
@@ -244,7 +206,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
                         _Page(child: _nameStep(context, email)),
-                        _Page(child: _studentStep(context)),
                         _Page(child: _avatarStep(context)),
                       ],
                     ),
@@ -364,86 +325,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   // ---- Step 2: student? -----------------------------------------------------------------
 
-  Widget _studentStep(BuildContext context) {
-    final k = context.k;
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      KDisplayText('Are you a\nstudent?', style: KraveoType.displayMd.copyWith(color: k.ink)),
-      const SizedBox(height: 10),
-      Text('Students save a hostel drop point so checkout is one tap.', style: KraveoType.body.copyWith(color: k.inkMuted)),
-      const SizedBox(height: 24),
-      _ChoiceCard(
-        key: const ValueKey('student-yes'),
-        icon: LucideIcons.graduationCap,
-        title: 'Yes',
-        subtitle: 'I stay in a hostel on campus',
-        selected: _isStudent == true,
-        onTap: _saving ? null : _chooseYes,
-      ),
-      const SizedBox(height: 12),
-      _ChoiceCard(
-        key: const ValueKey('student-no'),
-        icon: LucideIcons.user,
-        title: 'No',
-        subtitle: 'I\'ll choose where to deliver at checkout',
-        selected: _isStudent == false,
-        onTap: _saving ? null : () => setState(() => _isStudent = false),
-      ),
-      AnimatedSize(
-        duration: KMotion.base,
-        curve: KMotion.emphasized,
-        alignment: Alignment.topCenter,
-        child: _isStudent == true ? Padding(padding: const EdgeInsets.only(top: 22), child: _hostelField(context)) : const SizedBox(width: double.infinity),
-      ),
-    ]);
-  }
-
-  Widget _hostelField(BuildContext context) {
-    final k = context.k;
-    final chosen = _hostel;
-    return Column(key: _hostelKey, crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _label(context, 'YOUR HOSTEL BLOCK'),
-      KPressable(
-        key: const ValueKey('hostel-field'),
-        onTap: _saving ? null : _pickHostel,
-        semanticLabel: chosen == null ? 'Choose your hostel block' : 'Hostel block $chosen. Change',
-        child: AnimatedContainer(
-          duration: KMotion.base,
-          padding: const EdgeInsets.fromLTRB(14, 12, 16, 12),
-          decoration: BoxDecoration(
-            color: k.surface,
-            borderRadius: KRadius.control,
-            border: Border.all(color: chosen == null ? k.line : k.brand.withValues(alpha: 0.5), width: 1.2),
-          ),
-          child: Row(children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(color: k.brandSoft, shape: BoxShape.circle),
-              child: Icon(LucideIcons.mapPin, size: 20, color: k.brand),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                chosen ?? 'Choose your hostel block',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: chosen == null ? KraveoType.body.copyWith(color: k.inkFaint) : KraveoType.titleLg.copyWith(color: k.ink),
-              ),
-            ),
-            Icon(LucideIcons.chevronDown, size: 20, color: k.inkMuted),
-          ]),
-        ),
-      ),
-      if (chosen == null)
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Text('Pick your block to continue.', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
-        ),
-    ]);
-  }
-
-  // ---- Step 3: avatar -------------------------------------------------------------------
-
   Widget _avatarStep(BuildContext context) {
     final k = context.k;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -530,56 +411,3 @@ class _Header extends StatelessWidget {
 }
 
 /// Big selectable card (Yes / No).
-class _ChoiceCard extends StatelessWidget {
-  const _ChoiceCard({super.key, required this.icon, required this.title, required this.subtitle, required this.selected, required this.onTap});
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool selected;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final k = context.k;
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: '$title. $subtitle',
-      excludeSemantics: true,
-      onTap: onTap,
-      child: KPressable(
-        onTap: onTap,
-        scale: 0.98,
-        child: AnimatedContainer(
-          duration: KMotion.base,
-          curve: KMotion.emphasized,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: selected ? k.brandSoft : k.surface,
-            borderRadius: BorderRadius.circular(KRadius.xl),
-            border: Border.all(color: selected ? k.brand : k.line, width: selected ? 2 : 1.2),
-          ),
-          child: Row(children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(color: selected ? k.brand : k.surfaceAlt, shape: BoxShape.circle),
-              child: Icon(icon, size: 24, color: selected ? k.onBrand : k.inkMuted),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(title, style: KraveoType.titleLg.copyWith(color: k.ink)),
-                const SizedBox(height: 2),
-                Text(subtitle, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
-              ]),
-            ),
-            const SizedBox(width: 8),
-            Icon(selected ? LucideIcons.circleCheck : LucideIcons.circle, size: 24, color: selected ? k.brand : k.inkFaint),
-          ]),
-        ),
-      ),
-    );
-  }
-}

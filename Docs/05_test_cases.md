@@ -27,3 +27,12 @@ Evidence is for this local instance. CI and fresh cloud task restoration have no
 Core lifecycle target: real PostgreSQL and HTTP/Socket.io, injected test-only payment provider and Google verifier. `test/e2e/lifecycle_journeys.test.ts` exercises payment, vendor acceptance, rider claim, pickup, OTP, delivery, cancellation/refunds, concurrency and role-specific events. `auth_pipeline.test.ts`, `hardening.test.ts`, `payments_adversarial.test.ts` exercise authentication, permissions, throttling and signatures. Normal API runs never inject those test doubles.
 
 Tests delete records. `DATABASE_URL` must identify a disposable database with a name ending `_test`; Jest refuses other names. Phase 2-4 acceptance scenarios (multi-city discovery, inventory races, grocery variants, dispatch offers) are not passed by these baseline tests and require new tests with the implementation.
+
+## Phase 2 verification
+
+- Backend: 11 suites, 301 tests passed (the original core selection plus India serviceability and maps adapters). An additional focused late-capture regression passed after adding a deterministic case; the earlier 301 includes the concurrent late-payment race.
+- Two-city acceptance: actual admin-created vendor accounts in Bengaluru and Delhi, password login, persisted addresses, enabled circles/coverage, correct discovery, server fees, unsupported/foreign-address rejection, zone/city disablement, immutable snapshots and a payment-simulator → vendor → rider → OTP → delivered lifecycle. Test payments are not external gateway verification.
+- Admin: 46 files, 798 tests passed, including coverage UI and real API URL/auth request shape tests.
+- Customer: full suite 434 tests passed; profile/address/catalog/checkout flows and retries retained; obsolete campus-only expectations replaced with structured-address requirements. Analysis passed without issues. Vendor India-coordinate validation analysis passed.
+- API runtime smoke passed health, authorization, real admin login and database-backed partner/geography/enabled-city/catalog reads.
+- Android debug APK attempts exposed and fixed a Kotlin branding import, then required a full JDK rather than the installed JRE. APK compilation continues separately; no APK/device or release-signing success is claimed here. No iOS runner exists in the inherited checkout.

@@ -25,7 +25,7 @@ abstract class VendorLocationApi {
 }
 
 /// The text to show when a save failed: the server's own message when it sent one (it says exactly what is wrong,
-/// e.g. "The location must be within 3 km of the campus."), else the standard bilingual wording.
+/// e.g. "Choose a valid store location in India."), else the standard bilingual wording.
 String locationSaveFailureText(ApiResult<Object?> result) {
   final server = result.message?.trim() ?? '';
   final failure = result.failure!;

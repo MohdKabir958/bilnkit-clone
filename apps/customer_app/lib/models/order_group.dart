@@ -41,13 +41,15 @@ class RestaurantCart {
 
 /// The body of `POST /orders/quote`.
 class QuoteRequest {
-  const QuoteRequest({required this.restaurants, this.couponCode});
+  final String? addressId;
+  const QuoteRequest({required this.restaurants, this.couponCode, this.addressId});
 
   final List<RestaurantCart> restaurants;
   final String? couponCode;
 
   Map<String, dynamic> toJson() => {
         'restaurants': [for (final r in restaurants) r.toJson()],
+        if (addressId != null) 'addressId': addressId,
         if (couponCode != null && couponCode!.isNotEmpty) 'couponCode': couponCode,
       };
 
@@ -55,6 +57,7 @@ class QuoteRequest {
   String get key => [
         for (final r in restaurants) '${r.vendorId}:${[for (final i in r.items) '${i.itemId}x${i.quantity}'].join(',')}',
         (couponCode ?? '').toUpperCase(),
+        addressId ?? '',
       ].join('|');
 }
 

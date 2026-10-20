@@ -1,10 +1,18 @@
+import java.util.Properties
 plugins {
     id("com.android.application")
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services")
+    id("com.google.gms.google-services") apply false
 }
 
-val marketBrand = java.util.Properties().apply {
+// FCM remains enabled by default. A local debug APK can explicitly omit project-specific Firebase wiring.
+val disableFirebaseForDebug = providers.gradleProperty("disableFirebase").orNull == "true"
+if (disableFirebaseForDebug && gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }) {
+    throw GradleException("Firebase may be disabled only for local debug builds. Configure an owned Firebase project for release.")
+}
+if (!disableFirebaseForDebug) apply(plugin = "com.google.gms.google-services")
+
+val marketBrand = Properties().apply {
     rootProject.file("../../../branding/android.properties").inputStream().use { load(it) }
 }
 

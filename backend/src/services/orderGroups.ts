@@ -1,7 +1,7 @@
 import { OrderGroup, Prisma } from '@prisma/client';
 import { prisma } from '../db';
 import { MAX_UNPAID_OPEN_ORDERS } from '../config/orderFlow';
-import { normalizeDropPoint } from '../config/campus';
+import { ownedAddress, addressLabel, addressSnapshot, deliveryEligibility, GeoDb, DeliveryAddress } from './geography';
 import { couponEligibilityProblem, normaliseCoupon, validateAndCalculateGroup, validateAndCalculateOrder, GroupRestaurantInput, GroupValidationResult } from '../utils/validation';
 import { getSettings } from './settings';
 import { ORDER_VIEW_INCLUDE, OrderWithRelations, orderView } from './orderView';
@@ -60,18 +60,25 @@ export type Quote = {
  * What a cart would be charged, written nowhere (POST /api/orders/quote). Uses exactly the code that places the order, so quote == charge.
  * One restaurant = a normal single-order price; several = the combined price.
  */
-export const quoteOrder = async (customerId: string, input: { restaurants: GroupRestaurantInput[]; couponCode?: string }): Promise<Quote> => {
+const zoneFees = async (db: GeoDb, address: DeliveryAddress, restaurants: GroupRestaurantInput[], lock = false) => {
+  const fees = new Map<string, number>();
+  for (const r of [...restaurants].sort((a, b) => a.vendorId.localeCompare(b.vendorId))) fees.set(r.vendorId, (await deliveryEligibility(db, address, r.vendorId, lock)).feePaise);
+  return fees;
+};
+export const quoteOrder = async (customerId: string, input: { restaurants: GroupRestaurantInput[]; couponCode?: string; addressId?: string }): Promise<Quote> => {
   const settings = await getSettings();
   const max = settings.fees.maxRestaurantsPerOrder;
   checkCount(input.restaurants, max, false);
   const vendors = await loadOpenVendors(input.restaurants);
+  const address = await ownedAddress(prisma, customerId, input.addressId);
+  const deliveryFees = await zoneFees(prisma, address, input.restaurants);
   const extraEach = settings.fees.extraRestaurantFee;
   const n = input.restaurants.length;
 
   let quote: Quote;
   if (n === 1) {
     const r = input.restaurants[0];
-    const priced = await validateAndCalculateOrder(r.vendorId, r.items, input.couponCode);
+    const priced = await validateAndCalculateOrder(r.vendorId, r.items, input.couponCode, deliveryFees.get(r.vendorId));
     if (!priced.isValid) throw new OrderFlowError(400, 'INVALID_ITEMS', priced.errorMessage || 'Some items are not available.', { field: 'items' });
     if (priced.couponProblem) throw new OrderFlowError(400, 'COUPON_NOT_APPLICABLE', priced.couponProblem, { field: 'couponCode' });
     quote = {
@@ -85,7 +92,7 @@ export const quoteOrder = async (customerId: string, input: { restaurants: Group
       maxRestaurants: max,
     };
   } else {
-    const priced = await validateAndCalculateGroup(input.restaurants, input.couponCode);
+    const priced = await validateAndCalculateGroup(input.restaurants, input.couponCode, deliveryFees);
     assertGroupPriced(priced);
     quote = {
       restaurantCount: n,
@@ -105,7 +112,7 @@ export const quoteOrder = async (customerId: string, input: { restaurants: Group
       maxRestaurants: max,
     };
   }
-  // Coupon eligibility for THIS customer (single use, VITFIRST only for a first order): a clear error now instead of a surprise at checkout.
+  // Coupon eligibility for THIS customer (single use, WELCOME20 only for a first order): a clear error now instead of a surprise at checkout.
   if (quote.couponCode) {
     const problem = await couponEligibilityProblem(prisma, customerId, quote.couponCode);
     if (problem) throw new OrderFlowError(400, 'COUPON_NOT_APPLICABLE', problem, { field: 'couponCode' });
@@ -123,6 +130,7 @@ function assertGroupPriced(priced: GroupValidationResult): void {
 // Place a group
 // ----------------------------------------------------------------------------
 export type PlaceGroupInput = {
+  addressId?: string;
   restaurants: GroupRestaurantInput[];
   dropoffHostel: string;
   dropoffNotes: string | null;
@@ -148,7 +156,9 @@ export const loadGroupBundle = async (groupId: string): Promise<GroupBundle | nu
 /** Same checkout attempt = same request: the same restaurants with the same items, drop point, notes and coupon. */
 const sameGroupRequest = (g: GroupWithOrders, input: PlaceGroupInput): boolean => {
   if (g.restaurantCount !== input.restaurants.length || g.orders.length !== input.restaurants.length) return false;
-  if ((normalizeDropPoint(g.dropoffHostel) ?? g.dropoffHostel) !== (normalizeDropPoint(input.dropoffHostel) ?? input.dropoffHostel)) return false;
+  if (input.addressId) {
+    if ((g.orders[0]?.addressSnapshot as any)?.id !== input.addressId) return false;
+  } else if (input.dropoffHostel && g.dropoffHostel !== input.dropoffHostel) return false;
   if ((g.dropoffNotes ?? '') !== (input.dropoffNotes ?? '')) return false;
   if ((g.couponCode ?? null) !== normaliseCoupon(input.couponCode)) return false;
   const byVendor = new Map(g.orders.map((o) => [o.vendorId, o]));
@@ -183,7 +193,8 @@ export const placeGroup = async (customerId: string, input: PlaceGroupInput): Pr
   const settings = await getSettings();
   checkCount(input.restaurants, settings.fees.maxRestaurantsPerOrder, true);
   await loadOpenVendors(input.restaurants);
-  const priced = await validateAndCalculateGroup(input.restaurants, input.couponCode);
+  const selectedAddress = await ownedAddress(prisma, customerId, input.addressId);
+  let priced = await validateAndCalculateGroup(input.restaurants, input.couponCode, await zoneFees(prisma, selectedAddress, input.restaurants));
   assertGroupPriced(priced);
 
   const replaced: ChangeResult[] = [];
@@ -201,6 +212,9 @@ export const placeGroup = async (customerId: string, input: PlaceGroupInput): Pr
           return { ...toBundle(twin), replay: true };
         }
 
+        const address = await ownedAddress(tx, customerId, input.addressId, true);
+        priced = await validateAndCalculateGroup(input.restaurants, input.couponCode, await zoneFees(tx, address, input.restaurants, true));
+        assertGroupPriced(priced);
         // Replace this customer's own abandoned, never-paid checkouts at these restaurants (single orders and whole groups).
         const stale = await tx.order.findMany({
           where: { customerId, vendorId: { in: input.restaurants.map((r) => r.vendorId) }, status: 'PLACED', paymentStatus: { in: ['PENDING', 'FAILED'] }, paidAt: null },
@@ -228,7 +242,7 @@ export const placeGroup = async (customerId: string, input: PlaceGroupInput): Pr
           data: {
             customerId,
             clientRequestId: input.clientRequestId,
-            dropoffHostel: input.dropoffHostel,
+            dropoffHostel: address.label,
             dropoffNotes: input.dropoffNotes,
             couponCode: priced.appliedCoupon,
             discount: priced.discount,
@@ -257,7 +271,9 @@ export const placeGroup = async (customerId: string, input: PlaceGroupInput): Pr
               discount: c.discount,
               couponCode: i === 0 ? priced.appliedCoupon : null, // single-use rules count the coupon once
               totalAmount: c.totalAmount,
-              dropoffHostel: input.dropoffHostel,
+              dropoffHostel: address.label,
+              addressId: address.id,
+              addressSnapshot: { id: address.id, ...addressSnapshot(address) },
               dropoffNotes: input.dropoffNotes,
               status: 'PLACED',
               paymentStatus: 'PENDING',

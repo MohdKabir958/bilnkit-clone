@@ -38,7 +38,7 @@ describe('CampusMap (jsdom smoke)', () => {
     expect(host.querySelectorAll('.k-pin--vendor')).toHaveLength(1);
     expect(host.querySelectorAll('.k-rider')).toHaveLength(1);
     expect(host.querySelector('.leaflet-control-attribution')?.textContent).toContain('OpenStreetMap');
-    expect(host.querySelector('[role="region"]')?.getAttribute('aria-label')).toMatch(/Live campus map/);
+    expect(host.querySelector('[role="region"]')?.getAttribute('aria-label')).toMatch(/Live delivery map/);
     expect(host.querySelector('.leaflet-marker-icon.k-rider-marker')?.getAttribute('aria-label')).toMatch(/Rider Vikram, idle/);
   });
 

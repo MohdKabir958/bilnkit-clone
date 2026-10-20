@@ -36,6 +36,7 @@ double distanceToCampusKm(double lat, double lng) => distanceKm(kCampusCenter.$1
 
 /// A valid coordinate within [kNearCampusKm] of the campus centre.
 bool isNearCampus(double lat, double lng) {
-  if (!lat.isFinite || !lng.isFinite || lat < -90 || lat > 90 || lng < -180 || lng > 180) return false;
-  return distanceToCampusKm(lat, lng) <= kNearCampusKm;
+  // Retained function name for old callers; geography is now India-wide.
+  // The backend separately enforces configured delivery coverage at checkout.
+  return lat.isFinite && lng.isFinite && lat >= 6 && lat <= 38 && lng >= 68 && lng <= 98;
 }

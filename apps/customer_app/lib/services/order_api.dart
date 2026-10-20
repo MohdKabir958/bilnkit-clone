@@ -303,6 +303,10 @@ class HttpOrderApi implements OrderApi {
     required Duration timeout,
     required Object? Function(Map<String, dynamic> body) parse,
   }) async {
+    if (['/orders', '/order-groups', '/orders/quote'].contains(path) && method == 'POST' && body is Map) {
+      body = {...body, if (CustomerApiService.selectedAddressId != null) 'addressId': CustomerApiService.selectedAddressId};
+      path = '/v1$path';
+    }
     http.Response response;
     try {
       response = await CustomerApiService.authorizedRequest(method, path, query: query, body: body, timeout: timeout);

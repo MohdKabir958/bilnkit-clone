@@ -93,7 +93,7 @@ class DhabaCard extends StatelessWidget {
                       ]),
                     ),
                     const SizedBox(width: 10),
-                    KInfoChip(icon: LucideIcons.clock, label: dhaba.eta, glass: true),
+                    KInfoChip(icon: dhaba.distanceKm == null ? LucideIcons.clock : LucideIcons.mapPin, label: dhaba.distanceKm == null ? dhaba.eta : '~${dhaba.distanceKm!.toStringAsFixed(1)} km away', glass: true),
                   ]),
                 ),
               ]),

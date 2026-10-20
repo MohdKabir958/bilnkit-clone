@@ -55,7 +55,7 @@ export const distanceKm = (a: LatLng, b: LatLng): number => {
 };
 
 export const isNearCampus = (lat: number, lng: number, center: LatLng = campusCenter()): boolean =>
-  Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && distanceKm(center, { lat, lng }) <= NEAR_CAMPUS_KM;
+  Number.isFinite(lat) && Number.isFinite(lng) && lat >= 6 && lat <= 38 && lng >= 68 && lng <= 98;
 
 /** A restaurant has a real pin when the server says so, or (older server) when it is a finite pin that is not the placeholder. */
 export const vendorHasRealPin = (v: { lat?: number | null; lng?: number | null; hasLocation?: boolean }): boolean => {
@@ -153,6 +153,6 @@ export const parseLocationInput = (raw: string, center: LatLng = campusCenter())
 const farMessage = (lat: number, lng: number, center: LatLng): string =>
   Math.abs(lng) <= 90 && isNearCampus(lng, lat, center)
     ? `Latitude and longitude look swapped. Latitude (north) comes first: ${formatLatLng(lng, lat)}.`
-    : `That point is more than ${NEAR_CAMPUS_KM} km from the campus. Check the numbers (latitude first).`;
+    : 'Choose a valid store location in India. Delivery coverage is configured separately.';
 
 export const formatLatLng = (lat: number, lng: number): string => `${lat.toFixed(5)}, ${lng.toFixed(5)}`;

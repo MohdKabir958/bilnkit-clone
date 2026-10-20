@@ -149,14 +149,14 @@ void main() {
         items: [(itemId: 'b', quantity: 1), (itemId: 'a', quantity: 2), (itemId: 'b', quantity: 1)],
         dropoffHostel: 'Block 3',
         dropoffNotes: '',
-        couponCode: 'VITFIRST',
+        couponCode: 'WELCOME20',
       ));
       final body = api.creates.single.toJson();
       expect(body['items'], [
         {'itemId': 'a', 'quantity': 2},
         {'itemId': 'b', 'quantity': 2},
       ]);
-      expect(body['couponCode'], 'VITFIRST');
+      expect(body['couponCode'], 'WELCOME20');
       expect(body['dropoffHostel'], 'Block 3');
       expect(body.containsKey('dropoffNotes'), isFalse);
       expect(body['clientRequestId'], isA<String>());

@@ -234,10 +234,10 @@ void main() {
 
     testWidgets('a coupon the server refuses is explained in the bill; Pay still works (the coupon is dropped when placing)', (tester) async {
       final api = FakeOrderApi();
-      api.onQuote = (r) async => const OrderResult.fail(OrderApiError(OrderErrorKind.rejected, statusCode: 400, code: 'COUPON_NOT_APPLICABLE', message: 'VITFIRST is only for your first order.'));
+      api.onQuote = (r) async => const OrderResult.fail(OrderApiError(OrderErrorKind.rejected, statusCode: 400, code: 'COUPON_NOT_APPLICABLE', message: 'WELCOME20 is only for your first order.'));
       await pumpApp(tester, const CheckoutScreen(selectedHostel: 'BH2'), orders: fakeOrders(api), cart: groupCart());
       await scrollTo(tester, find.text('Bill details'));
-      expect(find.text('VITFIRST is only for your first order.'), findsOneWidget);
+      expect(find.text('WELCOME20 is only for your first order.'), findsOneWidget);
       expect(tester.widget<KButton>(button('Pay ₹230')).onPressed, isNotNull);
     });
 

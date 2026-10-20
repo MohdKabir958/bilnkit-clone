@@ -3,15 +3,16 @@ import 'package:kraveo_ui/kraveo_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import '../config/app_info.dart';
-import '../models/auth_results.dart';
 import '../models/customer_user.dart';
 import '../models/order.dart';
 import '../providers/cart_provider.dart';
 import '../providers/order_provider.dart';
 import '../providers/session_provider.dart';
+import '../providers/dhaba_provider.dart';
 import '../widgets/ui/error_line.dart';
 import '../widgets/ui/format.dart';
-import '../widgets/ui/hostel_pill.dart';
+import '../models/delivery_address.dart';
+import 'addresses_screen.dart';
 import '../widgets/ui/profile_sheets.dart';
 import '../widgets/ui/sheet_chrome.dart';
 import '../widgets/ui/snack.dart';
@@ -30,40 +31,15 @@ class ProfileScreen extends StatelessWidget {
   /// Jumps to the Track tab (shown while an order is live).
   final VoidCallback? onTrackOrder;
 
-  Future<void> _changeHostel(BuildContext context, SessionProvider session) async {
-    final picked = await showHostelPicker(context, blocks: kHostelBlocks, selected: session.hostel ?? '');
-    if (picked == null || picked == session.hostel || !context.mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    final result = await session.changeHostel(picked);
-    if (result.unauthorized) return; // AuthGate already sent the student back to login
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(result.success
-          ? buildKSnack('Drop-off point set to $picked', icon: LucideIcons.mapPin)
-          : buildKSnack(
-              result.networkError ? 'We couldn\'t save your drop-off point. Check your connection and try again.' : (result.message ?? 'We couldn\'t save your drop-off point. Please try again.'),
-              error: true,
-            ));
-  }
-
-  Future<void> _toggleStudent(BuildContext context, SessionProvider session, bool value) async {
-    if (session.isSavingProfile) return;
-    final messenger = ScaffoldMessenger.of(context);
-    ProfileResult result;
-    if (value) {
-      // A student needs a hostel block: ask first, save both together.
-      final picked = await showHostelPicker(context, blocks: kHostelBlocks, selected: session.hostel ?? '');
-      if (picked == null || !context.mounted) return;
-      result = await session.saveProfile(isStudent: true, hostelBlock: picked);
-    } else {
-      result = await session.saveProfile(isStudent: false);
+  Future<void> _addresses(BuildContext context, SessionProvider session) async {
+    final selected = await Navigator.push<DeliveryAddress>(context, MaterialPageRoute(builder: (_) => const AddressesScreen()));
+    if (!context.mounted) return;
+    if (selected != null) { session.selectDeliveryAddress(selected); }
+    else { await session.refreshDeliveryAddress(); }
+    if (context.mounted) {
+      context.read<DhabaProvider>().resetForAddress();
+      await context.read<DhabaProvider>().refreshHome();
     }
-    if (result.unauthorized) return; // AuthGate already sent the student back to login
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(result.success
-          ? buildKSnack(value ? 'Student status saved' : 'Saved. You\'ll choose your drop-off point at checkout.', icon: LucideIcons.graduationCap)
-          : buildKSnack(profileSaveFailure(result), error: true));
   }
 
   Future<void> _logout(BuildContext context, SessionProvider session) async {
@@ -128,22 +104,7 @@ class ProfileScreen extends StatelessWidget {
                   index: 2,
                   child: KCard(
                     padding: EdgeInsets.zero,
-                    child: Column(children: [
-                      _StudentRow(
-                        isStudent: user.isStudent == true,
-                        saving: session.isSavingProfile,
-                        onChanged: (v) => _toggleStudent(context, session, v),
-                      ),
-                      Divider(height: 1, indent: 72, endIndent: 16, color: k.line.withValues(alpha: 0.7)),
-                      if (user.isStudent == true)
-                        _DropoffCard(
-                          hostel: session.hostel,
-                          saving: session.isSavingProfile,
-                          onTap: () => _changeHostel(context, session),
-                        )
-                      else
-                        const _DeliveryPointNote(),
-                    ]),
+                    child: Material(color: Colors.transparent, child: ListTile(leading: const Icon(LucideIcons.mapPin), title: const Text('Delivery addresses'), subtitle: Text(session.deliveryPoint ?? 'Add or select an address'), trailing: const Icon(LucideIcons.chevronRight), onTap: () => _addresses(context, session))),
                   ),
                 ),
                 const _SectionLabel('ORDERS'),
@@ -342,113 +303,6 @@ class _DetailRow extends StatelessWidget {
 }
 
 /// "I'm a student" switch. Turning it on asks for a hostel block first.
-class _StudentRow extends StatelessWidget {
-  const _StudentRow({required this.isStudent, required this.saving, required this.onChanged});
-
-  final bool isStudent;
-  final bool saving;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final k = context.k;
-    return Semantics(
-      toggled: isStudent,
-      label: 'I\'m a student. ${isStudent ? 'On. Your hostel block is saved for checkout' : 'Off. You choose a drop-off point at checkout'}',
-      excludeSemantics: true,
-      onTap: saving ? null : () => onChanged(!isStudent),
-      child: KPressable(
-        onTap: saving ? null : () => onChanged(!isStudent),
-        scale: 0.99,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(children: [
-            _IconTile(icon: LucideIcons.graduationCap, color: k.brand),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('I\'m a student', style: KraveoType.titleMd.copyWith(color: k.ink)),
-                const SizedBox(height: 2),
-                Text(isStudent ? 'Your hostel block is saved for checkout' : 'You choose a drop-off point at checkout', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
-              ]),
-            ),
-            const SizedBox(width: 8),
-            if (saving)
-              SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.4, color: k.brand))
-            else
-              IgnorePointer(child: Switch(value: isStudent, onChanged: (_) {})),
-          ]),
-        ),
-      ),
-    );
-  }
-}
-
-/// Shown instead of the hostel row when the student flag is off.
-class _DeliveryPointNote extends StatelessWidget {
-  const _DeliveryPointNote();
-
-  @override
-  Widget build(BuildContext context) {
-    final k = context.k;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(children: [
-        _IconTile(icon: LucideIcons.mapPin, color: k.inkMuted),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Delivery point', style: KraveoType.caption.copyWith(color: k.inkFaint, letterSpacing: 0.6)),
-            const SizedBox(height: 2),
-            Text('Chosen at checkout for each order', style: KraveoType.titleMd.copyWith(color: k.ink)),
-          ]),
-        ),
-      ]),
-    );
-  }
-}
-
-class _DropoffCard extends StatelessWidget {
-  const _DropoffCard({required this.hostel, required this.saving, required this.onTap});
-
-  final String? hostel;
-  final bool saving;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final k = context.k;
-    return KPressable(
-      onTap: saving ? null : onTap,
-      scale: 0.99,
-      child: Semantics(
-        label: hostel == null ? 'Hostel block not set. Choose one' : 'Hostel block $hostel. Change',
-        excludeSemantics: true,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-          child: Row(children: [
-            _IconTile(icon: LucideIcons.mapPin, color: k.brand),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Hostel block', style: KraveoType.caption.copyWith(color: k.inkFaint, letterSpacing: 0.6)),
-                const SizedBox(height: 2),
-                Text(hostel ?? 'Not set', maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.titleLg.copyWith(color: hostel == null ? k.inkFaint : k.ink)),
-              ]),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-              decoration: BoxDecoration(color: k.brandSoft, borderRadius: BorderRadius.circular(KRadius.pill)),
-              child: Text(hostel == null ? 'Choose' : 'Change', style: KraveoType.label.copyWith(color: k.brand, fontSize: 13)),
-            ),
-          ]),
-        ),
-      ),
-    );
-  }
-}
-
 class _OrdersCard extends StatelessWidget {
   const _OrdersCard({required this.orders, required this.onOpen, required this.onTrack});
 

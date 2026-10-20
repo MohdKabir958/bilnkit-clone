@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../db';
 import { OrderItem } from '../types';
 import { getSettings } from '../services/settings';
-import { computeFees, FeeBreakdown, splitGroupMoney } from '../services/pricing';
+import { computeFees, FeeBreakdown, splitGroupMoney, toPaise, fromPaise } from '../services/pricing';
 
 /** What the restaurant earns and Kraveo keeps for one line, copied from the dish at order time (Docs/21 section 2). */
 export type PricedItem = OrderItem & { vendorUnitPrice: number; commissionUnit: number };
@@ -31,13 +31,13 @@ export interface OrderValidationResult {
 
 // ----------------------------------------------------------------------------
 // Coupons. Rules (single use per customer; a CANCELLED order releases its code again):
-//   VITFIRST  20% off up to Rs 50, cart >= Rs 100, only for a customer with no earlier non-cancelled order.
+//   WELCOME20  20% off up to Rs 50, cart >= Rs 100, only for a customer with no earlier non-cancelled order.
 //   KRAVEO20  Rs 20 off, cart >= Rs 80. Paid for with 50 Kraveo Coins (POST /coupons/redeem-coins): each
 //             redemption is one use; the code is refused when the customer has no unused redemption.
 //   KRAVEO50  Rs 50 off, cart >= Rs 150, once per customer.
 // ----------------------------------------------------------------------------
 export const COUPONS: Record<string, { minSubtotal: number; discount: (subtotal: number) => number }> = {
-  VITFIRST: { minSubtotal: 100, discount: (sub) => Math.min(sub * 0.2, 50) },
+  WELCOME20: { minSubtotal: 100, discount: (sub) => Math.min(sub * 0.2, 50) },
   KRAVEO20: { minSubtotal: 80, discount: () => 20 },
   KRAVEO50: { minSubtotal: 150, discount: () => 50 },
 };
@@ -61,9 +61,9 @@ export const couponEligibilityProblem = async (tx: Prisma.TransactionClient, cus
     return null;
   }
   if (usedBefore > 0) return `You have already used ${code}.`;
-  if (code === 'VITFIRST') {
+  if (code === 'WELCOME20') {
     const earlier = await tx.order.count({ where: { customerId, status: { not: 'CANCELLED' } } });
-    if (earlier > 0) return 'VITFIRST is only for your first order.';
+    if (earlier > 0) return 'WELCOME20 is only for your first order.';
   }
   return null;
 };
@@ -151,7 +151,8 @@ export const applyCouponRule = (couponCode: unknown, subtotal: number): { discou
 export const validateAndCalculateOrder = async (
   vendorId: string, 
   items: { itemId: string; quantity: number }[],
-  couponCode?: string
+  couponCode?: string,
+  deliveryFeePaise?: number
 ): Promise<OrderValidationResult> => {
   const settings = await getSettings();
   const invalid = {
@@ -171,13 +172,16 @@ export const validateAndCalculateOrder = async (
   const { verifiedItems, subtotal, vendorSubtotal, commissionTotal } = cart;
 
   // The one all-in fee from the admin settings. Thresholds look at the food subtotal BEFORE the coupon (the platform bears coupons).
-  const fee = computeFees(settings.fees, subtotal);
+  const fee = deliveryFeePaise === undefined ? computeFees(settings.fees, subtotal) : {
+    total: fromPaise(deliveryFeePaise),
+    breakdown: { version: 1 as const, total: fromPaise(deliveryFeePaise), baseFee: fromPaise(deliveryFeePaise), baseWaived: false, smallOrderFee: 0, restaurants: 1, extraRestaurantFee: 0, extraRestaurants: 0, lines: [] },
+  };
   const deliveryFee = fee.total;
   const taxAndPackaging = 0;
 
   const { discount, appliedCoupon, couponProblem } = applyCouponRule(couponCode, subtotal);
 
-  const totalAmount = round2(Math.max(0, subtotal + deliveryFee + taxAndPackaging - discount));
+  const totalAmount = fromPaise(Math.max(0, toPaise(subtotal) + toPaise(deliveryFee) + toPaise(taxAndPackaging) - toPaise(discount)));
 
   return {
     isValid: true,
@@ -231,11 +235,11 @@ export interface GroupValidationResult {
 
 /**
  * Prices 2..N restaurants as ONE checkout: every restaurant's cart is validated like a single order, the fee (free-fee and small-order
- * rules included) and the coupon (minimum, VITFIRST) look at the COMBINED food subtotal, and the money is split over the children
+ * rules included) and the coupon (minimum, WELCOME20) look at the COMBINED food subtotal, and the money is split over the children
  * in paise so that the children add up to the group total exactly (services/pricing.ts splitGroupMoney).
  * The caller has already checked the number of restaurants and that they are distinct.
  */
-export const validateAndCalculateGroup = async (restaurants: GroupRestaurantInput[], couponCode?: string): Promise<GroupValidationResult> => {
+export const validateAndCalculateGroup = async (restaurants: GroupRestaurantInput[], couponCode?: string, deliveryFeesPaise?: Map<string, number>): Promise<GroupValidationResult> => {
   const settings = await getSettings();
   const empty: GroupValidationResult = { isValid: false, children: [], subtotal: 0, feeTotal: 0, discount: 0, totalAmount: 0, feeBreakdown: null, appliedCoupon: null };
   const carts: Extract<VendorCartResult, { ok: true }>[] = [];
@@ -247,6 +251,15 @@ export const validateAndCalculateGroup = async (restaurants: GroupRestaurantInpu
   const combined = round2(carts.reduce((sum, c) => sum + c.subtotal, 0));
   const { discount, appliedCoupon, couponProblem } = applyCouponRule(couponCode, combined);
   const money = splitGroupMoney(settings.fees, carts.map((c) => c.subtotal), discount);
+  if (deliveryFeesPaise) {
+    money.children.forEach((m, i) => {
+      m.fee = fromPaise(deliveryFeesPaise.get(restaurants[i].vendorId)!);
+      m.total = fromPaise(toPaise(m.subtotal) + toPaise(m.fee) - toPaise(m.discount));
+    });
+    money.feeTotal = fromPaise(money.children.reduce((s, c) => s + toPaise(c.fee), 0));
+    money.total = fromPaise(toPaise(money.subtotal) + toPaise(money.feeTotal) - toPaise(money.discount));
+    money.breakdown = { version: 1, total: money.feeTotal, baseFee: money.feeTotal, baseWaived: false, smallOrderFee: 0, restaurants: restaurants.length, extraRestaurantFee: 0, extraRestaurants: 0, lines: [] };
+  }
   const children = carts.map((c, i): GroupChildPricing => {
     const m = money.children[i];
     const extra = i > 0;

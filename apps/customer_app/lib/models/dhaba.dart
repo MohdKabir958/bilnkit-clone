@@ -6,6 +6,7 @@ class Dhaba {
   final String category;
   final double rating;
   final String eta;
+  final double? distanceKm;
   final String bannerUrl;
   final bool isAcceptingOrders;
   final String address;
@@ -23,6 +24,7 @@ class Dhaba {
     required this.category,
     required this.rating,
     required this.eta,
+    this.distanceKm,
     required this.bannerUrl,
     required this.isAcceptingOrders,
     required this.address,
@@ -42,6 +44,7 @@ class Dhaba {
     String? category,
     double? rating,
     String? eta,
+    double? distanceKm,
     String? bannerUrl,
     bool? isAcceptingOrders,
     String? address,
@@ -57,6 +60,7 @@ class Dhaba {
       category: category ?? this.category,
       rating: rating ?? this.rating,
       eta: eta ?? this.eta,
+      distanceKm: distanceKm ?? this.distanceKm,
       bannerUrl: bannerUrl ?? this.bannerUrl,
       isAcceptingOrders: isAcceptingOrders ?? this.isAcceptingOrders,
       address: address ?? this.address,
@@ -74,11 +78,12 @@ class Dhaba {
       name: json['name'] ?? '',
       category: json['category'] ?? '',
       rating: (json['rating'] ?? 4.5).toDouble(),
-      eta: json['eta'] ?? '25-30 mins',
+      eta: json['eta'] ?? '',
+      distanceKm: (json['distanceKm'] as num?)?.toDouble(),
       bannerUrl: json['bannerImage'] ?? json['bannerUrl'] ?? '',
       isAcceptingOrders: json['isAcceptingOrders'] ?? true,
       address: json['address'] ?? '',
-      deliveryFee: (json['deliveryFee'] ?? 25.0).toDouble(),
+      deliveryFee: json['feePaise'] is num ? (json['feePaise'] as num).toDouble() / 100 : (json['deliveryFee'] ?? 25.0).toDouble(),
       minOrder: (json['minOrder'] ?? 99.0).toDouble(),
       isFavorite: json['isFavorite'] ?? false,
       tags: json['tags'] is List ? [for (final t in json['tags'] as List) if (t != null) t.toString()] : [],

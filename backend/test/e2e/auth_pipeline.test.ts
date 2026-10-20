@@ -127,7 +127,7 @@ describe('Auth v2 (Google students, password partners)', () => {
       [{ avatarId: 16 }, 'avatarId'],
       [{ avatarId: '3' }, 'avatarId'],
       [{ isStudent: 'yes' }, 'isStudent'],
-      [{ hostelBlock: 'Block 2' }, 'hostelBlock'], // not a student yet
+      [{ hostelBlock: '\u0000' }, 'hostelBlock'], // control characters are never address labels
     ])('rejects %j on field %s', async (body, field) => {
       const res = await put(body as Record<string, unknown>);
       expect(res.status).toBe(400);
@@ -144,11 +144,11 @@ describe('Auth v2 (Google students, password partners)', () => {
       const b = await put({ isStudent: true });
       expect(b.body.needsProfile).toBe(true); // hostel still missing
 
-      expect((await put({ hostelBlock: 'Roof' })).status).toBe(400);
+      expect((await put({ hostelBlock: '\u0000' })).status).toBe(400);
       const c = await put({ hostelBlock: 'Block 3', avatarId: 7 });
       expect(c.status).toBe(200);
       expect(c.body.needsProfile).toBe(false);
-      expect(c.body.user).toMatchObject({ isStudent: true, hostelBlock: 'BH3', avatarId: 7 });
+      expect(c.body.user).toMatchObject({ isStudent: true, hostelBlock: 'Block 3', avatarId: 7 });
     });
 
     test('non-student path: hostel is cleared and not required', async () => {
@@ -156,7 +156,7 @@ describe('Auth v2 (Google students, password partners)', () => {
       expect(res.status).toBe(200);
       expect(res.body.user.hostelBlock).toBeNull();
       expect(res.body.needsProfile).toBe(false);
-      expect((await put({ hostelBlock: 'Block 3' })).status).toBe(400);
+      expect((await put({ hostelBlock: '\u0000' })).status).toBe(400);
     });
 
     test('phone numbers are unique across accounts', async () => {

@@ -109,10 +109,10 @@ class _CouponBoxState extends State<CouponBox> {
         if (context.select<OrderProvider, bool>((o) => o.isFirstTimeCustomer)) ...[
         const SizedBox(height: 10),
         KPressable(
-          semanticLabel: 'Apply coupon VITFIRST',
+          semanticLabel: 'Apply coupon WELCOME20',
           onTap: () {
-            _controller.text = 'VITFIRST';
-            cart.applyCoupon('VITFIRST');
+            _controller.text = 'WELCOME20';
+            cart.applyCoupon('WELCOME20');
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -121,7 +121,7 @@ class _CouponBoxState extends State<CouponBox> {
               Icon(LucideIcons.sparkles, size: 15, color: k.brand),
               const SizedBox(width: 6),
               Flexible(
-                child: Text('Try VITFIRST: 20% off your first order', maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.label.copyWith(color: k.ink, fontSize: 12.5)),
+                child: Text('Try WELCOME20: 20% off your first order', maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.label.copyWith(color: k.ink, fontSize: 12.5)),
               ),
             ]),
           ),

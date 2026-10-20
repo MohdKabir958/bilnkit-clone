@@ -236,6 +236,13 @@ const orderOrNull = (raw: any): Order | null => {
 };
 
 export const apiService = {
+  fetchGeography: () => request<import('../components/GeographyPanel').Geography>('/api/v1/admin/geography'),
+  createDeliveryCity: (data: { code: string; name: string; state: string; active: boolean }) => request('/api/v1/admin/cities', { method: 'POST', body: JSON.stringify(data) }),
+  setCityActive: (id: string, active: boolean) => request(`/api/v1/admin/cities/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ active }) }),
+  createDeliveryZone: (data: Record<string, unknown>) => request('/api/v1/admin/zones', { method: 'POST', body: JSON.stringify(data) }),
+  updateDeliveryZone: (id: string, data: Record<string, unknown>) => request(`/api/v1/admin/zones/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  configureStoreLocation: (id: string, data: Record<string, unknown>) => request(`/api/v1/admin/vendors/${encodeURIComponent(id)}/location`, { method: 'PUT', body: JSON.stringify(data) }),
+  setStoreCoverage: (id: string, zoneId: string, data: { active: boolean; radiusKm: number | null }) => request(`/api/v1/admin/vendors/${encodeURIComponent(id)}/coverage/${encodeURIComponent(zoneId)}`, { method: 'PUT', body: JSON.stringify(data) }),
   async adminLogin(passcode: string, username?: string): Promise<{ token: string; admin: AdminProfile }> {
     if (!passcode.trim()) throw new ApiError(400, 'Please enter the admin passcode.');
     const response = await request<{ token: string; admin: AdminProfile }>('/api/auth/admin-login', {

@@ -135,9 +135,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 800));
 
     expect(find.text('DELIVERING TO'), findsOneWidget);
-    expect(find.text('BH1'), findsWidgets);
-    expect(find.text('VITFIRST'), findsOneWidget);
-    expect(find.text('Kitchens near campus'), findsOneWidget);
+    expect(find.text('Choose delivery address'), findsWidgets);
+    expect(find.text('WELCOME20'), findsOneWidget);
+    expect(find.text('Stores near you'), findsOneWidget);
     expect(find.text('Home'), findsOneWidget);
 
     await tester.scrollUntilVisible(find.text('Sharma Highway Dhaba'), 200, scrollable: find.byType(Scrollable).first);
@@ -151,9 +151,8 @@ void main() {
     await pumpScreen(tester, const HomeScreen(), session: session);
     await tester.pump(const Duration(seconds: 5));
     await tester.pump(const Duration(milliseconds: 800));
-    expect(find.text('DELIVERY POINT'), findsOneWidget);
-    expect(find.text('Choose drop point'), findsOneWidget);
-    expect(find.text('DELIVERING TO'), findsNothing);
+    expect(find.text('DELIVERING TO'), findsOneWidget);
+    expect(find.text('Choose delivery address'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -222,12 +221,12 @@ void main() {
     expect(tester.takeException(), isNull);
 
     // Applying the promo shows a discount line and the applied ticket.
-    cart.applyCoupon('VITFIRST');
+    cart.applyCoupon('WELCOME20');
     await tester.pump(const Duration(milliseconds: 600));
-    await tester.scrollUntilVisible(find.text('VITFIRST applied'), -200, scrollable: sheetScroll);
-    expect(find.text('VITFIRST applied'), findsOneWidget);
-    await tester.scrollUntilVisible(find.textContaining('Coupon (VITFIRST)'), 200, scrollable: sheetScroll);
-    expect(find.textContaining('Coupon (VITFIRST)'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('WELCOME20 applied'), -200, scrollable: sheetScroll);
+    expect(find.text('WELCOME20 applied'), findsOneWidget);
+    await tester.scrollUntilVisible(find.textContaining('Coupon (WELCOME20)'), 200, scrollable: sheetScroll);
+    expect(find.textContaining('Coupon (WELCOME20)'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

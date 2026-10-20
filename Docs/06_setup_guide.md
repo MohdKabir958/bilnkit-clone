@@ -10,3 +10,9 @@ Use the existing isolated checkout. Do not create an extra worktree. Node 24.19.
 6. Test with a separate empty `market_test` database, `DATABASE_URL=.../market_test npm run db:deploy`, then set that URL explicitly when running backend `npm test`. Never point destructive tests at the development or production database.
 
 Brand changes: edit `branding/brand.json`, run `python3 scripts/configure_brand.py`, then rebuild clients. App names/IDs, shared palette, native labels/icons/splash, API service name and admin identity are centralized. Firebase package IDs, Maps restrictions, release signing and store listings must match the new app IDs; the upstream project's client config must not be treated as your production project.
+
+## Configuring delivery geography
+
+Run `npm run db:deploy` after pulling additive migrations. In the admin Coverage tab, create and enable a city, create its delivery circle and delivery fees, confirm a store’s city/PIN/coordinates/hours, then explicitly enable its zone coverage. Moving a store disables its previous coverage. Customers save structured addresses, using manual coordinates or a single foreground GPS fix; selecting another address reloads nearby stores. No default city or campus point grants serviceability.
+
+Optional maps use backend `MAPS_GEOCODER_URL` (HTTPS Photon-compatible search), `MAPS_ROUTER_URL` (HTTPS OSRM-compatible routes) and optional server-only `MAPS_PROVIDER_TOKEN`. Without configured providers, manual address/GPS entry continues working and map adapters return an explicit unavailable result. Production admin tiles require `VITE_MAP_TILE_URL` and `VITE_MAP_ATTRIBUTION`; configure an owned/licensed provider. Local debug APK checks can use `ORG_GRADLE_PROJECT_disableFirebase=true`; this flag is rejected for release. Normal builds require matching owned Firebase client configuration for the generated application IDs.

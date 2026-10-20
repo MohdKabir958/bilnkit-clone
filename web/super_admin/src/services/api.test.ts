@@ -133,3 +133,21 @@ describe('Docs/22 combined orders', () => {
     expect(result.entries[0].groupId).toBe(GROUP_ID);
   });
 });
+
+describe('configured delivery coverage HTTP routes', () => {
+  it('sends authenticated geography reads and mutations to the mounted versioned API', async () => {
+    const calls: { url: string; init: RequestInit }[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init: RequestInit) => { calls.push({ url, init }); return jsonResponse({ success: true, data: {} }); }));
+    setAuthToken('geography-test-token');
+    await apiService.fetchGeography();
+    await apiService.createDeliveryCity({ code: 'delhi', name: 'New Delhi', state: 'Delhi', active: true });
+    await apiService.setCityActive('city-a', false);
+    await apiService.createDeliveryZone({ cityId: 'city-a' });
+    await apiService.updateDeliveryZone('zone-a', { baseFeePaise: 2575 });
+    await apiService.configureStoreLocation('store-a', { cityId: 'city-a' });
+    await apiService.setStoreCoverage('store-a', 'zone-a', { active: true, radiusKm: 2 });
+    expect(calls.map((c) => new URL(c.url).pathname)).toEqual(['/api/v1/admin/geography', '/api/v1/admin/cities', '/api/v1/admin/cities/city-a', '/api/v1/admin/zones', '/api/v1/admin/zones/zone-a', '/api/v1/admin/vendors/store-a/location', '/api/v1/admin/vendors/store-a/coverage/zone-a']);
+    expect(calls.every((c) => (c.init.headers as Record<string, string>).Authorization === 'Bearer geography-test-token')).toBe(true);
+    expect(JSON.parse(calls[4].init.body as string)).toEqual({ baseFeePaise: 2575 });
+  });
+});

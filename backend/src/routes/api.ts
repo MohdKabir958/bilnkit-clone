@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { geographyRouter } from './geography';
 import { Role } from '@prisma/client';
 import { generateToken, requireAuth, requireRole, AuthenticatedRequest, verifyTokenForAccount, invalidateAuthCache } from '../middleware/auth';
 import { prisma } from '../db';
@@ -6,7 +7,7 @@ import { canonicalPhone, last10 } from '../utils/phone';
 import { hashPassword, verifyPassword, getDummyHash, passwordProblem } from '../services/password';
 import { isLocked, recordFailure, recordSuccess, ipLockedFor, recordIpFailure } from '../services/loginLimiter';
 import { rateLimitMiddleware, FailureLimiter, clientIp } from '../middleware/rateLimit';
-import { DROP_POINTS, CAMPUS_CENTER, normalizeDropPoint, checkVendorLocation, vendorHasLocation } from '../config/campus';
+import { checkVendorLocation, vendorHasLocation } from '../config/campus';
 import { fail, validParams, ID_RE } from '../utils/http';
 import { errSummary } from '../utils/log';
 import { NAME_RE } from '../utils/names';
@@ -35,10 +36,12 @@ export const apiRouter = Router();
 
 // Rate limits are mounted by path, before any handler (see middleware/rateLimit.ts for the numbers).
 apiRouter.use(rateLimitMiddleware);
+apiRouter.use(geographyRouter);
 // Partner sign-up, applications, approval and admin customer views live in ./partners.
 apiRouter.use(partnerRouter);
 // Orders, payments, rider pool, gate OTP and the admin order tools live in ./orders.
 apiRouter.use(orderRouter);
+apiRouter.use('/v1', orderRouter);
 // Push device tokens (POST/DELETE /api/devices).
 apiRouter.use(deviceRouter);
 // Pricing, catalog approval and settings (Docs/21): restaurant menu-manage, /admin/catalog*, /admin/settings*, /admin/vendors/:id/commission.
@@ -110,20 +113,9 @@ apiRouter.get('/drivers/locations', requireAuth, async (req: AuthenticatedReques
   }
 });
 
-// Campus drop points and map centre (Docs/19). Static, so clients may cache it for a few minutes.
-apiRouter.get('/campus', requireAuth, (_req: AuthenticatedRequest, res: Response) => {
-  res.set('Cache-Control', 'private, max-age=300');
-  return res.json({
-    success: true,
-    data: {
-      center: { lat: CAMPUS_CENTER.lat, lng: CAMPUS_CENTER.lng },
-      dropPoints: DROP_POINTS.map((p) => ({ id: p.id, name: p.name, group: p.group, lat: p.lat, lng: p.lng })),
-    },
-  });
-});
+// Historic orders keep their stored locations; new clients use enabled cities and saved addresses.
+apiRouter.get('/campus', requireAuth, (_req: AuthenticatedRequest, res: Response) => res.status(410).json({ success: false, code: 'LEGACY_LOCATION_API', message: 'Use /api/v1/cities and saved delivery addresses.' }));
 
-// ADMIN: the full row (phone, UPI, emergency contact, plate). A DRIVER: only their own, approved profile, and only
-// non-personal fields. Anyone else (another rider, a pending applicant) gets 404, so ids cannot be probed.
 apiRouter.get('/drivers/:id', requireAuth, requireRole('DRIVER', 'ADMIN'), validParams('id'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const driverId = req.params.id;
@@ -160,7 +152,7 @@ const AVATAR_COUNT = 15;
 
 const needsProfile = (u: { role: Role; name: string; phone?: string | null; avatarId?: number | null; isStudent?: boolean | null; hostelBlock?: string | null }) =>
   u.role === Role.STUDENT &&
-  (!u.name || PLACEHOLDER_NAMES.has(u.name.trim()) || !u.phone || !u.avatarId || u.isStudent === null || u.isStudent === undefined || (u.isStudent === true && !u.hostelBlock));
+  (!u.name || PLACEHOLDER_NAMES.has(u.name.trim()) || !u.phone || !u.avatarId);
 
 const publicUser = (u: any) => ({
   id: u.id,
@@ -409,12 +401,9 @@ apiRouter.put('/auth/profile', requireAuth, async (req: AuthenticatedRequest, re
         if (!isStudent) updateData.hostelBlock = null;
       }
       if (hostelBlock !== undefined) {
-        const finalIsStudent = updateData.isStudent ?? current.isStudent;
-        if (finalIsStudent !== true) return bad('hostelBlock', 'A hostel block is only needed for students.');
-        // Legacy spellings (Block 2, Girls Hostel Gate 1 ...) are accepted and stored as the canonical name (BH2, GH1).
-        const canonical = normalizeDropPoint(hostelBlock);
-        if (!canonical) return bad('hostelBlock', 'Choose one of the campus drop points.');
-        updateData.hostelBlock = canonical;
+        // Deprecated profile label only; checkout always uses an owned structured address.
+        if (typeof hostelBlock !== 'string' || /[\x00-\x1f\x7f]/.test(hostelBlock) || hostelBlock.trim().length > 200) return bad('hostelBlock', 'Address label must be at most 200 characters.');
+        updateData.hostelBlock = hostelBlock.trim() || null;
       }
     }
     if (upiId !== undefined && upiId !== '') {
@@ -462,6 +451,7 @@ apiRouter.delete('/auth/account', requireAuth, requireRole('STUDENT'), async (re
       await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
       const active = await tx.order.count({ where: { customerId: userId, status: { notIn: ['DELIVERED', 'CANCELLED'] } } });
       if (active > 0) return true;
+      await tx.address.deleteMany({ where: { customerId: userId } });
       await tx.user.update({
         where: { id: userId },
         data: {
@@ -662,14 +652,14 @@ apiRouter.post('/vendors', requireAuth, requireRole('ADMIN'), async (req: Authen
 
     // Docs/23: `cuisineIds` (managed categories) or the old free text (matched / created like the migration did); Vendor.category is derived.
     const createdVendor = await prisma.$transaction(async (tx) => {
-      const prep = await prepareNewVendorCuisines(tx, { cuisineIds, text: typeof category === 'string' ? category : null }, 'North Indian • Campus Dhaba');
+      const prep = await prepareNewVendorCuisines(tx, { cuisineIds, text: typeof category === 'string' ? category : null }, 'Groceries');
       const row = await tx.vendor.create({
         data: {
           name: name.trim(),
           category: prep.category,
-          address: address || 'Ashta Highway, near VIT Bhopal',
-          lat: pin ? pin.lat : 23.0768,
-          lng: pin ? pin.lng : 76.8524,
+          address: address || '',
+          lat: pin ? pin.lat : 0,
+          lng: pin ? pin.lng : 0,
           ...(pin ? adminPinData(pin.lat, pin.lng) : {}),
           bannerImage: bannerImage || 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600',
           isAcceptingOrders: true,

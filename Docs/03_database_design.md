@@ -13,3 +13,9 @@ This is a fresh-install bridge, not a repair tool for a partially failed migrati
 A fresh `market_dev` database was bootstrapped, a second deploy was a no-op, and Prisma drift comparison reported no difference. No production database was accessed. No business schema models were added in this baseline change. Later feature migrations must be additive and must not rewrite the baseline's historical manifest.
 
 Before production: back up existing installations, compare actual schema with the historical baseline, review any drift, restore-test the backup and rehearse pending migrations on a copy. Roll back application code only when schema compatibility permits; destructive downgrade SQL is not supplied.
+
+## Phase 2 geography
+
+Additive migration `20261019_india_serviceability` adds City, DeliveryZone, VendorCoverage and owned Address records; city/approval/location discovery index; store hours and immutable Order.addressSnapshot. Database constraints enforce Indian coordinate bounds, six-digit PINs, positive circle radii and nonnegative integer delivery charges. A partial unique index permits only one default address per account; account-row locks serialize default changes. Empty-database bootstrap still uses the original baseline and then applies new migrations.
+
+Checkout locks the owned address, enabled city, store, zone and coverage while repricing. PIN matching is not a delivery rule: configured circles and store radius determine eligibility. Historical delivery labels remain readable but cannot authorize new checkout.
