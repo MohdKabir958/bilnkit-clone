@@ -28,6 +28,7 @@ class _KPressableState extends State<KPressable> {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
+      enabled: widget.onTap != null || widget.onLongPress != null,
       label: widget.semanticLabel,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -42,8 +43,8 @@ class _KPressableState extends State<KPressable> {
               },
         onLongPress: widget.onLongPress,
         child: AnimatedScale(
-          scale: _down ? widget.scale : 1,
-          duration: _down ? KMotion.fast : KMotion.base,
+          scale: _down && !MediaQuery.disableAnimationsOf(context) ? widget.scale : 1,
+          duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : (_down ? KMotion.fast : KMotion.base),
           curve: _down ? Curves.easeOut : KMotion.spring,
           child: widget.child,
         ),

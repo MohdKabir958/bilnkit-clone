@@ -8,7 +8,7 @@ class KSpace {
 
 class KRadius {
   KRadius._();
-  static const double sm = 12, md = 16, lg = 20, xl = 24, xxl = 32, pill = 999;
+  static const double sm = 8, md = 12, lg = 12, xl = 16, xxl = 24, pill = 999;
   static BorderRadius get card => BorderRadius.circular(xl);
   static BorderRadius get control => BorderRadius.circular(lg);
   static BorderRadius get sheet => const BorderRadius.vertical(top: Radius.circular(xxl));
@@ -18,14 +18,14 @@ class KShadow {
   KShadow._();
   /// Soft, green-tinted elevation (never grey/black) - feels warm and premium.
   static List<BoxShadow> soft(Color tint) => [
-        BoxShadow(color: tint.withValues(alpha: 0.06), blurRadius: 4, offset: const Offset(0, 1)),
-        BoxShadow(color: tint.withValues(alpha: 0.10), blurRadius: 28, offset: const Offset(0, 12)),
+        BoxShadow(color: tint.withValues(alpha: 0.02), blurRadius: 4, offset: const Offset(0, 1)),
+        BoxShadow(color: tint.withValues(alpha: 0.03), blurRadius: 12, offset: const Offset(0, 3)),
       ];
   static List<BoxShadow> lift(Color tint) => [
-        BoxShadow(color: tint.withValues(alpha: 0.14), blurRadius: 40, offset: const Offset(0, 18)),
+        BoxShadow(color: tint.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 6)),
       ];
   static List<BoxShadow> glow(Color c) => [
-        BoxShadow(color: c.withValues(alpha: 0.45), blurRadius: 30, spreadRadius: -4, offset: const Offset(0, 10)),
+        BoxShadow(color: c.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2)),
       ];
 }
 
@@ -36,6 +36,6 @@ class KMotion {
   static const slow = Duration(milliseconds: 480);
   static const emphasized = Curves.easeOutCubic;
   /// Slight overshoot - the "expressive" bounce, use for key moments only.
-  static const spring = Curves.easeOutBack;
+  static const spring = Curves.easeOutCubic;
   static const standard = Curves.easeInOutCubic;
 }

@@ -1,5 +1,5 @@
 name: kraveo_ui
-description: Kraveo unified design system - tokens, themes and components shared by the customer, vendor and driver apps.
+description: Grozo unified design system - tokens, themes and components shared by the customer, vendor and driver apps.
 version: 1.0.0
 publish_to: none
 
@@ -29,3 +29,6 @@ flutter:
     - family: Jakarta
       fonts:
         - asset: assets/fonts/PlusJakartaSans.ttf
+    - family: NotoDevanagari
+      fonts:
+        - asset: assets/fonts/NotoSansDevanagari-Regular.ttf

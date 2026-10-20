@@ -1,9 +1,6 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/tokens.dart';
-import '../tokens/foundation.dart';
 import '../tokens/typography.dart';
-import 'pressable.dart';
 
 class KNavItem {
   const KNavItem(this.icon, this.label, {this.badge = 0});
@@ -12,65 +9,38 @@ class KNavItem {
   final int badge;
 }
 
-/// Floating, blurred pill navigation. The selected item expands with its label.
+/// Stable destinations with labels always visible. Public name retained for compatibility.
 class KGlassNav extends StatelessWidget {
   const KGlassNav({super.key, required this.items, required this.index, required this.onChanged});
   final List<KNavItem> items;
   final int index;
   final ValueChanged<int> onChanged;
-
   @override
   Widget build(BuildContext context) {
     final k = context.k;
-    return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(KRadius.pill),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-          child: Container(
-            height: 68,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: (k.isDark ? k.surfaceAlt : k.surface).withValues(alpha: 0.82),
-              borderRadius: BorderRadius.circular(KRadius.pill),
-              border: Border.all(color: k.line.withValues(alpha: 0.7)),
-              boxShadow: KShadow.lift(k.shadowTint),
+    return DecoratedBox(
+      decoration: BoxDecoration(color: k.surface, border: Border(top: BorderSide(color: k.line))),
+      child: SafeArea(top: false, child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          for (var i = 0; i < items.length; i++) Expanded(child: Semantics(
+            selected: index == i,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => onChanged(i),
+              child: Padding(padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8), child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Container(padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5), decoration: BoxDecoration(color: index == i ? k.brandSoft : Colors.transparent, borderRadius: BorderRadius.circular(12)), child: Badge(
+                  isLabelVisible: items[i].badge > 0, label: Text('${items[i].badge}'),
+                  backgroundColor: k.accent, textColor: k.onAccent,
+                  child: Icon(items[i].icon, size: 22, color: index == i ? k.brand : k.inkMuted),
+                )),
+                const SizedBox(height: 4),
+                Text(items[i].label, textAlign: TextAlign.center, style: KraveoType.caption.copyWith(color: index == i ? k.brand : k.inkMuted, fontWeight: index == i ? FontWeight.w700 : FontWeight.w500)),
+              ])),
             ),
-            child: Row(children: [
-              for (var i = 0; i < items.length; i++)
-                Expanded(
-                  flex: i == index ? 3 : 2,
-                  child: KPressable(
-                    onTap: () => onChanged(i),
-                    child: AnimatedContainer(
-                      duration: KMotion.base,
-                      curve: KMotion.emphasized,
-                      margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 9),
-                      decoration: BoxDecoration(
-                        color: i == index ? k.brand : Colors.transparent,
-                        borderRadius: BorderRadius.circular(KRadius.pill),
-                      ),
-                      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        Badge(
-                          isLabelVisible: items[i].badge > 0,
-                          label: Text('${items[i].badge}'),
-                          backgroundColor: k.accent,
-                          textColor: k.onAccent,
-                          child: Icon(items[i].icon, size: 22, color: i == index ? k.onBrand : k.inkFaint),
-                        ),
-                        if (i == index) ...[
-                          const SizedBox(width: 8),
-                          Flexible(child: Text(items[i].label, maxLines: 1, overflow: TextOverflow.fade, softWrap: false, style: KraveoType.label.copyWith(color: k.onBrand, fontSize: 13))),
-                        ],
-                      ]),
-                    ),
-                  ),
-                ),
-            ]),
-          ),
-        ),
-      ),
+          )),
+        ]),
+      )),
     );
   }
 }

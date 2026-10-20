@@ -17,6 +17,12 @@ class _KSkeletonState extends State<KSkeleton> with SingleTickerProviderStateMix
   late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1300))..repeat();
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) { _c.stop(); } else if (!_c.isAnimating) { _c.repeat(); }
+  }
+
+  @override
   void dispose() {
     _c.dispose();
     super.dispose();

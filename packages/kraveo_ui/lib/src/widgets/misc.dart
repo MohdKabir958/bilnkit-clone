@@ -13,6 +13,7 @@ class KReveal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (MediaQuery.disableAnimationsOf(context)) return child;
     final delay = (index.clamp(0, 12)) * 55;
     final total = 380 + delay;
     return TweenAnimationBuilder<double>(
@@ -35,6 +36,9 @@ class KAnimatedNumber extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (MediaQuery.disableAnimationsOf(context)) {
+      return Text('$prefix${value.toStringAsFixed(decimals)}$suffix', style: style ?? KraveoType.numeric.copyWith(color: context.k.ink));
+    }
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: value.toDouble()),
       duration: KMotion.slow,
@@ -59,7 +63,7 @@ class KSectionHeader extends StatelessWidget {
       child: Row(children: [
         Expanded(child: Text(title, style: KraveoType.headlineSm.copyWith(color: k.ink))),
         if (action != null)
-          KPressable(onTap: onAction, child: Text(action!, style: KraveoType.label.copyWith(color: k.brand, fontSize: 13))),
+          TextButton(onPressed: onAction, child: Text(action!, style: KraveoType.label.copyWith(color: k.brand, fontSize: 13))),
       ]),
     );
   }
@@ -79,9 +83,10 @@ class KChoiceChip extends StatelessWidget {
     return KPressable(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: KMotion.base,
+        duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : KMotion.base,
         curve: KMotion.emphasized,
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: k.minTap >= 64 ? 16 : 11),
+        constraints: const BoxConstraints(minHeight: 44),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: selected ? k.brand : k.surface,
           borderRadius: BorderRadius.circular(999),

@@ -28,13 +28,13 @@ class KraveoPalette {
   static const y700 = Color(0xFF8A6D00);
 
   // Warm neutrals (light)
-  static const cream = Color(0xFFFAF7F0);
+  static const cream = Color(0xFFF6F8F6);
   static const paper = Color(0xFFFFFFFF);
-  static const sand = Color(0xFFF1EDE2);
-  static const line = Color(0xFFE8E4D9);
+  static const sand = Color(0xFFEEF3EF);
+  static const line = Color(0xFFDDE5DF);
   static const ink = Color(0xFF14201A);
   static const ink2 = Color(0xFF46534B);
-  static const ink3 = Color(0xFF7B877F);
+  static const ink3 = Color(0xFF58675E);
 
   // Green-black neutrals (dark)
   static const nightBg = Color(0xFF080D09);
@@ -43,7 +43,7 @@ class KraveoPalette {
   static const nightLine = Color(0xFF26322A);
   static const nightInk = Color(0xFFF4F7F2);
   static const nightInk2 = Color(0xFFB4BFB6);
-  static const nightInk3 = Color(0xFF7C897F);
+  static const nightInk3 = Color(0xFFA3B2A7);
 
   // Semantic
   static const success = g500;
@@ -73,7 +73,7 @@ extension KStatusX on KStatus {
         KStatus.preparing => 'Preparing',
         KStatus.ready => 'Ready',
         KStatus.pickedUp => 'On the way',
-        KStatus.atGate => 'At gate',
+        KStatus.atGate => 'At your door',
         KStatus.delivered => 'Delivered',
         KStatus.cancelled => 'Cancelled',
       };

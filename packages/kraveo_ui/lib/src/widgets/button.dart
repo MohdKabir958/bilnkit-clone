@@ -55,8 +55,7 @@ class KButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 3,
                     style: KraveoType.button.copyWith(color: fg, fontSize: large ? 18 : 16)),
                 if (sublabel != null)
                   Text(sublabel!,
@@ -74,9 +73,9 @@ class KButton extends StatelessWidget {
       child: KPressable(
         onTap: enabled ? onPressed : null,
         child: AnimatedContainer(
-          duration: KMotion.base,
-          height: h,
-          padding: EdgeInsets.symmetric(horizontal: large ? 28 : 22),
+          duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : KMotion.base,
+          constraints: BoxConstraints(minHeight: h),
+          padding: EdgeInsets.symmetric(horizontal: large ? 20 : 16, vertical: 14),
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(large ? KRadius.xl : KRadius.lg),

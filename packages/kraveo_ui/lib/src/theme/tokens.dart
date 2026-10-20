@@ -32,7 +32,12 @@ class KraveoTokens extends ThemeExtension<KraveoTokens> {
   final double minTap;
   final double textScale;
 
-  /// Customer: warm cream, appetising, image-led.
+  Color get success => isDark ? const Color(0xFF86D69B) : const Color(0xFF176B37);
+  Color get warning => isDark ? const Color(0xFFFFCE7A) : const Color(0xFF865000);
+  Color get error => isDark ? const Color(0xFFFFA6AC) : const Color(0xFFB42332);
+  Color get info => isDark ? const Color(0xFFA6CDFF) : const Color(0xFF245CA2);
+
+  /// Customer: fresh neutral surfaces, forest green actions.
   static const customer = KraveoTokens(
     isDark: false,
     bg: KraveoPalette.cream,
@@ -50,13 +55,13 @@ class KraveoTokens extends ThemeExtension<KraveoTokens> {
     shadowTint: KraveoPalette.g900,
   );
 
-  /// Vendor: same DNA, but maximum contrast + oversized targets/type for a smoky, noisy kitchen.
+  /// Vendor: operational surfaces with generous action targets.
   static const vendor = KraveoTokens(
     isDark: false,
-    bg: Color(0xFFFFFDF7),
+    bg: Color(0xFFF6F8F6),
     surface: KraveoPalette.paper,
-    surfaceAlt: Color(0xFFF3EFE3),
-    line: Color(0xFFDDD8C8),
+    surfaceAlt: Color(0xFFEEF3EF),
+    line: Color(0xFFDDE5DF),
     ink: Color(0xFF0B140F),
     inkMuted: Color(0xFF39453D),
     inkFaint: Color(0xFF66716A),
@@ -66,11 +71,11 @@ class KraveoTokens extends ThemeExtension<KraveoTokens> {
     accent: KraveoPalette.y400,
     onAccent: KraveoPalette.g900,
     shadowTint: KraveoPalette.g900,
-    minTap: 64,
-    textScale: 1.12,
+    minTap: 56,
+    textScale: 1.0,
   );
 
-  /// Driver: OLED-dark, neon-yellow accent, glanceable at night on a bike.
+  /// Driver: high contrast dark surfaces with persistent action labels.
   static const driver = KraveoTokens(
     isDark: true,
     bg: KraveoPalette.nightBg,
@@ -87,7 +92,7 @@ class KraveoTokens extends ThemeExtension<KraveoTokens> {
     onAccent: KraveoPalette.g950,
     shadowTint: Colors.black,
     minTap: 64,
-    textScale: 1.1,
+    textScale: 1.0,
   );
 
   @override

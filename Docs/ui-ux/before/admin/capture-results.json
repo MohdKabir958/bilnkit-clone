@@ -1,0 +1,61 @@
+[
+  {
+    "screen": "dashboard",
+    "width": 1280,
+    "title": "Operations and support",
+    "overflow": false
+  },
+  {
+    "screen": "vendors",
+    "width": 1280,
+    "title": "Vendors",
+    "overflow": false
+  },
+  {
+    "screen": "inventory",
+    "width": 1280,
+    "title": "Products and inventory",
+    "overflow": false
+  },
+  {
+    "screen": "orders",
+    "width": 1280,
+    "title": "Orders",
+    "overflow": false
+  },
+  {
+    "screen": "riders",
+    "width": 1280,
+    "title": "Drivers",
+    "overflow": false
+  },
+  {
+    "screen": "finance",
+    "width": 1280,
+    "title": "Finance",
+    "overflow": false
+  },
+  {
+    "screen": "coverage",
+    "width": 1280,
+    "title": "Delivery coverage",
+    "overflow": false
+  },
+  {
+    "keyboardFocusedTag": "A",
+    "metrics": [
+      {
+        "name": "Nodes",
+        "value": 4100
+      },
+      {
+        "name": "LayoutCount",
+        "value": 147
+      },
+      {
+        "name": "JSHeapUsedSize",
+        "value": 15285088
+      }
+    ]
+  }
+]
