@@ -131,7 +131,7 @@ class BillBreakdown extends StatelessWidget {
         if (estimate) ...[
           const SizedBox(height: 6),
           Text(
-            loading ? 'Estimate. Kraveo is working out the exact price...' : 'Estimate. Kraveo confirms the final amount when you place the order.',
+            loading ? 'Estimate. ${BrandConfig.name} is working out the exact price...' : 'Estimate. ${BrandConfig.name} confirms the final amount when you place the order.',
             style: KraveoType.caption.copyWith(color: k.inkFaint, fontSize: 12),
           ),
           if (onRetry != null && !loading) ...[

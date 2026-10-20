@@ -17,20 +17,21 @@ interface HeaderProps {
 }
 
 const TITLES: Record<TabType, { title: string; subtitle: string; searchHint: string }> = {
+  operations: {title: 'Operations and support', subtitle: 'Dispatch, requests and business audit', searchHint: ''},
   inventory: { title: 'Products and inventory', subtitle: 'Grocery SKUs, stock adjustments and product moderation', searchHint: '' },
   coverage: { title: 'Delivery coverage', subtitle: 'Cities, service areas and store opening hours', searchHint: '' },
-  map: { title: 'Live command center', subtitle: 'Dispatch, runners and the delivery pipeline', searchHint: 'Search orders, vendors, hostels, runners' },
+  map: { title: 'Live command center', subtitle: 'Dispatch, runners and the delivery pipeline', searchHint: 'Search orders, vendors, localities, runners' },
   orders: { title: 'Orders', subtitle: 'Latest 100 orders, with payment and live status', searchHint: 'Search order, student, phone, restaurant, rider or payment id' },
   attention: { title: 'Needs attention', subtitle: 'Orders and payments a human has to fix', searchHint: 'Search by order, restaurant, student or problem' },
   applications: { title: 'Applications', subtitle: 'Restaurants and riders waiting for your approval', searchHint: 'Search by name, phone, location or plate' },
   vendors: { title: 'Vendors', subtitle: 'Dhaba network and availability', searchHint: 'Search vendors by name, category or address' },
   categories: { title: 'Categories', subtitle: 'One list for restaurant cuisines and dish categories', searchHint: 'Search categories by name' },
-  drivers: { title: 'Drivers', subtitle: 'Runner partners on campus', searchHint: 'Search runners by name, reg no or code' },
-  customers: { title: 'Customers', subtitle: 'Everyone who signed in, with their order history', searchHint: 'Search name, email, phone or hostel' },
+  drivers: { title: 'Drivers', subtitle: 'Delivery partners and service areas', searchHint: 'Search runners by name, reg no or code' },
+  customers: { title: 'Customers', subtitle: 'Everyone who signed in, with their order history', searchHint: 'Search name, email, phone or locality' },
   catalog: { title: 'Catalog', subtitle: 'Approve dishes and set what customers pay', searchHint: 'Search dishes by name, category or restaurant' },
   finance: { title: 'Finance', subtitle: 'Revenue, restaurant settlements and rider payouts', searchHint: '' },
   settings: { title: 'Settings', subtitle: 'Fees, commission, rounding and settlements', searchHint: '' },
-  analytics: { title: 'Analytics', subtitle: 'Campus delivery numbers from real orders', searchHint: '' },
+  analytics: { title: 'Analytics', subtitle: 'Delivery statistics from real orders', searchHint: '' },
 };
 
 const useNow = (intervalMs: number): number => {

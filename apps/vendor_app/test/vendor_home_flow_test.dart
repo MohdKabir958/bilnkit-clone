@@ -9,7 +9,7 @@ import 'package:vendor_app/widgets/incoming_order_dialog.dart';
 import 'support/fakes.dart';
 import 'support/signed_in.dart';
 
-/// The whole restaurant app (session gate + home) against a fake Kraveo server and socket.
+/// The whole restaurant app (session gate + home) against a fake DailyMarket server and socket.
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -70,6 +70,7 @@ void main() {
     expect(backend.calls, containsAll(['list:active', 'store:get:v1']));
     expect(sockets.single.vendorId, 'v1'); // the signed-in owner's restaurant, never a sample id
     expect(sockets.single.token, 'test-jwt');
+    await tester.scrollUntilVisible(find.text('No orders right now'),100,scrollable:find.byType(Scrollable).first);await tester.pump(const Duration(milliseconds:400));
     expect(find.text('No orders right now'), findsOneWidget);
     await unmount(tester);
     expect(sockets.single.disposed, isTrue);
@@ -174,6 +175,7 @@ void main() {
     await tapButton(tester, 'OK');
     await settle(tester);
     expect(find.byType(IncomingOrderDialog), findsNothing);
+    await tester.scrollUntilVisible(find.text('No orders right now'),100,scrollable:find.byType(Scrollable).first);await tester.pump(const Duration(milliseconds:400));
     expect(find.text('No orders right now'), findsOneWidget);
     await unmount(tester);
   });

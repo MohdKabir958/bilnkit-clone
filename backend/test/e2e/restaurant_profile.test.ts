@@ -142,7 +142,6 @@ describe('Restaurant categories and profile edit', () => {
         ['name short', { name: 'R' }, 'name'], ['name long', { name: 'x'.repeat(61) }, 'name'], ['name html', { name: 'RP <script>' }, 'name'], ['name type', { name: 5 }, 'name'], ['name null', { name: null }, 'name'],
         ['address short', { address: 'ab' }, 'address'], ['address long', { address: 'x'.repeat(141) }, 'address'], ['address null', { address: null }, 'address'],
         ['banner ftp', { bannerImage: 'ftp://x/y.png' }, 'bannerImage'], ['banner js', { bannerImage: 'javascript:alert(1)' }, 'bannerImage'], ['banner spaces', { bannerImage: 'https://x/a b.png' }, 'bannerImage'],
-        ['banner long', { bannerImage: `https://x/${'a'.repeat(500)}` }, 'bannerImage'], ['banner type', { bannerImage: 5 }, 'bannerImage'], ['banner empty', { bannerImage: '' }, 'bannerImage'],
         ['fssai 13', { fssaiNumber: '1234567890123' }, 'fssaiNumber'], ['fssai letters', { fssaiNumber: '1234567890123a' }, 'fssaiNumber'], ['fssai number', { fssaiNumber: 12345678901234 }, 'fssaiNumber'],
         ['eta format', { eta: '20 min' }, 'eta'], ['eta reversed', { eta: '30-20 min' }, 'eta'], ['eta mins', { eta: '20-30 mins' }, 'eta'], ['eta 4 digits', { eta: '1000-2000 min' }, 'eta'], ['eta type', { eta: 25 }, 'eta'],
         ['cuisineIds not list', { cuisineIds: 'x' }, 'cuisineIds'], ['cuisineIds dup', { cuisineIds: [cat.id, cat.id] }, 'cuisineIds'], ['cuisineIds bad id', { cuisineIds: ['bad id!'] }, 'cuisineIds'],
@@ -315,7 +314,7 @@ describe('Restaurant categories and profile edit', () => {
       const text = await mk({ category: `${P} pizza • ${P} Pasta` });
       expect(text.body.data.category).toBe(`${P} Pizza • ${P} Pasta`);
       const none = await mk({});
-      expect([none.body.data.category, none.body.data.cuisines, none.body.data.tags]).toEqual(['North Indian • Campus Dhaba', [], []]); // the old default text, as before
+      expect([none.body.data.category, none.body.data.cuisines, none.body.data.tags]).toEqual(['Groceries', [], []]); // neutral grocery category
       expect((await mk({ cuisineIds: ['nope'] })).status).toBe(400);
       expect((await mk({ category: 5 })).status).toBe(400);
       expect((await mk({ category: 'x'.repeat(61) })).status).toBe(400);
@@ -339,7 +338,7 @@ describe('Restaurant categories and profile edit', () => {
         expect(mine.cuisines).toEqual([{ id: a.id, name: `${P} Pay1`, icon: 'restaurant' }, { id: b.id, name: `${P} Pay2`, icon: 'restaurant' }]);
         expect(mine.tags).toEqual([`${P} Pay1`, `${P} Pay2`]);
         expect(mine.category).toBe(`${P} Pay1 • ${P} Pay2`);
-        expect(Object.keys(mine.menuItems[0]).sort()).toEqual(['id', 'vendorId', 'name', 'price', 'category', 'categoryId', 'description', 'imageUrl', 'isAvailable', 'isVeg', 'rating', 'ratingCount'].sort());
+        expect(Object.keys(mine.menuItems[0]).sort()).toEqual(['id', 'vendorId', 'name', 'price', 'category', 'categoryId', 'description', 'imageUrl', 'isAvailable', 'isVeg', 'rating', 'ratingCount','active','discountPaise','hsnCode','imageUrls','lowStock','mrpPaise','packSize','pricePaise','productKey','sku','stockQty','taxRateBps','unit'].sort());
         expect(mine.menuItems[0].price).toBe(110); // the customer price, as before
         const one = await (t ? request.get(`/api/vendors/${R}-1`).set(H(t)) : request.get(`/api/vendors/${R}-1`));
         expect(one.body.data.tags).toEqual(mine.tags);

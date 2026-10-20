@@ -1,0 +1,53 @@
+Phase 4 local verification — 2026-10-20
+Branch: feature/india-grocery-platform
+
+Backend full gate: fresh UTF-8 market_release_test cloned from the migrated template.
+  DATABASE_URL=postgresql://agent@127.0.0.1:5432/market_release_test npm test -- --silent
+Test Suites: 42 passed, 42 total
+Tests:       1058 passed, 1058 total
+Snapshots:   0 total
+Time:        439.984 s
+
+Focused one-connection settings/catalog/grocery check: 3 suites, 61 passed.
+  DATABASE_URL=.../market_onboarding_test npm test -- --runTestsByPath test/e2e/transaction_settings.test.ts test/e2e/pricing_catalog.test.ts test/e2e/grocery_inventory.test.ts --silent
+Approved owner store-profile + existing admin profile: 2 suites, 31 passed.
+
+Admin: npm test -- --run: 48 files, 807 passed.
+Customer: flutter test: 441 passed.
+Vendor: flutter test --no-pub: 519 passed, including the new profile confirmation/retry cases.
+Rider: flutter test: 396 passed.
+All three flutter analyze --no-pub: No issues found.
+All three flutter build bundle --debug --target-platform=linux-x64 --no-pub: exit 0.
+All three flutter build apk --debug --no-pub: built. Debug Firebase bypass explicitly enabled.
+Android IDs verified: in.dailymarket.customer / in.dailymarket.vendor / in.dailymarket.driver.
+APK checksums (generated artifacts are ignored, not source-controlled):
+4eec2b659eae31fe77da45149582011187ac53e309675c89e370a03da10e5698  apps/customer_app/build/app/outputs/flutter-apk/app-debug.apk
+e54db4b85da59e558be5740653a23014cd5d57204d016c4b7e77b3e063fde461  apps/vendor_app/build/app/outputs/flutter-apk/app-debug.apk
+638a477826eb5108ef77239e40342ba59c0fd00547257de549faf1dea8a8e752  apps/driver_app/build/app/outputs/flutter-apk/app-debug.apk
+
+Backend/admin/landing: frozen npm ci and npm run build passed.
+Backend/admin/landing npm audit --omit=dev --json: info/low/moderate/high/critical = 0.
+Brand generator --check: current; Node license inventory: 1,083 package records.
+15 historical migration SHA-256 values verified unchanged.
+Fresh UTF-8 db:deploy applied all 21 migrations. Repeat: no pending migrations.
+Prisma migrate diff: No difference detected.
+Populated UTF-8 custom backup restored into a new empty _restore_test database:
+users | vendors | products | orders | migrations
+-------+---------+----------+--------+------------
+     9 |       2 |       80 |      0 |         21
+(1 row)
+
+Final runtime Docker image: ee5cf57000752defaa5d08ec7d50481894f394a71c347f3875b23f40d63f4d55
+PASS: final API container readiness, database-backed vendor login and owned store profile.
+Runtime UID: 1000
+Container health/user/read-only: healthy node true
+Compose production config: validated with temporary example-only values, then removed.
+Normal API smoke: health/admin rejection-login/real geography-inventory-public reads passed.
+Normal pilot vendor login/owned store GET/idempotent PUT: passed.
+Admin/landing HTTP, transformed modules and privacy route: passed.
+Cloud install script replay: frozen Node installs, safe migrations, builds, frozen pub resolution and brand check passed.
+Cloud install/start configuration draft: saved; requires environment-settings publication. Fresh-task restoration is unverified.
+Git connectivity and whitespace checks passed. No credentials, uploaded photos, SDKs, APKs or dumps staged.
+
+Diagnostic runs interrupted by disk exhaustion, superseded code or obsolete fixtures are not passing evidence. Generated Docker caches/duplicate images were cleared; original databases and source were preserved.
+Real gateway TEST transactions, owned Google OAuth, FCM/device delivery, release signing, GPS/navigation/gallery/secure-storage behavior on devices, production DNS/TLS/alerts and legal/operator approval remain external launch gates. No live payments or production deployment performed.

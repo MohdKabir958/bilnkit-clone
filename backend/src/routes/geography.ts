@@ -36,8 +36,8 @@ geographyRouter.get('/v1/cities', safe(async (req, res) => {
 }));
 geographyRouter.get('/v1/maps/search', requireAuth, safe(async (req, res) => ok(res, await searchLocations(req.query.q))));
 geographyRouter.get('/v1/orders/:id/route', requireAuth, validParams('id'), safe(async (req, res) => {
-  const o = await prisma.order.findUnique({ where: { id: req.params.id }, select: { customerId: true, driverId: true, addressSnapshot: true, vendor: { select: { lat: true, lng: true } } } });
-  if (!o || !(req.user!.role === 'ADMIN' || (req.user!.role === 'STUDENT' && o.customerId === req.user!.id) || (req.user!.role === 'DRIVER' && o.driverId === req.user!.id))) throw new AppError(404, 'NOT_FOUND', 'Order not found.');
+  const o = await prisma.order.findUnique({ where: { id: req.params.id }, select: { customerId: true, driverId: true, status:true, addressSnapshot: true, vendor: { select: { lat: true, lng: true } } } });
+  if (!o || !(req.user!.role === 'ADMIN' || (req.user!.role === 'STUDENT' && o.customerId === req.user!.id) || (req.user!.role === 'DRIVER' && o.driverId === req.user!.id && !['DELIVERED','CANCELLED'].includes(o.status)))) throw new AppError(404, 'NOT_FOUND', 'Order not found.');
   const a = o.addressSnapshot as any;
   if (!a) throw new AppError(503, 'MAPS_UNAVAILABLE', 'No route is available for this historical address.');
   ok(res, await routeBetween(o.vendor, a));

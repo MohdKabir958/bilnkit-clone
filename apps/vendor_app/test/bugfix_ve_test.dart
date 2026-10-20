@@ -197,7 +197,7 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets('the form closes with no "Kraveo is having trouble" box when the answer has no user', (tester) async {
+    testWidgets('the form closes with no "DailyMarket is having trouble" box when the answer has no user', (tester) async {
       _tallPhone(tester);
       var submitted = 0;
       await tester.pumpWidget(MaterialApp(
@@ -232,7 +232,7 @@ void main() {
       const fssaiFixed = PartnerSignupForm(ownerName: 'R', phone: '', password: '', restaurantName: 'S', address: 'A', fssaiNumber: '12345678901234', edited: {'fssaiNumber'});
       expect(fssaiFixed.toUpdateJson(), {'fssaiNumber': '12345678901234'});
 
-      // Edited but emptied: still never sent (it would wipe what Kraveo has on file).
+      // Edited but emptied: still never sent (it would wipe what DailyMarket has on file).
       const cleared = PartnerSignupForm(ownerName: 'R', phone: '', password: '', restaurantName: 'S', address: 'A', category: '', fssaiNumber: '', edited: {'category', 'fssaiNumber', 'name'});
       expect(cleared.toUpdateJson(), {'name': 'R'});
 
@@ -428,7 +428,7 @@ void main() {
 
     // -------------------------------------------------------------------------------------------- VE-04
 
-    testWidgets('VE-04 Kraveo cancels an order in the kitchen: a notice tells the cook to stop, and the tray notification is removed', (tester) async {
+    testWidgets('VE-04 DailyMarket cancels an order in the kitchen: a notice tells the cook to stop, and the tray notification is removed', (tester) async {
       final log = PushLog();
       final notifications = FakeNotifications();
       final push = PushController(
@@ -449,7 +449,7 @@ void main() {
       );
       await _settle(tester);
 
-      expect(find.textContaining('was cancelled by Kraveo. Stop cooking.'), findsOneWidget);
+      expect(find.textContaining('was cancelled by DailyMarket. Stop cooking.'), findsOneWidget);
       expect(find.textContaining('#ABC123'), findsWidgets);
       expect(notifications.shown, contains('cancel:ord-abc123'));
       expect(alarm.starts, 1, reason: 'one short sound');
@@ -559,45 +559,10 @@ void main() {
 
     // -------------------------------------------------------------------------------------------- VE-08
 
-    testWidgets('VE-08 the help sheet offers "Email Kraveo support", never the placeholder helpline', (tester) async {
-      final opened = <Uri>[];
-      SupportContact.opener = (uri) async {
-        opened.add(uri);
-        return true;
-      };
-      addTearDown(() => SupportContact.opener = (uri) async => false);
-      await launch(tester);
-      await tester.tap(find.bySemanticsLabel('Help and support'));
-      await _settle(tester);
-      expect(find.text('Call helpline'), findsNothing);
-      expect(find.textContaining('98765 43214'), findsNothing);
-      expect(find.byKey(const ValueKey('support-email')), findsOneWidget);
-      expect(find.text(kSupportEmail), findsOneWidget);
-
-      await tapButton(tester, 'Email Kraveo support');
-      await _settle(tester);
-      expect(opened.single.scheme, 'mailto');
-      expect(opened.single.path, kSupportEmail);
-      await unmount(tester);
-    });
-
-    testWidgets('VE-08 with no mail app the address is copied and the owner is told', (tester) async {
-      String? copied;
-      SupportContact.opener = (uri) async => false;
-      addTearDown(() => SupportContact.opener = (uri) async => false);
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
-        if (call.method == 'Clipboard.setData') copied = (call.arguments as Map)['text'] as String?;
-        return null;
-      });
-      addTearDown(() => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
-      await launch(tester);
-      await tester.tap(find.bySemanticsLabel('Help and support'));
-      await _settle(tester);
-      await tapButton(tester, 'Email Kraveo support');
-      await _settle(tester);
-      expect(copied, kSupportEmail);
-      expect(find.textContaining('Address copied'), findsOneWidget);
-      await unmount(tester);
+    testWidgets('VE-08 help opens the persisted support request screen', (tester) async {
+      await launch(tester);await tester.tap(find.bySemanticsLabel('Help and support'));await _settle(tester);
+      expect(find.text('Call helpline'),findsNothing);await tapButton(tester,'Help and requests');await _settle(tester);
+      expect(find.byType(SupportCenter),findsOneWidget);expect(find.text('Send request'),findsOneWidget);await unmount(tester);
     });
 
     // -------------------------------------------------------------------------------------------- VE-09
@@ -731,7 +696,7 @@ void main() {
       return (c, backend, alarm);
     }
 
-    test('an order in the kitchen cancelled by Kraveo is reported once, with one short sound that then stops', () async {
+    test('an order in the kitchen cancelled by DailyMarket is reported once, with one short sound that then stops', () async {
       SharedPreferences.setMockInitialValues({});
       final (c, backend, alarm) = await started();
       expect(c.takeKitchenCancellations(), isEmpty);
@@ -857,7 +822,7 @@ void main() {
   // ------------------------------------------------------------------------------------------------ VE-07 / VE-08 text
 
   group('VE-07 / VE-08 wording', () {
-    testWidgets('VE-07 a phone already used elsewhere says "another Kraveo app or account"', (tester) async {
+    testWidgets('VE-07 a phone already used elsewhere says "another DailyMarket app or account"', (tester) async {
       _tallPhone(tester);
       await tester.pumpWidget(MaterialApp(
         theme: KraveoTheme.vendor(),
@@ -883,7 +848,7 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('signup-button')));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(find.textContaining('already registered in another Kraveo app or account'), findsOneWidget);
+      expect(find.textContaining('already registered in another DailyMarket app or account'), findsOneWidget);
       expect(find.textContaining('different number'), findsOneWidget);
     });
 
@@ -892,7 +857,7 @@ void main() {
       await tester.pump(const Duration(seconds: 3));
       await tester.pump(const Duration(seconds: 3));
       await tester.ensureVisible(find.byKey(const ValueKey('login-support-email')));
-      expect(find.text(kSupportEmail), findsOneWidget);
+      expect(find.text('Account recovery help'), findsOneWidget);
       expect(find.textContaining('98765 43214'), findsNothing);
     });
 
@@ -902,10 +867,10 @@ void main() {
       expect(t.english.toLowerCase(), isNot(contains('call')));
     });
 
-    test('VE-08 the mailto link is addressed to Kraveo support', () {
+    test('VE-08 the mailto link is addressed to DailyMarket support', () {
       final uri = SupportContact.mailtoUri();
       expect(uri.scheme, 'mailto');
-      expect(uri.path, 'kraveo.contact@gmail.com');
+      expect(uri.path,isEmpty);
       expect(uri.toString(), contains('subject='));
     });
 

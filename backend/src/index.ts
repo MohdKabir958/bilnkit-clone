@@ -1,8 +1,10 @@
 import express from 'express';
+import {installStructuredLogging} from './utils/logger';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { prisma } from './db';
 import { apiRouter } from './routes/api';
 import { attachRealtime } from './realtime';
 import { startOrderMaintenance } from './services/orderMaintenance';
@@ -16,6 +18,7 @@ import { mountUploads } from './routes/uploads';
 import { jsonUnlessMenuImport } from './middleware/bodyLimits';
 
 dotenv.config();
+if(process.env.NODE_ENV==='production')installStructuredLogging();
 
 // Anything that is not the test runner must have its secrets; GOOGLE_WEB_CLIENT_ID is only a warning.
 if (process.env.NODE_ENV !== 'test') {
@@ -44,17 +47,9 @@ app.disable('x-powered-by');
 app.set('trust proxy', 1);
 const server = http.createServer(app);
 
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  process.env.ADMIN_URL,
-  // The deployed Super Admin portal uses this Vercel origin when the optional
-  // CLIENT_URL/ADMIN_URL environment variables are not present on EC2.
-  'https://kraveo.vercel.app',
-  'https://admin.kraveo.site',
-  'http://localhost:3000',
-  'http://localhost:5173',
-]
-  .filter((origin): origin is string => Boolean(origin));
+const allowedOrigins = [process.env.CLIENT_URL, process.env.ADMIN_URL,
+  ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000','http://localhost:5173'] : [])
+].filter((origin): origin is string => Boolean(origin));
 const corsOptions = {
   origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
@@ -64,6 +59,7 @@ const corsOptions = {
 };
 
 const io = new SocketIOServer(server, {
+  allowRequest: (req, callback) => callback(null, !req.headers.origin || allowedOrigins.includes(req.headers.origin)),
   cors: {
     origin: allowedOrigins,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
@@ -99,6 +95,12 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Readiness checks the actual database; liveness remains independent of external services.
+app.get('/ready', async (_req, res) => {
+  try { await prisma.$queryRaw`SELECT 1`; res.json({ready:true,pushConfigured:getPushProvider().enabled}); }
+  catch { res.status(503).json({ready:false}); }
+});
+
 // 404 Non-Existent Route Guard
 app.use((req: express.Request, res: express.Response) => {
   res.status(404).json({
@@ -118,7 +120,7 @@ attachRealtime(io);
 server.on('error', guards.onListenError);
 
 server.listen(PORT, () => {
-  console.log(`🚀 Kraveo Backend Engine running on http://localhost:${PORT}`);
+  console.log(`🚀 ${brand.name} Backend Engine running on http://localhost:${PORT}`);
   console.log(`📡 WebSockets listening for real-time driver tracking & order alerts`);
   // Order housekeeping every 60 s: expire unpaid orders, auto-cancel unaccepted paid orders, retry refunds.
   // Started only once the port is really ours.

@@ -52,6 +52,11 @@ void main() {
   tearDown(() async => DriverApiService.clearToken());
 
   group('token lifecycle', () {
+    test('an ownership conflict rotates FCM and registers a fresh token without moving the old owner',()async{
+      final r=await _rig(attach:false);r.api.onRegister=(token)=>token=='fcm-token-1'?DeviceCallResult.tokenOwned:DeviceCallResult.ok;
+      r.push.attach(r.session);await pumpEventQueue();expect(r.api.registered,['fcm-token-1','fcm-token-rotated']);expect(r.push.registered,isTrue);r.push.dispose();
+    });
+
     test('registers once after an approved rider is signed in, with the app version', () async {
       final r = await _rig();
       expect(r.api.registered, ['fcm-token-1']);

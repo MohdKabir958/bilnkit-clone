@@ -90,13 +90,13 @@ class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> with 
           LucideIcons.circlePause,
           KraveoPalette.warning,
           'Your account is paused',
-          'You cannot take deliveries right now. Email Kraveo support to open it again.',
+          'You cannot take deliveries right now. Email ${BrandConfig.name} support to open it again.',
         ),
       _ => (
           LucideIcons.hourglass,
           k.brand,
           'Thanks! We are checking your details',
-          'Kraveo may call you on ${s.phone ?? 'your number'}. You can start delivering as soon as you are approved.',
+          '${BrandConfig.name} may call you on ${s.phone ?? 'your number'}. You can start delivering as soon as you are approved.',
         ),
     };
     final pending = s.approval == PartnerApproval.pending;
@@ -233,10 +233,10 @@ class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> with 
                 const SizedBox(height: 18),
                 KButton(
                   key: const ValueKey('status-support-button'),
-                  label: 'Need help? Email Kraveo support',
+                  label: 'Need help? Email ${BrandConfig.name} support',
                   kind: KButtonKind.ghost,
                   icon: LucideIcons.mail,
-                  onPressed: () => emailSupport(context, subject: 'Kraveo rider application help'),
+                  onPressed: () => emailSupport(context, subject: '${BrandConfig.name} rider application help'),
                 ),
               ]),
             ),

@@ -531,11 +531,9 @@ void main() {
       };
       expect(await ExternalLinks.dial('+91 98765 43210'), isTrue);
       expect(opened.single.toString(), 'tel:+919876543210');
-      expect(await ExternalLinks.emailSupport(subject: 'Order #ABC'), isTrue);
-      expect(opened.last.scheme, 'mailto');
-      expect(opened.last.path, kSupportEmail);
-      expect(kSupportEmail, 'kraveo.contact@gmail.com');
-      expect(opened.last.queryParameters['subject'], 'Order #ABC');
+      expect(kSupportEmail,isEmpty);
+      expect(await ExternalLinks.emailSupport(subject:'Order #ABC'),isFalse);
+      expect(opened,hasLength(1),reason:'No blank-recipient email is launched without configured operator contact.');
 
       expect(await ExternalLinks.dial(''), isFalse);
       ExternalLinks.launcher = (uri) async => throw StateError('no activity');

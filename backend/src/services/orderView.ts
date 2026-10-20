@@ -8,6 +8,12 @@ const publicProductSnapshot = (snapshot: unknown) => {
   return publicFields;
 };
 
+const vendorProductSnapshot=(snapshot:unknown)=>{
+  if(!snapshot||typeof snapshot!=='object'||Array.isArray(snapshot))return null;
+  const {pricePaise:_retail,vendorUnitPaise:_proceeds,mrpPaise:_mrp,...metadata}=snapshot as Record<string,unknown>;
+  return metadata;
+};
+
 /**
  * The ONLY shape an order leaves the server in (REST and sockets): Docs/16_order_flow_contract.md 2.1.
  * Built per viewer. Returns null when this viewer must not see the order at all, so callers can 404
@@ -165,7 +171,7 @@ const buildView = (o: OrderWithRelations) => ({
   acceptBy: null as string | null,
 });
 
-const driverOf = (o: OrderWithRelations) => (o.driver ? { id: o.driver.id, name: o.driver.name, phone: o.driver.phone ?? null } : null);
+const driverOf = (o: OrderWithRelations, privatePhone=false) => (o.driver ? { id: o.driver.id, name: o.driver.name, phone: privatePhone || (ACTIVE_RIDER_STATUSES as readonly string[]).includes(o.status) ? o.driver.phone ?? null : null } : null);
 const payByOf = (o: OrderWithRelations) =>
   o.status === 'PLACED' && o.paymentStatus !== 'PAID' && o.paymentStatus !== 'REFUNDED' ? addMinutes(o.createdAt, paymentWindowMin()).toISOString() : null;
 const acceptByOf = (o: OrderWithRelations) =>
@@ -184,8 +190,9 @@ export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string
         ...privateDelivery(o),
         vendor: { id: o.vendor.id, name: o.vendor.name, address: o.vendor.address, lat: o.vendor.lat, lng: o.vendor.lng, hasLocation: vendorHasLocation(o.vendor.lat, o.vendor.lng), phone: o.vendor.user?.phone ?? null },
         customer: { id: o.customer.id, name: o.customer.name, phone: o.customer.phone ?? null, hostelBlock: o.customer.hostelBlock ?? null },
-        driver: driverOf(o),
+        driver: driverOf(o,true),
         otpCode: realOtp(o.otpCode),
+        otpExpiresAt: o.otpExpiresAt?.toISOString()??null,
         payBy: payByOf(o),
         acceptBy: acceptByOf(o),
         ...withGroup(groupFull(o)),
@@ -242,7 +249,7 @@ export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string
         ...base,
         totalAmount: earn,
         subtotal: earn,
-        items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, productSnapshot: i.productSnapshot, name: i.name, quantity: i.quantity, price: vendorEarnUnit(i) })),
+        items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, productSnapshot: vendorProductSnapshot(i.productSnapshot), name: i.name, quantity: i.quantity, price: vendorEarnUnit(i) })),
         customer: { id: o.customer.id, name: firstName(o.customer.name), phone: null, hostelBlock: null },
         driver: driverOf(o),
         acceptBy: acceptByOf(o),
@@ -253,8 +260,8 @@ export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string
       if (o.driverId === viewerId) {
         return {
           ...buildView(o),
-          ...privateDelivery(o),
-          customer: { id: o.customer.id, name: o.customer.name, phone: o.customer.phone ?? null, hostelBlock: o.customer.hostelBlock ?? null },
+          ...((ACTIVE_RIDER_STATUSES as readonly string[]).includes(o.status)?privateDelivery(o):{dropoffHostel:o.addressSnapshot?`${(o.addressSnapshot as any).locality}, ${(o.addressSnapshot as any).city}`:'Completed delivery',dropoff:null,dropoffNotes:null}),
+          customer: (ACTIVE_RIDER_STATUSES as readonly string[]).includes(o.status) ? {id:o.customer.id,name:o.customer.name,phone:o.customer.phone??null,hostelBlock:null} : null,
           driver: driverOf(o),
           ...withGroup(groupFull(o)),
         };

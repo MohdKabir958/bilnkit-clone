@@ -1,3 +1,5 @@
+import { stageNotificationIntents, drainNotificationIntents } from './push/intents';
+import { ensureDispatchOffer, acceptDispatchOffer, riderServesOrders } from './dispatch';
 import { lockProducts, reserveStock, settleStock } from './inventory';
 import { errSummary } from '../utils/log';
 import { Prisma } from '@prisma/client';
@@ -97,14 +99,24 @@ export const lockOrderInTx = async (tx: Tx, orderId: string): Promise<LockedOrde
 export const withOrderLock = <T>(
   orderId: string,
   fn: (tx: Tx, order: OrderWithRelations, group: OrderWithRelations[] | null) => Promise<T>,
-  opts: { riderUserIdFirst?: string } = {},
+  opts: { riderUserIdFirst?: string; assignedByAdmin?: boolean } = {},
 ): Promise<T> =>
   prisma.$transaction(
     async (tx) => {
       // Lock order is rider -> (group ->) order everywhere (claimOrder does the same), so a claim and an admin reassign cannot deadlock.
       if (opts.riderUserIdFirst) await tx.$queryRaw`SELECT "id" FROM "DriverPartner" WHERE "userId" = ${opts.riderUserIdFirst} FOR UPDATE`;
       const { order, group } = await lockOrderInTx(tx, orderId);
-      return fn(tx, order, group);
+      const result=await fn(tx, order, group);
+      const change=result as unknown as Partial<ChangeResult>;
+      if(change?.changed && change.before && change.order) {
+        await stageNotificationIntents(tx,change,opts.assignedByAdmin);
+        const unavailable=(change.group?.after??[change.order]).filter((o)=>o.driverId||isTerminal(o.status)).map((o)=>o.id);
+        if(unavailable.length) await tx.dispatchOffer.updateMany({where:{orderId:{in:unavailable},state:'PENDING'},data:{state:'REVOKED',reason:'Order is no longer available'}});
+        const riderIds=[...new Set([change.before.driverId,change.order.driverId].filter((id):id is string=>!!id))];
+        for(const id of riderIds) if(!await tx.order.count({where:{driverId:id,status:{in:[...ACTIVE_RIDER_STATUSES]}}})) await tx.driverLocation.deleteMany({where:{driverId:id}});
+        if(change.before.status!==change.order.status||change.before.paymentStatus!==change.order.paymentStatus||change.before.driverId!==change.order.driverId) await tx.adminAuditLog.create({data:{action:'ORDER_STATE_CHANGED',targetType:'ORDER',targetId:change.order.id,summary:`${change.before.status}/${change.before.paymentStatus}/${change.before.driverId??'unassigned'} -> ${change.order.status}/${change.order.paymentStatus}/${change.order.driverId??'unassigned'}`}});
+      }
+      return result;
     },
     { maxWait: 15_000, timeout: 30_000 },
   );
@@ -142,6 +154,9 @@ export const groupResult = async (tx: Tx, trigger: OrderWithRelations, before: O
  */
 export const finishChange = async (r: ChangeResult, opts: { awaitRefund?: boolean; deferRefund?: boolean; assignedByAdmin?: boolean } = { awaitRefund: true }): Promise<OrderWithRelations> => {
   if (!r.changed) return r.order;
+  drainNotificationIntents();
+  const dispatchPrimary=r.group?.after[0]??r.order;
+  if(isPoolEligible(dispatchPrimary)) await ensureDispatchOffer(dispatchPrimary.id).catch(()=>console.error('Dispatch scheduling failed; maintenance will retry.'));
   const refundId = r.refundOrderId ?? r.order.id;
   if (r.group) {
     // Docs/22: sockets for every written child, the pool entry (the primary) when the group entered / left the pool, push without duplicates.
@@ -159,7 +174,7 @@ export const finishChange = async (r: ChangeResult, opts: { awaitRefund?: boolea
       await publishOrderChange(after, { wasPoolEligible: isPrimary ? wasPool : false, newOrderAlert: r.newOrderAlert });
     }
     try {
-      for (const spec of pushEventsForGroupChange(g.before, g.after, touched, r.order.id, { newOrderAlert: r.newOrderAlert, assignedByAdmin: opts.assignedByAdmin })) queuePush(spec.orderId, spec.event, spec.opts);
+      for (const spec of pushEventsForGroupChange(g.before, g.after, touched, r.order.id, { newOrderAlert: r.newOrderAlert, assignedByAdmin: opts.assignedByAdmin })) { if(spec.event!=='NEW_DELIVERY') queuePush(spec.orderId, spec.event, spec.opts); }
     } catch (err) {
       console.error('push scheduling failed:', errSummary(err));
     }
@@ -169,7 +184,7 @@ export const finishChange = async (r: ChangeResult, opts: { awaitRefund?: boolea
     await publishOrderChange(r.order, { wasPoolEligible: isPoolEligible(r.before), newOrderAlert: r.newOrderAlert });
     // Push (FCM) is an addition to the sockets above: scheduled after the commit, never awaited, never able to throw (Docs/18).
     try {
-      for (const spec of pushEventsForChange(r.before, r.order, { newOrderAlert: r.newOrderAlert, assignedByAdmin: opts.assignedByAdmin })) queuePush(r.order.id, spec.event, spec.opts);
+      for (const spec of pushEventsForChange(r.before, r.order, { newOrderAlert: r.newOrderAlert, assignedByAdmin: opts.assignedByAdmin })) { if(spec.event!=='NEW_DELIVERY') queuePush(r.order.id, spec.event, spec.opts); }
     } catch (err) {
       console.error('push scheduling failed:', errSummary(err));
     }
@@ -384,6 +399,7 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
           include: ORDER_VIEW_INCLUDE,
         });
         await reserveStock(tx, created.id, input.items);
+        await tx.notificationIntent.create({data:{orderId:created.id,event:'ORDER_PLACED',options:{}}});
         return { order: created, replay: false };
       },
       { maxWait: 15_000, timeout: 30_000 },
@@ -395,6 +411,7 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
       await finishChange(r, { awaitRefund: false });
     }
     // Unpaid: admins see it; the restaurant and riders do not (orderView filters them out anyway).
+    drainNotificationIntents();
     await publishOrderChange(outcome.order);
     return outcome;
   } catch (err: any) {
@@ -615,7 +632,7 @@ export const advanceStatus = async (orderId: string, actor: Actor, target: strin
         }
         if (!group.every((c) => c.paymentStatus === 'PAID')) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid yet.');
         // ONE code for the whole group, the same on every child.
-        await tx.order.updateMany({ where: { groupId: order.groupId! }, data: { status: 'ARRIVED_AT_GATE', otpCode: secureOtp(), otpAttempts: 0, otpLocked: false } });
+        await tx.order.updateMany({ where: { groupId: order.groupId! }, data: { status: 'ARRIVED_AT_GATE', otpCode: secureOtp(), otpExpiresAt:new Date(Date.now()+10*60000), otpAttempts: 0, otpLocked: false } });
         return groupResult(tx, order, group, group.map((c) => c.id));
       }
       const gnow = new Date();
@@ -627,7 +644,7 @@ export const advanceStatus = async (orderId: string, actor: Actor, target: strin
     const data: Prisma.OrderUpdateInput = { status: target as any };
     if (target === 'ACCEPTED') data.acceptedAt = now;
     if (target === 'PICKED_UP') data.pickedUpAt = now;
-    if (target === 'ARRIVED_AT_GATE') Object.assign(data, { otpCode: secureOtp(), otpAttempts: 0, otpLocked: false });
+    if (target === 'ARRIVED_AT_GATE') Object.assign(data, { otpCode: secureOtp(), otpExpiresAt:new Date(Date.now()+10*60000), otpAttempts: 0, otpLocked: false });
     await tx.order.update({ where: { id: order.id }, data });
     return { order: await reload(tx, order.id), before: order, changed: true };
   });
@@ -812,7 +829,7 @@ export const claimOrder = async (orderId: string, riderUserId: string): Promise<
       if (!rider) throw new OrderFlowError(403, 'RIDER_PROFILE_MISSING', 'No rider profile is linked to this account.');
       if (rider.approvalStatus !== 'APPROVED') throw new OrderFlowError(403, 'PARTNER_NOT_APPROVED', 'Your account is not active.', { approvalStatus: rider.approvalStatus });
 
-      const current = await tx.order.findUnique({ where: { id: orderId }, select: { driverId: true, status: true, paymentStatus: true, groupId: true } });
+      let current = await tx.order.findUnique({ where: { id: orderId }, select: { driverId: true, status: true, paymentStatus: true, groupId: true } });
       if (!current) throw notFound();
 
       if (current.groupId) {
@@ -828,26 +845,36 @@ export const claimOrder = async (orderId: string, riderUserId: string): Promise<
         if (!children.every((c) => c.paymentStatus === 'PAID' && (POOL_STATUSES as readonly string[]).includes(c.status))) {
           throw new OrderFlowError(409, 'ORDER_NOT_AVAILABLE', 'This order is not available for pickup.');
         }
+        await acceptDispatchOffer(tx, children, riderUserId);
         // All-or-nothing: every child is claimable and we hold every lock, so this updates exactly the children; anything else rolls back.
-        const claimed = await tx.order.updateMany({ where: { groupId: current.groupId, driverId: null, paymentStatus: 'PAID', status: { in: [...POOL_STATUSES] } }, data: { driverId: riderUserId } });
+        const claimed = await tx.order.updateMany({ where: { groupId: current.groupId, driverId: null, paymentStatus: 'PAID', status: { in: [...POOL_STATUSES] } }, data: { pickupArrivalAt:null, driverId: riderUserId } });
         if (claimed.count !== children.length) throw new OrderFlowError(409, 'ORDER_NOT_AVAILABLE', 'This order is not available for pickup.');
+        const after=await loadGroupChildren(tx,current.groupId);
+        await stageNotificationIntents(tx,{changed:true,before:children[0],order:after[0],group:{before:children,after,touched:after.map((c)=>c.id)}});
         return { changed: true, groupId: current.groupId, before: children };
       }
 
+      // Match maintenance lock order: rider -> order -> offer. Locking the offer
+      // first deadlocked against expiry, which already held the order row.
+      await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "id"=${orderId} FOR UPDATE`;
+      current = await tx.order.findUniqueOrThrow({where:{id:orderId},select:{driverId:true,status:true,paymentStatus:true,groupId:true}});
       // A cancelled / delivered order is not in the pool, whoever used to carry it (it keeps its driverId for the record).
       if (isTerminal(current.status)) throw new OrderFlowError(409, 'ORDER_NOT_AVAILABLE', 'This order is not available for pickup.');
       if (current.driverId === riderUserId) return { changed: false };
+      if (current.driverId) throw new OrderFlowError(409,'ALREADY_TAKEN','Another rider has already taken this order.');
       if (rider.dutyStatus === 'OFFLINE') throw new OrderFlowError(409, 'RIDER_OFFLINE', 'Go on duty to accept orders.');
 
       const active = await countActiveDeliveries(tx, riderUserId);
       if (active >= MAX_ACTIVE_ORDERS_PER_RIDER) throw new OrderFlowError(409, 'RIDER_BUSY', 'Finish your current delivery before accepting another order.');
 
+      if(current.paymentStatus!=='PAID'||!(POOL_STATUSES as readonly string[]).includes(current.status)) throw new OrderFlowError(409,'ORDER_NOT_AVAILABLE','This order is not available for pickup.');
+      await acceptDispatchOffer(tx, [await tx.order.findUniqueOrThrow({where:{id:orderId},include:ORDER_VIEW_INCLUDE})], riderUserId);
       // The atomic claim: only succeeds while the order is still unassigned, paid and in a pool state.
       const claimed = await tx.order.updateMany({
         where: { id: orderId, driverId: null, paymentStatus: 'PAID', status: { in: [...POOL_STATUSES] } },
-        data: { driverId: riderUserId },
+        data: { pickupArrivalAt:null, driverId: riderUserId },
       });
-      if (claimed.count === 1) return { changed: true };
+      if (claimed.count === 1) {const after=await tx.order.findUniqueOrThrow({where:{id:orderId},include:ORDER_VIEW_INCLUDE});await stageNotificationIntents(tx,{changed:true,before:{...after,driverId:null,driver:null},order:after});return {changed:true};}
       const now = await tx.order.findUnique({ where: { id: orderId }, select: { driverId: true, status: true } });
       if (now && isTerminal(now.status)) throw new OrderFlowError(409, 'ORDER_NOT_AVAILABLE', 'This order is not available for pickup.');
       if (now?.driverId && now.driverId !== riderUserId) throw new OrderFlowError(409, 'ALREADY_TAKEN', 'Another rider has already taken this order.');
@@ -878,10 +905,10 @@ export const releaseOrder = async (orderId: string, riderUserId: string) => {
       throw new OrderFlowError(409, 'CANNOT_RELEASE', 'You can only give an order back before pickup. Contact Kraveo support.');
     }
     if (group) {
-      await tx.order.updateMany({ where: { groupId: order.groupId! }, data: { driverId: null } });
+      await tx.order.updateMany({ where: { groupId: order.groupId! }, data: { pickupArrivalAt:null, driverId: null } });
       return groupResult(tx, order, group, group.map((c) => c.id));
     }
-    await tx.order.update({ where: { id: order.id }, data: { driverId: null } });
+    await tx.order.update({ where: { id: order.id }, data: { pickupArrivalAt:null, driverId: null } });
     return { order: await reload(tx, order.id), before: order, changed: true };
   });
   await writeAudit('ORDER_RELEASED', 'ORDER', result.group ? result.group.after[0].id : orderId, `Rider ${result.before.driver?.name ?? riderUserId} gave the ${result.group ? `combined order (${result.group.after.length} restaurants)` : 'order'} back to the pool (${result.before.status}).`);
@@ -913,21 +940,30 @@ export const reassignOrder = async (orderId: string, driverIdOrProfileId: string
       throw new OrderFlowError(409, 'CANNOT_UNASSIGN', 'The food is already with the rider. Assign another rider or cancel the order instead of removing the rider.');
     }
     if (resolved) {
-      const rider = await tx.driverPartner.findUnique({ where: { userId: resolved }, select: { dutyStatus: true, approvalStatus: true } });
+      const rider = await tx.driverPartner.findUnique({ where: { userId: resolved }, include: {serviceZone:{include:{city:true}}} });
       if (!rider || rider.approvalStatus !== 'APPROVED') throw new OrderFlowError(400, 'RIDER_NOT_APPROVED', 'Only an approved rider can be assigned to an order.');
+      if(!riderServesOrders(rider,all)) throw new OrderFlowError(409,'SERVICE_AREA_REQUIRED','Choose a rider whose configured area covers every pickup and the delivery address.');
       const active = await countActiveDeliveries(tx, resolved, order.groupId ?? order.id);
       if (active >= MAX_ACTIVE_ORDERS_PER_RIDER) throw new OrderFlowError(409, 'RIDER_BUSY', 'That rider already has an active order. Finish or move it first.');
       if (rider.dutyStatus === 'OFFLINE' && opts.force !== true) {
         throw new OrderFlowError(409, 'RIDER_OFFLINE', 'That rider is offline. Send force: true to assign them anyway.');
       }
     }
+    await tx.dispatchOffer.updateMany({where:{orderId:all[0].id,state:'PENDING'},data:{state:'REVOKED',reason:'Admin reassignment'}});
+    if(resolved) {
+      const rider=await tx.driverPartner.findUniqueOrThrow({where:{userId:resolved}});
+      await tx.dispatchOffer.updateMany({where:{driverId:rider.id,state:'PENDING'},data:{state:'REVOKED',reason:'Admin assigned another delivery'}});
+      const primary=await tx.order.update({where:{id:all[0].id},data:{dispatchRound:{increment:1},dispatchNote:null,dispatchEscalatedAt:null,dispatchNextAttemptAt:null}});
+      await tx.dispatchOffer.create({data:{orderId:primary.id,driverId:rider.id,round:primary.dispatchRound,state:'ACCEPTED',manual:true,expiresAt:new Date(),reason:'Assigned by admin'}});
+    }
+
     if (group) {
-      await tx.order.updateMany({ where: { groupId: order.groupId!, status: { notIn: ['DELIVERED', 'CANCELLED'] } }, data: { driverId: resolved } });
+      await tx.order.updateMany({ where: { groupId: order.groupId!, status: { notIn: ['DELIVERED', 'CANCELLED'] } }, data: { pickupArrivalAt:null, driverId: resolved } });
       return groupResult(tx, order, group, group.filter((c) => !isTerminal(c.status)).map((c) => c.id));
     }
-    await tx.order.update({ where: { id: order.id }, data: { driverId: resolved } });
+    await tx.order.update({ where: { id: order.id }, data: { pickupArrivalAt:null, driverId: resolved } });
     return { order: await reload(tx, order.id), before: order, changed: true };
-  }, resolved ? { riderUserIdFirst: resolved } : {});
+  }, resolved ? { riderUserIdFirst: resolved, assignedByAdmin:true } : {assignedByAdmin:true});
   if (result.changed) {
     await writeAudit('ORDER_REASSIGNED', 'ORDER', orderId, `Rider changed from ${result.before.driver?.name ?? 'none'} to ${result.order.driver?.name ?? 'none'} (${result.order.status}).${opts.force && result.order.driverId ? ' Forced by admin.' : ''}${result.group ? ` Whole combined order (${result.group.after.length} restaurants) moved.${result.order.driverId ? ' Warning: the rider needs the latest app.' : ''}` : ''}`);
   }
@@ -981,6 +1017,7 @@ export const verifyGateOtp = async (orderId: string, actor: Actor, rawOtp: unkno
       if (given && proofMatches(order.id, given, order.otpProof)) return { order, before: order, changed: false, kind: 'ALREADY' };
       throw new OrderFlowError(409, 'ALREADY_DELIVERED', 'This order has already been delivered.');
     }
+    if(order.otpExpiresAt && order.otpExpiresAt<=new Date()) throw new OrderFlowError(410,'OTP_EXPIRED','This delivery code expired. Ask operations to issue a new code.');
     if (order.otpLocked) throw new OrderFlowError(423, 'OTP_LOCKED', 'Too many wrong codes. Kraveo support has to unlock this delivery.');
     if (order.status !== 'ARRIVED_AT_GATE' || (group && !group.every((c) => c.status === 'ARRIVED_AT_GATE'))) {
       throw new OrderFlowError(409, 'NOT_AT_GATE', 'Gate OTP can only be verified after the runner arrives at the gate.');
@@ -1033,10 +1070,10 @@ export const resetOtpLock = async (orderId: string) => {
   const result = await withOrderLock(orderId, async (tx, order, group): Promise<ChangeResult> => {
     if (order.status !== 'ARRIVED_AT_GATE') throw new OrderFlowError(409, 'NOT_AT_GATE', 'Only an order waiting at the gate has a gate OTP.');
     if (group) {
-      await tx.order.updateMany({ where: { groupId: order.groupId!, status: 'ARRIVED_AT_GATE' }, data: { otpLocked: false, otpAttempts: 0, otpCode: secureOtp() } });
+      await tx.order.updateMany({ where: { groupId: order.groupId!, status: 'ARRIVED_AT_GATE' }, data: { otpLocked: false, otpAttempts: 0, otpCode: secureOtp(), otpExpiresAt:new Date(Date.now()+10*60000) } });
       return groupResult(tx, order, group, group.filter((c) => c.status === 'ARRIVED_AT_GATE').map((c) => c.id));
     }
-    await tx.order.update({ where: { id: order.id }, data: { otpLocked: false, otpAttempts: 0, otpCode: secureOtp() } });
+    await tx.order.update({ where: { id: order.id }, data: { otpLocked: false, otpAttempts: 0, otpCode: secureOtp(), otpExpiresAt:new Date(Date.now()+10*60000) } });
     return { order: await reload(tx, order.id), before: order, changed: true };
   });
   await writeAudit('OTP_UNLOCKED', 'ORDER', orderId, `Admin unlocked the gate OTP (was ${result.before.otpLocked ? 'locked' : 'not locked'}, ${result.before.otpAttempts} wrong attempts). The customer sees the new code in the app.`);

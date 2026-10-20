@@ -1,3 +1,4 @@
+import { ensureFixtureGeography } from '../harness/geography';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import supertest from 'supertest';
@@ -146,8 +147,10 @@ describe('Adversarial Security & Concurrency Stress Test Suite', () => {
       });
 
       const tokenDriver1 = driverToken;
-      const tokenDriver2 = jwt.sign({ id: 'usr-driver-2', phone: '+91 9999900003', role: 'DRIVER' }, DEFAULT_JWT_SECRET);
+      const tokenDriver2 = getDriverToken('usr-driver-2','+91 9999900003');
 
+      await ensureFixtureGeography('fixture',['usr-1'],['ven-1'],['usr-4','usr-driver-2']);
+      await request.get('/api/orders/available').set(getAuthHeader(tokenDriver1));
       // Send concurrent accept requests from two different drivers at the exact same millisecond
       const [res1, res2] = await Promise.all([
         request.post(`/api/orders/${orderId}/accept-driver`).set(getAuthHeader(tokenDriver1)).send({}),
@@ -159,7 +162,7 @@ describe('Adversarial Security & Concurrency Stress Test Suite', () => {
       const losers = [res1, res2].filter((r) => r.status === 409);
       expect(winners).toHaveLength(1);
       expect(losers).toHaveLength(1);
-      expect(losers[0].body.code).toBe('ALREADY_TAKEN');
+      expect(['ALREADY_TAKEN','OFFER_EXPIRED']).toContain(losers[0].body.code);
 
       const dbOrder = await prisma.order.findUnique({ where: { id: orderId } });
       expect(dbOrder?.driverId).toBe(winners[0] === res1 ? 'usr-4' : 'usr-driver-2');

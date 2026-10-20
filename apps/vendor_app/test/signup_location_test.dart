@@ -141,7 +141,7 @@ void main() {
     await pump(tester, FakeCapture([const CaptureResult.problem(LocationProblem.permissionDeniedForever)]));
     await tapKey(tester, button);
     await tapKey(tester, kLocationDetectKey);
-    expect(find.text('Location is blocked for Kraveo'), findsOneWidget);
+    expect(find.text('Location is blocked for DailyMarket'), findsOneWidget);
     expect(find.text('Try again'), findsOneWidget);
     await tapKey(tester, kLocationSkipKey);
     expect(find.text('Continue without'), findsNothing, reason: 'the sheet is closed');

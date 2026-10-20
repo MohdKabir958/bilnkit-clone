@@ -237,7 +237,7 @@ void main() {
       await _tapKey(tester, 'signup-button');
       await _settle(tester);
       expect(find.byKey(const ValueKey('signup-problem')), findsOneWidget);
-      expect(find.textContaining("Can't reach Kraveo"), findsOneWidget);
+      expect(find.textContaining("Can't reach DailyMarket"), findsOneWidget);
       expect(tester.widget<TextField>(find.byKey(const ValueKey('name-field'))).controller!.text, 'Sunil Verma'); // still there
 
       auth.onSignUp = (_) => const SignupResult.failure(SignupFailure.rateLimited);
@@ -276,7 +276,7 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('"Check status" asks Kraveo and, when still pending, says it will update by itself', (tester) async {
+    testWidgets('"Check status" asks DailyMarket and, when still pending, says it will update by itself', (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       final before = auth.profileCalls;

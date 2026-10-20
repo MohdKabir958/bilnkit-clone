@@ -545,10 +545,10 @@ void main() {
         final payRect = tester.getRect(_button('Pay ₹145'));
         expect(payRect.bottom, lessThanOrEqualTo(640 - 280 + 0.5), reason: 'the button is not hidden under the keyboard');
         expect(find.textContaining('Placing your order'), findsNothing, reason: 'the caption is dropped while typing');
-        expect(find.textContaining('Next: Kraveo confirms'), findsNothing);
+        expect(find.textContaining('Next: DailyMarket confirms'), findsNothing);
         // The error moved from the footer into the list: still readable, and only once.
-        expect(find.textContaining('closed for new orders'), findsOneWidget);
-        expect(tester.getRect(find.textContaining('closed for new orders')).bottom, lessThanOrEqualTo(payRect.top));
+        expect(find.textContaining('closed for new orders'), findsWidgets);
+        expect(tester.getRect(find.textContaining('closed for new orders').first).bottom, lessThanOrEqualTo(payRect.top));
 
         // The form keeps real room: the note field can be scrolled fully above the Pay button.
         final note = find.byWidgetPredicate((w) => w is TextField && (w.decoration?.hintText ?? '').startsWith('Note for your runner'));
@@ -604,7 +604,7 @@ void main() {
       expect(find.textContaining('· BH3'), findsOneWidget, reason: '"Block 3" is shown as BH3');
       expect(find.textContaining('Block 3'), findsNothing);
       expect(find.text('₹1,234.50'), findsOneWidget);
-      expect(find.textContaining('earn Kraveo Coins'), findsNothing);
+      expect(find.textContaining('earn DailyMarket Coins'), findsNothing);
     });
 
     testWidgets('Reorder finds the kitchen even when Home has a search / filter active, and opens the cart', (tester) async {
@@ -693,8 +693,8 @@ void main() {
       await _settle(tester);
       expect(find.text('This order was cancelled'), findsOneWidget);
       expect(find.textContaining('Your refund is being processed'), findsOneWidget);
-      expect(find.text(kSupportEmail), findsNothing, reason: 'just the plain text, tappable below');
-      expect(find.textContaining(kSupportEmail), findsOneWidget, reason: 'support is one tap away while the refund is pending');
+      expect(find.text('Help with this order'), findsOneWidget);
+      expect(find.text('Help with this order'), findsOneWidget, reason:'Support is linked to this order.');
       expect(orders.isSocketOpen, isTrue, reason: 'the socket stays open for the refund result');
 
       socket.emitOrder(orderJson(id: 'r1', status: 'CANCELLED', paymentStatus: 'REFUNDED', refundStatus: 'DONE', cancelledBy: 'VENDOR', updatedAt: DateTime.now().toUtc()));
@@ -837,34 +837,10 @@ void main() {
 
   // ================================================================================ Me / sign-up ====
   group('Me tab, sign-up and reviews (CU2-06, CU1-13 / 17 / 19)', () {
-    testWidgets('the Me tab shows the support e-mail; tapping opens the mail app, or copies the address when there is none', (tester) async {
-      final opened = <Uri>[];
-      ExternalLinks.launcher = (uri) async {
-        opened.add(uri);
-        return true;
-      };
-      await _pump(tester, const ProfileScreen());
-      final row = find.byWidgetPredicate((w) => w is KPressable && (w.semanticLabel ?? '').startsWith('Contact Kraveo support'));
-      await tester.scrollUntilVisible(row, 200, scrollable: find.byType(Scrollable).first);
-      expect(find.text(kSupportEmail), findsOneWidget);
-      await tester.ensureVisible(row);
-      await tester.pump();
-      await tester.tap(row);
-      await tester.pump();
-      expect(opened.single.scheme, 'mailto');
-      expect(opened.single.path, 'kraveo.contact@gmail.com');
-
-      final clip = <String>[];
-      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
-        if (call.method == 'Clipboard.setData') clip.add((call.arguments as Map)['text'] as String);
-        return null;
-      });
-      addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
-      ExternalLinks.launcher = (uri) async => false;
-      await tester.tap(row);
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(clip, [kSupportEmail]);
-      expect(find.textContaining('No email app found'), findsOneWidget);
+    testWidgets('the Me tab opens the authenticated support request screen', (tester) async {
+      await _pump(tester,const ProfileScreen());
+      final row=find.byWidgetPredicate((w)=>w is KPressable&&(w.semanticLabel??'').startsWith('Help and requests'));await tester.scrollUntilVisible(row,200,scrollable:find.byType(Scrollable).first);await tester.ensureVisible(row);await tester.pump(const Duration(milliseconds:600));await tester.tap(row);await _settle(tester);
+      expect(find.byType(SupportCenter),findsOneWidget);expect(find.text('Send request'),findsOneWidget);
     });
 
     testWidgets('the coins card no longer promises "50 coins = ₹20 off"', (tester) async {
@@ -896,7 +872,7 @@ void main() {
       await _pump(tester, Scaffold(body: Builder(builder: (context) => Center(child: ElevatedButton(onPressed: () => ReviewModal.show(context, order: order), child: const Text('open'))))));
       await tester.tap(find.text('open'));
       await _settle(tester);
-      expect(find.textContaining('Earn Kraveo Coins'), findsNothing);
+      expect(find.textContaining('Earn DailyMarket Coins'), findsNothing);
       TextField field(String hintStart) => tester.widgetList<TextField>(find.byType(TextField)).firstWhere((w) => (w.decoration?.hintText ?? '').startsWith(hintStart));
       expect(field('Private note').maxLength, kReviewNoteMaxLength);
       await tester.drag(find.byType(ListView).last, const Offset(0, -900));

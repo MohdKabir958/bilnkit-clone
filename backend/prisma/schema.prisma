@@ -87,6 +87,7 @@ model User {
   deviceTokens    DeviceToken[]
   payoutAccount   PayoutAccount?
   addresses       Address[]
+  supportCases    SupportCase[]
 }
 
 model Vendor {
@@ -94,8 +95,8 @@ model Vendor {
   userId            String?
   name              String
   category          String
-  rating            Float          @default(4.5)
-  totalRatingsCount Int            @default(50)
+  rating            Float          @default(0.0)
+  totalRatingsCount Int            @default(0)
   eta               String         @default("20-25 min")
   bannerImage       String
   address           String
@@ -150,7 +151,7 @@ model MenuItem {
   imageUrl    String
   isAvailable Boolean  @default(true)
   isVeg       Boolean  @default(true)
-  rating      Float?   @default(4.5)
+  rating      Float?   @default(0.0)
   ratingCount Int?     @default(0)
   createdAt   DateTime @default(now())
 
@@ -173,7 +174,7 @@ model MenuItem {
   updatedAt          DateTime           @default(now()) @updatedAt
 
   // Each menu row is one sellable SKU/pack; productKey groups variants inside this store.
-  imageUrls         String[] @default([])
+  imageUrls             String[]               @default([])
   sku                   String?
   productKey            String?
   unit                  String                 @default("pcs")
@@ -306,6 +307,16 @@ model Order {
   payments              Payment[]
   review                ReviewRecord?
 
+  pickupArrivalAt DateTime?
+  otpExpiresAt          DateTime?
+  dispatchRound         Int                  @default(0)
+  dispatchNote          String?
+  dispatchNextAttemptAt DateTime?
+  dispatchEscalatedAt   DateTime?
+  dispatchOffers        DispatchOffer[]
+  supportCases          SupportCase[]
+  notificationIntents   NotificationIntent[]
+
   @@unique([customerId, clientRequestId])
   @@unique([groupId, groupIndex])
   @@index([groupId])
@@ -398,8 +409,8 @@ model DriverPartner {
   ordersToday              Int            @default(0)
   totalEarningsToday       Float          @default(0.0)
   avgCompletionTimeMinutes Float          @default(0.0)
-  onTimeRatePercent        Float          @default(100.0)
-  rating                   Float          @default(5.0)
+  onTimeRatePercent        Float          @default(0.0)
+  rating                   Float          @default(0.0)
   upiId                    String?
   cityId                   String?
   approvalStatus           ApprovalStatus @default(APPROVED)
@@ -412,6 +423,12 @@ model DriverPartner {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
   city City? @relation(fields: [cityId], references: [id], onDelete: Restrict)
 
+  serviceZoneId String?
+  serviceZone   DeliveryZone?   @relation(fields: [serviceZoneId], references: [id], onDelete: SetNull)
+  lastOfferedAt DateTime?
+  offers        DispatchOffer[]
+
+  @@index([cityId, approvalStatus, dutyStatus])
   @@index([approvalStatus])
 }
 
@@ -443,6 +460,8 @@ model DeliveryZone {
   createdAt     DateTime         @default(now())
   city          City             @relation(fields: [cityId], references: [id], onDelete: Restrict)
   vendors       VendorCoverage[]
+
+  riders DriverPartner[]
 
   @@index([cityId, active])
 }
@@ -503,7 +522,7 @@ model ReviewRecord {
   customerId   String
   vendorId     String
   driverId     String?
-  driverRating Float    @default(5.0)
+  driverRating Float?
   driverTags   String[]
   driverNotes  String?
   dishReviews  Json
@@ -706,4 +725,68 @@ model StockMovement {
   item       MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
 
   @@index([menuItemId, createdAt])
+}
+
+model DispatchOffer {
+  id        String        @id @default(uuid())
+  orderId   String
+  driverId  String
+  round     Int           @default(0)
+  state     String        @default("PENDING")
+  expiresAt DateTime
+  reason    String?
+  manual    Boolean       @default(false)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @default(now()) @updatedAt
+  order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  driver    DriverPartner @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, driverId, round])
+  @@index([driverId, state, expiresAt])
+  @@index([orderId, state])
+}
+
+model SupportCase {
+  id          String        @id @default(uuid())
+  customerId  String
+  orderId     String?
+  subject     String
+  description String
+  status      String        @default("OPEN")
+  resolution  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @default(now()) @updatedAt
+  customer    User          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  order       Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  notes       SupportNote[]
+
+  @@index([customerId, createdAt])
+  @@index([status, createdAt])
+}
+
+model SupportNote {
+  id          String      @id @default(uuid())
+  caseId      String
+  actorId     String
+  message     String
+  createdAt   DateTime    @default(now())
+  supportCase SupportCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, createdAt])
+}
+
+model NotificationIntent {
+  id         String    @id @default(uuid())
+  orderId    String
+  event      String
+  options    Json
+  state      String    @default("PENDING")
+  attempts   Int       @default(0)
+  leaseUntil DateTime?
+  errorCode  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+  order      Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([state, leaseUntil, createdAt])
 }

@@ -13,12 +13,12 @@ import type { Actor } from './categories';
  * Location, commission, open / closed and payout details keep their own endpoints. Renaming never touches old orders (they read the live name).
  * Lock order: category rows (FOR SHARE, ascending id) -> the restaurant row -> (nothing else). The same body twice is a no-op (changed:false).
  */
-export const DEFAULT_BANNER_URL = 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600';
+export const DEFAULT_BANNER_URL = '';
 const PROFILE_KEYS = ['name', 'cuisineIds', 'address', 'bannerImage', 'fssaiNumber', 'eta'];
 const TX_OPTS = { maxWait: 10_000, timeout: 20_000 };
 const bad = (field: string, message: string, code = 'BAD_REQUEST') => new AppError(400, code, message, field);
 
-const checkText = (raw: unknown, field: string, label: string, min: number, max: number): string => {
+export const checkVendorProfileText = (raw: unknown, field: string, label: string, min: number, max: number): string => {
   if (typeof raw !== 'string') throw bad(field, `${label} must be text.`);
   const v = collapse(raw);
   if (/[<>]/.test(v) || BAD_LABEL_CHARS.test(raw.normalize('NFC'))) throw bad(field, `${label} cannot contain symbols like < > or hidden, control or direction-changing characters.`);
@@ -26,8 +26,8 @@ const checkText = (raw: unknown, field: string, label: string, min: number, max:
   return v;
 };
 
-const checkBanner = (raw: unknown): string => {
-  if (raw === null) return DEFAULT_BANNER_URL;
+export const checkVendorBanner = (raw: unknown): string => {
+  if (raw === null || raw === '') return DEFAULT_BANNER_URL;
   if (typeof raw !== 'string') throw bad('bannerImage', 'The banner must be a link (https://...) or null to use the default banner.');
   const v = raw.trim();
   let ok = v.length > 0 && v.length <= 500 && /^https?:\/\//i.test(v) && !/\s/.test(v);
@@ -70,7 +70,7 @@ export const editVendorProfile = async (vendorId: string, b: Record<string, unkn
     const data: Prisma.VendorUpdateInput = {};
     const notes: string[] = [];
     if (b.name !== undefined) {
-      const name = checkText(b.name, 'name', 'The restaurant name', 2, 60);
+      const name = checkVendorProfileText(b.name, 'name', 'The restaurant name', 2, 60);
       if (name !== before.name) {
         // Names of APPROVED restaurants are unique ignoring case and spacing. The advisory lock makes two parallel renames to the same name safe.
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('vendor-name-unique'))`;
@@ -83,11 +83,11 @@ export const editVendorProfile = async (vendorId: string, b: Record<string, unkn
       }
     }
     if (b.address !== undefined) {
-      const address = checkText(b.address, 'address', 'The address', 3, 140);
+      const address = checkVendorProfileText(b.address, 'address', 'The address', 3, 140);
       if (address !== before.address) { data.address = address; notes.push('address changed'); }
     }
     if (b.bannerImage !== undefined && b.bannerImage !== before.bannerImage) {
-      const banner = checkBanner(b.bannerImage);
+      const banner = checkVendorBanner(b.bannerImage);
       if (banner !== before.bannerImage) { data.bannerImage = banner; notes.push(b.bannerImage === null ? 'banner reset to the default' : 'banner changed'); }
     }
     if (b.fssaiNumber !== undefined) {

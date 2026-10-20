@@ -21,7 +21,7 @@ export const seedTestDatabase = async () => {
   // 1. Seed standard test users
   const student = await prisma.user.upsert({
     where: { phone: '+91 9876543210' },
-    update: { name: 'Rahul Sharma', role: Role.STUDENT, hostelBlock: 'Boys Hostel Block 3' },
+    update: {deletedAt:null,tokenVersion:0, name: 'Rahul Sharma', role: Role.STUDENT, hostelBlock: 'Boys Hostel Block 3' },
     create: {
       id: 'usr-1',
       name: 'Rahul Sharma',
@@ -34,7 +34,7 @@ export const seedTestDatabase = async () => {
 
   const vendorUser = await prisma.user.upsert({
     where: { phone: '+91 9876543212' },
-    update: { name: 'Ram Singh (Sharma Dhaba)', role: Role.VENDOR },
+    update: {deletedAt:null,tokenVersion:0, name: 'Ram Singh (Sharma Dhaba)', role: Role.VENDOR },
     create: {
       id: 'usr-3',
       name: 'Ram Singh (Sharma Dhaba)',
@@ -45,7 +45,7 @@ export const seedTestDatabase = async () => {
 
   const driverUser = await prisma.user.upsert({
     where: { phone: '+91 9876543213' },
-    update: { name: 'Vikram Singh (Runner)', role: Role.DRIVER },
+    update: {deletedAt:null,tokenVersion:0, name: 'Vikram Singh (Runner)', role: Role.DRIVER },
     create: {
       id: 'usr-4',
       name: 'Vikram Singh (Runner)',
@@ -56,7 +56,7 @@ export const seedTestDatabase = async () => {
 
   const adminUser = await prisma.user.upsert({
     where: { phone: '+91 9876543214' },
-    update: { name: 'Super Admin', role: Role.ADMIN },
+    update: {deletedAt:null,tokenVersion:0, name: 'Super Admin', role: Role.ADMIN },
     create: {
       id: 'usr-5',
       name: 'Super Admin',
@@ -73,7 +73,7 @@ export const seedTestDatabase = async () => {
       name: 'Sharma Highway Dhaba',
       category: 'North Indian • Thalis • Parathas',
       address: 'Ashta-Kothri Highway, 1.2km from VIT Bhopal Gate',
-      isAcceptingOrders: true
+      isAcceptingOrders: true,approvalStatus:'APPROVED'
     },
     create: {
       id: 'ven-1',
@@ -92,7 +92,7 @@ export const seedTestDatabase = async () => {
   // 3. Seed Menu Items
   const menuItem1 = await prisma.menuItem.upsert({
     where: { id: 'item-1' },
-    update: { vendorId: vendor.id, name: 'Special Shahi Paneer Thali', price: 180.0, vendorPrice: 180.0, stockQty: 10000, isAvailable: true },
+    update: { vendorId: vendor.id, name: 'Special Shahi Paneer Thali', price: 180.0, vendorPrice: 180.0, stockQty:10000,isAvailable:true,approvalStatus:'APPROVED',deletedAt:null,mrpPaise:null },
     create: {
       id: 'item-1',
       vendorId: vendor.id,
@@ -110,7 +110,7 @@ export const seedTestDatabase = async () => {
 
   const menuItem2 = await prisma.menuItem.upsert({
     where: { id: 'item-2' },
-    update: { vendorId: vendor.id, name: 'Aloo Pyaz Paratha (2 pcs)', price: 90.0, vendorPrice: 90.0, stockQty: 10000, isAvailable: true },
+    update: { vendorId: vendor.id, name: 'Aloo Pyaz Paratha (2 pcs)', price: 90.0, vendorPrice: 90.0, stockQty:10000,isAvailable:true,approvalStatus:'APPROVED',deletedAt:null,mrpPaise:null },
     create: {
       id: 'item-2',
       vendorId: vendor.id,
@@ -138,7 +138,7 @@ export const seedTestDatabase = async () => {
       userId: driverUser.id,
       name: 'Vikram Singh',
       phone: driverUser.phone ?? "+91 9876543213",
-      dutyStatus: DutyStatus.ONLINE
+      dutyStatus: DutyStatus.ONLINE,approvalStatus:'APPROVED',lastOfferedAt:null
     },
     create: {
       id: 'usr-4',
@@ -155,11 +155,12 @@ export const seedTestDatabase = async () => {
     }
   });
 
-  await ensureFixtureGeography('seed', [student.id], [vendor.id]);
+  await ensureFixtureGeography('seed', [student.id], [vendor.id], [driverUser.id]);
   return { student, vendorUser, driverUser, adminUser, vendor, menuItem1, menuItem2 };
 };
 
 export const cleanTestOrders = async () => {
+  await (await import('../../src/services/push/pushService')).__waitForPushWork();
   // Delete test created orders/payments/orderItems
   await prisma.payment.deleteMany({});
   await prisma.orderItem.deleteMany({});

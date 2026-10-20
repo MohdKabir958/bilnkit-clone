@@ -4,6 +4,7 @@
  * what customers can and cannot reach, the admin catalog endpoints, the commission engine through the API, recalculate, race safety,
  * rate limits and audit rows.
  */
+import { ensureFixtureGeography } from '../harness/geography';
 import { randomUUID } from 'crypto';
 import supertest from 'supertest';
 import { Role } from '@prisma/client';
@@ -62,6 +63,7 @@ describe('Pricing and catalog (phase 1)', () => {
   const liveDish = async (vendorPrice: number, extra: Record<string, unknown> = {}) => {
     const r = await adminPost('/api/admin/catalog', { vendorId: V1.vendorId, name: `Live ${randomUUID().slice(0, 6)}`, vendorPrice, ...extra });
     expect(r.status).toBe(201);
+    if(r.status<300&&r.body.data?.id)await prisma.menuItem.update({where:{id:r.body.data.id},data:{stockQty:10000}});
     return r.body.data as any;
   };
 
@@ -83,6 +85,7 @@ describe('Pricing and catalog (phase 1)', () => {
       });
     }
     await prisma.user.update({ where: { id: STUDENT.id }, data: { name: 'Rahul Sharma', phone: STUDENT.phone, hostelBlock: 'Block 3' } });
+    await ensureFixtureGeography('pc',[STUDENT.id],[V1.vendorId,V2.vendorId,PENDING_V.vendorId]);
     server = await startTestServer(0);
     request = supertest(server.app);
   });
@@ -336,6 +339,7 @@ describe('Pricing and catalog (phase 1)', () => {
       expect(await dbItem(id)).toMatchObject({ vendorPrice: 120, pendingVendorPrice: null, approvalStatus: 'PENDING' });
       // approve -> LIVE at 132
       await adminPost(`/api/admin/catalog/${id}/approve`);
+      await prisma.menuItem.update({where:{id},data:{stockQty:100}});
       expect(await dbItem(id)).toMatchObject({ approvalStatus: 'APPROVED', vendorPrice: 120, price: 132 });
       // LIVE: a request; the customer price and the vendor price stay
       r = await patchDish(tV1, id, { price: 150 });
@@ -484,6 +488,7 @@ describe('Pricing and catalog (phase 1)', () => {
       const id = (await addDish(tV1, V1.vendorId, { name: 'Lifecycle', price: 90 })).body.data.id as string;
       expect((await order([{ itemId: id, quantity: 1 }])).status).toBe(400);
       await adminPost(`/api/admin/catalog/${id}/approve`);
+      await prisma.menuItem.update({where:{id},data:{stockQty:100}});
       const placed = await order([{ itemId: id, quantity: 2 }]);
       expect([placed.status, placed.body.data.subtotal, placed.body.data.totalAmount]).toEqual([201, 180, 205]);
       await adminDel(`/api/admin/catalog/${id}`);
@@ -618,6 +623,7 @@ describe('Pricing and catalog (phase 1)', () => {
       expect((await dbItem(id)).approvalStatus).toBe('PENDING');
       // on a request, applyPending:false is not a way to decline
       await adminPost(`/api/admin/catalog/${id}/approve`);
+      await prisma.menuItem.update({where:{id},data:{stockQty:100}});
       await patchDish(tV1, id, { price: 500 });
       const r = await adminPost(`/api/admin/catalog/${id}/approve`, { applyPending: false });
       expect([r.status, r.body.code]).toEqual([409, 'USE_REJECT']);
@@ -650,6 +656,7 @@ describe('Pricing and catalog (phase 1)', () => {
       expect(await audits('DISH_REJECTED', id)).toHaveLength(1);
       expect((await adminPost(`/api/admin/catalog/${id}/reject`, { reason: 'Different reason' })).body.changed).toBe(true); // reason updated
       await adminPost(`/api/admin/catalog/${id}/approve`);
+      await prisma.menuItem.update({where:{id},data:{stockQty:100}});
       const live = await adminPost(`/api/admin/catalog/${id}/reject`, { reason: 'Changed my mind' });
       expect([live.status, live.body.code]).toEqual([409, 'NOT_PENDING']);
       await adminDel(`/api/admin/catalog/${id}`);

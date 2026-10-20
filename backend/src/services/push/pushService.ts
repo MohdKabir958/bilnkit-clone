@@ -113,10 +113,10 @@ const deliver = async (provider: PushProvider, row: LogRow, order: OrderWithRela
  * Resolve the recipients of `event` for the order, claim one PushLog row per (order, event, user) and send.
  * Resolves when done; never rejects.
  */
-export const notifyOrderEvent = async (orderId: string, event: PushEvent, opts: PushOptions = {}): Promise<void> => {
+export const notifyOrderEvent = async (orderId: string, event: PushEvent, opts: PushOptions = {}, strict=false): Promise<void> => {
   try {
     const provider = getPushProvider();
-    if (!provider.enabled) return;
+    if (!provider.enabled) { if(strict) throw Object.assign(new Error('Push provider unavailable'),{code:'PROVIDER_UNAVAILABLE'}); return; }
     const order = await loadOrderForPush(orderId);
     if (!order) return;
     const userIds = [...new Set(await resolveRecipients(event, order, opts))];
@@ -136,10 +136,12 @@ export const notifyOrderEvent = async (orderId: string, event: PushEvent, opts: 
         await deliver(provider, row, order, now);
       } catch (err) {
         logError('delivery', event, orderId, err);
+        if(strict) throw err;
       }
     });
   } catch (err) {
     logError('dispatch', event, orderId, err);
+    if(strict) throw err;
   }
 };
 
@@ -159,6 +161,7 @@ export const queuePush = (orderId: string, event: PushEvent, opts: PushOptions =
 };
 
 export const __waitForPushWork = async () => {
+  await (await import('./intents')).waitForNotificationIntents();
   while (inFlight.size > 0) await Promise.allSettled([...inFlight]);
 };
 
@@ -237,43 +240,8 @@ export const sweepMissedPushes = async (now: Date = new Date()): Promise<number>
       await notifyOrderEvent(o.id, 'NEW_ORDER_REMINDER', { bucket: minutes });
     }
   }
-  // 2) NEW_DELIVERY: food waiting for a rider (ready, unclaimed, last 30 min): riders who are idle now and never heard about it are told.
-  // Docs/22: a child of a combined order is never announced on its own (groupId null here); the group is announced once, below.
-  const waiting = await prisma.order.findMany({
-    where: { status: 'READY_FOR_PICKUP', driverId: null, paymentStatus: 'PAID', groupId: null, updatedAt: { gte: new Date(now.getTime() - 30 * 60_000) } },
-    select: { id: true },
-    orderBy: { updatedAt: 'asc' },
-    take: 10,
-  });
-  for (const o of waiting) {
-    looked += 1;
-    await notifyOrderEvent(o.id, 'NEW_DELIVERY');
-  }
-  // 2b) The same for combined orders: claimable as a whole (every child paid, cooking or ready, nobody assigned) with food ready somewhere.
-  // The push is addressed to the primary child, so one PushLog key per rider covers the whole group.
-  const waitingGroups = await prisma.order.findMany({
-    where: {
-      groupIndex: 0,
-      paymentStatus: 'PAID',
-      driverId: null,
-      status: { in: ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP'] },
-      group: {
-        is: {
-          orders: {
-            none: { OR: [{ paymentStatus: { not: 'PAID' } }, { driverId: { not: null } }, { status: { notIn: ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP'] } }] },
-            some: { status: 'READY_FOR_PICKUP', updatedAt: { gte: new Date(now.getTime() - 30 * 60_000) } },
-          },
-        },
-      },
-    },
-    select: { id: true },
-    orderBy: { updatedAt: 'asc' },
-    take: 10,
-  });
-  for (const o of waitingGroups) {
-    looked += 1;
-    await notifyOrderEvent(o.id, 'NEW_DELIVERY');
-  }
+  // Personal delivery offers are staged transactionally by dispatch.ts. Replaying the
+  // old shared-pool sweep would create another push key for the same offer.
   return looked;
 };
 

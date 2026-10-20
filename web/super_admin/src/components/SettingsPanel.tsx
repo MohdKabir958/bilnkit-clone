@@ -154,7 +154,7 @@ const FeesCard: React.FC<{ raw: Raw; onSaved: (raw: Raw, outcome: Outcome) => vo
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="All-in fee per order (₹)" htmlFor="fee-base" required error={err('baseFee')} hint="One line for the customer: delivery, GST, packaging and the restaurant charge together.">{input('baseFee', 'fee-base')}</Field>
+        <Field label="All-in fee per order (₹)" htmlFor="fee-base" required error={err('baseFee')} hint="Delivery coverage sets each active zone’s base rate. Free-delivery and small-order policies below apply to the whole checkout.">{input('baseFee', 'fee-base')}</Field>
         <Field label="Extra fee for each additional restaurant (₹)" htmlFor="fee-extra" required error={err('extraRestaurantFee')} hint={`Added once for every restaurant after the first in a combined order (0 to ${MAX_EXTRA_RESTAURANT_FEE}). Example: ₹15 and 3 restaurants adds ₹30 on top of the all-in fee. Not used while combined orders are off.`}>{input('extraRestaurantFee', 'fee-extra')}</Field>
       </div>
 

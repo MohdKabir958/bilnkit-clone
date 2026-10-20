@@ -190,6 +190,7 @@ class OrderView {
     required this.status,
     this.group,
     this.groupParts = const [],
+    this.offerId, this.offerExpiresAt,
     this.paymentStatus,
     this.totalAmount,
     this.deliveryFee,
@@ -221,6 +222,8 @@ class OrderView {
   final List<OrderView> groupParts;
 
   /// `PENDING | PAID | FAILED | REFUNDED` (upper case), or null when the server did not say.
+  final String? offerId;
+  final DateTime? offerExpiresAt;
   final String? paymentStatus;
   final double? totalAmount;
   final double? deliveryFee;
@@ -463,6 +466,8 @@ class OrderView {
       id: id,
       status: OrderStatus.parse(raw['status']),
       group: _group(raw['group']),
+      offerId: raw['dispatchOffer'] is Map ? _str(raw['dispatchOffer']['id']) : null,
+      offerExpiresAt: raw['dispatchOffer'] is Map ? _date(raw['dispatchOffer']['expiresAt']) : null,
       paymentStatus: raw['paymentStatus']?.toString().toUpperCase(),
       totalAmount: _num(raw['totalAmount']),
       deliveryFee: _num(raw['deliveryFee']),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../services/product_api.dart';
 
 class ProductInventoryScreen extends StatefulWidget {
@@ -373,6 +374,38 @@ class _ProductEditorState extends State<ProductEditor> {
         int.parse((p.length == 1 ? '' : p[1]).padRight(2, '0'));
   }
 
+  Future<void> uploadImage() async {
+    if (saving) return;
+    try {
+      final image = await ImagePicker().pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 2400,
+          maxHeight: 2400,
+          imageQuality: 85);
+      if (image == null || !mounted) return;
+      setState(() => saving = true);
+      final bytes = await image.readAsBytes();
+      if (bytes.length > 1024 * 1024) {
+        throw Exception('Choose a photo smaller than 1 MB.');
+      }
+      final mime = bytes.length > 3 && bytes[0] == 0xff && bytes[1] == 0xd8
+          ? 'image/jpeg'
+          : bytes.length > 8 && bytes[0] == 0x89
+              ? 'image/png'
+              : 'image/webp';
+      final url = await widget.api.uploadImage(bytes, mime);
+      if (mounted) {
+        fields['imageUrls']!.text = [fields['imageUrls']!.text.trim(), url]
+            .where((s) => s.isNotEmpty)
+            .join('\n');
+      }
+    } catch (e) {
+      if (mounted) setState(() => error = '$e');
+    } finally {
+      if (mounted) setState(() => saving = false);
+    }
+  }
+
   Future<void> save({bool variant = false}) async {
     if (!form.currentState!.validate() || saving) return;
     setState(() {
@@ -435,6 +468,10 @@ class _ProductEditorState extends State<ProductEditor> {
           child: ListView(padding: const EdgeInsets.all(16), children: [
             if (error != null)
               Text(error!, style: const TextStyle(color: Colors.red)),
+            OutlinedButton.icon(
+                onPressed: saving ? null : uploadImage,
+                icon: const Icon(Icons.add_photo_alternate),
+                label: const Text('Upload an owned product photo')),
             for (final entry in {
               'name': 'Product name',
               'sku': 'Unique SKU',

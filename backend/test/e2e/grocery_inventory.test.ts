@@ -164,7 +164,7 @@ describe('Grocery SKU inventory and independent store orders', () => {
   });
   test('delivery consumes reserved packs; an admin cancellation after pickup records loss without restocking', async () => {
     const rider=await prisma.user.create({data:{name:'Grocery Rider',role:'DRIVER'}});users.push(rider.id);
-    await prisma.driverPartner.create({data:{userId:rider.id,name:'Grocery Rider',phone:'9000000059',runnerCode:tag,vehicleType:'Bike',dutyStatus:'ONLINE',cityId:`${tag}-city`}});
+    await prisma.driverPartner.create({data:{userId:rider.id,name:'Grocery Rider',phone:'9000000059',runnerCode:tag,vehicleType:'Bike',dutyStatus:'ONLINE',cityId:`${tag}-city`,serviceZoneId:`${tag}-zone`}});
     const riderToken=generateTestToken({id:rider.id,role:'DRIVER',phone:'9000000059'});
     for(const delivered of [true,false]) {
       const itemId=products[1][delivered?11:12].id;
@@ -218,4 +218,22 @@ describe('Grocery SKU inventory and independent store orders', () => {
     const old = await prisma.orderItem.findFirstOrThrow({ where: { menuItemId: m.id } });
     expect(old.productSnapshot).toMatchObject({ packSize: '500', pricePaise: 6545 });
   });
+  test('zone rates honor checkout-wide free delivery and one small-order surcharge; quotes match immutable charges',async()=>{
+    const feeSettings=(body:object)=>req.put('/api/admin/settings/fees').set(h(admin)).send(body);
+    const restaurants=[0,1].map((i)=>({vendorId:vendors[i],items:[{itemId:products[i][26].id,quantity:1}]}));
+    await prisma.order.updateMany({where:{customerId:{in:users},status:'PLACED',paymentStatus:'PENDING'},data:{status:'CANCELLED'}});
+    await prisma.deliveryZone.updateMany({where:{cityId:`${tag}-city`},data:{baseFeePaise:2500}});
+    try {
+      expect((await feeSettings({freeFeeAbove:100,smallOrderBelow:0,smallOrderFee:0})).status).toBe(200);
+      const free=await req.post('/api/v1/orders/quote').set(h(second)).send({restaurants});expect(free.status).toBe(200);expect(free.body.data.fees.total).toBe(0);
+      const placed=await req.post('/api/v1/order-groups').set(h(second)).send({restaurants,clientRequestId:randomUUID()});expect(placed.status).toBe(201);expect(placed.body.data.total).toBe(free.body.data.total);expect(placed.body.data.orders.map((o:any)=>o.deliveryFee)).toEqual([0,0]);
+      expect((await feeSettings({freeFeeAbove:0,smallOrderBelow:200,smallOrderFee:12.5})).status).toBe(200);
+      const small=await req.post('/api/v1/orders/quote').set(h(second)).send({restaurants});expect(small.status).toBe(200);expect(small.body.data.fees.total).toBe(62.5);
+      expect((await req.get(`/api/orders/${placed.body.data.orders[0].id}`).set(h(second))).body.data.deliveryFee).toBe(0);
+      await req.post(`/api/orders/${placed.body.data.orders[0].id}/cancel`).set(h(second)).send({reason:'Verify next fee policy'});
+      const charged=await req.post('/api/v1/order-groups').set(h(second)).send({restaurants,clientRequestId:randomUUID()});expect(charged.status).toBe(201);expect(charged.body.data.total).toBe(small.body.data.total);expect(charged.body.data.orders.reduce((sum:number,o:any)=>sum+o.deliveryFee,0)).toBe(62.5);
+      const single=await req.post('/api/v1/orders/quote').set(h(customer)).send({restaurants:[restaurants[0]]});expect(single.status).toBe(200);expect(single.body.data.fees.total).toBe(37.5);
+    }finally{await feeSettings({freeFeeAbove:0,smallOrderBelow:0,smallOrderFee:0});}
+  });
+
 });

@@ -6,6 +6,7 @@ class BrandConfig {
   static const vendorName = "DailyMarket Vendor";
   static const driverName = "DailyMarket Delivery";
   static const logoAsset = "";
+  static const supportEmail = "";
   static const primary = 0xFF075219;
   static const accent = 0xFFFFD600;
 }

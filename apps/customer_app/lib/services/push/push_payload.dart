@@ -1,8 +1,12 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:convert';
 
 /// The customer push events of Docs/18 (section 4). The server decides who gets which event;
 /// the app only reacts to these and ignores anything else.
 enum PushEvent {
+  orderPlaced('ORDER_PLACED'),
+  orderPreparing('ORDER_PREPARING'),
+  riderAssigned('RIDER_ASSIGNED_CUSTOMER'),
   orderAccepted('ORDER_ACCEPTED'),
   orderReady('ORDER_READY'),
   orderPickedUp('ORDER_PICKED_UP'),
@@ -33,22 +37,28 @@ enum PushEvent {
   /// Fallback copy for a locally shown banner when the message carries no notification block.
   /// Never contains the gate OTP (it is only shown inside the app).
   String get fallbackTitle => switch (this) {
+        orderPlaced => 'Order placed',
+        orderPreparing => 'Packing your order',
+        riderAssigned => 'Delivery partner assigned',
         orderAccepted => 'Order accepted',
-        orderReady => 'Food is ready',
+        orderReady => 'Order is packed',
         orderPickedUp => 'On the way',
-        riderAtGate => 'Your rider is at the gate',
+        riderAtGate => 'Your rider has arrived',
         orderDelivered => 'Delivered',
         orderCancelled => 'Order cancelled',
         refundProcessed => 'Refund processed',
       };
 
   String get fallbackBody => switch (this) {
-        orderAccepted => 'Your food is being prepared.',
+        orderPlaced => 'Your order has been saved. Complete payment to confirm it.',
+        orderPreparing => 'Your store is packing your items.',
+        riderAssigned => 'Open the app to follow your delivery.',
+        orderAccepted => 'Your store has accepted the order.',
         orderReady => 'Waiting for a rider.',
         orderPickedUp => 'Your order is on its way.',
-        riderAtGate => 'Open Kraveo to see your code.',
-        orderDelivered => 'Enjoy your meal! Rate your order.',
-        orderCancelled => 'Open Kraveo for details.',
+        riderAtGate => 'Open ${BrandConfig.name} to see your delivery code.',
+        orderDelivered => 'Your items are here. Rate your order.',
+        orderCancelled => 'Open ${BrandConfig.name} for details.',
         refundProcessed => 'Your refund is on its way.',
       };
 }

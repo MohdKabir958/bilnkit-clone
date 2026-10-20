@@ -4,6 +4,11 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUTPUT_DIR="$ROOT_DIR/build/apks"
+: "${API_BASE_URL:?Set an owned HTTPS API_BASE_URL including /api}"
+[[ "$API_BASE_URL" == https://*/api ]] || { echo 'API_BASE_URL must use HTTPS and end in /api.' >&2; exit 1; }
+: "${GOOGLE_SERVER_CLIENT_ID:?Set the owned Google web OAuth client ID for customer sign-in}"
+: "${SOCKET_URL:?Set an owned HTTPS SOCKET_URL}"
+[[ "$SOCKET_URL" == https://* ]] || exit 1
 mkdir -p "$OUTPUT_DIR"
 python3 "$ROOT_DIR/scripts/configure_brand.py" --check
 BRAND_NAME="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["name"])' "$ROOT_DIR/branding/brand.json")"
@@ -23,7 +28,7 @@ build_app() {
 
   (
     cd "$ROOT_DIR/$app_dir"
-    flutter build apk --release
+    flutter build apk --release --dart-define="API_BASE_URL=$API_BASE_URL" --dart-define="SOCKET_URL=$SOCKET_URL" --dart-define="GOOGLE_SERVER_CLIENT_ID=$GOOGLE_SERVER_CLIENT_ID"
   )
 
   source_apk="$ROOT_DIR/$app_dir/build/app/outputs/flutter-apk/app-release.apk"

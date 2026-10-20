@@ -8,6 +8,7 @@ import 'package:driver_app/services/location_source.dart';
 import 'package:driver_app/services/rider_orders_api.dart';
 import 'package:driver_app/state/rider_controller.dart';
 import 'support/fake_rider.dart';
+import 'package:driver_app/models/order_view.dart';
 
 /// Docs/19 section 4: while ON duty the rider's position is streamed (a foreground service on
 /// Android) and posted about every 10 s; nothing runs when OFFLINE. Against fakes: the real
@@ -17,7 +18,8 @@ void main() {
   late RiderController c;
   var booted = false;
 
-  Future<void> boot({bool onDutyPref = false}) async {
+  Future<void> boot({bool onDutyPref = false,bool active=true}) async {
+    if(active)f.api.active=ApiResult.ok([OrderView.tryParse(orderJson(status:'ACCEPTED',driverId:'u-rider'))!]);
     SharedPreferences.setMockInitialValues({if (onDutyPref) RiderController.dutyPrefKey: true});
     c = RiderController(f.services, myIds: const {'u-rider'});
     booted = true;
@@ -35,9 +37,9 @@ void main() {
     if (booted) c.dispose();
   });
 
-  group('foreground-service stream follows duty', () {
-    test('OFFLINE: no stream, no service, no position posts', () async {
-      await boot();
+  group('foreground-service stream follows active assignments', () {
+    test('OFFLINE without a delivery: no stream, no service, no position posts', () async {
+      await boot(active:false);
       await flush();
       expect(f.location.trackStarts, 0);
       expect(f.location.tracking, isFalse);
@@ -49,6 +51,10 @@ void main() {
       expect(f.api.locations, isEmpty);
     });
 
+    test('ONLINE while idle does not ask for GPS or start a foreground service', () async {
+      await boot(active:false);await c.setDuty(true);await flush();
+      expect(c.onDuty,isTrue);expect(c.sharingLocation,isFalse);expect(f.location.trackStarts,0);expect(f.api.locations,isEmpty);
+    });
     test('going ON: first reading is posted at once, then the stream starts (service on)', () async {
       await boot();
       await c.setDuty(true);
@@ -85,6 +91,8 @@ void main() {
       await flush();
       f.location.emit(fix(23.07, 76.86));
       expect(c.myPosition.value, isNotNull);
+      f.api.active=const ApiResult.ok([]);
+      await c.pollNow();
       await c.setDuty(false);
       await flush();
       expect(f.location.trackStops, 1);
@@ -132,9 +140,9 @@ void main() {
       expect(f.location.tracking, isTrue);
     });
 
-    test('duty ON refused by the server: nothing is streamed', () async {
+    test('duty ON refused without a delivery: nothing is streamed', () async {
       f.api.onDuty = (_) => const ApiResult.fail(ApiFailure.offline);
-      await boot();
+      await boot(active:false);
       await c.setDuty(true);
       await flush();
       expect(c.onDuty, isFalse);
@@ -256,6 +264,8 @@ void main() {
       final n = f.api.locations.length;
       await Future<void>.delayed(const Duration(milliseconds: 90));
       expect(f.api.locations.length, greaterThan(n), reason: 'the 20 ms timer keeps posting');
+      f.api.active=const ApiResult.ok([]);
+      await c.pollNow();
       await c.setDuty(false);
       final m = f.api.locations.length;
       await Future<void>.delayed(const Duration(milliseconds: 60));
@@ -269,6 +279,8 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 90));
       expect(f.location.trackStarts, 0);
       expect(f.api.locations.length, greaterThanOrEqualTo(2));
+      f.api.active=const ApiResult.ok([]);
+      await c.pollNow();
       await c.setDuty(false);
       final n = f.api.locations.length;
       await Future<void>.delayed(const Duration(milliseconds: 60));
@@ -285,8 +297,8 @@ void main() {
       expect(a.accuracy, LocationAccuracy.high);
       expect(a.timeLimit, isNull, reason: 'a time limit would end the stream');
       final n = a.foregroundNotificationConfig!;
-      expect(n.notificationTitle, 'Kraveo - you are on duty');
-      expect(n.notificationText, 'Sharing your location with Kraveo');
+      expect(n.notificationTitle, 'DailyMarket - you are on duty');
+      expect(n.notificationText, 'Sharing your location with DailyMarket');
       expect(n.setOngoing, isTrue);
       expect(n.enableWakeLock, isFalse);
       expect(n.enableWifiLock, isFalse);

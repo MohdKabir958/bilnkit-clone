@@ -1,9 +1,10 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Where students write to Kraveo (decided by the owner; shown wherever the app says "contact
 /// Kraveo support").
-const String kSupportEmail = 'kraveo.contact@gmail.com';
+const String kSupportEmail = BrandConfig.supportEmail;
 
 /// Opens `tel:` and `mailto:` links through the phone's own apps. Every method answers
 /// "did something open?" and never throws, so callers can fall back to copying the text.
@@ -34,7 +35,7 @@ class ExternalLinks {
 
   /// Opens the mail app addressed to support.
   static Future<bool> emailSupport({String? subject}) =>
-      open(Uri(scheme: 'mailto', path: kSupportEmail, queryParameters: subject == null ? null : {'subject': subject}));
+      kSupportEmail.isEmpty ? Future.value(false) : open(Uri(scheme: 'mailto', path: kSupportEmail, queryParameters: subject == null ? null : {'subject': subject}));
 
   /// Keeps only what a dialer needs: digits and a leading plus ("+91 98765-43210" -> "+919876543210").
   static String dialableNumber(String raw) {

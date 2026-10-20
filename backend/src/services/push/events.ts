@@ -13,6 +13,12 @@ const URGENT = { ttlSeconds: 120, usefulMinutes: 10 };
 const STATUS = { ttlSeconds: 3600, usefulMinutes: 30 };
 
 const DEFS: Record<PushEvent, Def> = {
+  RIDER_AT_PICKUP:{app:'VENDOR',channelId:'order_updates',priority:'high',...URGENT},
+  PICKUP_READY:{app:'DRIVER',channelId:'order_updates',priority:'high',...URGENT},
+  ORDER_PLACED:{app:'CUSTOMER',channelId:'order_updates',priority:'normal',...STATUS},
+  ORDER_PREPARING:{app:'CUSTOMER',channelId:'order_updates',priority:'normal',...STATUS},
+  RIDER_ASSIGNED_CUSTOMER:{app:'CUSTOMER',channelId:'order_updates',priority:'normal',...STATUS},
+  RIDER_ASSIGNED_VENDOR:{app:'VENDOR',channelId:'order_updates',priority:'normal',...STATUS},
   NEW_ORDER: { app: 'VENDOR', channelId: 'new_orders', priority: 'high', ...URGENT },
   // Sent by the sweep once a minute while a paid order is still unanswered (the phone alarm only rings for a moment per push).
   NEW_ORDER_REMINDER: { app: 'VENDOR', channelId: 'new_orders', priority: 'high', ...URGENT },
@@ -67,6 +73,8 @@ const refundedPaise = (o: OrderWithRelations): number => {
 export const buildCopy = (event: PushEvent, o: OrderWithRelations): { title: string; body: string } => {
   const vendor = safeText(o.vendor.name, 40) || 'The restaurant';
   switch (event) {
+    case 'RIDER_AT_PICKUP': return {title:'Rider at pickup',body:'The assigned delivery partner has arrived to collect this order.'};
+    case 'PICKUP_READY': return {title:'Pickup ready',body:'The store has packed this order. Open the app to collect it.'};
     case 'NEW_ORDER': {
       const n = o.items.reduce((sum, i) => sum + i.quantity, 0);
       // Docs/21: the restaurant is told what it earns, never the customer's total.
@@ -84,6 +92,10 @@ export const buildCopy = (event: PushEvent, o: OrderWithRelations): { title: str
         return { title: 'Order cancelled', body: `Order ${orderRef(o.id)} was cancelled: another restaurant could not take this combined order.` };
       }
       return { title: 'Order cancelled', body: `Order ${orderRef(o.id)} was cancelled.` };
+    case 'ORDER_PLACED': return {title:'Order created',body:'Complete payment in the app to send your order to the store.'};
+    case 'ORDER_PREPARING': return {title:'Preparing your order',body:'The store is packing your items.'};
+    case 'RIDER_ASSIGNED_CUSTOMER': return {title:'Delivery partner assigned',body:'Your order has a delivery partner. Open the app for updates.'};
+    case 'RIDER_ASSIGNED_VENDOR': return {title:'Delivery partner assigned',body:'A delivery partner will collect this order.'};
     case 'NEW_DELIVERY':
       return { title: 'New delivery', body: `${placeLabel(o, vendor)} to ${safeText(o.addressSnapshot ? `${(o.addressSnapshot as any).locality}, ${(o.addressSnapshot as any).city}` : o.dropoffHostel, 30)}. Tap to accept.` };
     case 'DELIVERY_ASSIGNED':
@@ -91,15 +103,15 @@ export const buildCopy = (event: PushEvent, o: OrderWithRelations): { title: str
     case 'DELIVERY_CANCELLED':
       return { title: 'Delivery cancelled', body: `Order ${orderRef(o.id)} was cancelled.` };
     case 'ORDER_ACCEPTED':
-      return { title: 'Order accepted', body: `${vendor} is preparing your food.` };
+      return { title: 'Order accepted', body: `${vendor} is preparing your order.` };
     case 'ORDER_READY':
-      return { title: 'Food is ready', body: 'Waiting for a rider.' };
+      return { title: 'Order is ready', body: 'Waiting for a rider.' };
     case 'ORDER_PICKED_UP':
       return { title: 'On the way', body: `${firstName(o.driver?.name) || 'Your rider'} picked up your order.` };
     case 'RIDER_AT_GATE':
       return { title: 'Your rider has arrived', body: 'Open the app to see your delivery code.' };
     case 'ORDER_DELIVERED':
-      return { title: 'Delivered', body: 'Enjoy your meal! Rate your order.' };
+      return { title: 'Delivered', body: 'Your order has arrived. Rate your delivery.' };
     case 'ORDER_CANCELLED': {
       const reason = safeText(realCancelReason(o), 80).replace(/[.\s]+$/, '') || 'Your order was cancelled';
       const paid = o.paymentStatus === 'PAID' || o.paymentStatus === 'REFUNDED';
@@ -137,9 +149,12 @@ export const resolveRecipients = async (event: PushEvent, o: OrderWithRelations,
     case 'NEW_ORDER_REMINDER':
     case 'ORDER_CANCELLED_VENDOR':
     case 'GROUP_READY_TO_COOK':
+    case 'RIDER_AT_PICKUP':
+    case 'RIDER_ASSIGNED_VENDOR':
       return o.vendor.userId && o.vendor.approvalStatus === 'APPROVED' ? [o.vendor.userId] : [];
     case 'NEW_DELIVERY':
-      return idleRiders();
+      return (await prisma.dispatchOffer.findMany({where:{orderId:o.id,state:'PENDING',expiresAt:{gt:new Date()},driver:{approvalStatus:'APPROVED',dutyStatus:'ONLINE',...(opts.userId?{userId:opts.userId}:{})}},select:{driver:{select:{userId:true}}}})).map((f)=>f.driver.userId).filter((id):id is string=>!!id);
+    case 'PICKUP_READY': return o.driverId ? approvedRider(o.driverId) : [];
     case 'DELIVERY_ASSIGNED':
     case 'DELIVERY_CANCELLED':
       return opts.userId ? approvedRider(opts.userId) : [];
@@ -150,6 +165,11 @@ export const resolveRecipients = async (event: PushEvent, o: OrderWithRelations,
 
 /** Retries only make sense while the news is still true (a vendor is not alarmed about an order someone else already handled). */
 export const stillUseful = (event: PushEvent, o: OrderWithRelations): boolean => {
+  if(event==='RIDER_AT_PICKUP') return !!o.pickupArrivalAt&&!!o.driverId&&['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(o.status);
+  if(event==='PICKUP_READY') return !!o.driverId&&o.status==='READY_FOR_PICKUP';
+  if(event==='ORDER_PLACED') return o.status==='PLACED'&&['PENDING','FAILED'].includes(o.paymentStatus);
+  if(event==='ORDER_PREPARING') return o.status==='PREPARING';
+  if(event==='RIDER_ASSIGNED_CUSTOMER'||event==='RIDER_ASSIGNED_VENDOR') return !!o.driverId&&(ACTIVE_RIDER_STATUSES as readonly string[]).includes(o.status);
   if (event === 'NEW_ORDER' || event === 'NEW_ORDER_REMINDER') return o.status === 'PLACED' && o.paymentStatus === 'PAID';
   if (event === 'NEW_DELIVERY') return isPoolEligible(o);
   if (event === 'GROUP_READY_TO_COOK') return o.status === 'ACCEPTED';
@@ -177,6 +197,7 @@ export const pushEventsForChange = (
   if (flags.newOrderAlert) out.push({ event: 'NEW_ORDER' });
   if (before.status !== after.status) {
     switch (after.status) {
+      case 'PREPARING': out.push({event:'ORDER_PREPARING'});break;
       case 'ACCEPTED': out.push({ event: 'ORDER_ACCEPTED' }); break;
       case 'READY_FOR_PICKUP':
         out.push({ event: 'ORDER_READY' });
@@ -195,6 +216,8 @@ export const pushEventsForChange = (
       default: break;
     }
   }
+  if(after.status==='READY_FOR_PICKUP'&&before.status!==after.status&&after.driverId) out.push({event:'PICKUP_READY'});
+  if(after.driverId&&after.driverId!==before.driverId&&!['DELIVERED','CANCELLED'].includes(after.status)) out.push({event:'RIDER_ASSIGNED_CUSTOMER',opts:{bucket:after.updatedAt.getTime()}},{event:'RIDER_ASSIGNED_VENDOR',opts:{bucket:after.updatedAt.getTime()}});
   if (flags.assignedByAdmin && after.driverId && after.driverId !== before.driverId && after.status !== 'CANCELLED' && after.status !== 'DELIVERED') {
     out.push({ event: 'DELIVERY_ASSIGNED', opts: { userId: after.driverId } });
   }
@@ -222,7 +245,7 @@ export const pushEventsForGroupChange = (
   const primary = after[0];
   const primaryBefore = before[0];
   // 1. Per child: the restaurant's own events, and "restaurant X accepted" for the customer. Everything else is a group event (below).
-  const PER_CHILD = new Set<PushEvent>(['NEW_ORDER', 'ORDER_CANCELLED_VENDOR', 'ORDER_ACCEPTED']);
+  const PER_CHILD = new Set<PushEvent>(['NEW_ORDER', 'ORDER_CANCELLED_VENDOR', 'ORDER_ACCEPTED','ORDER_PREPARING','RIDER_ASSIGNED_VENDOR']);
   for (const a of after) {
     if (!touched.has(a.id)) continue;
     const b = beforeById.get(a.id);
@@ -235,6 +258,7 @@ export const pushEventsForGroupChange = (
   if (!groupAllAccepted(before) && groupAllAccepted(after)) {
     for (const a of after) if (!touched.has(a.id) && a.status === 'ACCEPTED') out.push({ orderId: a.id, event: 'GROUP_READY_TO_COOK' });
   }
+  if(primary.driverId&&primary.driverId!==primaryBefore.driverId&&!isTerminalStatus(primary.status)) out.push({orderId:primary.id,event:'RIDER_ASSIGNED_CUSTOMER',opts:{bucket:primary.updatedAt.getTime()}});
   // 2. The group as a whole, once, from the primary.
   const became = (status: string) => allAre(after, status) && !allAre(before, status);
   if (became('PICKED_UP')) out.push({ orderId: primary.id, event: 'ORDER_PICKED_UP' });

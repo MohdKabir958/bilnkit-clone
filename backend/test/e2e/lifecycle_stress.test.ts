@@ -644,7 +644,8 @@ describe(`Lifecycle stress (seed ${SEED})`, () => {
       const id = placed.body.data.id as string;
       expect(await doPay(c, id, 'verify')).toBe(true);
       expect((await api.setStatus(v, id, 'ACCEPTED')).status).toBe(200);
-      expect((await api.claim(r, id)).status).toBe(200);
+      expect((await api.reassign(W.admin,id,r.id)).status).toBe(200);
+      expect((await api.claim(r,id)).status).toBe(200);
       expect((await api.setStatus(v, id, 'PREPARING')).status).toBe(200);
       expect((await api.setStatus(v, id, 'READY_FOR_PICKUP')).status).toBe(200);
       expect((await api.setStatus(r, id, 'PICKED_UP')).status).toBe(200);

@@ -66,7 +66,11 @@ describe('Backend hardening', () => {
   };
   const driveTo = async (id: string, target: string, v: Vendor, r: Rider) => {
     for (const st of ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'CLAIMED', 'PICKED_UP', 'ARRIVED_AT_GATE']) {
-      if (st === 'CLAIMED') expect((await api.claim(r, id)).status).toBe(200);
+      if (st === 'CLAIMED') {
+        // Review/terminal tests use explicit admin assignment so fairness may choose another rider.
+        expect((await api.reassign(W.admin,id,r.id)).status).toBe(200);
+        expect((await api.claim(r,id)).status).toBe(200);
+      }
       else if (['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP'].includes(st)) expect((await api.setStatus(v, id, st)).status).toBe(200);
       else expect((await api.setStatus(r, id, st)).status).toBe(200);
       if (st === target) return;
@@ -755,37 +759,19 @@ describe('Backend hardening', () => {
       expect(live.of('new_order_alert', idLive)).toHaveLength(1);
     });
 
-    test('order_available goes only to riders who are ONLINE and approved; going OFFLINE leaves the room, going ONLINE rejoins it', async () => {
-      const [c1] = W.customers; const [v1] = W.vendors; const [r1, r2, r3] = W.riders;
-      await prisma.driverPartner.update({ where: { id: r2.profileId }, data: { dutyStatus: 'OFFLINE' } });
-      await prisma.driverPartner.update({ where: { id: r3.profileId }, data: { dutyStatus: 'ONLINE' } });
-      const w1 = await watch(r1); const w2 = await watch(r2); const w3 = await watch(r3);
-      expect(await w2.join('drivers')).toBe(false); // off duty: not allowed into the room
-      const first = await placePaid(c1, v1);
-      expect((await api.setStatus(v1, first, 'ACCEPTED')).status).toBe(200);
-      await Promise.all([w1.flush(), w2.flush(), w3.flush()]);
-      expect([w1.count('order_available', first), w2.count('order_available', first), w3.count('order_available', first)]).toEqual([1, 0, 1]);
-
-      // r3 goes off duty through the API: leaves the room at once and hears nothing more
-      expect((await api.duty(r3, false)).status).toBe(200);
-      const second = await placePaid(c1, v1);
-      expect((await api.setStatus(v1, second, 'ACCEPTED')).status).toBe(200);
-      await Promise.all([w1.flush(), w3.flush()]);
-      expect([w1.count('order_available', second), w3.count('order_available', second)]).toEqual([1, 0]);
-
-      // r2 goes on duty: the already open socket joins the room and receives the next offer
-      expect((await api.duty(r2, true)).status).toBe(200);
-      const third = await placePaid(c1, v1);
-      expect((await api.setStatus(v1, third, 'ACCEPTED')).status).toBe(200);
-      await Promise.all([w1.flush(), w2.flush(), w3.flush()]);
-      expect([w1.count('order_available', third), w2.count('order_available', third), w3.count('order_available', third)]).toEqual([1, 1, 0]);
-
-      // belt and braces: a socket still in the room while the database says OFFLINE does not get offers
-      await prisma.driverPartner.update({ where: { id: r1.profileId }, data: { dutyStatus: 'OFFLINE' } });
-      const fourth = await placePaid(c1, v1);
-      expect((await api.setStatus(v1, fourth, 'ACCEPTED')).status).toBe(200);
-      await Promise.all([w1.flush(), w2.flush()]);
-      expect([w1.count('order_available', fourth), w2.count('order_available', fourth)]).toEqual([0, 1]);
+    test('a personal offer reaches one online rider; offline revokes it and reconnect restores eligible dispatch', async () => {
+      const [c1]=W.customers,[v1]=W.vendors,[r1,r2,r3]=W.riders;
+      await api.duty(r2,false);await api.duty(r3,false);
+      const w1=await watch(r1),w2=await watch(r2),w3=await watch(r3);
+      const id=await placePaid(c1,v1);await api.setStatus(v1,id,'ACCEPTED');
+      await Promise.all([w1.flush(),w2.flush(),w3.flush()]);
+      expect([w1.count('order_available',id),w2.count('order_available',id),w3.count('order_available',id)]).toEqual([1,0,0]);
+      await api.duty(r1,false);
+      expect(await prisma.dispatchOffer.count({where:{orderId:id,state:'PENDING'}})).toBe(0);
+      expect((await api.claim(r1,id)).status).toBe(409);
+      await api.duty(r2,true);await api.available(r2);await w2.flush();
+      expect((await api.available(r2)).body.data.map((o:any)=>o.id)).toContain(id);
+      expect(w2.count('order_available',id)).toBe(1);expect(w3.count('order_available',id)).toBe(0);
     });
 
     test('logout takes a rider out of the drivers room', async () => {

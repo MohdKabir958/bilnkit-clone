@@ -82,7 +82,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'We use your Google name and email only to set up your Kraveo account. No password, and we never post anything.',
+                          'We use your Google name and email only to set up your ${BrandConfig.name} account. No password, and we never post anything.',
                           style: KraveoType.bodySm.copyWith(color: k.inkMuted),
                         ),
                       ),

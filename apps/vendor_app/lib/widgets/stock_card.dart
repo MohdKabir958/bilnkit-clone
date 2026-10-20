@@ -172,7 +172,7 @@ class _ApprovalNote extends StatelessWidget {
                   style: KraveoType.titleMd.copyWith(color: k.ink, fontWeight: FontWeight.w800, fontSize: 16),
                 ),
                 Text(
-                  'Customers still get the old price (${formatRupees(dish.price)}) until Kraveo approves.\nमंज़ूरी तक पुराना दाम चलेगा।',
+                  'Customers still get the old price (${formatRupees(dish.price)}) until ${BrandConfig.name} approves.\nमंज़ूरी तक पुराना दाम चलेगा।',
                   style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13.5),
                 ),
               ]),
@@ -190,7 +190,7 @@ class _ApprovalNote extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Waiting for Kraveo to approve. Customers cannot see this dish yet.\nKraveo की मंज़ूरी का इंतज़ार। ग्राहकों को अभी नहीं दिखेगा।',
+                'Waiting for ${BrandConfig.name} to approve. Customers cannot see this dish yet.\nKraveo की मंज़ूरी का इंतज़ार। ग्राहकों को अभी नहीं दिखेगा।',
                 style: KraveoType.bodySm.copyWith(color: k.ink, fontSize: 14),
               ),
             ),
@@ -204,7 +204,7 @@ class _ApprovalNote extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: Color.alphaBlend(KraveoPalette.danger.withValues(alpha: 0.08), k.surface), borderRadius: BorderRadius.circular(KRadius.lg)),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Kraveo did not approve this dish · मंज़ूर नहीं हुआ', style: KraveoType.titleMd.copyWith(color: kDangerDeep, fontWeight: FontWeight.w800, fontSize: 16)),
+              Text('${BrandConfig.name} did not approve this dish · मंज़ूर नहीं हुआ', style: KraveoType.titleMd.copyWith(color: kDangerDeep, fontWeight: FontWeight.w800, fontSize: 16)),
               if (reason != null) Text('Reason: $reason', key: const ValueKey('rejection-reason'), style: KraveoType.body.copyWith(color: k.ink, fontSize: 15)),
               Text('Fix the price if needed, then send it again.\nदाम ठीक करके दोबारा भेजें।', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13.5)),
             ]),
@@ -343,8 +343,8 @@ class _PriceEditSheetState extends State<_PriceEditSheet> {
   bool get _asksApproval => widget.dish.statusKnown && widget.dish.isLive;
 
   String _helperText() {
-    if (_rejected) return 'Kraveo will check the dish again.\nKraveo इसे दोबारा जाँचेगा।';
-    if (_asksApproval) return 'The new price is sent to Kraveo. The old price stays live until it is approved.\nनया दाम Kraveo को जाएगा। मंज़ूरी तक पुराना दाम चलेगा।';
+    if (_rejected) return '${BrandConfig.name} will check the dish again.\nKraveo इसे दोबारा जाँचेगा।';
+    if (_asksApproval) return 'The new price is sent to ${BrandConfig.name}. The old price stays live until it is approved.\nनया दाम ${BrandConfig.name} को जाएगा। मंज़ूरी तक पुराना दाम चलेगा।';
     if (widget.dish.statusKnown) return 'This dish is still waiting for approval, so the price changes at once.\nमंज़ूरी से पहले दाम सीधे बदल जाएगा।';
     return 'The price you receive for each portion.\nहर प्लेट पर आपको मिलने वाला दाम।';
   }

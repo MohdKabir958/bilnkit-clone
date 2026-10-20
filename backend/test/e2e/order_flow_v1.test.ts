@@ -1,3 +1,4 @@
+import { ensureFixtureGeography } from '../harness/geography';
 /**
  * Order flow v1 (Docs/16_order_flow_contract.md): money, status, visibility, realtime, gate OTP, refunds,
  * the maintenance job, and every failure mode of section 7. Runs against a real PostgreSQL and real
@@ -120,6 +121,7 @@ describe('Order flow v1', () => {
       expect((await setStatus(o.id, st, tVendor)).status).toBe(200);
       if (st === target) return o;
     }
+    expect((await request.patch(`/api/orders/${o.id}/reassign`).set(H(tAdmin)).send({driverId:rider===tRider?RIDER.id:RIDER2.id})).status).toBe(200);
     expect((await claim(o.id, rider)).status).toBe(200);
     if (target === 'CLAIMED') return o;
     expect((await setStatus(o.id, 'PICKED_UP', rider)).status).toBe(200);
@@ -139,6 +141,7 @@ describe('Order flow v1', () => {
         payments: { create: [{ razorpayOrderId: `order_fx_${randomUUID().slice(0, 12)}`, razorpayPaymentId: paymentId, amount: 220, capturedAmountPaise: 22000, status: 'PAID' }] },
       },
     });
+    if(!opts.driverId && ['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(status)) await request.get('/api/orders/available').set(H(tRider));
     return order;
   };
 
@@ -170,6 +173,11 @@ describe('Order flow v1', () => {
   });
 
   beforeEach(async () => {
+    await cleanTestOrders();
+    await seedTestDatabase();
+    await ensureFixtureGeography('fixture',[STUDENT.id,STUDENT2.id],['ven-1'],[RIDER.id,RIDER2.id]);
+    await prisma.driverPartner.updateMany({where:{userId:RIDER.id},data:{lastOfferedAt:null}});
+    await prisma.driverPartner.updateMany({where:{userId:RIDER2.id},data:{lastOfferedAt:new Date()}});
     sim = createSimulatedProvider();
     setPaymentProvider(sim);
     await freeRiders();
@@ -231,7 +239,7 @@ describe('Order flow v1', () => {
       const v0 = placed.body.data;
       capture('customer_view_PLACED_unpaid', v0);
       expect(v0).toMatchObject({ status: 'PLACED', paymentStatus: 'PENDING', subtotal: 180, deliveryFee: 25, taxAndPackaging: 0, discount: 0, totalAmount: 205, otpCode: null, driver: null });
-      expect(v0.customer).toEqual({ id: STUDENT.id, name: 'Rahul Sharma', phone: STUDENT.phone, hostelBlock: 'Block 3' });
+      expect(v0.customer).toEqual({ id: STUDENT.id, name: 'Rahul Sharma', phone: STUDENT.phone, hostelBlock: 'Boys Hostel Block 3' });
       expect(Date.parse(v0.payBy) - Date.parse(v0.createdAt)).toBe(15 * 60_000);
       expect(await join(cust, `order_${id}`)).toBe(true);
       expect(await join(ven, `order_${id}`)).toBe(false); // unpaid: the restaurant may not watch it
@@ -264,7 +272,7 @@ describe('Order flow v1', () => {
 
       // 3. Restaurant accepts -> it enters the rider pool (order_available, pool view).
       expect((await setStatus(id, 'ACCEPTED', tVendor)).status).toBe(200);
-      await until(() => ridLog.order_available.length >= 1 && rid2Log.order_available.length >= 1);
+      await until(() => ridLog.order_available.length === 1);
       const offer = ridLog.order_available[0];
       capture('socket_order_available', offer);
       capture('rider_pool_view', offer);
@@ -281,7 +289,7 @@ describe('Order flow v1', () => {
       expect(claimed.status).toBe(200);
       capture('rider_assigned_view_after_claim', claimed.body.data);
       expect(claimed.body.data.status).toBe('ACCEPTED'); // claiming never changes the status
-      expect(claimed.body.data.customer).toEqual({ id: STUDENT.id, name: 'Rahul Sharma', phone: STUDENT.phone, hostelBlock: 'Block 3' });
+      expect(claimed.body.data.customer).toEqual({ id: STUDENT.id, name: 'Rahul Sharma', phone: STUDENT.phone, hostelBlock: null });
       expect(claimed.body.data.driver).toMatchObject({ id: RIDER.id, phone: RIDER.phone });
       await until(() => rid2Log.order_unavailable.some((e) => e.id === id));
       capture('socket_order_unavailable', rid2Log.order_unavailable.find((e) => e.id === id));
@@ -619,7 +627,9 @@ describe('Order flow v1', () => {
       expect(r.body.data).toMatchObject({ totalAmount: 205, status: 'PLACED', paymentStatus: 'PENDING' });
       expect(r.body.data.id).not.toBe('evil-id');
       expect(r.body.data.customer.id).toBe(STUDENT.id);
-      expect((await place(tStudent, { dropoffHostel: 'Mars' })).body.field).toBe('dropoffHostel');
+      const arbitraryLabel=await place(tStudent, { dropoffHostel: 'Mars' });
+      expect(arbitraryLabel.status).toBe(201);
+      expect(arbitraryLabel.body.data.deliveryAddress.city).toBe('Bhopal');
       expect((await place(tStudent, { dropoffHostel: 'Boys Hostel Block 3' })).status).toBe(201); // legacy name still accepted
       expect((await place(tStudent, { items: [{ itemId: 'item-1', quantity: 1.5 }] })).status).toBe(400);
       expect((await place(tStudent, { items: [null] })).status).toBe(400);
@@ -689,7 +699,7 @@ describe('Order flow v1', () => {
       const [a, b] = await Promise.all([claim(o.id, tRider), claim(o.id, tRider2)]);
       expect([a.status, b.status].sort()).toEqual([200, 409]);
       const loser = a.status === 409 ? a : b;
-      expect(loser.body.code).toBe('ALREADY_TAKEN');
+      expect(['ALREADY_TAKEN','OFFER_EXPIRED']).toContain(loser.body.code);
       capture('error_409_ALREADY_TAKEN', loser.body);
       const again = await claim(o.id, a.status === 200 ? tRider : tRider2);
       expect(again.status).toBe(200); // the winner repeating is idempotent
@@ -714,7 +724,7 @@ describe('Order flow v1', () => {
       const b = await makePaidOrder('READY_FOR_PICKUP');
       const [ra, rb] = await Promise.all([claim(a.id), claim(b.id)]);
       expect([ra.status, rb.status].sort()).toEqual([200, 409]);
-      expect((ra.status === 409 ? ra : rb).body.code).toBe('RIDER_BUSY');
+      expect(['RIDER_BUSY','OFFER_EXPIRED']).toContain((ra.status === 409 ? ra : rb).body.code);
       expect(await prisma.order.count({ where: { driverId: RIDER.id, id: { in: [a.id, b.id] } } })).toBe(1);
       expect((await prisma.driverPartner.findFirstOrThrow({ where: { userId: RIDER.id } })).dutyStatus).toBe('IN_TRANSIT');
     });
@@ -1005,7 +1015,7 @@ describe('Order flow v1', () => {
       expect((await setStatus(o.id, 'ARRIVED_AT_GATE', tRider2)).status).toBe(200);
       const otp = (await getOrder(o.id, tStudent)).body.data.otpCode;
       expect((await request.post(`/api/orders/${o.id}/verify-gate-otp`).set(H(tRider2)).send({ otpCode: otp })).status).toBe(200);
-      expect(await prisma.adminAuditLog.count({ where: { action: 'ORDER_REASSIGNED', targetId: o.id } })).toBe(1);
+      expect(await prisma.adminAuditLog.count({ where: { action: 'ORDER_REASSIGNED', targetId: o.id } })).toBe(2); // initial fixture assignment and operational reassignment
     });
   });
 

@@ -182,13 +182,13 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       const c = W.customers[0];
       const [v1, v2] = W.vendors;
       await setFees({ freeFeeAbove: 300 });
-      // Enabled-zone charges are authoritative, independent of legacy global free/small-order fee settings.
+      // Zone rates supply the base; checkout-wide free/small-order policies still apply.
       expect((await api.quote(c, [cartOf(v1, [[1, 1]]), cartOf(v2, [[1, 1]])])).body.data.fees).toMatchObject({ total: 50, base: 25, baseWaived: false });
       const free = (await api.quote(c, [cartOf(v1), cartOf(v2)])).body.data;
-      expect(free.fees).toMatchObject({ total: 50, base: 25, baseWaived: false, extraRestaurants: 1 });
-      expect(free).toMatchObject({ total: 410, perRestaurant: [{ fee: 25 }, { fee: 25 }] });
+      expect(free.fees).toMatchObject({ total: 0, base: 0, baseWaived: true, extraRestaurants: 1 });
+      expect(free).toMatchObject({ total: 360, perRestaurant: [{ fee: 0 }, { fee: 0 }] });
       await setFees({ smallOrderBelow: 200, smallOrderFee: 10 });
-      expect((await api.quote(c, [cartOf(v1, [[1, 1]]), cartOf(v2, [[1, 1]])])).body.data).toMatchObject({ fees: { total: 50, base: 25 }, total: 230 });
+      expect((await api.quote(c, [cartOf(v1, [[1, 1]]), cartOf(v2, [[1, 1]])])).body.data).toMatchObject({ fees: { total: 60, base: 35 }, total: 240 });
       await setFees({});
       // KRAVEO50 needs 150: neither 90 alone reaches it, 180 combined does
       const lone = await api.quote(c, [cartOf(v1, [[1, 1]])], 'KRAVEO50');

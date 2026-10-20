@@ -195,7 +195,7 @@ class _SettlementCard extends StatelessWidget {
           if (s.status == SettlementStatus.onHold)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Text('Kraveo is holding this payout for now.  ·  Kraveo ने यह भुगतान अभी रोका है', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
+              child: Text('${BrandConfig.name} is holding this payout for now.  ·  ${BrandConfig.name} ने यह भुगतान अभी रोका है', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
             ),
         ]),
       ),

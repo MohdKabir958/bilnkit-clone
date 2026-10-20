@@ -668,11 +668,11 @@ void main() {
       expect(tester.widget<TextField>(find.byKey(kPayoutIfscFieldKey)).controller!.text, 'HDFC0001234'); // non-secret fields are prefilled
     });
 
-    testWidgets('saved + verified: "Verified by Kraveo"; Change details warns that verification restarts; Cancel returns without saving', (tester) async {
+    testWidgets('saved + verified: "Verified by DailyMarket"; Change details warns that verification restarts; Cancel returns without saving', (tester) async {
       api.account = PayoutAccount.fromJson(payoutFixtures()['account_bank_verified']['data']);
       await open(tester);
       expect(find.byKey(kPayoutSavedCardKey), findsOneWidget);
-      expect(find.textContaining('Verified by Kraveo'), findsOneWidget);
+      expect(find.textContaining('Verified by DailyMarket'), findsOneWidget);
       expect(find.textContaining('Not verified yet'), findsNothing);
       expect(find.text('Account ending 7890'), findsOneWidget);
       await tapKey(tester, kPayoutEditKey);
@@ -690,7 +690,7 @@ void main() {
       await tapKey(tester, kPayoutEditKey);
       await tapKey(tester, kPayoutSaveKey); // identical details
       expect(find.textContaining('already saved'), findsOneWidget);
-      expect(find.textContaining('Verified by Kraveo'), findsOneWidget);
+      expect(find.textContaining('Verified by DailyMarket'), findsOneWidget);
       await tapKey(tester, kPayoutEditKey);
       await type(tester, kPayoutUpiFieldKey, 'ram@ybl');
       await tapKey(tester, kPayoutSaveKey);
@@ -813,7 +813,7 @@ void main() {
         ..listAnswers.add(const ApiResult.failure(ApiFailure.server));
       await open(tester);
       expect(find.text("Can't load your settlements"), findsOneWidget);
-      expect(find.textContaining('Kraveo had a problem'), findsOneWidget);
+      expect(find.textContaining('DailyMarket had a problem'), findsOneWidget);
       await tapKey(tester, kSettlementsRetryKey);
       expect(find.byKey(settlementCardKey('11111111-1111-4111-8111-111111111111')), findsOneWidget);
       expect(find.text("Can't load your settlements"), findsNothing);

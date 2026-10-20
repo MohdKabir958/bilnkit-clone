@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../db';
 import { writeAudit } from './audit';
 import { AppError } from '../utils/appError';
@@ -37,9 +38,9 @@ export const invalidateSettingsCache = () => {
   generation++;
 };
 
-const loadAll = async (): Promise<Cached> => {
+const loadAll = async (db: Pick<Prisma.TransactionClient, 'appSetting'> = prisma, allowCache = true): Promise<Cached> => {
   const started = generation;
-  const rows = await prisma.appSetting.findMany({ where: { key: { in: [...SETTING_GROUPS] } } });
+  const rows = await db.appSetting.findMany({ where: { key: { in: [...SETTING_GROUPS] } } });
   const byKey = new Map(rows.map((r) => [r.key, r]));
   const value = {} as SettingsMap;
   const meta = {} as Record<SettingGroup, SettingMeta>;
@@ -55,7 +56,7 @@ const loadAll = async (): Promise<Cached> => {
     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
   }
   const loaded: Cached = { at: Date.now(), value, meta };
-  if (started === generation && ttlMs() > 0) cache = loaded;
+  if (allowCache && started === generation && ttlMs() > 0) cache = loaded;
   return loaded;
 };
 
@@ -66,7 +67,10 @@ const current = async (): Promise<Cached> => {
 };
 
 /** All four groups (defaults filled in). Never throws for bad stored data. */
-export const getSettings = async (): Promise<SettingsMap> => (await current()).value;
+// A transaction must not acquire a second pool connection for its settings.
+// Read through that transaction and keep its snapshot out of the process cache.
+export const getSettings = async (db: Prisma.TransactionClient | typeof prisma = prisma): Promise<SettingsMap> =>
+  (db === prisma ? await current() : await loadAll(db, false)).value;
 export const getSettingGroup = async <G extends SettingGroup>(group: G): Promise<{ value: SettingsMap[G]; meta: SettingMeta }> => {
   const c = await current();
   return { value: c.value[group], meta: c.meta[group] };

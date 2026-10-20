@@ -59,6 +59,7 @@ class FakePushMessaging implements PushMessaging {
   @override
   Future<void> deleteToken() async {
     log.add('deleteToken');
+    tokenValue='rotated-customer-fixture';
   }
 
   @override
@@ -98,6 +99,7 @@ class FakeDeviceApi implements DeviceApi {
   FakeDeviceApi({PushLog? log}) : log = log ?? PushLog();
 
   final PushLog log;
+  DeviceCallResult Function(String)? onRegister;
   DeviceCallResult registerResult = DeviceCallResult.ok;
   DeviceCallResult unregisterResult = DeviceCallResult.ok;
   bool unregisterThrows = false;
@@ -110,7 +112,7 @@ class FakeDeviceApi implements DeviceApi {
     log.add('register:$token');
     registered.add((token: token, appVersion: appVersion));
     if (registerGate != null) await registerGate!.future;
-    return registerResult;
+    return onRegister?.call(token) ?? registerResult;
   }
 
   @override

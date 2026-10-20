@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show SocketException;
@@ -376,7 +377,7 @@ String orderErrorMessage(OrderApiError error, {String action = 'do that'}) {
     case OrderErrorKind.offline:
       return 'No internet connection. We couldn\'t $action. Check your connection and try again.';
     case OrderErrorKind.timeout:
-      return 'Kraveo is taking too long to answer, so we couldn\'t $action. Please try again.';
+      return '${BrandConfig.name} is taking too long to answer, so we couldn\'t $action. Please try again.';
     case OrderErrorKind.unauthorized:
       return CustomerApiService.sessionExpiredMessage;
     case OrderErrorKind.forbidden:
@@ -388,11 +389,11 @@ String orderErrorMessage(OrderApiError error, {String action = 'do that'}) {
     case OrderErrorKind.rateLimited:
       return error.message ?? 'You already have several unpaid orders. Pay for or cancel one, or wait a minute, then try again.';
     case OrderErrorKind.rejected:
-      return error.message ?? 'Kraveo couldn\'t $action. Check your order and try again.';
+      return error.message ?? '${BrandConfig.name} couldn\'t $action. Check your order and try again.';
     case OrderErrorKind.server:
-      return 'Kraveo is having trouble right now, so we couldn\'t $action. Please try again in a moment.';
+      return '${BrandConfig.name} is having trouble right now, so we couldn\'t $action. Please try again in a moment.';
     case OrderErrorKind.badResponse:
-      return 'Kraveo sent an answer we couldn\'t read, so we couldn\'t $action. Please try again.';
+      return '${BrandConfig.name} sent an answer we couldn\'t read, so we couldn\'t $action. Please try again.';
   }
 }
 
@@ -417,12 +418,12 @@ const Map<String, String> _codeMessages = {
   'ALREADY_PAID': 'This order is already paid.',
   'PAYMENT_WINDOW_EXPIRED': 'The 15 minutes to pay for this order are over. Please place the order again.',
   'ORDER_CANCELLED': 'This order was cancelled before your payment arrived. The money is refunded to you automatically.',
-  'PAYMENT_AMOUNT_MISMATCH': 'The amount paid doesn\'t match this order, so it wasn\'t accepted. Kraveo support will contact you about the money; you can also write to $kSupportEmail.',
-  'DUPLICATE_PAYMENT': 'This order was already paid. Your extra payment will be refunded by Kraveo support. Questions: $kSupportEmail.',
-  'BAD_SIGNATURE': 'We couldn\'t verify this payment. If money left your account, Kraveo confirms or refunds it automatically.',
-  'CANNOT_CANCEL': 'The restaurant has already accepted this order, so it can\'t be cancelled in the app. Please contact Kraveo support at $kSupportEmail.',
+  'PAYMENT_AMOUNT_MISMATCH': 'The amount paid doesn\'t match this order, so it wasn\'t accepted. ${BrandConfig.name} support will contact you about the money; you can also write to $kSupportEmail.',
+  'DUPLICATE_PAYMENT': 'This order was already paid. Your extra payment will be refunded by ${BrandConfig.name} support. Questions: $kSupportEmail.',
+  'BAD_SIGNATURE': 'We couldn\'t verify this payment. If money left your account, ${BrandConfig.name} confirms or refunds it automatically.',
+  'CANNOT_CANCEL': 'The restaurant has already accepted this order, so it can\'t be cancelled in the app. Please contact ${BrandConfig.name} support at $kSupportEmail.',
   'ORDER_CLOSED': 'This order is already finished or cancelled.',
-  'ROLE_NOT_ALLOWED': 'This account can\'t do that in the Kraveo app.',
+  'ROLE_NOT_ALLOWED': 'This account can\'t do that in the ${BrandConfig.name} app.',
   'PARTNER_NOT_APPROVED': 'Partner accounts can\'t order in the customer app.',
   'VENDOR_CLOSED': 'This restaurant is closed for new orders right now.',
   'CLIENT_REQUEST_MISMATCH': 'Your order changed while it was being sent. Please tap the button again to place it.',

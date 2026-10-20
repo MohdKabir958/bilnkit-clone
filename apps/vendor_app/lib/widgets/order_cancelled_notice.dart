@@ -22,9 +22,9 @@ Future<void> showKitchenOrderCancelledNotice(BuildContext context, OrderModel or
             child: Icon(LucideIcons.octagonX, size: 38, color: kDangerDeep),
           ),
           const SizedBox(height: 16),
-          Text('Order ${order.shortCode} was cancelled by Kraveo. Stop cooking.', textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
+          Text('Order ${order.shortCode} was cancelled by ${BrandConfig.name}. Stop cooking.', textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
           const SizedBox(height: 6),
-          Text('ऑर्डर ${order.shortCode} Kraveo ने रद्द कर दिया। बनाना बंद करें।', textAlign: TextAlign.center, style: KraveoType.titleLg.copyWith(color: k.inkMuted)),
+          Text('ऑर्डर ${order.shortCode} ${BrandConfig.name} ने रद्द कर दिया। बनाना बंद करें।', textAlign: TextAlign.center, style: KraveoType.titleLg.copyWith(color: k.inkMuted)),
           if (order.cancelReason != null && order.cancelReason!.trim().isNotEmpty) ...[
             const SizedBox(height: 10),
             Text('Reason: ${order.cancelReason}', textAlign: TextAlign.center, style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),

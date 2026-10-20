@@ -6,6 +6,7 @@ import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/au
 import { fail } from '../utils/http';
 import { AppError } from '../utils/appError';
 import { ImageError, probeImage } from '../utils/imageProbe';
+import { requireApprovedPartner } from './partners';
 import { writeAudit } from '../services/audit';
 
 /**
@@ -30,8 +31,8 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const FILE_PATH_RE = /^\/(banner|dish)\/\d{4}\/[0-9a-f]{32}\.(jpg|png|webp)$/;
 
 /** Read on every call (tests and deployments set it at run time). */
-export const uploadDir = (): string => path.resolve(process.env.UPLOAD_DIR || '/home/ubuntu/kraveo-uploads');
-const publicBase = (): string => (process.env.PUBLIC_BASE_URL || 'https://api.kraveo.site').replace(/\/+$/, '');
+export const uploadDir = (): string => path.resolve(process.env.UPLOAD_DIR || './var/uploads');
+const publicBase = (): string => (process.env.PUBLIC_BASE_URL || 'http://localhost:5000').replace(/\/+$/, '');
 
 /** Total size of everything under UPLOAD_DIR may not pass UPLOAD_MAX_TOTAL_MB (default 1500). Counted by a cheap scan, cached for 60 s. */
 const uploadQuotaBytes = (): number => {
@@ -61,15 +62,16 @@ const currentUsage = async (): Promise<{ dir: string; bytes: number; at: number 
 export const uploadRouter = Router();
 
 uploadRouter.post(
-  '/admin/uploads/image',
+  ['/admin/uploads/image','/v1/partner/uploads/image'],
   requireAuth,
-  requireRole('ADMIN'),
+  (req: AuthenticatedRequest,res:Response,next:NextFunction) => req.path.includes('/partner/') ? requireRole('VENDOR')(req,res,()=>requireApprovedPartner(req,res,next)) : requireRole('ADMIN')(req,res,next),
   // The body parser runs only for an authenticated admin (the rate limiter in front of the router has already counted the call).
   express.raw({ type: ALLOWED_TYPES, limit: MAX_UPLOAD_BYTES }),
   async (req: AuthenticatedRequest, res: Response) => {
     try {
       const purpose = typeof req.query.purpose === 'string' ? req.query.purpose : '';
       if (!(UPLOAD_PURPOSES as readonly string[]).includes(purpose)) throw new AppError(400, 'BAD_REQUEST', "purpose must be 'banner' or 'dish'.", 'purpose');
+      if (req.user?.role === 'VENDOR' && purpose !== 'dish') throw new AppError(400,'BAD_REQUEST','Vendor uploads are for product images.');
       const declared = String(req.headers['content-type'] ?? '').split(';')[0].trim().toLowerCase();
       if (!ALLOWED_TYPES.includes(declared)) {
         throw new AppError(415, 'UNSUPPORTED_IMAGE_TYPE', 'Only JPEG, PNG or WebP photos can be uploaded.');
@@ -114,7 +116,7 @@ uploadRouter.post(
         console.error('image upload could not be stored:', (e as NodeJS.ErrnoException)?.code ?? 'error');
         throw new AppError(503, 'UPLOAD_UNAVAILABLE', 'Image storage is not available right now. Try again, or paste a link instead.');
       }
-      await writeAudit('IMAGE_UPLOADED', 'UPLOAD', relative, `Admin uploaded a ${purpose} image (${info.width}x${info.height}, ${file.length} bytes, ${info.mime})`);
+      await writeAudit('IMAGE_UPLOADED', 'UPLOAD', relative, `User ${req.user?.id} uploaded a ${purpose} image (${info.width}x${info.height}, ${file.length} bytes, ${info.mime})`);
       return res.status(201).json({ success: true, data: { url: `${publicBase()}/uploads/${relative}`, width: info.width, height: info.height, bytes: file.length } });
     } catch (err) {
       return fail(res, err, 'image upload');

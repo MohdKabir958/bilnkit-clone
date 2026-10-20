@@ -36,7 +36,9 @@ enum PushBanner {
 Future<String> _packageVersion() async {
   try {
     final info = await PackageInfo.fromPlatform();
-    return info.buildNumber.isEmpty ? info.version : '${info.version}+${info.buildNumber}';
+    return info.buildNumber.isEmpty
+        ? info.version
+        : '${info.version}+${info.buildNumber}';
   } catch (_) {
     return 'unknown';
   }
@@ -54,7 +56,11 @@ class PushController extends ChangeNotifier {
     required this.permissions,
     required this.registry,
     Future<String> Function()? appVersion,
-    this.retryDelays = const [Duration(seconds: 30), Duration(minutes: 2), Duration(minutes: 10)],
+    this.retryDelays = const [
+      Duration(seconds: 30),
+      Duration(minutes: 2),
+      Duration(minutes: 10)
+    ],
   }) : _appVersion = appVersion ?? _packageVersion;
 
   static const String explainedPrefKey = 'kraveo_vendor_push_explained';
@@ -79,6 +85,7 @@ class PushController extends ChangeNotifier {
   bool _signedOutKnown = false;
   bool _loggingOut = false;
   String? _userId;
+  int _ownershipRotations = 0;
 
   NotificationAccess? _access;
   bool _explained = false;
@@ -111,17 +118,26 @@ class PushController extends ChangeNotifier {
   String? get registeredToken => _registeredToken;
 
   PushBanner get banner {
-    if (!_active || _access == null || _access == NotificationAccess.granted) return PushBanner.none;
-    if (_access == NotificationAccess.blocked || _asked) return PushBanner.blocked;
+    if (!_active || _access == null || _access == NotificationAccess.granted) {
+      return PushBanner.none;
+    }
+    if (_access == NotificationAccess.blocked || _asked) {
+      return PushBanner.blocked;
+    }
     return PushBanner.ask;
   }
 
   /// True once, right after an approved login, while the system has never been asked: the home screen explains
   /// why before the system dialog appears.
-  bool get shouldExplain => _active && _access == NotificationAccess.denied && !_explained && !_asked;
+  bool get shouldExplain =>
+      _active && _access == NotificationAccess.denied && !_explained && !_asked;
 
   /// One-time hint: allow unrestricted battery so orders are never delayed.
-  bool get showBatteryCard => _active && _access == NotificationAccess.granted && !_batteryDone && !_batteryUnrestricted;
+  bool get showBatteryCard =>
+      _active &&
+      _access == NotificationAccess.granted &&
+      !_batteryDone &&
+      !_batteryUnrestricted;
 
   void _changed() {
     if (!_disposed) notifyListeners();
@@ -193,6 +209,7 @@ class PushController extends ChangeNotifier {
     if (!same) _refusedToken = null;
     _active = true;
     _loggingOut = false;
+    if (_userId != userId) _ownershipRotations = 0;
     _userId = userId;
     await init();
     if (!_active || _disposed) return;
@@ -239,8 +256,11 @@ class PushController extends ChangeNotifier {
     _loggingOut = true;
     _retryTimer?.cancel();
     try {
-      final token = _lastToken ?? await messaging.getToken().timeout(const Duration(seconds: 1));
-      if (token != null && token.isNotEmpty) await registry.unregister(token).timeout(const Duration(seconds: 3));
+      final token = _lastToken ??
+          await messaging.getToken().timeout(const Duration(seconds: 1));
+      if (token != null && token.isNotEmpty) {
+        await registry.unregister(token).timeout(const Duration(seconds: 3));
+      }
     } catch (_) {}
     try {
       await messaging.deleteToken().timeout(const Duration(seconds: 1));
@@ -262,7 +282,8 @@ class PushController extends ChangeNotifier {
 
   // ------------------------------------------------------------------ token
 
-  Future<void> _ensureRegistered() => _registering ??= _register().whenComplete(() => _registering = null);
+  Future<void> _ensureRegistered() =>
+      _registering ??= _register().whenComplete(() => _registering = null);
 
   Future<void> _register() async {
     await init();
@@ -281,13 +302,16 @@ class PushController extends ChangeNotifier {
   Future<void> _registerToken(String token) async {
     if (!_active || _loggingOut) return;
     _lastToken = token;
-    if (_registeredToken == token && _registeredUser == _userId) return; // already registered: never twice
+    if (_registeredToken == token && _registeredUser == _userId) {
+      return; // already registered: never twice
+    }
     if (_inFlightToken == token || _refusedToken == token) return;
     _inFlightToken = token;
     final user = _userId;
     RegisterOutcome outcome;
     try {
-      outcome = await registry.register(token: token, appVersion: await _appVersion());
+      outcome = await registry.register(
+          token: token, appVersion: await _appVersion());
     } catch (_) {
       outcome = RegisterOutcome.failed;
     } finally {
@@ -295,6 +319,24 @@ class PushController extends ChangeNotifier {
     }
     if (!_active || _loggingOut || _userId != user) return;
     switch (outcome) {
+      case RegisterOutcome.tokenOwned:
+        if (_ownershipRotations++ >= 2) {
+          _refusedToken = token;
+          return;
+        }
+        try {
+          await messaging.deleteToken().timeout(const Duration(seconds: 3));
+          final fresh =
+              await messaging.getToken().timeout(const Duration(seconds: 3));
+          if (_active && _userId == user && fresh != null && fresh != token) {
+            await _registerToken(fresh);
+          } else {
+            _scheduleRetry();
+          }
+        } catch (_) {
+          _scheduleRetry();
+        }
+
       case RegisterOutcome.ok:
         _registeredToken = token;
         _registeredUser = user;
@@ -305,7 +347,8 @@ class PushController extends ChangeNotifier {
         _scheduleRetry();
       case RegisterOutcome.unauthorized:
       case RegisterOutcome.rejected:
-        _refusedToken = token; // the session gate handles a dead session; a refusal will not change by asking again
+        _refusedToken =
+            token; // the session gate handles a dead session; a refusal will not change by asking again
     }
   }
 
@@ -404,13 +447,17 @@ class PushController extends ChangeNotifier {
   void _onTap(PushMessage m) {
     // Unknown or malformed: the app is simply open on its home screen.
     if (!m.isActionable) return;
-    if (_signedOutKnown) return; // logged out: the login screen is shown instead
-    final action = PushAction(PushActionKind.showQueue, m.event == PushEvent.newOrder ? m.orderId : null);
+    if (_signedOutKnown) {
+      return; // logged out: the login screen is shown instead
+    }
+    final action = PushAction(PushActionKind.showQueue,
+        m.event == PushEvent.newOrder ? m.orderId : null);
     final home = _home;
     if (home != null && _active) {
       home(action);
     } else {
-      _pendingTap = action; // cold start: the session is still being checked, or the home screen is not up yet
+      _pendingTap =
+          action; // cold start: the session is still being checked, or the home screen is not up yet
     }
   }
 
@@ -449,8 +496,11 @@ class PushController extends ChangeNotifier {
 
 /// Makes the [PushController] reachable from the order screens.
 class PushScope extends InheritedNotifier<PushController> {
-  const PushScope({super.key, required PushController controller, required super.child}) : super(notifier: controller);
+  const PushScope(
+      {super.key, required PushController controller, required super.child})
+      : super(notifier: controller);
 
   /// The controller, or null when the app runs without push (tests, or Firebase turned off).
-  static PushController? maybeOf(BuildContext context) => context.dependOnInheritedWidgetOfExactType<PushScope>()?.notifier;
+  static PushController? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<PushScope>()?.notifier;
 }

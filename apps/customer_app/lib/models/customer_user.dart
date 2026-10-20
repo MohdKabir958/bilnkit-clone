@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'package:kraveo_ui/kraveo_ui.dart' show kAvatarCount;
 
 import 'drop_point.dart';
@@ -77,7 +78,7 @@ class CustomerUser {
       );
 
   /// Name for display; falls back to a friendly placeholder for accounts without one.
-  String get displayName => name ?? 'Kraveo student';
+  String get displayName => name ?? '${BrandConfig.name} student';
 
   String get firstName {
     final n = name;

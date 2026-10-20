@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import 'vendor_api_service.dart';
@@ -6,6 +7,28 @@ import 'vendor_api_service.dart';
 class ProductApi {
   ProductApi({http.Client? client}) : _client = client;
   final http.Client? _client;
+  Future<String> uploadImage(Uint8List bytes, String mime) async {
+    final headers = await VendorApiService.getAuthHeaders();
+    headers['Content-Type'] = mime;
+    final response = await (_client?.post(
+                Uri.parse(
+                    '${ApiConfig.baseUrl}/v1/partner/uploads/image?purpose=dish'),
+                headers: headers,
+                body: bytes) ??
+            http.post(
+                Uri.parse(
+                    '${ApiConfig.baseUrl}/v1/partner/uploads/image?purpose=dish'),
+                headers: headers,
+                body: bytes))
+        .timeout(const Duration(seconds: 30));
+    VendorApiService.checkResponse(response);
+    final result = jsonDecode(response.body);
+    if (response.statusCode != 201) {
+      throw Exception(result['message'] ?? 'Image upload failed.');
+    }
+    return result['data']['url'] as String;
+  }
+
   Future<Map<String, dynamic>> call(String method, String path,
       [Map<String, dynamic>? body]) async {
     final client = _client ?? http.Client();

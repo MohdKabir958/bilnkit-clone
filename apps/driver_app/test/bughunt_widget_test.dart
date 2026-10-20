@@ -93,20 +93,20 @@ void main() {
 
   group('support and contact (DR-03, DR-04)', () {
     test('the placeholder phone number is gone; support is by email and 112 is for emergencies', () {
-      expect(SupportConfig.email, 'kraveo.contact@gmail.com');
+      expect(SupportConfig.email, isEmpty);
       expect(SupportConfig.emergencyNumber, '112');
       expect(telUri('+91 98765 00000').toString(), 'tel:+919876500000');
-      expect(supportMailUri().toString(), 'mailto:kraveo.contact@gmail.com?subject=Kraveo%20rider%20support');
+      expect(supportMailUri().toString(), 'mailto:?subject=DailyMarket%20rider%20support');
     });
 
     testWidgets('the red siren opens the support sheet: email address, an email button, and a separate "call 112"', (tester) async {
       await _smallPhone(tester);
       await pumpHome(tester);
-      await tester.tap(find.bySemanticsLabel('Contact Kraveo support'));
+      await tester.tap(find.bySemanticsLabel('Contact DailyMarket support'));
       await tester.pumpAndSettle();
-      expect(find.text('Kraveo support'), findsOneWidget);
-      expect(find.text(SupportConfig.email), findsOneWidget);
-      expect(find.text('Email Kraveo support'), findsOneWidget);
+      expect(find.text('Help and requests'), findsWidgets);
+      expect(find.text('Delivery and account help'), findsOneWidget);
+      expect(find.text('Help and requests'), findsWidgets);
       expect(find.text('Emergency: call 112'), findsOneWidget);
       expect(find.textContaining('98765 43214'), findsNothing);
       expect(find.textContaining('+91'), findsNothing);
@@ -118,28 +118,10 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('"Email Kraveo support" opens a mail; with no mail app the address is copied and the rider is told', (tester) async {
-      await _smallPhone(tester);
-      final copied = _mockClipboard(tester);
-      await pumpHome(tester);
-      await tester.tap(find.bySemanticsLabel('Contact Kraveo support'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('email-support-button')));
-      await tester.pumpAndSettle();
-      expect(_launcher.opened.single.scheme, 'mailto');
-      expect(_launcher.opened.single.path, SupportConfig.email);
-      expect(find.textContaining('No email app found'), findsNothing);
-
-      _launcher
-        ..result = false
-        ..opened.clear();
-      await tester.tap(find.bySemanticsLabel('Contact Kraveo support'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('email-support-button')));
-      await tester.pumpAndSettle();
-      expect(copied, [SupportConfig.email]);
-      expect(find.textContaining('No email app found'), findsOneWidget);
-      await tester.pumpWidget(const SizedBox());
+    testWidgets('support opens the in-app request screen without launching email', (tester) async {
+      await _smallPhone(tester);await pumpHome(tester);await tester.tap(find.bySemanticsLabel('Contact DailyMarket support'));await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('email-support-button')));await tester.pumpAndSettle();
+      expect(find.byType(SupportCenter),findsOneWidget);await tester.scrollUntilVisible(find.text('Send request'),100,scrollable:find.byType(Scrollable).first);expect(find.text('Send request'),findsOneWidget);expect(_launcher.opened,isEmpty);await tester.pumpWidget(const SizedBox());
     });
 
     testWidgets('the customer "Call" button dials; with no dialer the number is copied with a snackbar', (tester) async {
@@ -174,24 +156,21 @@ void main() {
       await tester.pumpWidget(_app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
       await tester.pump(const Duration(milliseconds: 600));
       await tester.scrollUntilVisible(find.byKey(const ValueKey('locked-support-button')), 150, scrollable: find.byType(Scrollable).first);
-      expect(find.text('Email Kraveo support'), findsOneWidget);
-      expect(find.text('Call Kraveo support'), findsNothing);
+      expect(find.text('Help and requests'), findsWidgets);
+      expect(find.text('Call DailyMarket support'), findsNothing);
       await _tapVisible(tester, find.byKey(const ValueKey('locked-support-button')));
       await tester.pumpAndSettle();
-      expect(find.text(SupportConfig.email), findsOneWidget);
+      expect(find.text('Delivery and account help'), findsOneWidget);
       expect(find.text('Emergency: call 112'), findsOneWidget);
       expect(tester.takeException(), isNull);
       c.dispose();
     });
 
-    testWidgets('the login screen shows the support email and opens a mail on tap', (tester) async {
-      await tester.pumpWidget(_app(LoginScreen(onSubmit: (_, __) async => throw UnimplementedError())));
-      await tester.pump(const Duration(seconds: 2));
-      expect(find.textContaining('Forgot password? Ask Kraveo support'), findsOneWidget);
-      expect(find.text('Email ${SupportConfig.email}'), findsOneWidget);
-      await _tapVisible(tester, find.byKey(const ValueKey('login-support-card')));
-      await tester.pump();
-      expect(_launcher.opened.single.scheme, 'mailto');
+    testWidgets('the login screen offers account recovery help without an invented contact', (tester) async {
+      await tester.pumpWidget(_app(LoginScreen(onSubmit:(_,__)async=>throw UnimplementedError())));await tester.pump(const Duration(seconds:2));
+      expect(find.textContaining('Forgot password? Ask DailyMarket support'),findsOneWidget);
+      expect(SupportConfig.email,isEmpty);expect(find.byKey(const ValueKey('login-support-card')),findsOneWidget);
+
     });
   });
 

@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -848,7 +849,7 @@ class OrderProvider with ChangeNotifier {
     if (latest != null && latest.isTerminal) return PaymentOutcome(PaymentOutcomeKind.orderClosed, order: latest, message: _closedMessage(latest));
     // Razorpay took the payment but the server has not confirmed it (network, or a signature
     // problem the webhook may still resolve). Show "confirming" and never offer to pay again.
-    return PaymentOutcome(PaymentOutcomeKind.confirming, order: latest, message: 'Payment received. We\'re confirming it with Kraveo; this can take a minute.');
+    return PaymentOutcome(PaymentOutcomeKind.confirming, order: latest, message: 'Payment received. We\'re confirming it with ${BrandConfig.name}; this can take a minute.');
   }
 
   static String _closedMessage(OrderModel o) => o.isPaymentNotCompletedCancel

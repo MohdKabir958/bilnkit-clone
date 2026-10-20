@@ -11,7 +11,7 @@ Map<String, dynamic> payoutFixtures() => (jsonDecode(File('test/fixtures/payout_
 
 Settlement settlementOf(String key, {int index = 0}) => Settlement.fromJson((payoutFixtures()['settlements_list']['data'] as List)[index])!;
 
-/// A scriptable Kraveo for payout details and settlements. It behaves like the server: a save masks the account number
+/// A scriptable DailyMarket for payout details and settlements. It behaves like the server: a save masks the account number
 /// (keeps the last 4 only), changed details clear `verifiedAt`, identical details answer `changed: false`.
 class FakePayoutApi implements PayoutApi {
   PayoutAccount? account;

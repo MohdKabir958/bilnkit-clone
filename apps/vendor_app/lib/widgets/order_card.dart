@@ -403,7 +403,7 @@ class _CancelBlock extends StatelessWidget {
     final who = switch (order.cancelledBy) {
       CancelledBy.customer => 'Cancelled by the customer · ग्राहक ने रद्द किया',
       CancelledBy.vendor => 'Declined by you · आपने मना किया',
-      CancelledBy.admin => 'Cancelled by Kraveo · Kraveo ने रद्द किया',
+      CancelledBy.admin => 'Cancelled by ${BrandConfig.name} · ${BrandConfig.name} ने रद्द किया',
       CancelledBy.system => order.cancelReason == 'Restaurant did not respond'
           ? 'Not accepted in 10 minutes · समय पर जवाब नहीं'
           : 'Cancelled automatically · अपने आप रद्द',

@@ -123,6 +123,7 @@ describe('Tier 1: Feature Coverage E2E Test Suite (30 Test Cases Across 6 Featur
         }
       });
 
+      await request.get('/api/orders/available').set(getAuthHeader(driverToken));
       const acceptRes = await request
         .post(`/api/orders/${order.id}/accept-driver`)
         .set(getAuthHeader(driverToken))
@@ -606,6 +607,8 @@ describe('Tier 1: Feature Coverage E2E Test Suite (30 Test Cases Across 6 Featur
     });
 
     test('T1_AUTH_04: Driver Role RBAC Enforcement', async () => {
+      await cleanTestOrders();
+      await prisma.driverPartner.update({where:{userId:'usr-4'},data:{dutyStatus:'ONLINE'}});
       const order = await prisma.order.create({
         data: {
           id: 'test-ord-auth-04',
@@ -627,6 +630,7 @@ describe('Tier 1: Feature Coverage E2E Test Suite (30 Test Cases Across 6 Featur
       expect(studentRes.status).toBe(403);
 
       // 2. Authorized DRIVER token -> 200 OK
+      await request.get('/api/orders/available').set(getAuthHeader(driverToken));
       const driverRes = await request
         .post(`/api/orders/${order.id}/accept-driver`)
         .set(getAuthHeader(driverToken));
@@ -703,7 +707,7 @@ describe('Tier 1: Feature Coverage E2E Test Suite (30 Test Cases Across 6 Featur
       const dl1 = await request.get('/api/drivers/locations');
       expect(dl1.status).toBe(401);
       const dl2 = await request.get('/api/drivers/locations').set(getAuthHeader(studentToken));
-      expect(dl2.status).toBe(200);
+      expect(dl2.status).toBe(403);
     });
   });
 
@@ -792,7 +796,8 @@ describe('Tier 1: Feature Coverage E2E Test Suite (30 Test Cases Across 6 Featur
     });
 
     test('T1_SOC_03: Real-Time Driver Location Stream Broadcast', async () => {
-      // Admin dashboard socket listens; the rider's socket streams its position.
+      await prisma.order.create({data:{customerId:'usr-1',vendorId:'ven-1',driverId:'usr-4',totalAmount:200,dropoffHostel:'Block 3',status:'PICKED_UP',paymentStatus:'PAID'}});
+      // Admin dashboard socket listens; the assigned rider streams its position.
       clientSocket = await connectTestSocket(serverInstance.baseUrl, { auth: { token: adminToken } });
       const riderSocket = await connectTestSocket(serverInstance.baseUrl, { auth: { token: driverToken } });
 

@@ -34,7 +34,7 @@ class FirstRunCard extends StatelessWidget {
             done: hasDishes,
             label: 'Add a dish',
             hindi: 'मेनू में व्यंजन जोड़ें',
-            note: waitingApproval ? 'Waiting for Kraveo to approve your dish.  ·  मंज़ूरी का इंतज़ार' : 'Kraveo approves each new dish first.  ·  पहले Kraveo मंज़ूर करेगा',
+            note: waitingApproval ? 'Waiting for ${BrandConfig.name} to approve your dish.  ·  मंज़ूरी का इंतज़ार' : '${BrandConfig.name} approves each new dish first.  ·  पहले ${BrandConfig.name} मंज़ूर करेगा',
             onTap: onAddDish,
           ),
           _Step(key: const ValueKey('first-run-open'), number: 2, done: isOpen, label: 'Tap OPEN', hindi: 'दुकान खोलें', onTap: onOpenStore),

@@ -119,16 +119,16 @@ class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> with 
           KraveoPalette.warning,
           'Your account is paused',
           'आपका अकाउंट रुका हुआ है',
-          'You cannot take orders right now. Email Kraveo support to open it again.',
-          'अभी आप ऑर्डर नहीं ले सकते। दोबारा चालू करने के लिए Kraveo सपोर्ट को ईमेल करें।',
+          'You cannot take orders right now. Email ${BrandConfig.name} support to open it again.',
+          'अभी आप ऑर्डर नहीं ले सकते। दोबारा चालू करने के लिए ${BrandConfig.name} सपोर्ट को ईमेल करें।',
         ),
       _ => (
           LucideIcons.hourglass,
           k.brand,
           'Thanks! We are checking your details',
           'धन्यवाद! हम आपकी जानकारी जाँच रहे हैं',
-          'Kraveo may call you on ${s.phone ?? 'your number'}. You can start taking orders as soon as you are approved.',
-          'Kraveo आपको फ़ोन कर सकता है। मंज़ूरी मिलते ही आप ऑर्डर लेना शुरू कर सकते हैं।',
+          '${BrandConfig.name} may call you on ${s.phone ?? 'your number'}. You can start taking orders as soon as you are approved.',
+          '${BrandConfig.name} आपको फ़ोन कर सकता है। मंज़ूरी मिलते ही आप ऑर्डर लेना शुरू कर सकते हैं।',
         ),
     };
     final pending = s.approval == PartnerApproval.pending;
@@ -190,7 +190,7 @@ class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> with 
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text('Reason from Kraveo  ·  Kraveo का कारण', style: KraveoType.label.copyWith(color: k.inkMuted, fontSize: 13)),
+                            Text('Reason from ${BrandConfig.name}  ·  ${BrandConfig.name} का कारण', style: KraveoType.label.copyWith(color: k.inkMuted, fontSize: 13)),
                             const SizedBox(height: 4),
                             Text(reason, style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 18)),
                           ]),
@@ -276,7 +276,7 @@ class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> with 
                   ),
                 ),
                 const SizedBox(height: 18),
-                Text('Need help? Email Kraveo support.  ·  मदद चाहिए? Kraveo सपोर्ट को ईमेल करें।',
+                Text('Need help? Email ${BrandConfig.name} support.  ·  मदद चाहिए? ${BrandConfig.name} सपोर्ट को ईमेल करें।',
                     style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
                 const SizedBox(height: 4),
                 const SupportEmailLink(key: ValueKey('status-support-email')),

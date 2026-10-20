@@ -118,7 +118,7 @@ void main() {
       await _pumpApp(tester, auth);
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(find.text('Delivery partner login'), findsOneWidget);
-      expect(find.textContaining('Forgot password? Ask Kraveo support'), findsOneWidget);
+      expect(find.textContaining('Forgot password? Ask DailyMarket support'), findsOneWidget);
       expect(auth.profileTokens, isEmpty);
       // Nothing is pre-filled: the app never holds or shows a default password.
       final password = tester.widget<TextField>(find.byKey(const ValueKey('password-field')));
@@ -169,7 +169,7 @@ void main() {
       expect(await DriverApiService.getSavedToken(), 'jwt-123');
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('kraveo_driver_jwt_token'), 'jwt-123');
+      expect(prefs.getString('kraveo_driver_jwt_token'), isNull); // JWT is protected, never stored in preferences.
       final stored = prefs.getString(SessionController.sessionPrefKey)!;
       expect(jsonDecode(stored)['runnerCode'], 'RUN-7731');
       // The password is never persisted anywhere.
@@ -269,13 +269,13 @@ void main() {
       auth.onLogin = (_, __) => const LoginResult.failure(LoginFailure.offline);
       await _tapLogin(tester);
       await _settle(tester);
-      expect(find.textContaining('Can\'t reach Kraveo'), findsOneWidget);
+      expect(find.textContaining('Can\'t reach DailyMarket'), findsOneWidget);
       expect(find.text('This number belongs to a restaurant partner.'), findsNothing);
 
       auth.onLogin = (_, __) => const LoginResult.failure(LoginFailure.server);
       await _tapLogin(tester);
       await _settle(tester);
-      expect(find.textContaining('Kraveo is having trouble'), findsOneWidget);
+      expect(find.textContaining('DailyMarket is having trouble'), findsOneWidget);
       expect(find.byType(LoginScreen), findsOneWidget);
       await _unmount(tester);
     });
@@ -322,7 +322,7 @@ void main() {
       final auth = FakeAuth()..profile = const ProfileResult(ProfileOutcome.unreachable);
       await _pumpApp(tester, auth);
 
-      expect(find.text('Can\'t reach Kraveo'), findsOneWidget);
+      expect(find.text('Can\'t reach DailyMarket'), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
       expect(find.byType(LoginScreen), findsNothing);
       expect(await DriverApiService.getSavedToken(), 'stored-jwt');
@@ -331,7 +331,7 @@ void main() {
       await tester.tap(find.text('Retry'));
       await _settle(tester);
       expect(auth.profileTokens.length, 2);
-      expect(find.text('Can\'t reach Kraveo'), findsNothing);
+      expect(find.text('Can\'t reach DailyMarket'), findsNothing);
       expect(find.text('RUN-7731'), findsOneWidget); // runner code survives from the stored login
       await _unmount(tester);
     });

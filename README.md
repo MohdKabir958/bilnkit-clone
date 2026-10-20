@@ -1,6 +1,6 @@
 # DailyMarket — Kraveo-based marketplace fork
 
-This fork is being adapted into an India-wide multi-vendor grocery and delivery platform. It retains Kraveo's Node/Prisma backend, React operations website, three Flutter apps, Socket.io, FCM and Razorpay integrations. **The grocery conversion is under implementation; this is not a production-ready release.**
+This fork is being adapted into an India-wide multi-vendor grocery and delivery platform. It retains Kraveo's Node/Prisma backend, React operations website, three Flutter apps, Socket.io, FCM and Razorpay integrations. The implemented local pilot includes enabled-city delivery areas, grocery SKUs/inventory, private rider dispatch, doorstep OTP, support and operations. **External service/device and operator launch gates remain open; this is not a production-certified release.**
 
 See [implementation progress](Docs/04_implementation_progress.md), [test evidence](Docs/05_test_cases.md) and [remaining work](Docs/10_remaining_work.md). Upstream readiness claims are not used as verification.
 
@@ -8,7 +8,7 @@ See [implementation progress](Docs/04_implementation_progress.md), [test evidenc
 |---|---|
 | `backend/` | Express/TypeScript, Prisma/PostgreSQL, payments, dispatch and role authorization |
 | `web/super_admin/` | Responsive operations website |
-| `web/landing/` | Existing public landing pages, pending full rebranding/asset review |
+| `web/landing/` | Neutral pilot information and draft legal pages |
 | `apps/customer_app/` | Flutter customer app |
 | `apps/vendor_app/` | Flutter vendor app |
 | `apps/driver_app/` | Flutter delivery partner app |
@@ -47,7 +47,7 @@ Backend tests delete records. Always use a separate database ending in `_test`; 
 
 ## Rebranding
 
-Edit `branding/brand.json`, run `python3 scripts/configure_brand.py`, then rebuild. Names, Android IDs/labels/icons/splash, shared palette, API service name and initial admin/mobile identity come from that configuration. Remaining inherited text/assets are listed in the audit. Register the generated IDs in your own Firebase/Google projects; upstream service configuration is not an entitlement to use those projects.
+Edit `branding/brand.json`, run `python3 scripts/configure_brand.py`, then rebuild. Names, Android IDs/labels/icons/splash, shared palette, API service name and admin/mobile identity come from that configuration. Remaining inherited text/assets are listed in the audit. Register the generated IDs in your own Firebase/Google projects; upstream service configuration is not an entitlement to use those projects.
 
 ## License and attribution
 

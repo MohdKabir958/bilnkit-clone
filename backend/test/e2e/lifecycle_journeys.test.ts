@@ -64,7 +64,7 @@ describe('Lifecycle journeys', () => {
   const STEPS = ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'CLAIMED', 'PICKED_UP', 'ARRIVED_AT_GATE'];
   const driveTo = async (id: string, target: string, v: Vendor, r: Rider) => {
     for (const st of STEPS) {
-      if (st === 'CLAIMED') expect((await api.claim(r, id)).status).toBe(200);
+      if (st === 'CLAIMED') {expect((await api.reassign(W.admin,id,r.id)).status).toBe(200);expect((await api.claim(r,id)).status).toBe(200);}
       else if (['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP'].includes(st)) expect((await api.setStatus(v, id, st)).status).toBe(200);
       else expect((await api.setStatus(r, id, st)).status).toBe(200);
       if (st === target) return;
@@ -175,7 +175,7 @@ describe('Lifecycle journeys', () => {
 
       // --- 3. accept -> pool -------------------------------------------------------------------
       expect((await api.setStatus(v1, id, 'ACCEPTED')).status).toBe(200);
-      await until(() => wr1.count('order_available', id) === 1 && wr2.count('order_available', id) === 1, 3000, 'order_available');
+      await until(() => wr1.count('order_available', id) === 1 && wr2.count('order_available', id) === 0, 3000, 'order_available');
       const offer = wr1.last('order_available', id);
       expect(offer).toMatchObject({ customer: null, dropoffNotes: null, driver: null, otpCode: null, paymentStatus: 'PAID', status: 'ACCEPTED' });
       expect(wc.last('order_updated', id).status).toBe('ACCEPTED');
@@ -189,7 +189,7 @@ describe('Lifecycle journeys', () => {
       expect([a.status, b.status].sort()).toEqual([200, 409]);
       const winner = a.status === 200 ? r1 : r2; const loser = winner === r1 ? r2 : r1;
       const ww = winner === r1 ? wr1 : wr2; const wl = winner === r1 ? wr2 : wr1;
-      expect((a.status === 409 ? a : b).body.code).toBe('ALREADY_TAKEN');
+      expect(['ALREADY_TAKEN','OFFER_EXPIRED']).toContain((a.status === 409 ? a : b).body.code);
       await flushAll();
       expect(wl.count('order_unavailable', id)).toBe(1);
       expect(wl.last('order_unavailable', id)).toEqual({ id });
@@ -198,7 +198,7 @@ describe('Lifecycle journeys', () => {
       expect(await wl.join(`order_${id}`)).toBe(false);
       expect((await api.get(loser, id)).status).toBe(404);
       expect((await api.available(loser)).body.data.map((o: any) => o.id)).not.toContain(id);
-      expect((await api.get(winner, id)).body.data.customer).toEqual({ id: c1.id, name: c1.name, phone: c1.phone, hostelBlock: 'Block 3' });
+      expect((await api.get(winner, id)).body.data.customer).toEqual({ id: c1.id, name: c1.name, phone: c1.phone, hostelBlock: null });
       expect((await api.get(winner, id)).body.data.dropoffNotes).toBe('Room 214');
       const custDriver = (await api.get(c1, id)).body.data.driver;
       expect(custDriver).toEqual({ id: winner.id, name: winner.name, phone: winner.phone });
@@ -619,7 +619,7 @@ describe('Lifecycle journeys', () => {
       // r1 is free to take a new order straight away.
       const o2 = await placePaid(c1, v1);
       await api.setStatus(v1, o2.id, 'ACCEPTED');
-      expect((await api.claim(r1, o2.id)).status).toBe(200);
+      expect((await api.reassign(W.admin,o2.id,r1.id)).status).toBe(200);expect((await api.claim(r1, o2.id)).status).toBe(200);
     });
 
     test('rider suspended mid-delivery (PICKED_UP): readable but blocked, admin sees it, reassigns; the new rider finishes with the OTP', async () => {
@@ -659,7 +659,7 @@ describe('Lifecycle journeys', () => {
       expect(w1.since(m).filter((e) => e.otpCode)).toEqual([]);
       expect(w1.events.map((e) => e.data?.otpCode ?? null).filter(Boolean)).toEqual([]);
       expect(await dutyOf(r2)).toBe('ONLINE');
-      expect(await audit(id, 'ORDER_REASSIGNED')).toBe(1);
+      expect(await audit(id, 'ORDER_REASSIGNED')).toBe(2); // Fixture assignment and operational reassignment.
       expectHygiene([], [w1, w2], [wc]);
     });
 
@@ -767,7 +767,7 @@ describe('Lifecycle journeys', () => {
       // The freed rider can take the next order.
       const next = await placePaid(c1, v1);
       await api.setStatus(v1, next.id, 'ACCEPTED');
-      expect((await api.claim(r1, next.id)).status).toBe(200);
+      expect((await api.reassign(W.admin,next.id,r1.id)).status).toBe(200);expect((await api.claim(r1, next.id)).status).toBe(200);
       expectHygiene([wv], [w1, w2], [wc]);
     });
 
@@ -971,11 +971,11 @@ describe('Lifecycle journeys', () => {
       const m = wc.mark();
       await api.location(r1, 23.08, 76.86);
       await flushAll();
-      expect(wc.since(m, 'rider_location')).toEqual([]);
+      expect(wc.since(m, 'rider_location')).toHaveLength(1); // The owning customer's authenticated user room restores tracking.
       expect(await wc.join(`order_${id}`)).toBe(true);
       await api.location(r1, 23.09, 76.87);
       await flushAll();
-      expect(wc.since(m, 'rider_location')).toHaveLength(1);
+      expect(wc.since(m, 'rider_location')).toHaveLength(2);
       // Auto rooms (restaurant, drivers, admins) work again without any join.
       const { id: id2 } = await placePaid(c1, v1);
       await api.setStatus(v1, id2, 'ACCEPTED');
@@ -1251,9 +1251,9 @@ describe('Lifecycle journeys', () => {
       const placedOnly = await placePaid(c1, v1);
       const accepted = await placePaid(c1, v1); await api.setStatus(v1, accepted.id, 'ACCEPTED');
       const ready = await placePaid(c2, v2); await api.setStatus(v2, ready.id, 'ACCEPTED'); await api.setStatus(v2, ready.id, 'PREPARING'); await api.setStatus(v2, ready.id, 'READY_FOR_PICKUP');
-      const taken = await placePaid(c2, v2); await api.setStatus(v2, taken.id, 'ACCEPTED'); await api.claim(r1, taken.id);
+      const taken = await placePaid(c2, v2); await api.setStatus(v2, taken.id, 'ACCEPTED'); expect((await api.reassign(W.admin,taken.id,r1.id)).status).toBe(200);
       const pool = (await api.available(r2)).body.data.map((o: any) => o.id);
-      expect(pool).toEqual([ready.id, accepted.id]);
+      expect(pool).toEqual([ready.id]); // One personal offer per idle rider.
       expect(pool).not.toContain(unpaid); expect(pool).not.toContain(placedOnly.id); expect(pool).not.toContain(taken.id);
       await api.duty(r2, false);
       expect((await api.available(r2)).body.data).toEqual([]);

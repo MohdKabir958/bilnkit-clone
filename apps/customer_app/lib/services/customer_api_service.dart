@@ -1,7 +1,8 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kraveo_ui/kraveo_ui.dart' show SecureSessionTokens;
 import '../config/api_config.dart';
 import '../models/auth_results.dart';
 import '../models/food_category.dart';
@@ -10,6 +11,7 @@ class CustomerApiService {
   static String? selectedAddressId;
   static const String _tokenPrefKey = 'kraveo_customer_jwt_token';
   static String? _cachedToken;
+  static int _tokenEpoch = 0;
 
   /// Message shown (and thrown) when an authenticated call is rejected with HTTP 401.
   static const String sessionExpiredMessage = 'Session expired, please log in again';
@@ -64,14 +66,16 @@ class CustomerApiService {
     return true;
   }
 
-  /// Retrieves stored JWT auth token from SharedPreferences or memory cache
+  /// Retrieves the JWT from protected storage or the in-memory session cache
   static Future<String?> getSavedToken() async {
     if (_cachedToken != null && _cachedToken!.isNotEmpty) {
       return _cachedToken;
     }
+    final epoch = _tokenEpoch;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      _cachedToken = prefs.getString(_tokenPrefKey);
+      final stored = await SecureSessionTokens.read(_tokenPrefKey);
+      if (epoch != _tokenEpoch) return _cachedToken;
+      _cachedToken = stored;
       return _cachedToken;
     } catch (_) {
       return _cachedToken;
@@ -80,20 +84,20 @@ class CustomerApiService {
 
   /// Saves JWT token to local persistence
   static Future<void> saveToken(String token) async {
+    _tokenEpoch++;
     _cachedToken = token;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_tokenPrefKey, token);
+      await SecureSessionTokens.write(_tokenPrefKey, token);
     } catch (_) {}
   }
 
   /// Clears the persisted student session after logout or token rejection.
   static Future<void> clearToken() async {
+    _tokenEpoch++;
     selectedAddressId = null;
     _cachedToken = null;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_tokenPrefKey);
+      await SecureSessionTokens.delete(_tokenPrefKey);
     } catch (_) {}
   }
 
@@ -285,7 +289,7 @@ class CustomerApiService {
       }
       final userMap = Map<String, dynamic>.from(user);
       if (userMap['role'] != null && userMap['role'] != 'STUDENT') {
-        return const GoogleLoginResult(success: false, statusCode: 403, message: 'This Google account can\'t sign in to the Kraveo customer app.');
+        return const GoogleLoginResult(success: false, statusCode: 403, message: 'This Google account can\'t sign in to the ${BrandConfig.name} customer app.');
       }
       await saveToken(token);
       return GoogleLoginResult(

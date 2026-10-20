@@ -143,20 +143,20 @@ class _LoginScreenState extends State<LoginScreen> {
       case LoginFailure.wrongRole:
         return _LoginProblem(
           icon: LucideIcons.store,
-          title: r.message ?? 'This number is registered for another Kraveo app.',
-          hindi: 'यह नंबर किसी दूसरे Kraveo ऐप के लिए है।',
+          title: r.message ?? 'This number is registered for another ${BrandConfig.name} app.',
+          hindi: 'यह नंबर किसी दूसरे ${BrandConfig.name} ऐप के लिए है।',
         );
       case LoginFailure.offline:
         return const _LoginProblem(
           icon: LucideIcons.wifiOff,
-          title: 'Can\'t reach Kraveo. Check your internet and try again.',
+          title: 'Can\'t reach ${BrandConfig.name}. Check your internet and try again.',
           hindi: 'इंटरनेट जाँचें और फिर कोशिश करें।',
         );
       case LoginFailure.server:
         return const _LoginProblem(
           icon: LucideIcons.triangleAlert,
-          title: 'Kraveo is having trouble. Please try again in a moment.',
-          hindi: 'Kraveo में दिक्कत है। थोड़ी देर बाद कोशिश करें।',
+          title: '${BrandConfig.name} is having trouble. Please try again in a moment.',
+          hindi: '${BrandConfig.name} में दिक्कत है। थोड़ी देर बाद कोशिश करें।',
         );
     }
   }
@@ -326,10 +326,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text('Forgot password? Ask Kraveo support.',
+                              Text('Forgot password? Ask ${BrandConfig.name} support.',
                                   style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 17)),
                               const SizedBox(height: 2),
-                              Text('पासवर्ड भूल गए? Kraveo सपोर्ट से पूछें।',
+                              Text('पासवर्ड भूल गए? ${BrandConfig.name} सपोर्ट से पूछें।',
                                   style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 15)),
                               const SizedBox(height: 6),
                               const SupportEmailLink(key: ValueKey('login-support-email')),

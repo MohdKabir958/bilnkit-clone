@@ -300,6 +300,7 @@ void main() {
     await tester.pumpWidget(KraveoVendorApp(auth: SignedInAuth(), backend: backend, socketFactory: FakeSocket.new, alarm: alarm));
     await settle(tester);
     expect(find.byKey(kNotificationBannerKey), findsNothing);
+    await tester.scrollUntilVisible(find.text('No orders right now'),100,scrollable:find.byType(Scrollable).first);await tester.pump(const Duration(milliseconds:400));
     expect(find.text('No orders right now'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 6));

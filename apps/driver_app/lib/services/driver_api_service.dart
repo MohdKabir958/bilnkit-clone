@@ -1,18 +1,20 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kraveo_ui/kraveo_ui.dart' show SecureSessionTokens;
 import '../config/api_config.dart';
 
 class DriverApiService {
   static const String _tokenPrefKey = 'kraveo_driver_jwt_token';
   static String? _cachedToken;
+  static int _tokenEpoch = 0;
 
   /// Shown when the server rejects the saved token (HTTP 401) on an authenticated call.
   static const String sessionExpiredMessage = 'Session expired. Please log in again.';
 
   /// Shown when the 401 says an admin paused the account (`reason: ACCOUNT_SUSPENDED`).
-  static const String accountPausedMessage = 'Your Kraveo account is paused. Please contact Kraveo support.';
+  static const String accountPausedMessage = 'Your ${BrandConfig.name} account is paused. Please contact ${BrandConfig.name} support.';
 
   /// True when a 401 body says the token ended because the account was suspended.
   static bool isSuspendedBody(String body) {
@@ -53,14 +55,16 @@ class DriverApiService {
     }
   }
 
-  /// Retrieves stored JWT auth token from SharedPreferences or memory cache
+  /// Retrieves the JWT from protected storage or the in-memory session cache
   static Future<String?> getSavedToken() async {
     if (_cachedToken != null && _cachedToken!.isNotEmpty) {
       return _cachedToken;
     }
+    final epoch = _tokenEpoch;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      _cachedToken = prefs.getString(_tokenPrefKey);
+      final stored = await SecureSessionTokens.read(_tokenPrefKey);
+      if (epoch != _tokenEpoch) return _cachedToken;
+      _cachedToken = stored;
       return _cachedToken;
     } catch (_) {
       return _cachedToken;
@@ -69,19 +73,19 @@ class DriverApiService {
 
   /// Saves JWT token to local persistence
   static Future<void> saveToken(String token) async {
+    _tokenEpoch++;
     _cachedToken = token;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_tokenPrefKey, token);
+      await SecureSessionTokens.write(_tokenPrefKey, token);
     } catch (_) {}
   }
 
   /// Forgets the JWT (memory and disk). Called on logout and on session expiry.
   static Future<void> clearToken() async {
+    _tokenEpoch++;
     _cachedToken = null;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_tokenPrefKey);
+      await SecureSessionTokens.delete(_tokenPrefKey);
     } catch (_) {}
   }
 

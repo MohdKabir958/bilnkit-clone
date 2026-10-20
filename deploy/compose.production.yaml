@@ -1,0 +1,62 @@
+# Configure .env.production using the adjacent example; no production action is run automatically.
+services:
+  database:
+    image: postgres:17-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: market
+      POSTGRES_USER: market
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a strong database password}
+    volumes: [database:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U market -d market']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  migrate:
+    profiles: [maintenance]
+    build:
+      context: ../backend
+      target: migrate
+    env_file: .env.production
+    depends_on:
+      database:
+        condition: service_healthy
+    command: [npm, run, db:deploy]
+  api:
+    build:
+      context: ../backend
+      target: runtime
+    restart: unless-stopped
+    init: true
+    env_file: .env.production
+    environment:
+      NODE_ENV: production
+      UPLOAD_DIR: /var/lib/market/uploads
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - uploads:/var/lib/market/uploads
+      - ./secrets/firebase.json:/run/secrets/firebase.json:ro
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+  gateway:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:?Set the DNS hostname}
+    ports: ['80:80', '443:443']
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../web/super_admin/dist:/srv/admin:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [api]
+volumes:
+  database:
+  uploads:
+  caddy_data:
+  caddy_config:

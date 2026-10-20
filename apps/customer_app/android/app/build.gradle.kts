@@ -43,9 +43,22 @@ android {
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
+    val signingKeys = listOf("ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD", "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD")
+    val releaseRequested = gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
+    if (releaseRequested && signingKeys.any { System.getenv(it).isNullOrBlank() }) {
+        throw GradleException("Release requires an owned keystore: configure ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD.")
+    }
+    signingConfigs {
+        create("ownedRelease") {
+            System.getenv("ANDROID_KEYSTORE_PATH")?.let { storeFile = file(it) }
+            storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+        }
+    }
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("ownedRelease")
         }
     }
 }

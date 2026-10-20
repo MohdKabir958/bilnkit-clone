@@ -1,3 +1,4 @@
+import { runDispatchMaintenance } from '../services/dispatch';
 import { Router, Request, Response, NextFunction } from 'express';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../db';
@@ -268,15 +269,16 @@ orderRouter.get('/orders', requireAuth, async (req: AuthenticatedRequest, res: R
 // Rider offers: paid, cooking or ready, unassigned. Offline riders get an empty list.
 orderRouter.get('/orders/available', requireAuth, requireRole('DRIVER'), requireApprovedPartner, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const rider = await prisma.driverPartner.findUnique({ where: { userId: req.user!.id }, select: { dutyStatus: true, approvalStatus: true } });
-    if (!rider || rider.approvalStatus !== 'APPROVED' || rider.dutyStatus === 'OFFLINE') return res.json({ success: true, count: 0, data: [] });
-    // Docs/22: combined orders are only offered to riders whose app asks for them (?groups=1): an old rider app would show a combined
-    // order as one restaurant. A group is ONE entry (its primary child) and only when EVERY child is claimable (isPoolEligible re-checks).
+    const rider = await prisma.driverPartner.findUnique({ where: { userId: req.user!.id } });
+    if (!rider || rider.approvalStatus !== 'APPROVED' || rider.dutyStatus !== 'ONLINE') return res.json({ success: true, count: 0, data: [] });
+    if(!rider.cityId || !rider.serviceZoneId) return res.json({success:true,count:0,data:[],notice:'Your delivery service area needs operations setup.'});
+    await runDispatchMaintenance(new Date(),rider.cityId,true);
+    const offers=await prisma.dispatchOffer.findMany({where:{driverId:rider.id,state:'PENDING',expiresAt:{gt:new Date()}},select:{id:true,orderId:true,expiresAt:true}});
     const wantsGroups = req.query.groups === '1' || req.query.groups === 'true';
     const POOL = ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP'] as const;
     const orders = await prisma.order.findMany({
       where: {
-        paymentStatus: 'PAID', driverId: null, status: { in: [...POOL] },
+        id:{in:offers.map((o)=>o.orderId)}, paymentStatus: 'PAID', driverId: null, status: { in: [...POOL] },
         OR: wantsGroups
           ? [{ groupId: null }, { groupIndex: 0, group: { is: { orders: { none: { OR: [{ paymentStatus: { not: 'PAID' } }, { driverId: { not: null } }, { status: { notIn: [...POOL] } }] } } } } }]
           : [{ groupId: null }],
@@ -286,7 +288,7 @@ orderRouter.get('/orders/available', requireAuth, requireRole('DRIVER'), require
       orderBy: [{ status: 'desc' }, { updatedAt: 'desc' }],
       take: POOL_LIMIT,
     });
-    const data = orders.map((o) => viewFor(req, o)).filter((v) => v !== null);
+    const data = orders.map((o) => ({...viewFor(req,o),dispatchOffer:{id:offers.find((f)=>f.orderId===o.id)!.id,expiresAt:offers.find((f)=>f.orderId===o.id)!.expiresAt.toISOString()}})).filter((v) => v !== null);
     return res.json({ success: true, count: data.length, data });
   } catch (err) {
     return fail(res, err, 'rider pool');
@@ -300,7 +302,7 @@ orderRouter.get('/orders/:id', requireAuth, validId, async (req: AuthenticatedRe
     if (view && order && req.user!.role === 'DRIVER' && order.driverId !== req.user!.id) {
       // Pool details only for approved riders.
       const rider = await prisma.driverPartner.findUnique({ where: { userId: req.user!.id }, select: { approvalStatus: true } });
-      if (rider?.approvalStatus !== 'APPROVED') view = null;
+      if (rider?.approvalStatus !== 'APPROVED' || !await prisma.dispatchOffer.count({where:{orderId:order.id,state:'PENDING',expiresAt:{gt:new Date()},driver:{userId:req.user!.id,approvalStatus:'APPROVED',dutyStatus:'ONLINE'}}})) view = null;
     }
     // Someone else's order and a missing order look the same (no existence leak).
     if (!view) return res.status(404).json({ success: false, code: 'NOT_FOUND', message: 'Order not found' });
@@ -404,16 +406,10 @@ orderRouter.post('/orders/:id/release', requireAuth, requireRole('DRIVER'), requ
   }
 });
 
-orderRouter.post('/drivers/location', requireAuth, requireRole('DRIVER', 'ADMIN'), requireApprovedPartner, async (req: AuthenticatedRequest, res: Response) => {
+orderRouter.post('/drivers/location', requireAuth, requireRole('DRIVER'), requireApprovedPartner, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { lat, lng, heading, driverId: requested } = req.body ?? {};
-    let riderUserId = req.user!.id;
-    if (req.user!.role === 'ADMIN') {
-      if (typeof requested !== 'string' || !ID_RE.test(requested)) return bad(res, 'driverId is required.', 'driverId');
-      const d = await prisma.driverPartner.findFirst({ where: { OR: [{ id: requested }, { userId: requested }] }, select: { userId: true } });
-      if (!d?.userId) return bad(res, 'A linked driver profile is required.', 'driverId');
-      riderUserId = d.userId;
-    }
+    const {lat,lng,heading}=req.body??{};
+    const riderUserId=req.user!.id;
     const loc = await recordRiderLocation(riderUserId, lat, lng, heading);
     return res.json({ success: true, data: loc });
   } catch (err: any) {

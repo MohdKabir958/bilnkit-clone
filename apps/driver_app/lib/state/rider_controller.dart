@@ -1,3 +1,5 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
+import '../services/dispatch_api.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,6 +15,7 @@ class RiderServices {
     required this.api,
     required this.socket,
     required this.location,
+    this.dispatchApi = const HttpRiderDispatchApi(),
     this.pollInterval = const Duration(seconds: 15),
     this.locationInterval = kLocationInterval,
     this.minPostGap = const Duration(seconds: 9),
@@ -31,6 +34,7 @@ class RiderServices {
   final RiderOrdersApi api;
   final RiderSocket socket;
   final LocationSource location;
+  final RiderDispatchApi dispatchApi;
   final Duration pollInterval;
   final Duration locationInterval;
 
@@ -77,7 +81,7 @@ class RiderController extends ChangeNotifier {
   RiderController(this.services, {Set<String> myIds = const {}}) : _myIds = myIds.where((e) => e.isNotEmpty).toSet();
 
   static const String dutyPrefKey = 'kraveo_driver_duty_online';
-  static const supportMessage = 'Contact Kraveo support – this delivery is locked.';
+  static const supportMessage = 'Contact ${BrandConfig.name} support – this delivery is locked.';
 
   final RiderServices services;
   final Set<String> _myIds;
@@ -169,7 +173,7 @@ class RiderController extends ChangeNotifier {
 
   /// Location is shared while the rider is on duty AND while a delivery is in hand, even after the rider
   /// switched the duty off: the customer's live map must not freeze mid-delivery.
-  bool get sharingLocation => _onDuty || _active != null;
+  bool get sharingLocation => _active != null && !_active!.status.isTerminal;
   DateTime? get lastFixAt => _lastFixAt;
   bool get lastLocationPostFailed => _lastLocationPostFailed;
 
@@ -333,7 +337,7 @@ class RiderController extends ChangeNotifier {
       if (_disposed) return;
       if (!r.ok && r.failure != ApiFailure.unauthorized && r.failure != ApiFailure.notApproved) {
         _pendingOffSync = true;
-        _say('You are off duty on this phone. Kraveo will be told when the internet is back.');
+        _say('You are off duty on this phone. ${BrandConfig.name} will be told when the internet is back.');
       } else {
         _pendingOffSync = false;
         if (wasOn) {
@@ -360,7 +364,7 @@ class RiderController extends ChangeNotifier {
       _startLocation();
       _updateConnection();
       _notify();
-      if (!restoring) _say('You are on duty. Live location is on.');
+      if (!restoring) _say('You are on duty. Location sharing starts when you accept a delivery.');
       if (_active == null) await refreshOffers();
       return;
     }
@@ -376,7 +380,7 @@ class RiderController extends ChangeNotifier {
         _say('Too many tries. Wait a moment and try again.');
       case ApiFailure.server:
       case ApiFailure.badResponse:
-        _say('Could not go on duty – Kraveo is having trouble. Try again.');
+        _say('Could not go on duty – ${BrandConfig.name} is having trouble. Try again.');
       default:
         _say('Could not go on duty – check internet');
     }
@@ -444,21 +448,21 @@ class RiderController extends ChangeNotifier {
     } else {
       _goOffLocally();
       unawaited(_saveDutyPref(false));
-      _say('Kraveo has you off duty. Go on duty again to receive orders.');
+      _say('${BrandConfig.name} has you off duty. Go on duty again to receive orders.');
     }
   }
 
   /// A delivery is in hand but the duty switch is off (the app was restarted, or Kraveo assigned the order):
   /// keep the customer's live map alive.
   void _resumeSharingForActive() {
-    if (_disposed || _active == null || _onDuty) return;
+    if (_disposed || _active == null) return;
     if (_location != LocationState.off || _trackSub != null || _locTimer != null) return;
     _startLocation();
   }
 
   /// A delivery ended (finished or released) while the duty switch is off: location sharing stops now.
   void _stopSharingIfIdle() {
-    if (_onDuty || _active != null) return;
+    if (_active != null) return;
     if (_location == LocationState.off && _trackSub == null && _locTimer == null) return;
     _stopLocation();
   }
@@ -472,6 +476,8 @@ class RiderController extends ChangeNotifier {
   /// position stream (updates continue with the screen off); otherwise, and whenever the stream
   /// cannot run, the original 10 s timer polls `read()`.
   void _startLocation() {
+    if (!sharingLocation) { _stopLocation(); return; }
+    if(_locBusy||_trackSub!=null||_locTimer!=null)return;
     _cancelTracking();
     _locTimer?.cancel();
     _locTimer = null;
@@ -635,7 +641,8 @@ class RiderController extends ChangeNotifier {
   // Offers (the pool)
   // =====================================================================================
 
-  static bool _poolable(OrderView o) =>
+  bool _poolable(OrderView o) =>
+      (o.offerExpiresAt==null||o.offerExpiresAt!.isAfter(_now())) &&
       (o.paymentStatus == null || o.paymentStatus == 'PAID') &&
       o.driver == null &&
       (o.status == OrderStatus.accepted || o.status == OrderStatus.preparing || o.status == OrderStatus.readyForPickup);
@@ -655,7 +662,7 @@ class RiderController extends ChangeNotifier {
     _offersLoaded = true;
     _removedAt.removeWhere((_, t) => _now().difference(t) > const Duration(minutes: 2));
     _offers = r.value!.where((o) {
-      if (!_poolable(o) || _dismissed.contains(o.id)) return false;
+      if (!_poolable(o) || _dismissed.contains(o.offerId ?? o.id)) return false;
       // Gone over the socket after this request left: the poll answer is older than that news.
       final gone = _removedAt[o.id];
       return gone == null || gone.isBefore(startedAt);
@@ -671,15 +678,21 @@ class RiderController extends ChangeNotifier {
   }
 
   /// "Not for me": hides an offer on this phone only.
-  void dismissOffer(String id) {
-    _dismissed.add(id);
-    _offers = _offers.where((o) => o.id != id).toList();
-    _notify();
+  Future<void> dismissOffer(String id) async {
+    final matches=_offers.where((o)=>o.id==id);if(matches.isEmpty) return;
+    final offer=matches.first,key=offer.offerId??id;
+    _dismissed.add(key);_offers=_offers.where((o)=>o.id!=id).toList();_notify();
+    if(offer.offerId==null) return;
+    final error=await services.dispatchApi.decline(offer.offerId!);
+    if(_disposed) return;
+    if(error!=null) { _dismissed.remove(key);if(_active==null&&!_offers.any((o)=>o.id==id)) _offers=[..._offers,offer];_say(error);_notify(); }
+    else {await refreshOffers();}
   }
 
   /// Atomic claim. Returns true only when the server confirmed this rider now has the order.
   Future<bool> claim(OrderView offer) async {
     if (_disposed || _claimingId != null) return false;
+    if(offer.offerExpiresAt!=null&&!offer.offerExpiresAt!.isAfter(_now())) {_say('This delivery offer expired. Refresh your offers.');unawaited(refreshOffers());return false;}
     if (_active != null) {
       _say('You already have an active delivery. Finish it first.');
       return false;
@@ -725,7 +738,7 @@ class RiderController extends ChangeNotifier {
           case 'RIDER_OFFLINE':
             // Kraveo has this rider off duty (e.g. logged out elsewhere): show the truth, stop offers and GPS.
             _goOffLocally();
-            _say('Kraveo has you off duty. Go on duty again to accept orders.');
+            _say('${BrandConfig.name} has you off duty. Go on duty again to accept orders.');
           case 'ORDER_NOT_AVAILABLE':
             _removeOffer(offer.id);
             _say('This order is no longer available.');
@@ -743,8 +756,8 @@ class RiderController extends ChangeNotifier {
         _say('Your account is not active right now.');
       case ApiFailure.forbidden:
         _say(r.code == 'RIDER_PROFILE_MISSING'
-            ? 'Your rider profile is not set up. Contact Kraveo support.'
-            : (r.message ?? 'Kraveo did not let you take this order.'));
+            ? 'Your rider profile is not set up. Contact ${BrandConfig.name} support.'
+            : (r.message ?? '${BrandConfig.name} did not let you take this order.'));
       case ApiFailure.rateLimited:
         _say('Too many tries. Wait a few seconds.');
       case ApiFailure.offline:
@@ -759,7 +772,7 @@ class RiderController extends ChangeNotifier {
       case ApiFailure.unauthorized:
         break;
       default:
-        _say('Kraveo is having trouble. Try again.');
+        _say('${BrandConfig.name} is having trouble. Try again.');
     }
     _notify();
     return false;
@@ -890,7 +903,7 @@ class RiderController extends ChangeNotifier {
       _lockedAt[incoming.id] = seen;
     } else if (seen.isAfter(base)) {
       _lockedAt.remove(incoming.id);
-      _say('Kraveo unlocked this delivery. You can enter the customer\'s code again.');
+      _say('${BrandConfig.name} unlocked this delivery. You can enter the customer\'s code again.');
     }
   }
 
@@ -1037,14 +1050,14 @@ class RiderController extends ChangeNotifier {
         _actionError = switch (r.code) {
           'INVALID_TRANSITION' => target == OrderStatus.pickedUp
               ? 'The restaurant has not marked this order ready yet.'
-              : 'Kraveo did not accept this step. Showing the latest status.',
+              : '${BrandConfig.name} did not accept this step. Showing the latest status.',
           'GROUP_NOT_PICKED_UP' => 'Pick up the food from every restaurant first.',
           'ORDER_CLOSED' => 'This order is already closed.',
-          _ => r.message ?? 'Kraveo did not accept this step.',
+          _ => r.message ?? '${BrandConfig.name} did not accept this step.',
         };
         await _refreshOne(id);
       case ApiFailure.forbidden when r.code == 'ROLE_NOT_ALLOWED':
-        _actionError = r.message ?? 'Kraveo did not allow this step.';
+        _actionError = r.message ?? '${BrandConfig.name} did not allow this step.';
       case ApiFailure.notFound:
       case ApiFailure.forbidden:
         await _resolveMissing(cur);
@@ -1053,7 +1066,7 @@ class RiderController extends ChangeNotifier {
       case ApiFailure.unauthorized:
         break;
       default:
-        _actionError = 'Kraveo is having trouble. Try again.';
+        _actionError = '${BrandConfig.name} is having trouble. Try again.';
     }
     _notify();
   }
@@ -1104,9 +1117,9 @@ class RiderController extends ChangeNotifier {
         if (_active?.id != cur.id) return const OtpOutcome(OtpOutcomeKind.error, message: 'This delivery changed. Check the screen.');
         return OtpOutcome(OtpOutcomeKind.error,
             message: switch (r.code) {
-              'NOT_AT_GATE' => 'Kraveo does not have you at the drop point yet. Mark "Arrived" first.',
+              'NOT_AT_GATE' => '${BrandConfig.name} does not have you at the drop point yet. Mark "Arrived" first.',
               'ORDER_CLOSED' => 'This order is already closed.',
-              _ => r.message ?? 'Kraveo could not check the code right now.',
+              _ => r.message ?? '${BrandConfig.name} could not check the code right now.',
             });
       case ApiFailure.offline:
       case ApiFailure.timeout:
@@ -1125,7 +1138,7 @@ class RiderController extends ChangeNotifier {
       case ApiFailure.rateLimited:
         return const OtpOutcome(OtpOutcomeKind.error, message: 'Too many tries. Wait a moment.');
       default:
-        return const OtpOutcome(OtpOutcomeKind.error, message: 'Kraveo is having trouble. Try again.');
+        return const OtpOutcome(OtpOutcomeKind.error, message: '${BrandConfig.name} is having trouble. Try again.');
     }
   }
 
@@ -1135,8 +1148,8 @@ class RiderController extends ChangeNotifier {
     if (cur == null || _actionBusy || _disposed) return;
     if (!cur.canRelease) {
       _actionError = cur.isGroup
-          ? 'You already have food from one of the restaurants. Only Kraveo support can move this delivery now.'
-          : 'You already have the food. Only Kraveo support can move this delivery now.';
+          ? 'You already have food from one of the restaurants. Only ${BrandConfig.name} support can move this delivery now.'
+          : 'You already have the food. Only ${BrandConfig.name} support can move this delivery now.';
       _notify();
       return;
     }
@@ -1169,8 +1182,8 @@ class RiderController extends ChangeNotifier {
       case ApiFailure.badRequest:
         _actionError = r.code == 'CANNOT_RELEASE'
             ? (cur.isGroup
-                ? 'This combined order can no longer be released (food from one restaurant was already picked up). Contact Kraveo support.'
-                : 'This job can no longer be released (the food was already picked up). Contact Kraveo support.')
+                ? 'This combined order can no longer be released (food from one restaurant was already picked up). Contact ${BrandConfig.name} support.'
+                : 'This job can no longer be released (the food was already picked up). Contact ${BrandConfig.name} support.')
             : (r.message ?? 'This job can no longer be released.');
         await _refreshOne(cur.id);
       case ApiFailure.notFound:
@@ -1181,7 +1194,7 @@ class RiderController extends ChangeNotifier {
       case ApiFailure.unauthorized:
         break;
       default:
-        _actionError = 'Kraveo is having trouble. Try again.';
+        _actionError = '${BrandConfig.name} is having trouble. Try again.';
     }
     if (_active?.id != cur.id) _actionError = null;
     _releasingId = null;
@@ -1196,7 +1209,7 @@ class RiderController extends ChangeNotifier {
     if (_disposed) return;
     switch (e) {
       case OfferAvailable(:final order):
-        if (!_onDuty || _active != null || !_poolable(order) || _dismissed.contains(order.id)) return;
+        if (!_onDuty || _active != null || !_poolable(order) || _dismissed.contains(order.offerId ?? order.id)) return;
         _removedAt.remove(order.id);
         final existing = _offers.indexWhere((o) => o.id == order.id);
         if (existing >= 0) {

@@ -3,6 +3,9 @@ import 'dart:convert';
 /// Push events the vendor app understands (Docs/18 section 4). Everything else is [unknown] and ignored.
 enum PushEvent {
   newOrder('NEW_ORDER'),
+  riderAssigned('RIDER_ASSIGNED_VENDOR'),
+  riderAtPickup('RIDER_AT_PICKUP'),
+  newOrderReminder('NEW_ORDER_REMINDER'),
   orderCancelledVendor('ORDER_CANCELLED_VENDOR'),
 
   /// Docs/22 section 10.9: the LAST restaurant of a combined order accepted; every restaurant that accepted earlier may

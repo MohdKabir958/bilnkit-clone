@@ -160,15 +160,15 @@ class _SignupScreenState extends State<SignupScreen> {
             _problem = result.message ?? 'Please check the details and try again.\nजानकारी जाँचकर फिर कोशिश करें।';
           }
         case SignupFailure.phoneTaken:
-          _errors['phone'] = 'This number is already registered in another Kraveo app or account. Use a different number, or go back and log in with the right app.\nयह नंबर किसी और Kraveo ऐप या अकाउंट में पहले से है। दूसरा नंबर डालें, या वापस जाकर सही ऐप से लॉग इन करें।';
+          _errors['phone'] = 'This number is already registered in another ${BrandConfig.name} app or account. Use a different number, or go back and log in with the right app.\nयह नंबर किसी और ${BrandConfig.name} ऐप या अकाउंट में पहले से है। दूसरा नंबर डालें, या वापस जाकर सही ऐप से लॉग इन करें।';
         case SignupFailure.rateLimited:
           _problem = 'Too many tries. Please try again in an hour.\nबहुत कोशिशें हो गईं। एक घंटे बाद फिर कोशिश करें।';
         case SignupFailure.unauthorized:
           _problem = 'Your session ended. Please log in again.\nसेशन खत्म हो गया। फिर से लॉग इन करें।';
         case SignupFailure.offline:
-          _problem = 'Can\'t reach Kraveo. Check your internet and try again.\nइंटरनेट जाँचें और फिर कोशिश करें।';
+          _problem = 'Can\'t reach ${BrandConfig.name}. Check your internet and try again.\nइंटरनेट जाँचें और फिर कोशिश करें।';
         case SignupFailure.server:
-          _problem = 'Kraveo is having trouble. Please try again in a moment.\nKraveo में दिक्कत है। थोड़ी देर बाद कोशिश करें।';
+          _problem = '${BrandConfig.name} is having trouble. Please try again in a moment.\nKraveo में दिक्कत है। थोड़ी देर बाद कोशिश करें।';
       }
     });
   }
@@ -543,10 +543,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text('Kraveo checks every restaurant before it can take orders.',
+                          Text('${BrandConfig.name} checks every restaurant before it can take orders.',
                               style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16)),
                           const SizedBox(height: 2),
-                          Text('ऑर्डर लेने से पहले Kraveo हर रेस्टोरेंट की जाँच करता है।', style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 15)),
+                          Text('ऑर्डर लेने से पहले ${BrandConfig.name} हर रेस्टोरेंट की जाँच करता है।', style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 15)),
                         ]),
                       ),
                     ]),

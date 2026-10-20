@@ -225,7 +225,7 @@ class _SplashScreen extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Semantics(
-          label: 'Loading Kraveo Delivery Partner',
+          label: 'Loading ${BrandConfig.name} Delivery Partner',
           child: const Column(mainAxisSize: MainAxisSize.min, children: [
             KBrandMark(height: 64),
             SizedBox(height: 28),
@@ -275,7 +275,7 @@ class _SessionUnreachableState extends State<_SessionUnreachable> {
                   child: Icon(LucideIcons.wifiOff, size: 32, color: k.brand),
                 ),
                 const SizedBox(height: 16),
-                Text('Can\'t reach Kraveo', textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
+                Text('Can\'t reach ${BrandConfig.name}', textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
                 const SizedBox(height: 8),
                 Text('Check your internet. You are still logged in.', textAlign: TextAlign.center, style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
                 const SizedBox(height: 20),

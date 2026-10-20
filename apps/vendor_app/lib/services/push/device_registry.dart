@@ -31,6 +31,7 @@ class HttpDeviceRegistry implements DeviceRegistry {
     VendorApiService.checkResponse(response);
     final status = response.statusCode;
     if (status >= 200 && status < 300) return RegisterOutcome.ok;
+    if(status==409&&response.body.contains('DEVICE_TOKEN_OWNED'))return RegisterOutcome.tokenOwned;
     if (status == 401) return RegisterOutcome.unauthorized;
     if (status == 408 || status == 429 || status >= 500) return RegisterOutcome.failed;
     return RegisterOutcome.rejected;

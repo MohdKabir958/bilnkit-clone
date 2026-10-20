@@ -347,7 +347,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       title: 'Cancel this order?',
       message: (order.isGroup ? 'This cancels your whole order, from all ${order.group!.size} restaurants. ' : '') +
           (_paymentAttempted
-              ? 'If your bank already took money for this order, Kraveo refunds it automatically. Your cart stays as it is, so you can change it and order again.'
+              ? 'If your bank already took money for this order, ${BrandConfig.name} refunds it automatically. Your cart stays as it is, so you can change it and order again.'
               : 'You have not completed a payment for this order, so nothing is charged. Your cart stays as it is, so you can change it and order again.'),
       confirmLabel: 'Cancel order',
       cancelLabel: 'Keep it',
@@ -484,7 +484,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Text(
               busy
                   ? 'Placing your order. Please do not close the app.'
-                  : (_currentHostel == null ? 'Tell us where to deliver first. Payment opens right after.' : 'Next: Kraveo confirms the price, then you pay online.'),
+                  : (_currentHostel == null ? 'Tell us where to deliver first. Payment opens right after.' : 'Next: ${BrandConfig.name} confirms the price, then you pay online.'),
               textAlign: TextAlign.center,
               style: KraveoType.caption.copyWith(color: k.inkFaint, fontSize: 12),
             ),
@@ -531,7 +531,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           _InfoCard(
             icon: LucideIcons.badgeInfo,
             title: 'Updated total: ${rupee(order.totalAmount)}',
-            message: 'Kraveo priced your order at ${rupee(order.totalAmount)} (your cart estimate was ${rupee(_previewTotal!)}). Check the bill below before you pay.',
+            message: '${BrandConfig.name} priced your order at ${rupee(order.totalAmount)} (your cart estimate was ${rupee(_previewTotal!)}). Check the bill below before you pay.',
           ),
           const SizedBox(height: 14),
         ],

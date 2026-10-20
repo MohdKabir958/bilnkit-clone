@@ -1,3 +1,5 @@
+import { driverView } from './partners';
+import { operationsRouter } from './operations';
 import { productsRouter } from './products';
 import { Router, Request, Response } from 'express';
 import { geographyRouter } from './geography';
@@ -39,6 +41,7 @@ export const apiRouter = Router();
 apiRouter.use(rateLimitMiddleware);
 apiRouter.use(geographyRouter);
 apiRouter.use(productsRouter);
+apiRouter.use(operationsRouter);
 // Partner sign-up, applications, approval and admin customer views live in ./partners.
 apiRouter.use(partnerRouter);
 // Orders, payments, rider pool, gate OTP and the admin order tools live in ./orders.
@@ -93,18 +96,17 @@ apiRouter.get('/drivers', requireAuth, requireRole('ADMIN'), async (req: Authent
   }
 });
 
-apiRouter.get('/drivers/locations', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+apiRouter.get('/drivers/locations', requireAuth, requireRole('DRIVER','ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const dbLocs = await prisma.driverLocation.findMany({
-      where: req.user?.role === Role.ADMIN ? undefined : { driverId: req.user?.id }
-    });
+    const active=await prisma.order.findMany({where:{status:{in:['ACCEPTED','PREPARING','READY_FOR_PICKUP','PICKED_UP','ARRIVED_AT_GATE']},driverId:{not:null},...(req.user!.role==='ADMIN'?{}:{driverId:req.user!.id})},select:{driverId:true}});
+    const dbLocs = await prisma.driverLocation.findMany({where:{driverId:{in:active.map((o)=>o.driverId!)},lastUpdated:{gte:new Date(Date.now()-5*60000)}}});
     // Docs/19: duty and approval status ride along so the dashboard can colour offline riders without a second call.
     const profiles = dbLocs.length === 0 ? [] : await prisma.driverPartner.findMany({
       where: { userId: { in: dbLocs.map((l) => l.driverId) } },
       select: { userId: true, dutyStatus: true, approvalStatus: true },
     });
     const byUser = new Map(profiles.map((p) => [p.userId, p] as const));
-    const data = dbLocs.map((l) => ({
+    const data = dbLocs.filter((l)=>byUser.get(l.driverId)?.approvalStatus==='APPROVED').map((l) => ({
       ...l,
       dutyStatus: byUser.get(l.driverId)?.dutyStatus ?? 'OFFLINE',
       approvalStatus: byUser.get(l.driverId)?.approvalStatus ?? null,
@@ -265,7 +267,8 @@ apiRouter.post('/auth/partner-login', async (req: Request, res: Response) => {
     const vendors = role === 'VENDOR' ? await retryStaleRead(() => prisma.vendor.findMany({ where: { userId: user.id }, select: { id: true, name: true, isAcceptingOrders: true, approvalStatus: true, rejectionReason: true, category: true, address: true, fssaiNumber: true, ...VENDOR_LOCATION_SELECT, ...CUISINES_INCLUDE }, orderBy: { createdAt: 'asc' } })) : [];
     const vendorRow = vendors.find((v) => v.approvalStatus === 'APPROVED') ?? vendors[0] ?? null;
     const vendor = vendorRow ? { ...vendorRow, ...vendorLocationView(vendorRow), ...cuisineFields(vendorRow) } : null;
-    const driver = role === 'DRIVER' ? await prisma.driverPartner.findFirst({ where: { userId: user.id }, select: { id: true, runnerCode: true, approvalStatus: true, rejectionReason: true, vehicleType: true, vehicleRegNo: true, emergencyPhone: true, upiId: true, dutyStatus: true } }) : null;
+    const driverRow = role === 'DRIVER' ? await prisma.driverPartner.findFirst({ where: { userId: user.id }, select: { id: true, runnerCode: true, approvalStatus: true, rejectionReason: true, vehicleType: true, vehicleRegNo: true, emergencyPhone: true, upiId: true, dutyStatus: true,cityId:true,serviceZoneId:true } }) : null;
+    const driver=driverView(driverRow);
     const approvalStatus = (vendor ?? driver)?.approvalStatus ?? 'APPROVED';
     const rejectionReason = (vendor ?? driver)?.rejectionReason ?? null;
 
@@ -454,6 +457,9 @@ apiRouter.delete('/auth/account', requireAuth, requireRole('STUDENT'), async (re
       const active = await tx.order.count({ where: { customerId: userId, status: { notIn: ['DELIVERED', 'CANCELLED'] } } });
       if (active > 0) return true;
       await tx.address.deleteMany({ where: { customerId: userId } });
+      const cases=await tx.supportCase.findMany({where:{customerId:userId},select:{id:true}});
+      await tx.supportNote.updateMany({where:{caseId:{in:cases.map((c)=>c.id)}},data:{message:'[Removed after account deletion]'}});
+      await tx.supportCase.updateMany({where:{customerId:userId},data:{subject:'Deleted account',description:'[Removed after account deletion]',resolution:'Account deleted',status:'RESOLVED'}});
       await tx.user.update({
         where: { id: userId },
         data: {
@@ -977,42 +983,10 @@ apiRouter.post('/reviews', requireAuth, requireRole('STUDENT'), async (req: Auth
         data: { isReviewed: true }
       });
 
-      // 3. Process Dish Ratings & Update Menu Item Rating Metrics
-      for (const dr of dishes) {
-        const item = await tx.menuItem.findUnique({ where: { id: dr.dishId } });
-        if (item) {
-          const currRating = item.rating || 4.5;
-          const currCount = item.ratingCount || 10;
-          const newCount = currCount + 1;
-          const newRating = parseFloat(((currRating * currCount + dr.rating) / newCount).toFixed(2));
-          await tx.menuItem.update({
-            where: { id: item.id },
-            data: { rating: newRating, ratingCount: newCount }
-          });
-        }
-      }
-
-      // 4. The restaurant's rating is NOT changed here. The single star value of this request (`driverRating`) is the RIDER's
-      // rating (the app shows it under "Your rider" with rider tags); the food is rated per dish (step 3). Feeding the rider's
-      // stars into the restaurant average made a good meal with a slow rider lower the restaurant, and the old Bayesian
-      // formula re-added its prior on every review so even all-5-star reviews pulled a 4.8 restaurant down. A restaurant
-      // rating needs its own input from the app; until then the stored value stays as it is.
+      // Vendor stars are independent of rider/product reviews; never invent a score.
       const updatedVendor = await tx.vendor.findUnique({ where: { id: order.vendorId }, select: { rating: true } });
-
-      // 5. Update Driver Partner Rating if driver is assigned
-      if (firstOfDelivery && order.driverId && typeof driverRating === 'number') {
-        const driver = await tx.driverPartner.findFirst({
-          where: { OR: [{ id: order.driverId }, { userId: order.driverId }] }
-        });
-        if (driver) {
-          const newDriverRating = parseFloat(((driver.rating * 20 + driverRating) / 21).toFixed(2));
-          await tx.driverPartner.update({
-            where: { id: driver.id },
-            data: { rating: newDriverRating }
-          });
-        }
-      }
-
+      // Serialize shared SKU aggregates in a stable order across different orders.
+      for(const id of dishes.map((d)=>d.dishId).sort()) await tx.$queryRaw`SELECT "id" FROM "MenuItem" WHERE "id"=${id} FOR UPDATE`;
       // 6. Save Review Record
       const newReview = await tx.reviewRecord.create({
         data: {
@@ -1020,7 +994,7 @@ apiRouter.post('/reviews', requireAuth, requireRole('STUDENT'), async (req: Auth
           customerId,
           vendorId: order.vendorId,
           driverId: order.driverId,
-          driverRating: typeof driverRating === 'number' ? driverRating : 5,
+          driverRating: typeof driverRating === 'number' ? driverRating : null,
           driverTags: tags,
           driverNotes: driverNotes || '',
           dishReviews: dishes,
@@ -1029,6 +1003,14 @@ apiRouter.post('/reviews', requireAuth, requireRole('STUDENT'), async (req: Auth
         }
       });
 
+      for(const dr of dishes) {
+        const [actual]=await tx.$queryRaw<{rating:number;count:number}[]>`SELECT COALESCE(AVG((d->>'rating')::numeric),0)::float8 AS rating,COUNT(*)::int AS count FROM "ReviewRecord" r CROSS JOIN LATERAL jsonb_array_elements(r."dishReviews") d WHERE d->>'dishId'=${dr.dishId}`;
+        await tx.menuItem.update({where:{id:dr.dishId},data:{rating:actual.rating,ratingCount:actual.count}});
+      }
+      if(firstOfDelivery&&order.driverId&&typeof driverRating==='number') {
+        const actual=await tx.reviewRecord.aggregate({where:{driverId:order.driverId,coinsEarned:{gt:0},driverRating:{not:null}},_avg:{driverRating:true}});
+        await tx.driverPartner.updateMany({where:{userId:order.driverId},data:{rating:actual._avg.driverRating??0}});
+      }
       return { updatedUser, updatedVendor, newReview, coins };
     });
 

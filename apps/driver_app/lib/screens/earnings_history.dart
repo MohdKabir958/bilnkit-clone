@@ -122,7 +122,7 @@ class _EarningsHistoryScreenState extends State<EarningsHistoryScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'This is the delivery fee on each order you delivered, from Kraveo\'s records. Payouts are settled by Kraveo separately and are not shown in the app yet.',
+                      'This is the delivery fee on each order you delivered, from ${BrandConfig.name}\'s records. Payouts are settled by ${BrandConfig.name} separately and are not shown in the app yet.',
                       style: KraveoType.bodySm.copyWith(color: k.inkFaint),
                     ),
                   ),

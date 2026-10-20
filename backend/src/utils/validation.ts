@@ -3,7 +3,12 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../db';
 import { OrderItem } from '../types';
 import { getSettings } from '../services/settings';
-import { computeFees, FeeBreakdown, splitGroupMoney, toPaise, fromPaise } from '../services/pricing';
+import { computeFees, FeesSettings, FeeBreakdown, splitGroupMoney, toPaise, fromPaise } from '../services/pricing';
+
+// Geographic rates replace the global base; checkout-wide free-delivery and
+// small-basket policies still apply. A global fee composition is valid only
+// when its paise sum matches the configured geographic rate.
+const zoneFee=(fees:FeesSettings,subtotal:number,ratePaise:number)=>computeFees({...fees,baseFee:fromPaise(ratePaise),extraRestaurantFee:0,lines:fees.lines.reduce((sum,l)=>sum+toPaise(l.amount),0)===ratePaise?fees.lines:[]},subtotal);
 
 /** What the restaurant earns and Kraveo keeps for one line, copied from the dish at order time (Docs/21 section 2). */
 export type PricedItem = OrderItem & { vendorUnitPrice: number; commissionUnit: number; productSnapshot: Prisma.InputJsonValue };
@@ -158,7 +163,7 @@ export const validateAndCalculateOrder = async (
   deliveryFeePaise?: number,
   db: Prisma.TransactionClient | typeof prisma = prisma
 ): Promise<OrderValidationResult> => {
-  const settings = await getSettings();
+  const settings = await getSettings(db);
   const invalid = {
     calculatedSubtotal: 0,
     calculatedDeliveryFee: settings.fees.baseFee,
@@ -176,10 +181,7 @@ export const validateAndCalculateOrder = async (
   const { verifiedItems, subtotal, vendorSubtotal, commissionTotal } = cart;
 
   // The one all-in fee from the admin settings. Thresholds look at the food subtotal BEFORE the coupon (the platform bears coupons).
-  const fee = deliveryFeePaise === undefined ? computeFees(settings.fees, subtotal) : {
-    total: fromPaise(deliveryFeePaise),
-    breakdown: { version: 1 as const, total: fromPaise(deliveryFeePaise), baseFee: fromPaise(deliveryFeePaise), baseWaived: false, smallOrderFee: 0, restaurants: 1, extraRestaurantFee: 0, extraRestaurants: 0, lines: [] },
-  };
+  const fee=deliveryFeePaise===undefined?computeFees(settings.fees,subtotal):zoneFee(settings.fees,subtotal,deliveryFeePaise);
   const deliveryFee = fee.total;
   const taxAndPackaging = 0;
 
@@ -244,7 +246,7 @@ export interface GroupValidationResult {
  * The caller has already checked the number of restaurants and that they are distinct.
  */
 export const validateAndCalculateGroup = async (restaurants: GroupRestaurantInput[], couponCode?: string, deliveryFeesPaise?: Map<string, number>, db: Prisma.TransactionClient | typeof prisma = prisma): Promise<GroupValidationResult> => {
-  const settings = await getSettings();
+  const settings = await getSettings(db);
   const empty: GroupValidationResult = { isValid: false, children: [], subtotal: 0, feeTotal: 0, discount: 0, totalAmount: 0, feeBreakdown: null, appliedCoupon: null };
   const carts: Extract<VendorCartResult, { ok: true }>[] = [];
   for (const r of restaurants) {
@@ -256,13 +258,15 @@ export const validateAndCalculateGroup = async (restaurants: GroupRestaurantInpu
   const { discount, appliedCoupon, couponProblem } = applyCouponRule(couponCode, combined);
   const money = splitGroupMoney(settings.fees, carts.map((c) => c.subtotal), discount);
   if (deliveryFeesPaise) {
-    money.children.forEach((m, i) => {
-      m.fee = fromPaise(deliveryFeesPaise.get(restaurants[i].vendorId)!);
-      m.total = fromPaise(toPaise(m.subtotal) + toPaise(m.fee) - toPaise(m.discount));
+    const rates=restaurants.map((r)=>deliveryFeesPaise.get(r.vendorId)!);
+    const policy=zoneFee(settings.fees,combined,rates.reduce((sum,p)=>sum+p,0));
+    money.children.forEach((m,i)=>{
+      m.fee=fromPaise((policy.breakdown.baseWaived?0:rates[i])+(i===0?toPaise(policy.breakdown.smallOrderFee):0));
+      m.total=fromPaise(toPaise(m.subtotal)+toPaise(m.fee)-toPaise(m.discount));
     });
-    money.feeTotal = fromPaise(money.children.reduce((s, c) => s + toPaise(c.fee), 0));
-    money.total = fromPaise(toPaise(money.subtotal) + toPaise(money.feeTotal) - toPaise(money.discount));
-    money.breakdown = { version: 1, total: money.feeTotal, baseFee: money.children[0].fee, baseWaived: false, smallOrderFee: 0, restaurants: restaurants.length, extraRestaurantFee: fromPaise(money.children.slice(1).reduce((s,c)=>s+toPaise(c.fee),0)), extraRestaurants: restaurants.length-1, lines: [] };
+    money.feeTotal=policy.total;
+    money.total=fromPaise(toPaise(money.subtotal)+toPaise(money.feeTotal)-toPaise(money.discount));
+    money.breakdown={...policy.breakdown,restaurants:restaurants.length,baseFee:policy.breakdown.baseWaived?0:fromPaise(rates[0]),extraRestaurantFee:policy.breakdown.baseWaived?0:fromPaise(rates.slice(1).reduce((sum,p)=>sum+p,0)),extraRestaurants:restaurants.length-1};
   }
   const children = carts.map((c, i): GroupChildPricing => {
     const m = money.children[i];
@@ -278,8 +282,8 @@ export const validateAndCalculateGroup = async (restaurants: GroupRestaurantInpu
       totalAmount: m.total,
       // Records only: child 0 = the base-fee part (free-fee / small-order rules applied to the combined subtotal), the others = the flat extra fee.
       feeBreakdown: extra
-        ? { version: 1, total: m.fee, baseFee: 0, baseWaived: false, smallOrderFee: 0, restaurants: 1, extraRestaurantFee: m.fee, extraRestaurants: 1, lines: [] }
-        : { ...money.breakdown, total: m.fee, baseFee: m.fee, restaurants: 1, extraRestaurantFee: 0, extraRestaurants: 0 },
+        ? { version: 1, total: m.fee, baseFee: 0, baseWaived: money.breakdown.baseWaived, smallOrderFee: 0, restaurants: 1, extraRestaurantFee: m.fee, extraRestaurants: 1, lines: [] }
+        : { ...money.breakdown, total: m.fee, baseFee: fromPaise(toPaise(m.fee)-toPaise(money.breakdown.smallOrderFee)), restaurants: 1, extraRestaurantFee: 0, extraRestaurants: 0 },
     };
   });
   return {

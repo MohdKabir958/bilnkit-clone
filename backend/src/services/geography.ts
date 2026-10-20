@@ -92,7 +92,8 @@ export async function saveAddress(customerId: string, body: any, id?: string) {
     lat: body.lat as number, lng: body.lng as number,
   };
   return prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id"=${customerId} FOR UPDATE`;
+    const account=await tx.$queryRaw<{id:string;deletedAt:Date|null}[]>`SELECT "id","deletedAt" FROM "User" WHERE "id"=${customerId} FOR UPDATE`;
+    if(!account.length||account[0].deletedAt)throw new AppError(401,'ACCOUNT_UNAVAILABLE','Please sign in again.');
     if (id && !(await tx.address.findFirst({ where: { id, customerId } }))) throw new AppError(404, 'NOT_FOUND', 'Address not found.');
     const first = await tx.address.count({ where: { customerId } }) === 0;
     const isDefault = body.isDefault ?? (id ? (await tx.address.findUniqueOrThrow({ where: { id } })).isDefault : first);

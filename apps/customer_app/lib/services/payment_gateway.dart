@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -75,8 +76,8 @@ class RazorpayPaymentGateway implements PaymentGateway {
         'amount': session.amountPaise,
         'currency': session.currency,
         'order_id': session.razorpayOrderId,
-        'name': 'Kraveo',
-        'description': 'Campus food order',
+        'name': BrandConfig.name,
+        'description': 'Grocery order',
         'theme': {'color': '#006B3C'},
         if (contact != null && contact.isNotEmpty) 'prefill': {'contact': contact},
       });

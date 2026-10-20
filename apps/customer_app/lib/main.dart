@@ -266,7 +266,7 @@ class _SessionUnreachableState extends State<_SessionUnreachable> {
               constraints: const BoxConstraints(maxWidth: 420),
               child: KEmptyState(
                 icon: LucideIcons.wifiOff,
-                title: 'Can\'t reach Kraveo',
+                title: 'Can\'t reach ${BrandConfig.name}',
                 message: 'Check your connection and try again. You are still signed in.',
                 action: Column(mainAxisSize: MainAxisSize.min, children: [
                   KButton(label: 'Try again', icon: LucideIcons.rotateCcw, loading: _busy, onPressed: _retry),

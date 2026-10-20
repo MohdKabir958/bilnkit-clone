@@ -148,7 +148,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         _formError = 'We still need a few details. Please check each step.';
         return;
       }
-      final msg = result.networkError ? 'We couldn\'t reach Kraveo. Check your connection and try again.' : (result.message ?? 'We couldn\'t save your details. Please try again.');
+      final msg = result.networkError ? 'We couldn\'t reach ${BrandConfig.name}. Check your connection and try again.' : (result.message ?? 'We couldn\'t save your details. Please try again.');
       switch (result.field) {
         case 'name':
           _nameError = msg;
@@ -330,7 +330,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       KDisplayText('Pick your\navatar', style: KraveoType.displayMd.copyWith(color: k.ink)),
       const SizedBox(height: 10),
-      Text('This is how you show up in Kraveo. You can change it any time from the Me tab.', style: KraveoType.body.copyWith(color: k.inkMuted)),
+      Text('This is how you show up in ${BrandConfig.name}. You can change it any time from the Me tab.', style: KraveoType.body.copyWith(color: k.inkMuted)),
       const SizedBox(height: 20),
       Center(child: KAvatar(id: _avatarId, size: 88, ring: _avatarId != null)),
       const SizedBox(height: 20),

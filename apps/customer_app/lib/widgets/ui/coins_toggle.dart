@@ -30,7 +30,7 @@ class CoinsBalance extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Kraveo Coins · ${cart.userKraveoCoins}', style: KraveoType.titleMd.copyWith(color: k.ink)),
+            Text('${BrandConfig.name} Coins · ${cart.userKraveoCoins}', style: KraveoType.titleMd.copyWith(color: k.ink)),
             const SizedBox(height: 2),
             Text('Paying with coins is coming soon. Rate delivered orders to collect more.', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
           ]),

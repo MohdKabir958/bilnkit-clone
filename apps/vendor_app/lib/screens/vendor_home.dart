@@ -1,3 +1,4 @@
+import 'store_profile_screen.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +15,7 @@ import '../services/payout/payout_api.dart';
 import '../services/payout/payout_controller.dart';
 import '../services/payout/settlements_controller.dart';
 import '../services/push/push_controller.dart';
-import '../services/support_contact.dart';
+import '../services/product_api.dart';
 import '../services/vendor_backend.dart';
 import '../session/session_controller.dart';
 import '../models/partner_session.dart';
@@ -241,7 +242,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
         icon: LucideIcons.bellRing,
         title: 'Hear every new order',
         hindiTitle: 'हर नया ऑर्डर सुनें',
-        message: 'Kraveo needs to send you notifications so a new order rings on this phone, even when the app is closed or the screen is locked.\nऐप बंद या स्क्रीन लॉक होने पर भी नया ऑर्डर बजे, इसके लिए नोटिफिकेशन चालू करें।',
+        message: '${BrandConfig.name} needs to send you notifications so a new order rings on this phone, even when the app is closed or the screen is locked.\nऐप बंद या स्क्रीन लॉक होने पर भी नया ऑर्डर बजे, इसके लिए नोटिफिकेशन चालू करें।',
         safeLabel: 'Not now',
         safeSublabel: 'अभी नहीं',
         confirmLabel: 'Allow notifications',
@@ -305,7 +306,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
     final id = _vendorId;
     if (_storeBusy) return;
     if (id == null) {
-      _toast('This login is not linked to a restaurant. Email $kSupportEmail  ·  Kraveo को ईमेल करें', error: true);
+      _toast('This login is not linked to a restaurant. Email Help and requests  ·  ${BrandConfig.name} को ईमेल करें', error: true);
       return;
     }
     if (!newValue) {
@@ -446,8 +447,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Kraveo support', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
-                    FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(kSupportEmail, key: const ValueKey('support-email'), style: KraveoType.titleLg.copyWith(color: k.ink, fontWeight: FontWeight.w800))),
+                    Text('Help and requests', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
+                    FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text('Contact your operations team', key: const ValueKey('support-email'), style: KraveoType.titleLg.copyWith(color: k.ink, fontWeight: FontWeight.w800))),
                   ]),
                 ),
               ]),
@@ -455,13 +456,13 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
             const SizedBox(height: 16),
             KButton(
               key: const ValueKey('email-support'),
-              label: 'Email Kraveo support',
-              sublabel: 'Kraveo सपोर्ट को ईमेल करें',
+              label: 'Help and requests',
+              sublabel: '${BrandConfig.name} सपोर्ट को ईमेल करें',
               icon: LucideIcons.mail,
               large: true,
               onPressed: () {
                 Navigator.of(sheetContext).pop();
-                if (mounted) SupportContact.openEmail(context);
+                if (mounted) Navigator.push(context, MaterialPageRoute(builder: (_) => SupportCenter(call: ProductApi().call)));
               },
             ),
             const SizedBox(height: 12),
@@ -479,6 +480,20 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
             if (partner != null) ...[
               const SizedBox(height: 20),
               _AccountCard(partner: partner),
+              const SizedBox(height: 12),
+              KButton(
+                key: const ValueKey('store-profile-row'),
+                label: 'Store profile',
+                sublabel: 'दुकान की जानकारी',
+                icon: LucideIcons.store,
+                kind: KButtonKind.tonal,
+                large: true,
+                onPressed: () async {
+                  Navigator.of(sheetContext).pop();
+                  await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const StoreProfileScreen()));
+                  if (mounted) await SessionScope.maybeOf(context)?.refreshApproval();
+                },
+              ),
               if (_payout != null) ...[
                 const SizedBox(height: 12),
                 KButton(
@@ -544,10 +559,10 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
 
   /// Owner name under the restaurant name (or the phone when the account is named after it).
   static String _headerSubtitle(PartnerSession? partner) {
-    if (partner == null) return 'Kraveo Restaurant Partner';
+    if (partner == null) return '${BrandConfig.name} Restaurant Partner';
     final owner = partner.name.trim();
     if (owner.isNotEmpty && owner != partner.restaurantName) return owner;
-    return (partner.phone?.trim().isNotEmpty ?? false) ? partner.phone! : 'Kraveo Restaurant Partner';
+    return (partner.phone?.trim().isNotEmpty ?? false) ? partner.phone! : '${BrandConfig.name} Restaurant Partner';
   }
 
   @override
@@ -714,7 +729,7 @@ class _NoRestaurantLinked extends StatelessWidget {
         child: KEmptyState(
           icon: LucideIcons.store,
           title: 'No restaurant linked',
-          message: 'This login is not linked to a restaurant yet. Email Kraveo support.\nयह खाता किसी रेस्टोरेंट से जुड़ा नहीं है। Kraveo सपोर्ट को ईमेल करें।',
+          message: 'This login is not linked to a restaurant yet. Email ${BrandConfig.name} support.\nयह खाता किसी रेस्टोरेंट से जुड़ा नहीं है। ${BrandConfig.name} सपोर्ट को ईमेल करें।',
           action: SupportEmailLink(),
         ),
       ),

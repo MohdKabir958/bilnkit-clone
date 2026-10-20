@@ -85,7 +85,7 @@ OrderProvider _ordersWith(List<OrderModel> orders) {
 const _rider = {'id': 'd1', 'name': 'Vikram Singh', 'phone': '+91 98765 43210'};
 
 /// Flutter's test engine draws every glyph as a 1em box unless fonts are loaded, which would
-/// overstate text widths ~2x. Load the real bundled Kraveo fonts so layout checks are honest.
+/// overstate text widths ~2x. Load the real bundled DailyMarket fonts so layout checks are honest.
 Future<void> loadKraveoFonts() async {
   const fonts = {
     'packages/kraveo_ui/Bricolage': 'packages/kraveo_ui/assets/fonts/BricolageGrotesque.ttf',
@@ -214,7 +214,7 @@ void main() {
     expect(find.text('Test dish a'), findsOneWidget);
     final sheetScroll = find.descendant(of: find.byType(KSheetFrame), matching: find.byType(Scrollable)).first;
     await tester.scrollUntilVisible(find.text('Have a coupon?'), 200, scrollable: sheetScroll);
-    await tester.scrollUntilVisible(find.textContaining('Kraveo Coins'), 200, scrollable: sheetScroll);
+    await tester.scrollUntilVisible(find.textContaining('DailyMarket Coins'), 200, scrollable: sheetScroll);
     await tester.scrollUntilVisible(find.text('To pay'), 200, scrollable: sheetScroll);
     expect(find.text('Bill details'), findsOneWidget);
     expect(find.textContaining('Checkout'), findsOneWidget);

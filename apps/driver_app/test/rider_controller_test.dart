@@ -58,15 +58,15 @@ void main() {
       expect(c.location, LocationState.off);
     });
 
-    test('going on duty waits for the server, then shares GPS and loads offers', () async {
+    test('going on duty waits for the server, then loads offers without idle GPS', () async {
       f.api.available = ApiResult.ok([offer()]);
       await boot();
       await c.setDuty(true);
       await flush();
       expect(c.onDuty, isTrue);
       expect(f.api.calls, contains('duty:true'));
-      expect(f.api.locations, [(23.0775, 76.8513)]);
-      expect(c.location, LocationState.ok);
+      expect(f.api.locations, isEmpty);
+      expect(c.location, LocationState.off);
       expect(c.offers.map((o) => o.id), ['pool-1']);
       expect(f.socket.connected, isTrue);
       expect((await SharedPreferences.getInstance()).getBool(RiderController.dutyPrefKey), isTrue);
@@ -100,7 +100,7 @@ void main() {
       expect(c.onDuty, isFalse);
       expect(c.location, LocationState.off);
       expect(c.offers, isEmpty);
-      expect(said.last, contains('Kraveo will be told'));
+      expect(said.last, contains('DailyMarket will be told'));
       f.api.onDuty = (on) => ApiResult.ok(on ? 'ONLINE' : 'OFFLINE');
       f.api.calls.clear();
       await c.pollNow();
@@ -226,7 +226,7 @@ void main() {
       expect(c.onDuty, isFalse);
       expect(c.offers, isEmpty);
       expect(c.location, LocationState.off);
-      expect(said.last, 'Kraveo has you off duty. Go on duty again to accept orders.');
+      expect(said.last, 'DailyMarket has you off duty. Go on duty again to accept orders.');
     });
 
     test('an unknown 409 keeps the offer list honest by re-reading the pool', () async {
@@ -249,7 +249,7 @@ void main() {
       expect(f.api.calls.where((x) => x.startsWith('claim')), isEmpty);
     });
 
-    test('timeout, but Kraveo did assign it: the app checks and shows the job', () async {
+    test('timeout, but DailyMarket did assign it: the app checks and shows the job', () async {
       f.api.onClaim = (_) => const ApiResult.fail(ApiFailure.timeout);
       await boot();
       await c.setDuty(true);
@@ -349,7 +349,7 @@ void main() {
       expect(c.activeLocked, isTrue);
     });
 
-    test('423 OTP_LOCKED locks the delivery; further tries still ask Kraveo (a 423 costs no attempt)', () async {
+    test('423 OTP_LOCKED locks the delivery; further tries still ask DailyMarket (a 423 costs no attempt)', () async {
       f.api.onOtp = (_, __) => const ApiResult.fail(ApiFailure.locked, statusCode: 423, code: 'OTP_LOCKED');
       await boot();
       expect((await c.verifyOtp('1111')).kind, OtpOutcomeKind.locked);
@@ -370,7 +370,7 @@ void main() {
       expect(c.history.first.id, 'ord-1');
     });
 
-    test('network lost during verify, but Kraveo did deliver it: reported as delivered', () async {
+    test('network lost during verify, but DailyMarket did deliver it: reported as delivered', () async {
       f.api.onOtp = (_, __) => const ApiResult.fail(ApiFailure.timeout);
       f.api.orders['ord-1'] = ApiResult.ok(order(status: 'DELIVERED', updatedAt: testNow, deliveredAt: testNow));
       await boot();
@@ -432,7 +432,7 @@ void main() {
       await c.release();
       expect(f.api.calls.where((x) => x.startsWith('release')), isEmpty);
       expect(c.active, isNotNull);
-      expect(c.actionError, contains('Only Kraveo support'));
+      expect(c.actionError, contains('Only DailyMarket support'));
     });
 
     test('cancelled by an admin while carrying: clear stop notice with the reason', () async {
@@ -477,6 +477,7 @@ void main() {
   });
 
   group('GPS', () {
+    setUp(() {f.api.active=ApiResult.ok([order(status:'ACCEPTED')]);});
     test('no fix -> "location unavailable", nothing posted (no made-up coordinates)', () async {
       f.location.reading = const LocationReading.problem(LocationProblem.unavailable);
       await boot();
@@ -502,18 +503,14 @@ void main() {
       expect(f.api.locations, isEmpty);
     });
 
-    test('GPS is posted on a timer only while on duty', () async {
-      f = FakeRider(gps: const Duration(milliseconds: 20));
-      await boot();
-      await Future<void>.delayed(const Duration(milliseconds: 70));
-      expect(f.api.locations, isEmpty);
-      await c.setDuty(true);
-      await Future<void>.delayed(const Duration(milliseconds: 70));
-      expect(f.api.locations.length, greaterThanOrEqualTo(2));
-      await c.setDuty(false);
-      final n = f.api.locations.length;
-      await Future<void>.delayed(const Duration(milliseconds: 70));
-      expect(f.api.locations.length, n);
+    test('GPS polling begins on assignment and stops when that assignment ends', () async {
+      f=FakeRider(gps:const Duration(milliseconds:20));await boot();await c.setDuty(true);
+      await Future<void>.delayed(const Duration(milliseconds:70));expect(f.api.locations,isEmpty);
+      f.api.active=ApiResult.ok([order(status:'PICKED_UP')]);await c.pollNow();
+      await Future<void>.delayed(const Duration(milliseconds:70));expect(f.api.locations.length,greaterThanOrEqualTo(2));
+      f.api.active=const ApiResult.ok([]);await c.pollNow();final n=f.api.locations.length;
+      await Future<void>.delayed(const Duration(milliseconds:70));expect(f.api.locations.length,n);
+
     });
   });
 
@@ -602,7 +599,7 @@ void main() {
       expect(c.activeLocked, isTrue);
     });
 
-    test('if Kraveo answers the retry with a normal wrong-code reply, the lock is gone locally', () async {
+    test('if DailyMarket answers the retry with a normal wrong-code reply, the lock is gone locally', () async {
       f.api.onOtp = (_, __) => locked;
       await boot();
       await c.verifyOtp('1111');
@@ -691,8 +688,8 @@ void main() {
     });
   });
 
-  group('duty mirrors what Kraveo holds (DR-07)', () {
-    test('Kraveo says OFFLINE while the phone shows ON: the phone goes off, without another server call', () async {
+  group('duty mirrors what DailyMarket holds (DR-07)', () {
+    test('DailyMarket says OFFLINE while the phone shows ON: the phone goes off, without another server call', () async {
       await boot();
       await c.setDuty(true);
       await flush();
@@ -700,12 +697,12 @@ void main() {
       await c.reconcileDuty('OFFLINE');
       expect(c.onDuty, isFalse);
       expect(c.location, LocationState.off);
-      expect(said.last, contains('Kraveo has you off duty'));
+      expect(said.last, contains('DailyMarket has you off duty'));
       expect((await SharedPreferences.getInstance()).getBool(RiderController.dutyPrefKey), isFalse);
       expect(f.api.calls, isNot(contains('duty:false')));
     });
 
-    test('Kraveo says ONLINE while a failed restore left the phone off: the phone goes on', () async {
+    test('DailyMarket says ONLINE while a failed restore left the phone off: the phone goes on', () async {
       f.api.onDuty = (_) => const ApiResult.fail(ApiFailure.timeout);
       f.api.available = ApiResult.ok([offer()]);
       await boot(onDutyPref: true);
@@ -717,7 +714,7 @@ void main() {
       expect(c.onDuty, isTrue);
       expect(f.api.calls, isNot(contains('duty:true')), reason: 'mirroring needs no second call');
       expect(c.offers.map((o) => o.id), ['pool-1']);
-      expect(f.api.locations, isNotEmpty);
+      expect(f.api.locations, isEmpty);
       expect((await SharedPreferences.getInstance()).getBool(RiderController.dutyPrefKey), isTrue);
     });
 
@@ -735,7 +732,7 @@ void main() {
       await c.setDuty(false);
       expect(c.onDuty, isFalse);
       await c.reconcileDuty('ONLINE');
-      expect(c.onDuty, isFalse, reason: 'Kraveo has not heard the OFF yet; the poll will send it');
+      expect(c.onDuty, isFalse, reason: 'DailyMarket has not heard the OFF yet; the poll will send it');
     });
 
     test('a missing or unknown value changes nothing (older server)', () async {

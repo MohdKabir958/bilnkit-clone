@@ -1,3 +1,5 @@
+> Historical contract. Current grocery/serviceability/private-dispatch behavior is documented in [Docs/02 architecture](02_architecture.md); campus/shared-pool rules below are retained for history and legacy-data compatibility.
+
 # Push notifications contract (FCM) - 5 Oct 2026
 
 Goal: a restaurant with a locked phone hears a new order, a rider hears a new delivery, a customer learns each status change, even when the app is closed. Push is an ADDITION: Socket.io and polling stay exactly as they are (Docs/16). Nothing in the order/payment engine may change behaviour because of push. A push failure must never fail, delay or roll back an order transition.

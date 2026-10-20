@@ -159,8 +159,9 @@ describe('India-wide addresses, discovery and checkout', () => {
     }
     const driver = await prisma.user.create({ data: { role: 'DRIVER', name: 'Delivery One' } });
     ids.push(driver.id);
-    await prisma.driverPartner.create({ data: { userId: driver.id, name: 'Delivery One', phone: '9000000011', runnerCode: `GEO-${tag}`, vehicleType: 'Cycle', dutyStatus: 'ONLINE', cityId: cities[0] } });
+    await prisma.driverPartner.create({ data: { userId: driver.id, name: 'Delivery One', phone: '9000000011', runnerCode: `GEO-${tag}`, vehicleType: 'Cycle', dutyStatus: 'ONLINE', cityId: cities[0], serviceZoneId: zones[0] } });
     const driverToken = generateTestToken({ id: driver.id, role: 'DRIVER', phone: '9000000011' });
+    await request.get('/api/orders/available').set(auth(driverToken));
     expect((await request.post(`/api/orders/${id}/accept-driver`).set(auth(driverToken)).send({})).status).toBe(200);
     for (const status of ['PICKED_UP', 'ARRIVED_AT_GATE']) expect((await request.patch(`/api/orders/${id}/status`).set(auth(driverToken)).send({ status })).status).toBe(200);
     const customerView = await request.get(`/api/orders/${id}`).set(auth(customer));

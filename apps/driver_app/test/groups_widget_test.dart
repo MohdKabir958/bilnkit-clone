@@ -336,7 +336,7 @@ void main() {
     f.api.active = offline;
     await tester.runAsync(c.pollNow);
     await tester.pump(const Duration(milliseconds: 600));
-    expect(find.textContaining('Can\'t reach Kraveo'), findsOneWidget);
+    expect(find.textContaining('Can\'t reach DailyMarket'), findsOneWidget);
     expect(find.text('Collect from 2 restaurants'), findsOneWidget);
     w.released = true;
     w.sync();

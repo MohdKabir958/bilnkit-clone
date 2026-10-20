@@ -1,3 +1,4 @@
+import { ensureFixtureGeography } from '../harness/geography';
 /**
  * Partner self sign-up with admin approval: create account (PENDING) -> admin approves / rejects ->
  * only APPROVED partners can work. Also admin-created partners, password reset, audit log and the
@@ -289,7 +290,8 @@ describe('Partner approval pipeline', () => {
       expect(after.PENDING).toBe(before.PENDING - 1);
       expect(after.APPROVED).toBe(before.APPROVED + 1);
       const loc = await request.post('/api/drivers/location').set(getAuthHeader(token)).send({ lat: 23.07, lng: 76.85 });
-      expect(loc.status).toBe(200);
+      expect(loc.status).toBe(409);
+      expect(loc.body.code).toBe('NO_ACTIVE_DELIVERY');
       const list = await request.get('/api/admin/applications?status=APPROVED&kind=DRIVER').set(adminHeader());
       expect(list.body.data.every((a: any) => a.kind === 'DRIVER' && a.status === 'APPROVED')).toBe(true);
       expect(list.body.data.some((a: any) => a.id === driverId)).toBe(true);
@@ -374,9 +376,10 @@ describe('Partner approval pipeline', () => {
       const vendorId = created.body.profileId;
       __resetLoginLimiter();
       const token = (await request.post('/api/auth/partner-login').send({ phone: '9000000351', password: PW, role: 'VENDOR' })).body.token;
-      const item = await prisma.menuItem.create({ data: { vendorId, name: 'Roll', price: 60, vendorPrice: 60, category: 'Rolls', description: '', imageUrl: '' } });
+      const item = await prisma.menuItem.create({ data: { vendorId, name: 'Roll', price: 60, vendorPrice: 60, stockQty:100, category: 'Rolls', description: '', imageUrl: '' } });
       const live = await prisma.order.create({ data: { customerId: 'usr-1', vendorId, totalAmount: 80, dropoffHostel: 'Block 1', status: 'PLACED', paymentStatus: 'PAID', items: { create: [{ menuItemId: item.id, name: 'Roll', quantity: 1, price: 60 }] } } });
 
+      await ensureFixtureGeography('fixture',['usr-1'],[vendorId]);
       // Before: customers see it and can order.
       expect((await request.get('/api/vendors')).body.data.some((v: any) => v.id === vendorId)).toBe(true);
       const ok = await request.post('/api/orders').set(getAuthHeader(getStudentToken())).send({ vendorId, items: [{ itemId: item.id, quantity: 1 }], dropoffHostel: 'Block 1' });

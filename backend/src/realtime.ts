@@ -1,3 +1,4 @@
+import { setDispatchPublisher } from './services/dispatch';
 import { errSummary } from './utils/log';
 import { SlidingWindow } from './middleware/rateLimit';
 import { Server as SocketIOServer, Socket } from 'socket.io';
@@ -20,6 +21,15 @@ import { orderView, isPoolEligible, OrderWithRelations, ORDER_VIEW_INCLUDE, ACTI
  */
 let ioRef: SocketIOServer | null = null;
 export const getIo = () => ioRef;
+
+setDispatchPublisher(async(order,userId,offer)=>{
+  if(!ioRef) return;
+  for(const socket of await ioRef.in(`user_${userId}`).fetchSockets()) {
+    if(order.groupId && !socket.data.groups) continue;
+    const view=orderView(order,'DRIVER',userId);
+    if(view) socket.emit('order_available',{...view,dispatchOffer:{id:offer.id,expiresAt:offer.expiresAt.toISOString()}});
+  }
+});
 
 type SocketUser = { id: string; role: string };
 
@@ -102,6 +112,7 @@ export const attachRealtime = (io: SocketIOServer) => {
       if (typeof rawToken !== 'string' || !rawToken.trim()) return next(new Error('Authentication required.'));
       // Signature + the account still exists + the token was not revoked (password reset, suspension, deletion).
       const decoded = await verifyTokenForAccount(rawToken.replace(/^Bearer\s+/i, ''));
+      socket.data.tokenExpiresAt = decoded.exp;
       socket.data.user = { id: decoded.id, role: decoded.role } as SocketUser;
       const autoRooms = [`user_${decoded.id}`];
       if (decoded.role === 'ADMIN') autoRooms.push('admins');
@@ -123,7 +134,9 @@ export const attachRealtime = (io: SocketIOServer) => {
   io.on('connection', (socket: Socket) => {
     const user = socket.data.user as SocketUser;
     socket.join(socket.data.autoRooms as string[]);
-    socket.on('disconnect', () => joinWindows.delete(socket.id));
+    const authExpiryTimer = setTimeout(() => socket.disconnect(true), Math.max(0, Number(socket.data.tokenExpiresAt ?? 0)*1000-Date.now()));
+    authExpiryTimer.unref();
+    socket.on('disconnect', () => { clearTimeout(authExpiryTimer); joinWindows.delete(socket.id); });
 
     // join_room(room, ack?) -> ack({ ok }) so a client knows when it is actually subscribed.
     socket.on('join_room', async (room: unknown, ack?: unknown) => {
@@ -217,20 +230,7 @@ export const publishOrderChange = async (order: OrderWithRelations, opts: { wasP
     const isGroup = !!order.groupId;
     const nowEligible = isPoolEligible(order);
     if (nowEligible) {
-      const riders = await io.in('drivers').fetchSockets();
-      // Offers go to approved riders who are ONLINE right now, whatever the room membership says.
-      const ids = [...new Set(riders.map((s) => (s.data.user as SocketUser | undefined)?.id).filter((x): x is string => !!x))];
-      const eligible = new Set(
-        ids.length === 0 ? [] : (await prisma.driverPartner.findMany({ where: { userId: { in: ids }, approvalStatus: 'APPROVED', dutyStatus: 'ONLINE' }, select: { userId: true } })).map((d) => d.userId),
-      );
-      for (const s of riders) {
-        const u = s.data.user as SocketUser | undefined;
-        if (!u || !eligible.has(u.id)) continue;
-        if (isGroup && !s.data.groups) continue;
-        if (isGroup && opts.wasPoolEligible) continue; // Docs/22: a combined order is offered ONCE, when it becomes claimable
-        const view = orderView(order, u.role, u.id);
-        if (view) s.emit('order_available', view);
-      }
+      // The dispatch service sends offers only to their authenticated recipients.
     } else if (opts.wasPoolEligible) {
       if (isGroup) {
         for (const s of await io.in('drivers').fetchSockets()) if (s.data.groups) s.emit('order_unavailable', { id: order.id });
@@ -249,44 +249,34 @@ export const publishOrderChange = async (order: OrderWithRelations, opts: { wasP
  * customer's sockets and admin sockets in that room.
  * Throws { status, code, message } for the REST endpoint.
  */
+const locationWindows=new SlidingWindow();
 export const recordRiderLocation = async (riderUserId: string, lat: unknown, lng: unknown, heading: unknown) => {
-  if (!isValidCoordinate(lat, lng)) {
-    throw Object.assign(new Error('Latitude must be between -90 and 90 and longitude between -180 and 180.'), { status: 400, code: 'BAD_COORDINATES' });
-  }
-  const driver = await prisma.driverPartner.findUnique({ where: { userId: riderUserId }, include: { user: { select: { name: true } } } });
-  if (!driver) throw Object.assign(new Error('A linked driver profile is required.'), { status: 400, code: 'RIDER_PROFILE_MISSING' });
-  if (driver.approvalStatus !== 'APPROVED') throw Object.assign(new Error('Your account is not active.'), { status: 403, code: 'PARTNER_NOT_APPROVED' });
-  const h = typeof heading === 'number' && Number.isFinite(heading) ? heading : 0;
-  const name = driver.user?.name || driver.name;
-  const loc = await prisma.driverLocation.upsert({
-    where: { driverId: riderUserId },
-    update: { lat: lat as number, lng: lng as number, heading: h, driverName: name, lastUpdated: new Date() },
-    create: { driverId: riderUserId, driverName: name, lat: lat as number, lng: lng as number, heading: h },
-  });
-
-  const io = ioRef;
-  if (io) {
-    try {
-      // Docs/19: admins only see a rider's position while the rider is on duty (ONLINE, or IN_TRANSIT with an order).
-      // A fix that arrives after going OFFLINE is stored (above) but not broadcast to the dashboard.
-      if (driver.dutyStatus !== 'OFFLINE') {
-        io.to('admins').emit('driver_location_update', { ...loc, id: riderUserId, dutyStatus: driver.dutyStatus, approvalStatus: driver.approvalStatus });
-      }
-      const active = await prisma.order.findMany({
-        where: { driverId: riderUserId, status: { in: [...ACTIVE_RIDER_STATUSES] } },
-        select: { id: true, customerId: true },
-      });
-      for (const o of active) {
-        const payload = { orderId: o.id, driverId: riderUserId, lat: loc.lat, lng: loc.lng, heading: loc.heading, at: loc.lastUpdated.toISOString() };
-        const sockets = await io.in(`order_${o.id}`).fetchSockets();
-        for (const s of sockets) {
-          const u = s.data.user as SocketUser | undefined;
-          if (u && (u.role === 'ADMIN' || (u.role === 'STUDENT' && u.id === o.customerId))) s.emit('rider_location', payload);
-        }
-      }
-    } catch (err) {
-      console.error('rider location fan-out failed:', errSummary(err));
+  if(!isValidCoordinate(lat,lng)|| (lat as number)<6 || (lat as number)>38 || (lng as number)<68 || (lng as number)>98) throw Object.assign(new Error('Choose valid Indian coordinates.'),{status:400,code:'BAD_COORDINATES'});
+  const max=Number(process.env.RL_RIDER_LOCATION_MAX??(process.env.NODE_ENV==='test'?100000:30));
+  const limit=locationWindows.hit(riderUserId,Number.isFinite(max)&&max>0?max:30,60000);
+  if(!limit.ok) throw Object.assign(new Error('Location updates are too frequent. Wait before sending another fix.'),{status:429,code:'LOCATION_RATE_LIMITED'});
+  const result=await prisma.$transaction(async(tx)=>{
+    await tx.$queryRaw`SELECT "id" FROM "DriverPartner" WHERE "userId"=${riderUserId} FOR UPDATE`;
+    const driver=await tx.driverPartner.findUnique({where:{userId:riderUserId},include:{user:{select:{name:true,role:true,deletedAt:true}}}});
+    if(!driver) throw Object.assign(new Error('A linked rider profile is required.'),{status:400,code:'RIDER_PROFILE_MISSING'});
+    await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "driverId"=${riderUserId} AND status::text IN ('ACCEPTED','PREPARING','READY_FOR_PICKUP','PICKED_UP','ARRIVED_AT_GATE') ORDER BY "id" FOR SHARE`;
+    const active=await tx.order.findMany({where:{driverId:riderUserId,status:{in:[...ACTIVE_RIDER_STATUSES]}},select:{id:true,customerId:true}});
+    if(driver.approvalStatus!=='APPROVED'||driver.user?.deletedAt||driver.user?.role!=='DRIVER'||!active.length) {
+      await tx.driverLocation.deleteMany({where:{driverId:riderUserId}});return {loc:null,driver,active};
     }
-  }
+    const h=typeof heading==='number'&&Number.isFinite(heading)?((heading%360)+360)%360:0,name=driver.user?.name||driver.name;
+    const loc=await tx.driverLocation.upsert({where:{driverId:riderUserId},update:{lat:lat as number,lng:lng as number,heading:h,driverName:name,lastUpdated:new Date()},create:{driverId:riderUserId,driverName:name,lat:lat as number,lng:lng as number,heading:h}});
+    return {loc,driver,active};
+  });
+  if(!result.loc) throw Object.assign(new Error('Location sharing is allowed only during an active assigned delivery.'),{status:409,code:'NO_ACTIVE_DELIVERY'});
+  const {loc,driver,active}=result;
+  if(ioRef) try {
+    ioRef.to('admins').emit('driver_location_update',{...loc,id:riderUserId,dutyStatus:driver.dutyStatus,approvalStatus:driver.approvalStatus});
+    for(const o of active) ioRef.to([`user_${o.customerId}`,'admins']).emit('rider_location',{orderId:o.id,driverId:riderUserId,lat:loc.lat,lng:loc.lng,heading:loc.heading,at:loc.lastUpdated.toISOString()});
+  }catch{console.error('Active-delivery location fan-out failed.');}
   return loc;
 };
+
+export async function pruneRiderLocations(now=new Date()) {
+  return prisma.$executeRaw`DELETE FROM "DriverLocation" l WHERE l."lastUpdated"<${new Date(now.getTime()-5*60000)} OR NOT EXISTS (SELECT 1 FROM "DriverPartner" d JOIN "User" u ON u.id=d."userId" WHERE d."userId"=l."driverId" AND d."approvalStatus"='APPROVED' AND u."deletedAt" IS NULL AND EXISTS (SELECT 1 FROM "Order" o WHERE o."driverId"=d."userId" AND o.status::text IN ('ACCEPTED','PREPARING','READY_FOR_PICKUP','PICKED_UP','ARRIVED_AT_GATE')))`;
+}

@@ -8505,22 +8505,6 @@
   },
   {
     "component": "web/landing",
-    "name": "gsap",
-    "version": "3.15.0",
-    "license": "Standard 'no charge' license: https://gsap.com/standard-license.",
-    "development": false,
-    "optional": false
-  },
-  {
-    "component": "web/landing",
-    "name": "lenis",
-    "version": "1.3.26",
-    "license": "MIT",
-    "development": false,
-    "optional": false
-  },
-  {
-    "component": "web/landing",
     "name": "lightningcss",
     "version": "1.33.0",
     "license": "MPL-2.0",

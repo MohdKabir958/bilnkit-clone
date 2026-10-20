@@ -1,0 +1,1 @@
+ALTER TABLE "ReviewRecord" ALTER COLUMN "driverRating" DROP NOT NULL, ALTER COLUMN "driverRating" DROP DEFAULT;

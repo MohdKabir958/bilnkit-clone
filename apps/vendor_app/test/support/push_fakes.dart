@@ -45,6 +45,7 @@ class FakePushMessaging implements PushMessaging {
   Future<void> deleteToken() async {
     deleteCalls++;
     log?.add('deleteToken');
+    token='fcm-vendor-rotated';
   }
 
   @override

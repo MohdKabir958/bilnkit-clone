@@ -3,6 +3,8 @@
  * idempotency, retries, dead tokens, privacy (no OTP / phone / address), and "push can never change an order result".
  * Real PostgreSQL, real HTTP endpoints; the sender is a fake PushProvider (Firebase is never contacted).
  */
+import { ensureFixtureGeography } from '../harness/geography';
+import { ensureDispatchOffer } from '../../src/services/dispatch';
 import { randomUUID } from 'crypto';
 import supertest from 'supertest';
 import { Role } from '@prisma/client';
@@ -132,11 +134,13 @@ describe('Push notifications', () => {
       create: { id: 'dp-push-rid2', userId: RIDER2.id, name: 'Arjun Rider', phone: RIDER2.phone, runnerCode: 'RUN-PUSH2', vehicleType: 'Bike', dutyStatus: 'ONLINE' },
     });
     await prisma.user.update({ where: { id: STUDENT.id }, data: { name: 'Rahul Sharma', phone: STUDENT.phone, hostelBlock: 'Block 3' } });
+    await ensureFixtureGeography('seed',[STUDENT.id,STUDENT2.id,STUDENT3.id],['ven-1'],[RIDER.id,RIDER2.id]);
     server = await startTestServer(0);
     request = supertest(server.app);
   });
 
   beforeEach(async () => {
+    await cleanTestOrders();
     sim = createSimulatedProvider();
     setPaymentProvider(sim);
     fake = new FakeProvider();
@@ -151,6 +155,8 @@ describe('Push notifications', () => {
     await prisma.driverPartner.updateMany({ where: { userId: { notIn: [RIDER.id, RIDER2.id] } }, data: { dutyStatus: 'OFFLINE' } });
     await prisma.driverPartner.updateMany({ where: { userId: { in: [RIDER.id, RIDER2.id] } }, data: { dutyStatus: 'ONLINE', approvalStatus: 'APPROVED' } });
     await prisma.user.updateMany({ where: { id: { in: [RIDER.id, RIDER2.id, VENDOR.id] } }, data: { tokenVersion: 0 } });
+    await prisma.driverPartner.updateMany({where:{userId:RIDER.id},data:{lastOfferedAt:new Date(0)}});
+    await prisma.driverPartner.updateMany({where:{userId:RIDER2.id},data:{lastOfferedAt:new Date(1)}});
     delete process.env.PUSH_SEND_TIMEOUT_MS;
   });
 
@@ -231,12 +237,12 @@ describe('Push notifications', () => {
       expect((await reg(tRider, { token: T, app: 'DRIVER' })).status).toBe(200);
     });
 
-    test('a token moves to the new user on a shared phone and is re-enabled', async () => {
+    test('a token cannot move to another account even after logout', async () => {
       await reg(tStudent, { token: T, app: 'CUSTOMER' });
       await prisma.deviceToken.update({ where: { token: T }, data: { disabledAt: new Date(), disabledReason: 'LOGOUT' } });
-      expect((await reg(tStudent2, { token: T, app: 'CUSTOMER' })).status).toBe(200);
+      expect((await reg(tStudent2, { token: T, app: 'CUSTOMER' })).status).toBe(409);
       const row = await prisma.deviceToken.findUniqueOrThrow({ where: { token: T } });
-      expect(row).toMatchObject({ userId: STUDENT2.id, disabledAt: null, disabledReason: null });
+      expect(row.userId).toBe(STUDENT.id);expect(row.disabledAt).not.toBeNull();
       expect(await prisma.deviceToken.count({ where: { token: T } })).toBe(1);
     });
 
@@ -284,87 +290,22 @@ describe('Push notifications', () => {
   // Events: recipients and payload shape
   // =========================================================================
   describe('events', () => {
-    test('a full order sends every status event to the right people with the exact payload', async () => {
-      await registerAll();
-      const id = await placeOnly();
-      const refTail = id.slice(-6).toUpperCase();
-      expect(fake.sent).toHaveLength(0); // unpaid orders push nothing
-
-      await payOrder(id);
-      await flush();
-      expect(fake.events(id)).toEqual(['NEW_ORDER>VENDOR']);
-      const [newOrder] = fake.to(id, 'NEW_ORDER');
-      expect(newOrder).toEqual({
-        token: TOK.vendor, title: 'New order', body: expect.stringMatching(/^3 items - You earn Rs \d+(\.\d{2})?\. Tap to accept\.$/),
-        channelId: 'new_orders', priority: 'high', ttlSeconds: 120, collapseKey: `NEW_ORDER:${id}`, data: { event: 'NEW_ORDER', orderId: id, v: '1' },
-      });
-      // Docs/21: the restaurant is told what IT earns (vendorSubtotal), never the customer's total with the fee.
-      const row = await prisma.order.findUniqueOrThrow({ where: { id } });
-      const earn = row.vendorSubtotal;
-      expect(newOrder.body).toBe(`3 items - You earn Rs ${Number.isInteger(earn) ? earn : earn.toFixed(2)}. Tap to accept.`);
-      expect(earn).toBeLessThan(row.totalAmount);
-
-      expect((await setStatus(id, 'ACCEPTED', tVendor)).status).toBe(200);
-      await flush();
-      expect(fake.to(id, 'ORDER_ACCEPTED')).toEqual([{
-        token: TOK.cust, title: 'Order accepted', body: 'Sharma Highway Dhaba is preparing your food.', channelId: 'order_updates', priority: 'normal', ttlSeconds: 3600,
-        collapseKey: `ORDER_ACCEPTED:${id}`, data: { event: 'ORDER_ACCEPTED', orderId: id, v: '1' },
-      }]);
-
-      expect((await setStatus(id, 'PREPARING', tVendor)).status).toBe(200);
-      await flush();
-      expect(fake.events(id)).toEqual(['NEW_ORDER>VENDOR', 'ORDER_ACCEPTED>CUSTOMER']); // PREPARING is not pushed
-
-      expect((await setStatus(id, 'READY_FOR_PICKUP', tVendor)).status).toBe(200);
-      await flush();
-      expect(fake.to(id, 'ORDER_READY')).toEqual([{
-        token: TOK.cust, title: 'Food is ready', body: 'Waiting for a rider.', channelId: 'order_updates', priority: 'normal', ttlSeconds: 3600,
-        collapseKey: `ORDER_READY:${id}`, data: { event: 'ORDER_READY', orderId: id, v: '1' },
-      }]);
-      const deliveries = fake.to(id, 'NEW_DELIVERY');
-      expect(deliveries.map((m) => m.token).sort()).toEqual([TOK.rider, TOK.rider2].sort());
-      expect(deliveries[0]).toMatchObject({ title: 'New delivery', body: 'Sharma Highway Dhaba to BH2. Tap to accept.', channelId: 'new_deliveries', priority: 'high', ttlSeconds: 120, collapseKey: `NEW_DELIVERY:${id}`, data: { event: 'NEW_DELIVERY', orderId: id, v: '1' } });
-
-      expect((await claim(id)).status).toBe(200);
-      await flush();
-      expect(fake.sent.filter((m) => m.data.orderId === id)).toHaveLength(1 + 1 + 1 + 2); // claiming pushes nothing
-
-      expect((await setStatus(id, 'PICKED_UP', tRider)).status).toBe(200);
-      await flush();
-      expect(fake.to(id, 'ORDER_PICKED_UP')).toEqual([{
-        token: TOK.cust, title: 'On the way', body: 'Vikram picked up your order.', channelId: 'order_attention', priority: 'high', ttlSeconds: 3600,
-        collapseKey: `ORDER_PICKED_UP:${id}`, data: { event: 'ORDER_PICKED_UP', orderId: id, v: '1' },
-      }]);
-
-      expect((await setStatus(id, 'ARRIVED_AT_GATE', tRider)).status).toBe(200);
-      await flush();
-      const otp = (await prisma.order.findUniqueOrThrow({ where: { id } })).otpCode!;
-      expect(otp).toMatch(/^\d{4}$/);
-      secrets.otps.add(otp);
-      expect(fake.to(id, 'RIDER_AT_GATE')).toEqual([{
-        token: TOK.cust, title: 'Your rider is at the gate', body: 'Open Kraveo to see your code.', channelId: 'order_attention', priority: 'high', ttlSeconds: 3600,
-        collapseKey: `RIDER_AT_GATE:${id}`, data: { event: 'RIDER_AT_GATE', orderId: id, v: '1' },
-      }]);
-
-      const done = await setStatus(id, 'DELIVERED', tRider, { otpCode: otp });
-      expect(done.status).toBe(200);
-      await flush();
-      expect(fake.to(id, 'ORDER_DELIVERED')).toEqual([{
-        token: TOK.cust, title: 'Delivered', body: 'Enjoy your meal! Rate your order.', channelId: 'order_updates', priority: 'normal', ttlSeconds: 3600,
-        collapseKey: `ORDER_DELIVERED:${id}`, data: { event: 'ORDER_DELIVERED', orderId: id, v: '1' },
-      }]);
-      // (pushes of one transition are sent concurrently, so compare as a set)
-      expect(fake.events(id).sort()).toEqual([
-        'NEW_ORDER>VENDOR', 'ORDER_ACCEPTED>CUSTOMER', 'ORDER_READY>CUSTOMER', 'NEW_DELIVERY>RIDER', 'NEW_DELIVERY>RIDER2',
-        'ORDER_PICKED_UP>CUSTOMER', 'RIDER_AT_GATE>CUSTOMER', 'ORDER_DELIVERED>CUSTOMER',
-      ].sort());
-      expect(refTail).toHaveLength(6);
-
-      // Every delivered row is in the log, one per (order, event, user).
-      const rows = await prisma.pushLog.findMany({ where: { orderId: id } });
-      expect(rows.every((r) => r.status === 'SENT' && r.attempts === 1 && r.sentAt)).toBe(true);
-      expect(new Set(rows.map((r) => r.key)).size).toBe(rows.length);
-      expect(rows.map((r) => r.key)).toContain(`${id}:NEW_ORDER:${VENDOR.id}`);
+    test('a full order sends placement, packing, personal offer, assignment, pickup and delivery events to their exact roles',async()=>{
+      await registerAll();const id=await placeOnly();await flush();expect(fake.events(id)).toEqual(['ORDER_PLACED>CUSTOMER']);
+      await payOrder(id);await flush();expect(fake.to(id,'NEW_ORDER')).toHaveLength(1);
+      expect(fake.to(id,'NEW_ORDER')[0]).toMatchObject({token:TOK.vendor,title:'New order',channelId:'new_orders',priority:'high',data:{event:'NEW_ORDER',orderId:id,v:'1'}});
+      expect((await setStatus(id,'ACCEPTED',tVendor)).status).toBe(200);await flush();
+      expect(fake.to(id,'NEW_DELIVERY').map(m=>m.token)).toEqual([TOK.rider]);expect(fake.to(id,'ORDER_ACCEPTED')[0].token).toBe(TOK.cust);
+      expect((await claim(id)).status).toBe(200);await flush();
+      expect(fake.to(id,'RIDER_ASSIGNED_CUSTOMER')[0].token).toBe(TOK.cust);expect(fake.to(id,'RIDER_ASSIGNED_VENDOR')[0].token).toBe(TOK.vendor);
+      expect((await request.post(`/api/v1/orders/${id}/arrive-pickup`).set(H(tRider))).status).toBe(200);await flush();expect(fake.to(id,'RIDER_AT_PICKUP')[0].token).toBe(TOK.vendor);
+      for(const status of ['PREPARING','READY_FOR_PICKUP'])expect((await setStatus(id,status,tVendor)).status).toBe(200);await flush();
+      expect(fake.to(id,'ORDER_PREPARING')[0].token).toBe(TOK.cust);expect(fake.to(id,'ORDER_READY')[0].token).toBe(TOK.cust);expect(fake.to(id,'PICKUP_READY')[0].token).toBe(TOK.rider);
+      for(const status of ['PICKED_UP','ARRIVED_AT_GATE'])expect((await setStatus(id,status,tRider)).status).toBe(200);await flush();
+      const otp=(await prisma.order.findUniqueOrThrow({where:{id}})).otpCode!;secrets.otps.add(otp);
+      expect((await setStatus(id,'DELIVERED',tRider,{otpCode:otp})).status).toBe(200);await flush();
+      expect(fake.to(id,'ORDER_PICKED_UP')[0].token).toBe(TOK.cust);expect(fake.to(id,'RIDER_AT_GATE')[0].token).toBe(TOK.cust);expect(fake.to(id,'ORDER_DELIVERED')[0].token).toBe(TOK.cust);
+      for(const message of fake.sent.filter(m=>m.data.orderId===id)){expect(Object.keys(message.data).sort()).toEqual(['event','orderId','v']);expect(message.collapseKey).toBe(`${message.data.event}:${id}`);}
     });
 
     test('NEW_DELIVERY goes only to approved ONLINE riders without an active order', async () => {
@@ -390,6 +331,7 @@ describe('Push notifications', () => {
       expect(fake.to(id, 'NEW_DELIVERY')).toHaveLength(0);
       expect(fake.to(id, 'ORDER_READY')).toHaveLength(1);
 
+      await request.post(`/api/admin/orders/${id}/cancel`).set(H(tAdmin)).send({reason:'Close the earlier unavailable delivery'});
       // A rider who claimed before READY: the order is not in the pool when it becomes ready.
       await prisma.driverPartner.updateMany({ where: { userId: { in: [RIDER.id, RIDER2.id] } }, data: { dutyStatus: 'ONLINE', approvalStatus: 'APPROVED' } });
       const id2 = await placePaid();
@@ -397,7 +339,7 @@ describe('Push notifications', () => {
       expect((await claim(id2)).status).toBe(200);
       expect((await setStatus(id2, 'READY_FOR_PICKUP', tVendor)).status).toBe(200);
       await flush();
-      expect(fake.to(id2, 'NEW_DELIVERY')).toHaveLength(0);
+      expect(fake.to(id2, 'NEW_DELIVERY')).toHaveLength(1); // Offered at acceptance, before READY.
     });
 
     test('customer cancels a paid order: no self-push, restaurant told, then REFUND_PROCESSED', async () => {
@@ -424,10 +366,10 @@ describe('Push notifications', () => {
 
     test('an unpaid order the customer cancels: nobody is pushed (customer knows, restaurant never saw it)', async () => {
       await registerAll();
-      const id = await placeOnly();
+      const id = await placeOnly();await flush();
       expect((await request.post(`/api/orders/${id}/cancel`).set(H(tStudent)).send({})).status).toBe(200);
       await flush();
-      expect(fake.events(id)).toEqual([]);
+      expect(fake.events(id)).toEqual(['ORDER_PLACED>CUSTOMER']);
     });
 
     test('the restaurant rejects: the customer is told, the restaurant is not pushed about its own action; reason is sanitised and capped at 80', async () => {
@@ -437,7 +379,7 @@ describe('Push notifications', () => {
       const r = await request.post(`/api/orders/${id}/reject`).set(H(tVendor)).send({ reason });
       expect(r.status).toBe(200);
       await flush();
-      expect(fake.events(id).sort()).toEqual(['ORDER_CANCELLED>CUSTOMER', 'REFUND_PROCESSED>CUSTOMER', 'NEW_ORDER>VENDOR'].sort());
+      expect(fake.events(id).sort()).toEqual(['ORDER_PLACED>CUSTOMER','ORDER_CANCELLED>CUSTOMER', 'REFUND_PROCESSED>CUSTOMER', 'NEW_ORDER>VENDOR'].sort());
       const body = fake.to(id, 'ORDER_CANCELLED')[0].body;
       expect(body).not.toMatch(/\d{3,}/);
       expect(body.endsWith(' Your refund is on its way.')).toBe(true);
@@ -481,7 +423,7 @@ describe('Push notifications', () => {
       expect(re.status).toBe(200);
       await flush();
       expect(fake.to(id, 'DELIVERY_ASSIGNED')).toEqual([{
-        token: TOK.rider2, title: 'Delivery assigned', body: 'Sharma Highway Dhaba to BH2.', channelId: 'new_deliveries', priority: 'high', ttlSeconds: 3600,
+        token: TOK.rider2, title: 'Delivery assigned', body: 'Sharma Highway Dhaba to Kothri, Bhopal.', channelId: 'new_deliveries', priority: 'high', ttlSeconds: 3600,
         collapseKey: `DELIVERY_ASSIGNED:${id}`, data: { event: 'DELIVERY_ASSIGNED', orderId: id, v: '1' },
       }]);
       // moving it to the other rider assigns again (a different recipient = a different key)
@@ -649,7 +591,8 @@ describe('Push notifications', () => {
       const id = await placePaid();
       expect((await setStatus(id, 'ACCEPTED', tVendor)).status).toBe(200);
       await flush();
-      expect(await logOf(id, 'ORDER_ACCEPTED')).toEqual([expect.objectContaining({ status: 'FAILED', lastError: 'UNREGISTERED', nextAttemptAt: null })]);
+      expect(await logOf(id, 'ORDER_PLACED')).toEqual([expect.objectContaining({status:'FAILED',lastError:'UNREGISTERED',nextAttemptAt:null})]);
+      expect(await logOf(id,'ORDER_ACCEPTED')).toEqual([expect.objectContaining({status:'SKIPPED',lastError:'NO_DEVICE'})]);
       expect(await retryDuePushes(new Date(Date.now() + 3600_000))).toBe(0);
       fake.attemptsLog.length = 0;
       expect((await setStatus(id, 'PREPARING', tVendor)).status).toBe(200);
@@ -1024,21 +967,12 @@ describe('Push notifications', () => {
       expect(await prisma.pushLog.count({ where: { orderId: id, event: 'NEW_ORDER_REMINDER' } })).toBe(0);
     });
 
-    test('sweep: a rider who became idle after the order reached the pool is told once; riders already told are not told again', async () => {
-      await registerAll();
-      const id = await placePaid();
-      for (const s of ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP']) expect((await setStatus(id, s, tVendor)).status).toBe(200);
-      await flush();
-      expect(fake.to(id, 'NEW_DELIVERY').map((m) => OWNER_OF[m.token]).sort()).toEqual(['RIDER', 'RIDER2']);
-      await prisma.pushLog.deleteMany({ where: { orderId: id, event: 'NEW_DELIVERY', userId: RIDER2.id } }); // RIDER2 was busy back then
-      fake.sent.length = 0;
-      await sweepMissedPushes(new Date());
-      await flush();
-      expect(fake.to(id, 'NEW_DELIVERY').map((m) => OWNER_OF[m.token])).toEqual(['RIDER2']);
-      fake.sent.length = 0;
-      await sweepMissedPushes(new Date());
-      await flush();
-      expect(fake.to(id, 'NEW_DELIVERY')).toHaveLength(0);
+    test('the old shared-pool sweep cannot fan out a personal offer; timeout creates the next recipient intent',async()=>{
+      await registerAll();const id=await placePaid();for(const status of ['ACCEPTED','PREPARING','READY_FOR_PICKUP'])expect((await setStatus(id,status,tVendor)).status).toBe(200);await flush();
+      expect(fake.to(id,'NEW_DELIVERY').map(m=>m.token)).toEqual([TOK.rider]);fake.sent.length=0;
+      await sweepMissedPushes(new Date());await flush();expect(fake.to(id,'NEW_DELIVERY')).toHaveLength(0);
+      await prisma.dispatchOffer.updateMany({where:{orderId:id,state:'PENDING'},data:{expiresAt:new Date(0)}});await ensureDispatchOffer(id);await flush();
+      expect(fake.to(id,'NEW_DELIVERY').map(m=>m.token)).toEqual([TOK.rider2]);
     });
 
     test('push maintenance is bounded: a hung provider cannot hold the 60 s tick longer than the deadline', async () => {

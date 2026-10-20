@@ -1,3 +1,4 @@
+import { drainNotificationIntents } from './push/intents';
 import { fromPaise, toPaise } from './pricing';
 import { lockProducts, reserveStock, ensureStockAvailable } from './inventory';
 import { OrderGroup, Prisma } from '@prisma/client';
@@ -290,11 +291,13 @@ export const placeGroup = async (customerId: string, input: PlaceGroupInput): Pr
           await reserveStock(tx, child.id, c.verifiedItems);
         }
         const orders = await loadGroupChildren(tx, group.id);
+        await tx.notificationIntent.create({data:{orderId:orders[0].id,event:'ORDER_PLACED',options:{}}});
         return { group, orders, replay: false };
       },
       { maxWait: 15_000, timeout: 30_000 },
     );
     if (outcome.replay) return outcome;
+    drainNotificationIntents();
     // The replaced checkouts are cancelled for good only now that the new group is committed (a failed checkout rolled them back).
     for (const r of replaced) {
       await auditCancel(r, 'SYSTEM', REPLACED_REASON);

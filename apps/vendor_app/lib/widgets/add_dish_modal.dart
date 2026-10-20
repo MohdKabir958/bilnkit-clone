@@ -258,7 +258,7 @@ class _AddDishModalState extends State<AddDishModal> {
             Padding(
               padding: const EdgeInsets.only(left: 4, top: 8),
               child: Text(
-                'The price you want to receive for one portion. Kraveo sets the price customers pay.\nएक प्लेट पर आपको जो दाम चाहिए। ग्राहक का दाम Kraveo तय करता है।',
+                'The price you want to receive for one portion. ${BrandConfig.name} sets the price customers pay.\nएक प्लेट पर आपको जो दाम चाहिए। ग्राहक का दाम ${BrandConfig.name} तय करता है।',
                 key: const ValueKey('add-dish-price-help'),
                 style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13.5),
               ),
@@ -274,7 +274,7 @@ class _AddDishModalState extends State<AddDishModal> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Kraveo checks every new dish before customers can see it. You will see "Pending approval" until then.\nहर नया व्यंजन Kraveo जाँचेगा, फिर ग्राहकों को दिखेगा।',
+                    '${BrandConfig.name} checks every new dish before customers can see it. You will see "Pending approval" until then.\nहर नया व्यंजन ${BrandConfig.name} जाँचेगा, फिर ग्राहकों को दिखेगा।',
                     style: KraveoType.bodySm.copyWith(color: k.ink, fontSize: 14),
                   ),
                 ),

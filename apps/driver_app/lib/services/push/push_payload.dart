@@ -3,6 +3,7 @@
 enum PushEvent {
   /// A paid order is waiting in the pool.
   newDelivery('NEW_DELIVERY'),
+  pickupReady('PICKUP_READY'),
 
   /// Admin handed an order to this rider.
   deliveryAssigned('DELIVERY_ASSIGNED'),

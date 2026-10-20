@@ -46,7 +46,7 @@ extension OrderStatusUi on OrderProgressStatus {
         OrderProgressStatus.readyForPickup => 'Next: your rider collects it from the kitchen.',
         OrderProgressStatus.pickedUp => 'Next: meet your rider at the gate. Your OTP appears when they arrive.',
         OrderProgressStatus.arrivedAtGate => 'Tell your rider the OTP below to get your food.',
-        OrderProgressStatus.delivered => 'All done. Rate your meal to earn Kraveo Coins.',
+        OrderProgressStatus.delivered => 'All done. Rate your meal to earn ${BrandConfig.name} Coins.',
         OrderProgressStatus.cancelled => 'Nothing will be delivered for this order.',
       };
 

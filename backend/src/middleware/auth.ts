@@ -21,13 +21,13 @@ const getJwtSecret = (): string => {
   return JWT_SECRET;
 };
 
-type TokenClaims = { id: string; phone?: string | null; role: UserRole; tv?: number };
+type TokenClaims = { exp?: number; id: string; phone?: string | null; role: UserRole; tv?: number };
 
 // Generates real signed JWT tokens with 30-day expiration. `tv` is the user's tokenVersion: bumping it in the
 // database (password reset, suspension, account deletion) revokes every token issued before.
 export const generateToken = (payload: { id: string; phone?: string | null; role: UserRole; tokenVersion?: number | null }): string => {
   const { tokenVersion, ...claims } = payload;
-  return jwt.sign({ ...claims, tv: tokenVersion ?? 0 }, getJwtSecret(), { expiresIn: '30d' });
+  return jwt.sign({ ...claims, tv: tokenVersion ?? 0 }, getJwtSecret(), { expiresIn: payload.role === 'ADMIN' ? '8h' : '7d', algorithm:'HS256' });
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ export const bumpTokenVersion = async (userId: string) => {
 };
 
 /** Verifies signature + expiry only (no database). Throws on an invalid token. */
-export const verifyToken = (token: string) => jwt.verify(token, getJwtSecret()) as TokenClaims;
+export const verifyToken = (token: string) => jwt.verify(token, getJwtSecret(), {algorithms:['HS256']}) as TokenClaims;
 
 /** Signature + expiry + account check (exists, not deleted, tokenVersion). Throws on anything wrong. Used by sockets. */
 export const verifyTokenForAccount = async (token: string): Promise<TokenClaims> => {

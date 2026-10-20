@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:async';
 import 'dart:io' show SocketException;
 import 'package:flutter/foundation.dart';
@@ -59,7 +60,7 @@ String? googleFailureMessage(GoogleAuthFailure failure) {
     case GoogleAuthFailure.playServices:
       return 'Google Play services is missing or needs an update on this phone. Update it from the Play Store and try again.';
     case GoogleAuthFailure.notConfigured:
-      return 'Google sign-in isn\'t set up correctly in this build. Please update the app or contact Kraveo support at $kSupportEmail.';
+      return 'Google sign-in isn\'t set up correctly in this build. Please update the app or contact ${BrandConfig.name} support at $kSupportEmail.';
     case GoogleAuthFailure.other:
       return 'Google sign-in didn\'t work. Please try again.';
   }

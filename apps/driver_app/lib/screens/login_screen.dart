@@ -132,11 +132,11 @@ class _LoginScreenState extends State<LoginScreen> {
       case LoginFailure.locked:
         return const _LoginProblem(icon: LucideIcons.lock, title: 'Too many wrong tries.', isLock: true);
       case LoginFailure.wrongRole:
-        return _LoginProblem(icon: LucideIcons.store, title: r.message ?? 'This number is registered for another Kraveo app.');
+        return _LoginProblem(icon: LucideIcons.store, title: r.message ?? 'This number is registered for another ${BrandConfig.name} app.');
       case LoginFailure.offline:
-        return const _LoginProblem(icon: LucideIcons.wifiOff, title: 'Can\'t reach Kraveo. Check your internet and try again.');
+        return const _LoginProblem(icon: LucideIcons.wifiOff, title: 'Can\'t reach ${BrandConfig.name}. Check your internet and try again.');
       case LoginFailure.server:
-        return const _LoginProblem(icon: LucideIcons.triangleAlert, title: 'Kraveo is having trouble. Please try again in a moment.');
+        return const _LoginProblem(icon: LucideIcons.triangleAlert, title: '${BrandConfig.name} is having trouble. Please try again in a moment.');
     }
   }
 
@@ -298,13 +298,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         key: const ValueKey('login-support-card'),
                         color: k.brandSoft,
                         elevated: false,
-                        onTap: () => emailSupport(context, subject: 'Kraveo rider login help'),
+                        onTap: () => emailSupport(context, subject: '${BrandConfig.name} rider login help'),
                         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Icon(LucideIcons.mail, size: 24, color: k.brand),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text('Forgot password? Ask Kraveo support.', style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16)),
+                              Text('Forgot password? Ask ${BrandConfig.name} support.', style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16)),
                               const SizedBox(height: 2),
                               Text('Email ${SupportConfig.email}', style: KraveoType.bodySm.copyWith(color: k.brand, fontSize: 14)),
                             ]),

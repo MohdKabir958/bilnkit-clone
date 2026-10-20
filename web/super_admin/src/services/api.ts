@@ -44,8 +44,8 @@ import type { CommissionType } from '../lib/pricing';
 import type { DropPointInfo } from '../lib/campus';
 import type { SavedPin } from '../lib/vendorLocation';
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://api.kraveo.site' : 'http://localhost:5000');
-export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.PROD ? 'https://api.kraveo.site' : 'http://localhost:5000');
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? window.location.origin : 'http://localhost:5000');
+export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.PROD ? window.location.origin : 'http://localhost:5000');
 
 export class ApiError extends Error {
   /**
@@ -236,6 +236,13 @@ const orderOrNull = (raw: any): Order | null => {
 };
 
 export const apiService = {
+  operations: (cityId: string, days: string) => request<any>(`/api/v1/admin/operations?${new URLSearchParams({days,...(cityId?{cityId}:{})})}`),
+  dispatchPage: (cityId: string, after='') => requestFull<any>(`/api/v1/admin/dispatch?${new URLSearchParams({limit:'30',...(cityId?{cityId}:{}),...(after?{after}:{})})}`),
+  retryDispatch: (id:string) => request(`/api/v1/admin/orders/${encodeURIComponent(id)}/dispatch/retry`,{method:'POST'}),
+  supportPage: (status:string, after='') => requestFull<any>(`/api/v1/admin/support-cases?${new URLSearchParams({limit:'30',...(status?{status}:{}),...(after?{after}:{})})}`),
+  replySupport: (id:string,message:string,status:string) => request(`/api/v1/admin/support-cases/${encodeURIComponent(id)}/notes`,{method:'POST',body:JSON.stringify({message,status})}),
+  auditPage: (after='') => requestFull<any>(`/api/v1/admin/audit?${new URLSearchParams({limit:'50',...(after?{after}:{})})}`),
+  configureRiderServiceArea: (id:string, zoneId:string) => request(`/api/v1/admin/drivers/${encodeURIComponent(id)}/service-area`, {method:'PUT',body:JSON.stringify({zoneId})}),
   inventoryPage: (opts: {q:string;vendorId:string;cityId:string;lowStock:boolean;after:string}) => requestFull<any>(`/api/v1/admin/products?${new URLSearchParams(Object.fromEntries(Object.entries({...opts,limit:'50'}).filter(([,v]) => v !== '' && v !== false).map(([k,v])=>[k,String(v)])))}`),
   productMovements: (id:string) => requestFull<any>(`/api/v1/products/${encodeURIComponent(id)}/stock-movements?limit=100`),
   adjustProductStock: (id:string, data:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/stock`, {method:'POST',body:JSON.stringify(data)}),

@@ -167,7 +167,7 @@ class _PayoutDetailsScreenState extends State<PayoutDetailsScreen> {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(
-          content: Text(changed ? 'Payout details saved. Kraveo will check them before the first payout.' : 'These payout details were already saved.'),
+          content: Text(changed ? 'Payout details saved. ${BrandConfig.name} will check them before the first payout.' : 'These payout details were already saved.'),
           duration: const Duration(seconds: 4),
         ));
     } else {
@@ -232,7 +232,7 @@ class _PayoutDetailsScreenState extends State<PayoutDetailsScreen> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Semantics(header: true, child: Text('Payout details', style: KraveoType.displayMd.copyWith(color: k.ink, fontSize: 30))),
             const SizedBox(height: 6),
-            Text('Where Kraveo sends your delivery earnings.', style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
+            Text('Where ${BrandConfig.name} sends your delivery earnings.', style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
             const SizedBox(height: 18),
             if (account != null && !_editing) ...[
               _SavedCard(account: account),
@@ -276,7 +276,7 @@ class _PayoutDetailsScreenState extends State<PayoutDetailsScreen> {
             Icon(LucideIcons.info, size: 22, color: k.ink),
             const SizedBox(width: 10),
             Expanded(
-              child: Text('Saving changed details restarts verification. Kraveo checks them again before paying.',
+              child: Text('Saving changed details restarts verification. ${BrandConfig.name} checks them again before paying.',
                   style: KraveoType.bodySm.copyWith(color: k.ink, fontSize: 15, fontWeight: FontWeight.w700)),
             ),
           ]),
@@ -482,7 +482,7 @@ class _SavedCard extends StatelessWidget {
         const SizedBox(height: 12),
         Semantics(
           container: true,
-          label: verified ? 'Verified by Kraveo' : 'Not verified yet',
+          label: verified ? 'Verified by ${BrandConfig.name}' : 'Not verified yet',
           excludeSemantics: true,
           child: Container(
             key: kPayoutVerifiedKey,
@@ -495,7 +495,7 @@ class _SavedCard extends StatelessWidget {
               Icon(verified ? LucideIcons.badgeCheck : LucideIcons.clock, size: 20, color: verified ? k.brand : k.ink),
               const SizedBox(width: 8),
               Flexible(
-                child: Text(verified ? 'Verified by Kraveo' : 'Not verified yet', style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 15, fontWeight: FontWeight.w800)),
+                child: Text(verified ? 'Verified by ${BrandConfig.name}' : 'Not verified yet', style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 15, fontWeight: FontWeight.w800)),
               ),
             ]),
           ),

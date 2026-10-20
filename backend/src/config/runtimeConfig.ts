@@ -19,6 +19,15 @@ export const assertRuntimeConfig = (env: Record<string, string | undefined>): { 
   }
   const missing = REQUIRED_CONFIG.filter((key) => !(paymentsDisabled && key.startsWith('RAZORPAY_')) && blank(key));
   if (missing.length > 0) throw new Error(`Missing required configuration: ${missing.join(', ')}`);
+  if (env.NODE_ENV === 'production') {
+    if ((env.JWT_SECRET?.length ?? 0) < 32 || (env.ADMIN_PASSCODE?.length ?? 0) < 20) throw new Error('Production requires a JWT_SECRET of at least 32 characters and an ADMIN_PASSCODE of at least 20.');
+    for (const key of ['ADMIN_URL', 'PUBLIC_BASE_URL']) {
+      let url: URL; try {url = new URL(env[key] ?? '');} catch {throw new Error(`${key} must be a configured HTTPS URL.`);}
+      if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || url.pathname !== '/') throw new Error(`${key} must be an HTTPS origin.`);
+    }
+    if (env.CLIENT_URL && !/^https:\/\/[^/]+$/.test(env.CLIENT_URL)) throw new Error('CLIENT_URL must be an HTTPS origin.');
+    if (!env.UPLOAD_DIR) throw new Error('UPLOAD_DIR must point to persistent image storage.');
+  }
   const warnings: string[] = [];
   if (paymentsDisabled) warnings.push('Payments are DISABLED for local development. Checkout cannot charge or capture money.');
   for (const key of RECOMMENDED_CONFIG) {

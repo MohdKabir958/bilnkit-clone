@@ -1,3 +1,5 @@
+> Historical contract. Current grocery/serviceability/private-dispatch behavior is documented in [Docs/02 architecture](02_architecture.md); campus/shared-pool rules below are retained for history and legacy-data compatibility.
+
 # Campus drop points, maps and live rider tracking - contract (5 Oct 2026)
 
 Owner decisions (all settled, do not re-ask): hostels are named BH1..BH8 (boys), "Special Block" (boys, its own drop point), GH1, GH2 (girls); "VIT Main Gate" is removed; old stored values are migrated; the customer picks the delivery point at the start (profile) AND confirms it again at checkout in a small clean popup; riders can be tracked on the admin dashboard at any time while they are on duty; everything must stay fast, must not regress anything that works today, and must degrade gracefully (no map key / no Play Services / offline = the old behaviour, never a crash).

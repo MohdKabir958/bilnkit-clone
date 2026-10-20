@@ -19,9 +19,9 @@ import '../widgets/ui/scroll_empty.dart';
 import '../widgets/ui/sheet_chrome.dart';
 import '../widgets/ui/snack.dart';
 import '../widgets/ui/status_map.dart';
-import '../widgets/ui/support_contact.dart';
+import '../services/support_api.dart';
 import '../widgets/reorder.dart';
-import '../services/external_links.dart';
+import '../widgets/ui/support_contact.dart' show callNumber;
 import '../models/drop_point.dart';
 
 /// Live tracking of one real order. Everything comes from the server: `GET /orders/:id` when
@@ -113,7 +113,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
       case PaymentOutcomeKind.paid:
         showKSnack(context, 'Payment successful. The restaurant has your order now.', icon: LucideIcons.circleCheck);
       case PaymentOutcomeKind.confirming:
-        showKSnack(context, outcome.message ?? 'Payment received. Confirming it with Kraveo.', icon: LucideIcons.loader);
+        showKSnack(context, outcome.message ?? 'Payment received. Confirming it with ${BrandConfig.name}.', icon: LucideIcons.loader);
       case PaymentOutcomeKind.cancelled:
       case PaymentOutcomeKind.failed:
       case PaymentOutcomeKind.orderClosed:
@@ -179,6 +179,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
           toolbarHeight: 68,
           titleSpacing: canPop ? 0 : KSpace.gutter,
           title: title,
+          actions: [if(order!=null)IconButton(tooltip:'Help with this order',icon:const Icon(Icons.support_agent),onPressed:()=>Navigator.push(context,MaterialPageRoute(builder:(_)=>SupportCenter(call:SupportApi.call,orderId:order.id))))],
         );
 
     if (order == null) {
@@ -197,7 +198,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
               icon: missing ? LucideIcons.searchX : LucideIcons.wifiOff,
               title: missing ? 'We couldn\'t find this order' : 'Couldn\'t load this order',
               message: missing
-                  ? 'It may belong to a different account, or it is no longer available. Check Your orders, or email $kSupportEmail if you think this is a mistake.'
+                  ? 'It may belong to a different account, or it is no longer available. Check Your orders, or open Help and requests from your profile.'
                   : orderErrorMessage(loadError, action: 'load this order'),
               action: Column(mainAxisSize: MainAxisSize.min, children: [
                 if (!missing) KButton(label: 'Try again', icon: LucideIcons.rotateCcw, kind: KButtonKind.tonal, expand: false, onPressed: () => _retryLoad(orderId)),
@@ -411,7 +412,7 @@ class _StatusHero extends StatelessWidget {
     final unpaid = order.awaitsPayment;
     final String hint;
     if (unpaid) {
-      hint = confirming ? 'Razorpay reported your payment. Kraveo is confirming it; this page updates by itself.' : 'The restaurant only sees your order after you pay.';
+      hint = confirming ? 'Razorpay reported your payment. ${BrandConfig.name} is confirming it; this page updates by itself.' : 'The restaurant only sees your order after you pay.';
     } else {
       hint = order.isGroup ? groupNextHint(status) : status.nextHint;
     }
@@ -572,7 +573,7 @@ class _PaymentCard extends StatelessWidget {
         if (unconfirmed) ...[
           const SizedBox(height: 8),
           Text(
-            'If money already left your account for this order, wait a few minutes before paying again: Kraveo confirms late payments automatically.',
+            'If money already left your account for this order, wait a few minutes before paying again: ${BrandConfig.name} confirms late payments automatically.',
             style: KraveoType.bodySm.copyWith(color: kDangerInk, fontWeight: FontWeight.w600),
           ),
         ],
@@ -626,7 +627,7 @@ class _OtpCard extends StatelessWidget {
           Row(children: [
             const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2.4)),
             const SizedBox(width: 12),
-            Expanded(child: Text('Getting your code from Kraveo…', style: KraveoType.body.copyWith(color: k.inkMuted))),
+            Expanded(child: Text('Getting your code from ${BrandConfig.name}…', style: KraveoType.body.copyWith(color: k.inkMuted))),
           ])
         else ...[
           FittedBox(fit: BoxFit.scaleDown, child: KOtpDisplay(code: code)),
@@ -667,7 +668,7 @@ class _CancelledCard extends StatelessWidget {
         }
         return reason == null ? 'The restaurant couldn’t take your order.' : 'The restaurant couldn’t take your order: $reason';
       case CancelledBy.admin:
-        return reason == null ? 'Kraveo support cancelled this order.' : 'Kraveo support cancelled this order: $reason';
+        return reason == null ? '${BrandConfig.name} support cancelled this order.' : '${BrandConfig.name} support cancelled this order: $reason';
       case CancelledBy.system:
       case null:
         return reason ?? 'This order was cancelled.';
@@ -680,7 +681,7 @@ class _CancelledCard extends StatelessWidget {
     }
     if (order.paymentStatus == PaymentStatus.paid) {
       return order.refundStatus == RefundStatus.failed
-          ? 'Your refund of ${rupee(order.totalAmount)} is taking longer than usual. Kraveo retries it automatically and support has been alerted.'
+          ? 'Your refund of ${rupee(order.totalAmount)} is taking longer than usual. ${BrandConfig.name} retries it automatically and support has been alerted.'
           : 'You paid ${rupee(order.totalAmount)} for this order. Your refund is being processed.';
     }
     return 'No payment was taken for this order.';
@@ -703,7 +704,7 @@ class _CancelledCard extends StatelessWidget {
         // A paid order that is not refunded yet (or whose refund failed), or one Kraveo cancelled:
         // tell the student how to reach a person.
         if (order.isPaid || order.refundStatus == RefundStatus.failed || order.cancelledBy == CancelledBy.admin)
-          SupportEmailLine(subject: 'Order ${orderRef(order.id)}'),
+          TextButton.icon(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SupportCenter(call: SupportApi.call, orderId: order.id))), icon: const Icon(Icons.support_agent), label: const Text('Help with this order')),
         const SizedBox(height: 14),
         KButton(label: 'Order again', icon: LucideIcons.utensils, kind: KButtonKind.tonal, expand: false, onPressed: onAgain),
       ]),

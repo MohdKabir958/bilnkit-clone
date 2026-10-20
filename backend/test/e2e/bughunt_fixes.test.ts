@@ -60,7 +60,7 @@ describe('Pre-demo bug hunt fixes', () => {
   };
   const driveTo = async (id: string, target: string, v: Vendor, r: Rider) => {
     for (const st of ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'CLAIMED', 'PICKED_UP', 'ARRIVED_AT_GATE']) {
-      if (st === 'CLAIMED') expect((await api.claim(r, id)).status).toBe(200);
+      if(st==='CLAIMED'){expect((await api.reassign(W.admin,id,r.id)).status).toBe(200);expect((await api.claim(r,id)).status).toBe(200);}
       else if (['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP'].includes(st)) expect((await api.setStatus(v, id, st)).status).toBe(200);
       else expect((await api.setStatus(r, id, st)).status).toBe(200);
       if (st === target) return;

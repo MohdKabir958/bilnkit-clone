@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+import { AppError } from '../../utils/appError';
 import { prisma } from '../../db';
 import { PushApp } from './types';
 
@@ -10,16 +12,13 @@ export const appForRole = (role: string): PushApp | null => APP_OF_ROLE[role] ??
 export type RegisterInput = { userId: string; token: string; app: PushApp; platform: string; appVersion: string | null };
 
 /**
- * Upsert by token. A token that exists for another user MOVES to the caller (shared phone / re-login) and is re-enabled.
+ * Upsert by token. A token is permanently bound to its owner. Shared phones rotate FCM tokens when accounts change.
  * A user keeps at most MAX_ACTIVE_TOKENS_PER_USER active tokens: the least recently seen ones are disabled.
  */
 export const registerDeviceToken = async (input: RegisterInput): Promise<void> => {
   const now = new Date();
-  await prisma.deviceToken.upsert({
-    where: { token: input.token },
-    create: { userId: input.userId, token: input.token, app: input.app, platform: input.platform, appVersion: input.appVersion, lastSeenAt: now },
-    update: { userId: input.userId, app: input.app, platform: input.platform, appVersion: input.appVersion, lastSeenAt: now, disabledAt: null, disabledReason: null },
-  });
+  const saved=await prisma.$queryRaw<{id:string}[]>`INSERT INTO "DeviceToken" (id,"userId",token,app,platform,"appVersion","lastSeenAt") VALUES (${randomUUID()},${input.userId},${input.token},${input.app},${input.platform},${input.appVersion},${now}) ON CONFLICT(token) DO UPDATE SET app=EXCLUDED.app,platform=EXCLUDED.platform,"appVersion"=EXCLUDED."appVersion","lastSeenAt"=EXCLUDED."lastSeenAt","disabledAt"=NULL,"disabledReason"=NULL WHERE "DeviceToken"."userId"=EXCLUDED."userId" RETURNING id`;
+  if(!saved.length)throw new AppError(409,'DEVICE_TOKEN_OWNED','This device token belongs to a different account. Refresh the device token before signing in again.');
   const active = await prisma.deviceToken.findMany({
     where: { userId: input.userId, disabledAt: null },
     orderBy: [{ lastSeenAt: 'desc' }, { createdAt: 'desc' }],

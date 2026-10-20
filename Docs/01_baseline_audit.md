@@ -28,3 +28,20 @@ This audit describes inspected source and local evidence, not the upstream READM
 | Infrastructure | `compose.yaml`, environment examples, `backend/scripts/migrate.mjs` | Local database configuration and safe initial bootstrap added. Production deployment is not performed. |
 
 See `05_test_cases.md` for executed checks and `10_remaining_work.md` for the acceptance gate. A checked-in Firebase client configuration is not evidence of access to that project's backend credentials or permission to redistribute its brand assets.
+
+
+## Phase 4 final implementation audit
+
+| Capability | Implemented source / scope |
+|---|---|
+| Rider onboarding, duty and configured area | Existing partner approval plus `routes/operations.ts`, `services/dispatch.ts`, admin `GeographyPanel.tsx`; approved/online/idle linked accounts only |
+| Assignment offers / rejection / timeout / escalation | `services/dispatch.ts`, `DispatchOffer` migration, driver `dispatch_api.dart`/rider controller and admin `OperationsPanel.tsx`; private recipient offers and audited manual intervention |
+| Active delivery GPS and doorstep verification | `services/geography.ts`, `orderFlow.ts`, `orderView.ts`, realtime authorization; five-minute location retention, ten-minute single-use OTP, five-attempt lock, terminal privacy |
+| FCM across all roles | `services/push/intents.ts`, events/device tokens/provider; three Flutter push controllers/payload parsers; actual external delivery still needs owned credentials/devices |
+| Support and operational metrics | `routes/operations.ts`, shared `support_center.dart` and role adapters, admin Operations; persisted ownership, paged threads/audit, SQL-backed city cohorts |
+| Vendor product images | Existing validated upload handler extended with owned vendor writes; vendor gallery + product editor; persistent volume/public URL, no invented storage service |
+| Financial records | Existing payments/refund/commission/settlement services retained; integer-paise payout aggregation, real review aggregates, no automatic bank transfer claim |
+| Security / deployment | Platform secure token storage, JWT/socket expiry/origins, production configuration/log redaction, owned signing requirement, Docker/Caddy/private DB, backup/restore scripts and CI |
+| Pilot data | Explicit local-only `seed-pilot.mjs`: configurable city, two stores, 50/30 SKUs, three customers, three offline riders; private ignored credentials |
+
+The original architecture, migrations and MIT notice are preserved. Active marketing was replaced with neutral pilot information; inactive inherited assets remain subject to provenance review. Final verification is recorded in `05_test_cases.md` and `evidence/phase4-results.txt`. Compile/in-process provider success does not certify real gateway, FCM, Google login or physical-device operation.

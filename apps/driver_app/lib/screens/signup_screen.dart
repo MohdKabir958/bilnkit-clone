@@ -139,9 +139,9 @@ class _SignupScreenState extends State<SignupScreen> {
         case SignupFailure.unauthorized:
           _problem = 'Your session ended. Please log in again.';
         case SignupFailure.offline:
-          _problem = 'Can\'t reach Kraveo. Check your internet and try again.';
+          _problem = 'Can\'t reach ${BrandConfig.name}. Check your internet and try again.';
         case SignupFailure.server:
-          _problem = 'Kraveo is having trouble. Please try again in a moment.';
+          _problem = '${BrandConfig.name} is having trouble. Please try again in a moment.';
       }
     });
   }
@@ -457,7 +457,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Icon(LucideIcons.shieldCheck, size: 24, color: k.brand),
                       const SizedBox(width: 12),
-                      Expanded(child: Text('Kraveo checks every rider before the first order.', style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16))),
+                      Expanded(child: Text('${BrandConfig.name} checks every rider before the first order.', style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16))),
                     ]),
                   ),
                 ),

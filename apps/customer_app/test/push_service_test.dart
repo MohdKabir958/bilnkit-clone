@@ -26,7 +26,12 @@ void main() {
 
   PushService make({String appVersion = '9.9.9'}) => PushService(messaging: fcm, local: local, api: api, settings: settings, appVersion: appVersion);
 
+  test('a token owned by a prior account is rotated before registration',()async{
+    final old=fcm.tokenValue;api.onRegister=(token)=>token==old?DeviceCallResult.tokenOwned:DeviceCallResult.ok;
+    final service=make();await service.onSessionStarted('new-owner');expect(api.registered.map((r)=>r.token),[old,'rotated-customer-fixture']);service.dispose();
+  });
   group('payload parsing', () {
+
     test('every customer event parses and maps to the contract channel', () {
       const expected = {
         'ORDER_ACCEPTED': PushChannels.orderUpdates,
@@ -389,7 +394,7 @@ void main() {
       push.onOrderEvent = (_) {};
       await push.onSessionStarted('u1');
 
-      fcm.foreground.add(PushMessage(data: pushData('RIDER_AT_GATE', orderId: 'o-1'), title: 'Your rider is at the gate', body: 'Open Kraveo to see your code.'));
+      fcm.foreground.add(PushMessage(data: pushData('RIDER_AT_GATE', orderId: 'o-1'), title: 'Your rider is at the gate', body: 'Open DailyMarket to see your code.'));
       await pumpEventQueue();
       expect(local.shown, hasLength(1));
       expect(local.shown.single.channelId, PushChannels.orderAttention);

@@ -14,10 +14,14 @@ Future<void> showBackgroundPush(PushMessage message, AlarmNotifications notifica
   if (message.hasNotificationBlock || !message.isActionable) return;
   final orderId = message.orderId!;
   switch (message.event) {
+    case PushEvent.newOrderReminder:
     case PushEvent.newOrder:
       await notifications.showNewOrder(orderId, title: message.title, body: message.body);
     case PushEvent.orderCancelledVendor:
       await notifications.showUpdate(orderId, title: message.title ?? 'Order cancelled', body: message.body ?? 'An order was cancelled.');
+    case PushEvent.riderAssigned:
+    case PushEvent.riderAtPickup:
+      await notifications.showUpdate(orderId, title: message.title ?? 'Pickup update', body: message.body ?? 'Open the app for your delivery partner update.');
     case PushEvent.groupReadyToCook:
       await notifications.showUpdate(orderId, title: message.title ?? 'Start cooking', body: message.body ?? 'All restaurants accepted - you can start cooking.');
     case PushEvent.unknown:

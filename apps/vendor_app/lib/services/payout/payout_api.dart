@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -38,14 +39,14 @@ FailureText payoutFailureText(ApiResult<Object?> r) {
     case ApiFailure.invalid:
       // The server's own sentence says exactly what is wrong ("Account number must be 6 to 20 digits.").
       if (server.isNotEmpty && server.length <= 200) return FailureText(server, 'जानकारी जाँचकर फिर कोशिश करें');
-      return const FailureText('Kraveo did not accept these details. Please check them.', 'Kraveo ने ये जानकारी नहीं ली, जाँचें');
+      return const FailureText('${BrandConfig.name} did not accept these details. Please check them.', '${BrandConfig.name} ने ये जानकारी नहीं ली, जाँचें');
     case ApiFailure.notFound:
       return const FailureText('Payout details are not available on this server yet. Please try again later.', 'पेआउट की जानकारी अभी उपलब्ध नहीं है, बाद में कोशिश करें');
     case ApiFailure.forbidden:
     case ApiFailure.notApproved:
-      return const FailureText('Your restaurant account cannot do this right now. Please contact Kraveo.', 'अभी यह नहीं हो सकता, Kraveo से संपर्क करें');
+      return const FailureText('Your restaurant account cannot do this right now. Please contact ${BrandConfig.name}.', 'अभी यह नहीं हो सकता, ${BrandConfig.name} से संपर्क करें');
     case ApiFailure.server:
-      return const FailureText('Kraveo had a problem. Try again in a moment.', 'सर्वर में दिक्कत, थोड़ी देर में कोशिश करें');
+      return const FailureText('${BrandConfig.name} had a problem. Try again in a moment.', 'सर्वर में दिक्कत, थोड़ी देर में कोशिश करें');
     default:
       return failureText(failure, serverMessage: r.message, code: r.code);
   }

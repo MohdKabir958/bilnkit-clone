@@ -30,7 +30,7 @@ class DutyToggle extends StatelessWidget {
     final on = isOnline;
     return KPressable(
       semanticLabel: busy
-          ? 'Going on duty, waiting for Kraveo.'
+          ? 'Going on duty, waiting for ${BrandConfig.name}.'
           : on
               ? 'You are on duty. Double tap to go off duty.'
               : 'You are off duty. Double tap to go on duty.',
@@ -66,7 +66,7 @@ class DutyToggle extends StatelessWidget {
                         children: [
                           Text(busy ? 'CONNECTING' : (on ? 'ON DUTY' : 'OFF DUTY'),
                               style: KraveoType.displayMd.copyWith(color: on ? k.brand : k.inkMuted, fontSize: 32, letterSpacing: 0.4)),
-                          Text(busy ? 'Asking Kraveo…' : (on ? (alertsOff ? 'Alerts are off - you may miss orders' : 'Receiving orders') : 'Tap to go online'),
+                          Text(busy ? 'Asking ${BrandConfig.name}…' : (on ? (alertsOff ? 'Alerts are off - you may miss orders' : 'Receiving orders') : 'Tap to go online'),
                               style: KraveoType.bodySm.copyWith(color: on ? k.inkMuted : k.inkFaint)),
                         ],
                       ),

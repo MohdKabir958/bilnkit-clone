@@ -113,7 +113,7 @@ class _ReviewModalState extends State<ReviewModal> {
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(buildKSnack(
-          receipt.coinsEarned > 0 ? 'Thanks for rating! +${receipt.coinsEarned} Kraveo Coins added.' : 'Thanks for rating!',
+          receipt.coinsEarned > 0 ? 'Thanks for rating! +${receipt.coinsEarned} ${BrandConfig.name} Coins added.' : 'Thanks for rating!',
           icon: LucideIcons.coins,
           duration: const Duration(seconds: 4),
         ));
@@ -160,7 +160,7 @@ class _ReviewModalState extends State<ReviewModal> {
           TextField(
             controller: _driverNotesController,
             maxLength: kReviewNoteMaxLength,
-            decoration: const InputDecoration(hintText: 'Private note for Kraveo (optional)'),
+            decoration: const InputDecoration(hintText: 'Private note for ${BrandConfig.name} (optional)'),
           ),
           const SizedBox(height: 22),
         ],

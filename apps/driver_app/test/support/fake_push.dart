@@ -82,6 +82,7 @@ class FakeDeviceApi implements PushDeviceApi {
   FakeDeviceApi(this.log);
 
   final EventLog log;
+  DeviceCallResult Function(String)? onRegister;
   DeviceCallResult registerResult = DeviceCallResult.ok;
   DeviceCallResult unregisterResult = DeviceCallResult.ok;
   bool throwOnUnregister = false;
@@ -96,7 +97,7 @@ class FakeDeviceApi implements PushDeviceApi {
     log.add('register:$token');
     registered.add(token);
     versions.add(appVersion);
-    return registerResult;
+    return onRegister?.call(token) ?? registerResult;
   }
 
   @override

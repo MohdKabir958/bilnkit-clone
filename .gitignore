@@ -15,6 +15,7 @@ build/
 .env
 .env.*
 !.env.example
+!deploy/.env.production.example
 firebase-key.json
 *firebase-adminsdk*.json
 *.pem
@@ -50,3 +51,18 @@ DEMO_ACCOUNTS*
 
 # Local Android Kotlin compiler state
 **/.kotlin/
+
+# Production credentials and database backup archives
+.env.production
+deploy/secrets/
+*.dump
+*.dump.sha256
+*.jks
+*.keystore
+
+# Supply owned Firebase client configuration locally. Never add server keys to apps.
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Generated local pilot credentials and uploaded images
+backend/var/

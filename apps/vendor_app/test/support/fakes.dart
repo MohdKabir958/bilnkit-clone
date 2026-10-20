@@ -71,7 +71,7 @@ OrderModel order({String id = 'ord-a1b2c3', String status = 'PLACED', String pay
       items: items,
     ))!;
 
-/// A scriptable Kraveo server. Holds a set of orders; actions change them like the real server would,
+/// A scriptable DailyMarket server. Holds a set of orders; actions change them like the real server would,
 /// unless a test overrides a response.
 class FakeBackend implements VendorBackend {
   final Map<String, OrderModel> server = {};

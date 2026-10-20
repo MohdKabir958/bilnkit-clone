@@ -10,6 +10,7 @@ import '../widgets/map/delivery_map_card.dart';
 import '../widgets/map/map_view.dart';
 import '../widgets/pipeline_stepper.dart';
 import '../widgets/support_sheet.dart';
+import '../services/support_api.dart';
 import '../widgets/swipe_accept_card.dart' show OfferCard;
 import '../widgets/ui/screen_header.dart';
 
@@ -229,7 +230,7 @@ class _DeliveryViewState extends State<_DeliveryView> {
           icon: LucideIcons.lock,
           color: KraveoPalette.danger,
           title: RiderController.supportMessage,
-          message: 'Too many wrong codes. Do not hand over the food until Kraveo support unlocks it.',
+          message: 'Too many wrong codes. Do not hand over the food until ${BrandConfig.name} support unlocks it.',
         ),
       _ when o.isGroup && status.isBeforePickup => _Banner(
           icon: LucideIcons.store,
@@ -271,11 +272,11 @@ class _DeliveryViewState extends State<_DeliveryView> {
       action = Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         KButton(
           key: const ValueKey('locked-support-button'),
-          label: 'Email Kraveo support',
+          label: 'Help and requests',
           icon: LucideIcons.mail,
           kind: KButtonKind.danger,
           large: true,
-          onPressed: () => showSupportSheet(context,
+          onPressed: () => showSupportSheet(context, orderId: o.id,
               note: 'Delivery ${o.shortRef} is locked after too many wrong codes.', subject: 'Locked delivery ${o.shortRef}'),
         ),
         const SizedBox(height: 10),
@@ -347,9 +348,9 @@ class _DeliveryViewState extends State<_DeliveryView> {
             ),
           ),
           if (c.activeStale)
-            const _Inline(icon: LucideIcons.wifiOff, text: 'Can\'t reach Kraveo – showing the last known status. Retrying…'),
+            const _Inline(icon: LucideIcons.wifiOff, text: 'Can\'t reach ${BrandConfig.name} – showing the last known status. Retrying…'),
           if (c.otherActiveCount > 0)
-            _Inline(icon: LucideIcons.info, text: 'Kraveo gave you ${c.otherActiveCount} more order(s). They appear after this one.'),
+            _Inline(icon: LucideIcons.info, text: '${BrandConfig.name} gave you ${c.otherActiveCount} more order(s). They appear after this one.'),
           Padding(
             padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 0),
             child: PipelineStepper(currentStep: step),
@@ -378,6 +379,14 @@ class _DeliveryViewState extends State<_DeliveryView> {
                 ),
             ]),
           ),
+          if (status.isBeforePickup)
+            Padding(padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 0), child: TextButton.icon(
+              icon: const Icon(Icons.store), label: const Text('Confirm arrival at pickup'),
+              onPressed: c.actionBusy ? null : () async {
+                try { await SupportApi.call('POST','/v1/orders/${o.id}/arrive-pickup'); if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pickup arrival confirmed. The store has been notified.'))); }
+                catch(e) { if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e'))); }
+              },
+            )),
           if (banner != null) Padding(padding: const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0), child: banner),
           Padding(padding: const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 0), child: action),
           if (c.actionError != null)
@@ -421,7 +430,7 @@ class _DeliveryViewState extends State<_DeliveryView> {
                       ),
                     ]),
                   )
-                : Text('The customer\'s number appears here when Kraveo shares it (at the drop point at the latest).',
+                : Text('The customer\'s number appears here when ${BrandConfig.name} shares it (at the drop point at the latest).',
                     style: KraveoType.bodySm.copyWith(color: k.inkFaint)),
           ),
           Padding(
@@ -443,7 +452,7 @@ class _DeliveryViewState extends State<_DeliveryView> {
           if (c.lastSync != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(KSpace.gutter, 14, KSpace.gutter, 0),
-              child: Text('Status from Kraveo · updated ${OfferCard.ago(c.lastSync, c.services.now())}',
+              child: Text('Status from ${BrandConfig.name} · updated ${OfferCard.ago(c.lastSync, c.services.now())}',
                   style: KraveoType.caption.copyWith(color: k.inkFaint)),
             ),
         ],
@@ -479,7 +488,7 @@ class _NoticeView extends StatelessWidget {
             if (o.cancelReason != null) 'Reason: ${o.cancelReason}.',
             if (o.isRefunded) 'The customer has been refunded.',
             o.pickedUpAt != null
-                ? 'Do not hand over the food. Email Kraveo support to ask what to do with it.'
+                ? 'Do not hand over the food. Email ${BrandConfig.name} support to ask what to do with it.'
                 : (o.isGroup ? 'Do not go to the restaurants for this order.' : 'Do not go to the restaurant for this order.'),
           ].join(' '),
           'OK, got it',
@@ -488,7 +497,7 @@ class _NoticeView extends StatelessWidget {
           LucideIcons.arrowLeftRight,
           KStatus.placed.color,
           'This delivery was moved',
-          'Kraveo moved ${what.toLowerCase()} ${o.shortRef} away from you (another rider or support has it now). You do not need to do anything more for it.',
+          '${BrandConfig.name} moved ${what.toLowerCase()} ${o.shortRef} away from you (another rider or support has it now). You do not need to do anything more for it.',
           'OK, got it',
         ),
     };
@@ -513,11 +522,11 @@ class _NoticeView extends StatelessWidget {
           const SizedBox(height: 12),
           KButton(
             key: const ValueKey('notice-support-button'),
-            label: 'Email Kraveo support',
+            label: 'Help and requests',
             icon: LucideIcons.mail,
             kind: KButtonKind.ghost,
             large: true,
-            onPressed: () => showSupportSheet(context, subject: 'Cancelled delivery ${o.shortRef}'),
+            onPressed: () => showSupportSheet(context, orderId: o.id, subject: 'Cancelled delivery ${o.shortRef}'),
           ),
         ],
       ],
@@ -527,7 +536,7 @@ class _NoticeView extends StatelessWidget {
   static String _by(String? who) => switch (who) {
         'CUSTOMER' => ' by the customer',
         'VENDOR' => ' by the restaurant',
-        'ADMIN' => ' by Kraveo',
+        'ADMIN' => ' by ${BrandConfig.name}',
         'SYSTEM' => ' automatically',
         _ => '',
       };

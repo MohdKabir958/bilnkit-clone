@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
@@ -76,7 +77,7 @@ class AudioAlertService {
     if (_isPlaying) return;
     _isPlaying = true;
     final gen = ++_generation;
-    debugPrint('[Kraveo Audio Engine] new order alarm ringing');
+    debugPrint('[${BrandConfig.name} Audio Engine] new order alarm ringing');
 
     await _openPlayer(gen);
     if (gen != _generation) return; // stopped (or restarted) while loading
@@ -97,7 +98,7 @@ class AudioAlertService {
     try {
       await player.playLooping(alarmAsset).timeout(_startTimeout);
     } catch (e) {
-      debugPrint('[Kraveo Audio Engine] alarm sound failed to start ($e); system beep until it recovers');
+      debugPrint('[${BrandConfig.name} Audio Engine] alarm sound failed to start ($e); system beep until it recovers');
       if (gen == _generation) _systemBeep();
     }
     if (gen != _generation) {
@@ -131,7 +132,7 @@ class AudioAlertService {
     try {
       await player.dispose();
     } catch (e) {
-      debugPrint('[Kraveo Audio Engine] error releasing audio player: $e');
+      debugPrint('[${BrandConfig.name} Audio Engine] error releasing audio player: $e');
     }
   }
 
@@ -144,7 +145,7 @@ class AudioAlertService {
     final player = _player;
     _player = null;
     await _release(player);
-    debugPrint('[Kraveo Audio Engine] alarm stopped');
+    debugPrint('[${BrandConfig.name} Audio Engine] alarm stopped');
   }
 
   /// True from [startLoudAlarm] until [stopAlarm] (the alarm is meant to ring; the watchdog keeps it audible).

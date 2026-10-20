@@ -24,7 +24,11 @@ class PushController extends ChangeNotifier {
     required this.messaging,
     required this.api,
     Future<String?> Function()? appVersion,
-    List<Duration> retryDelays = const [Duration(seconds: 30), Duration(minutes: 2), Duration(minutes: 10)],
+    List<Duration> retryDelays = const [
+      Duration(seconds: 30),
+      Duration(minutes: 2),
+      Duration(minutes: 10)
+    ],
     DateTime Function()? now,
   })  : _appVersion = appVersion,
         _retryDelays = retryDelays,
@@ -49,6 +53,7 @@ class PushController extends ChangeNotifier {
   bool _available = false;
   bool _eligible = false;
   String? _userId;
+  int _ownershipRotations = 0;
   PushPermission _permission = PushPermission.unknown;
   bool _explained = true; // until the preference is read, never nag
 
@@ -83,10 +88,15 @@ class PushController extends ChangeNotifier {
   bool get eligible => _eligible;
 
   /// The persistent "Turn on notifications or you will miss deliveries" warning.
-  bool get showBlockedBanner => _available && _eligible && _permission.isBlocked;
+  bool get showBlockedBanner =>
+      _available && _eligible && _permission.isBlocked;
 
   /// The explain-then-ask sheet should be shown now (once per phone).
-  bool get needsExplanation => _available && _eligible && !_explained && _permission == PushPermission.notDetermined;
+  bool get needsExplanation =>
+      _available &&
+      _eligible &&
+      !_explained &&
+      _permission == PushPermission.notDetermined;
 
   /// Banner button label: opens the phone settings when the system will not ask again.
   bool get mustOpenSettings => _permission == PushPermission.deniedPermanently;
@@ -136,9 +146,12 @@ class PushController extends ChangeNotifier {
       await messaging.createChannels();
     } catch (_) {}
     try {
-      _refreshSub = messaging.onTokenRefresh.listen(_onTokenRefresh, onError: (_) {});
-      _foregroundSub = messaging.onForegroundMessage.listen(_onForeground, onError: (_) {});
-      _tapSub = messaging.onNotificationTap.listen((m) => _onTap(m), onError: (_) {});
+      _refreshSub =
+          messaging.onTokenRefresh.listen(_onTokenRefresh, onError: (_) {});
+      _foregroundSub =
+          messaging.onForegroundMessage.listen(_onForeground, onError: (_) {});
+      _tapSub =
+          messaging.onNotificationTap.listen((m) => _onTap(m), onError: (_) {});
     } catch (_) {}
     await refreshPermission();
     try {
@@ -153,10 +166,13 @@ class PushController extends ChangeNotifier {
     final s = _session;
     if (s == null || _disposed) return;
     final me = s.session;
-    final eligible = s.status == SessionStatus.signedIn && me != null && me.approval == PartnerApproval.approved;
+    final eligible = s.status == SessionStatus.signedIn &&
+        me != null &&
+        me.approval == PartnerApproval.approved;
     final userId = eligible ? me.userId : null;
     if (eligible && (!_eligible || _userId != userId)) {
       _eligible = true;
+      _ownershipRotations = 0;
       _userId = userId;
       _rejected = false;
       _retryIndex = 0;
@@ -249,7 +265,9 @@ class PushController extends ChangeNotifier {
     // The system showed nothing (it will not ask again), or - Android 7-12 - there is no permission dialog at all and the switch
     // lives in the app's notification settings: go there instead of leaving the button dead. A refusal of a dialog that was just
     // shown (before == notDetermined, now denied) is respected: no second screen right after "Don't allow".
-    if (result == PushPermission.notDetermined || result == PushPermission.deniedPermanently || before == PushPermission.denied) {
+    if (result == PushPermission.notDetermined ||
+        result == PushPermission.deniedPermanently ||
+        before == PushPermission.denied) {
       await _safe(messaging.openSettings);
     }
   }
@@ -258,7 +276,9 @@ class PushController extends ChangeNotifier {
   Future<void> onAppResumed() async {
     if (!_started) return;
     await refreshPermission();
-    if (_eligible && _registeredToken == null && !_rejected) unawaited(syncToken());
+    if (_eligible && _registeredToken == null && !_rejected) {
+      unawaited(syncToken());
+    }
   }
 
   // ===================================================================================
@@ -284,14 +304,18 @@ class PushController extends ChangeNotifier {
   }
 
   void _onTokenRefresh(String token) {
-    if (!_eligible || _rejected) return; // the next login reads a fresh token anyway
+    if (!_eligible || _rejected) {
+      return; // the next login reads a fresh token anyway
+    }
     unawaited(_register(token));
   }
 
   Future<void> _register(String token) async {
     if (!_eligible || token.isEmpty) return;
     final userId = _userId;
-    if (_registeredToken == token && _registeredFor == userId) return; // already known: no duplicate POST
+    if (_registeredToken == token && _registeredFor == userId) {
+      return; // already known: no duplicate POST
+    }
     if (_inflightToken == token) return;
     _inflightToken = token;
     DeviceCallResult result;
@@ -308,6 +332,28 @@ class PushController extends ChangeNotifier {
     // The rider logged out / changed while the call was in flight.
     if (_disposed || !_eligible || _userId != userId) return;
     switch (result) {
+      case DeviceCallResult.tokenOwned:
+        if (_ownershipRotations++ >= 2) {
+          _rejected = true;
+          return;
+        }
+        try {
+          await messaging.deleteToken().timeout(const Duration(seconds: 3));
+          final fresh =
+              await messaging.getToken().timeout(const Duration(seconds: 3));
+          if (!_disposed &&
+              _eligible &&
+              _userId == userId &&
+              fresh != null &&
+              fresh != token) {
+            await _register(fresh);
+          } else {
+            _scheduleRetry();
+          }
+        } catch (_) {
+          _scheduleRetry();
+        }
+
       case DeviceCallResult.ok:
         _registeredToken = token;
         _registeredFor = userId;
@@ -327,7 +373,9 @@ class PushController extends ChangeNotifier {
 
   void _scheduleRetry() {
     if (_disposed || !_eligible || _rejected || _retryTimer != null) return;
-    if (_retryIndex >= _retryDelays.length) return; // the next resume / token refresh tries again
+    if (_retryIndex >= _retryDelays.length) {
+      return; // the next resume / token refresh tries again
+    }
     final delay = _retryDelays[_retryIndex++];
     _retryTimer = Timer(delay, () {
       _retryTimer = null;
@@ -343,7 +391,9 @@ class PushController extends ChangeNotifier {
     _retryTimer = null;
     if (!_available) return;
     // Never registered (e.g. a rider still waiting for approval): nothing to remove.
-    if (!_eligible && _registeredToken == null && _inflightToken == null) return;
+    if (!_eligible && _registeredToken == null && _inflightToken == null) {
+      return;
+    }
     try {
       await _signOutSteps().timeout(const Duration(seconds: 4));
     } catch (_) {}
@@ -354,7 +404,8 @@ class PushController extends ChangeNotifier {
 
   Future<void> _signOutSteps() async {
     var token = _registeredToken ?? _inflightToken;
-    token ??= await _safe(messaging.getToken).timeout(const Duration(seconds: 2), onTimeout: () => null);
+    token ??= await _safe(messaging.getToken)
+        .timeout(const Duration(seconds: 2), onTimeout: () => null);
     if (token != null && token.isNotEmpty) {
       try {
         await api.unregister(token).timeout(const Duration(seconds: 3));
@@ -384,13 +435,19 @@ class PushController extends ChangeNotifier {
     return false;
   }
 
-  String _key(PushIncoming m, PushPayload p) => m.messageId != null && m.messageId!.isNotEmpty ? 'id:${m.messageId}' : '${p.event.key}:${p.orderId}';
+  String _key(PushIncoming m, PushPayload p) =>
+      m.messageId != null && m.messageId!.isNotEmpty
+          ? 'id:${m.messageId}'
+          : '${p.event.key}:${p.orderId}';
 
   void _onForeground(PushIncoming m) {
     try {
       final payload = PushPayload.tryParse(m.data);
       if (payload == null || !_eligible) return;
-      if (_seenBefore(_seenForeground, _key(m, payload), const Duration(seconds: 10))) return;
+      if (_seenBefore(
+          _seenForeground, _key(m, payload), const Duration(seconds: 10))) {
+        return;
+      }
       _ui?.onPushForeground(payload);
     } catch (_) {}
   }
@@ -398,10 +455,14 @@ class PushController extends ChangeNotifier {
   void _onTap(PushIncoming m) {
     try {
       final payload = PushPayload.tryParse(m.data);
-      if (payload == null) return; // unknown payload: the app simply stays where it opened
+      if (payload == null) {
+        return; // unknown payload: the app simply stays where it opened
+      }
       final status = _session?.status;
       if (status == SessionStatus.signedOut) return;
-      if (_seenBefore(_seenTaps, _key(m, payload), const Duration(seconds: 30))) return;
+      if (_seenBefore(_seenTaps, _key(m, payload), const Duration(seconds: 30))) {
+        return;
+      }
       _pendingTap = payload;
       _pendingTapAt = _now();
       _deliverPendingTap();
@@ -417,7 +478,9 @@ class PushController extends ChangeNotifier {
       return;
     }
     final ui = _ui;
-    if (ui == null || !_eligible) return; // held until the home screen is up (cold start)
+    if (ui == null || !_eligible) {
+      return; // held until the home screen is up (cold start)
+    }
     _clearPendingTap();
     try {
       ui.onPushTap(tap);
@@ -447,14 +510,19 @@ class PushController extends ChangeNotifier {
     _foregroundSub?.cancel();
     _tapSub?.cancel();
     _session?.removeListener(_onSession);
-    if (_session?.beforeSignOut == _beforeSignOut) _session?.beforeSignOut = null;
+    if (_session?.beforeSignOut == _beforeSignOut) {
+      _session?.beforeSignOut = null;
+    }
     super.dispose();
   }
 }
 
 /// Makes the [PushController] reachable from the home screen (null in tests that do not use push).
 class PushScope extends InheritedNotifier<PushController> {
-  const PushScope({super.key, required PushController? controller, required super.child}) : super(notifier: controller);
+  const PushScope(
+      {super.key, required PushController? controller, required super.child})
+      : super(notifier: controller);
 
-  static PushController? maybeOf(BuildContext context) => context.dependOnInheritedWidgetOfExactType<PushScope>()?.notifier;
+  static PushController? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<PushScope>()?.notifier;
 }

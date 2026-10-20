@@ -1,3 +1,4 @@
+import { OperationsPanel } from './components/OperationsPanel';
 import { InventoryPanel } from './components/InventoryPanel';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GeographyPanel } from './components/GeographyPanel';
@@ -693,8 +694,9 @@ export const App: React.FC = () => {
             {activeTab === 'catalog' && <CatalogPanel vendors={vendors} query={searchQuery} onClearQuery={clearQuery} onAuthError={handleSessionError} pendingCounts={pendingDishes} onPendingChanged={refreshPendingDishes} />}
             {activeTab === 'finance' && <FinancePanel vendors={vendors} driverPartners={driverPartners} pendingSettlements={pendingSettlements} onSettlementsChanged={refreshPendingSettlements} onAuthError={handleSessionError} />}
             {activeTab === 'settings' && <SettingsPanel onAuthError={handleSessionError} />}
+            {activeTab === 'operations' && <OperationsPanel onAuthError={handleSessionError} onOpenOrder={openOrder} />}
             {activeTab === 'inventory' && <InventoryPanel vendors={vendors} onAuthError={handleSessionError} />}
-            {activeTab === 'coverage' && <GeographyPanel vendors={vendors} onChanged={fetchBackendData} onSessionError={handleSessionError} />}
+            {activeTab === 'coverage' && <GeographyPanel drivers={driverPartners} vendors={vendors} onChanged={fetchBackendData} onSessionError={handleSessionError} />}
             {activeTab === 'analytics' && <AnalyticsPanel />}
           </div>
         </main>

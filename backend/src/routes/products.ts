@@ -63,6 +63,18 @@ productsRouter.get('/v1/admin/products', requireAuth, requireRole('ADMIN'), wrap
   s.json({ success: true, data: rows.map((m) => ({ ...managedView(m), vendor: m.vendor })), nextCursor: rows.length === p.take ? rows.at(-1)!.id : null });
 }));
 
+/** Local image uploads may use the explicitly configured development origin. */
+function productImageUrl(value:unknown) {
+  if(typeof value!=='string'||value.length>2000) return false;
+  try {
+    const u=new URL(value);
+    if(u.username||u.password||/\s/.test(value))return false;
+    if(u.protocol==='https:')return true;
+    const base=new URL(process.env.PUBLIC_BASE_URL||'http://localhost:5000');
+    return process.env.NODE_ENV!=='production'&&u.protocol==='http:'&&u.origin===base.origin&&/^\/uploads\/dish\/\d{4}\/[0-9a-f]{32}\.(jpg|png|webp)$/.test(u.pathname)&&!u.search&&!u.hash;
+  }catch{return false;}
+}
+
 async function writeProduct(r: AuthenticatedRequest, vendorId: string, id?: string) {
   const vendor = await owner(r, vendorId), b = r.body ?? {};
   const name = text(b.name, 'name', 100), description = text(b.description, 'description', 2000, false);
@@ -76,7 +88,7 @@ async function writeProduct(r: AuthenticatedRequest, vendorId: string, id?: stri
   const c = await prisma.category.findFirst({ where: { id: categoryId, isActive: true, forDishes: true } });
   if (!c) throw bad('categoryId', 'Choose an active product category.');
   const imageUrls = b.imageUrls ?? [];
-  if (!Array.isArray(imageUrls) || imageUrls.length > 8 || imageUrls.some((v: unknown) => typeof v !== 'string' || v.length > 2000 || !/^https:\/\/[^\s]+$/.test(v))) throw bad('imageUrls', 'Use up to eight HTTPS image URLs that you have permission to use.');
+  if (!Array.isArray(imageUrls) || imageUrls.length > 8 || imageUrls.some((v: unknown) => !productImageUrl(v))) throw bad('imageUrls', 'Use up to eight HTTPS image URLs that you have permission to use.');
   if (typeof b.isAvailable !== 'boolean') throw bad('isAvailable', 'Choose active or inactive.');
   const settings = await getSettings(), rule = ruleFromColumns(vendor.commissionType, vendor.commissionValue) ?? settings.commission;
   const vendorPaise = rule.type === 'FLAT' ? pricePaise - toPaise(rule.value) : Math.floor(pricePaise * 10000 / (10000 + toPaise(rule.value)));

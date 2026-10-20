@@ -94,6 +94,10 @@ export const normalizedPath = (rawPath: string): string => (rawPath || '/').toLo
 
 const MIN = 60_000;
 const RULES: Rule[] = [
+  {name:'SUPPORT_WRITE',scope:'user',max:20,windowMs:10*MIN,applies:(r,p)=>r.method==='POST'&&/^\/(admin\/)?support-cases(?:\/|$)/.test(p),message:'Too many support updates. Please wait a few minutes.'},
+  {name:'DISPATCH_WRITE',scope:'user',max:60,windowMs:10*MIN,applies:(r,p)=>r.method!=='GET'&&(/^\/dispatch-offers\//.test(p)||/^\/admin\/(orders\/[^/]+\/dispatch|drivers\/[^/]+\/service-area)/.test(p)||p==='/drivers/duty-status'),message:'Too many dispatch changes. Please wait.'},
+  {name:'STORE_PROFILE_WRITE',scope:'user',max:30,windowMs:10*MIN,applies:(r,p)=>r.method==='PUT'&&p==='/partner/store',message:'Too many store profile changes. Please wait.'},
+  {name:'VENDOR_UPLOAD',scope:'user',max:60,windowMs:60*MIN,applies:(r,p)=>r.method==='POST'&&p==='/partner/uploads/image',message:'Too many image uploads. Please wait.'},
   { name: 'PRODUCT_WRITE', scope: 'user', max: 200, windowMs: 10 * MIN, applies: (r, p) => r.method !== 'GET' && (/^\/products\//.test(p) || /^\/vendors\/[^/]+\/products$/.test(p)), message: 'Too many product or inventory changes. Please wait.' },
   { name: 'GEOGRAPHY_WRITE', scope: 'user', max: 60, windowMs: 10 * MIN, applies: (r, p) => r.method !== 'GET' && /^\/admin\/(cities|zones|vendors\/[^/]+\/(location|coverage))/.test(p), message: 'Too many delivery configuration changes. Please wait.' },
   { name: 'MAPS_SEARCH', scope: 'user', max: 30, windowMs: MIN, applies: (r, p) => r.method === 'GET' && p === '/maps/search', message: 'Too many location searches. Please wait a minute.' },

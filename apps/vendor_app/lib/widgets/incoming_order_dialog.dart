@@ -691,7 +691,7 @@ class _GonePanel extends StatelessWidget {
         case CancelledBy.vendor:
           return ('This order was declined.', 'यह ऑर्डर मना कर दिया गया।', o.cancelReason);
         case CancelledBy.admin:
-          return ('Kraveo cancelled this order.', 'Kraveo ने ऑर्डर रद्द कर दिया।', o.cancelReason);
+          return ('${BrandConfig.name} cancelled this order.', '${BrandConfig.name} ने ऑर्डर रद्द कर दिया।', o.cancelReason);
         default:
           return ('This order was cancelled.', 'यह ऑर्डर रद्द हो गया।', o.cancelReason);
       }

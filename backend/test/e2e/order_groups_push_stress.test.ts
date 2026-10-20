@@ -103,24 +103,24 @@ describe('Order groups: push and stress', () => {
       const pg = await paidGroup(c, [v1, v2]);
       const [a, b] = pg.g.orders.map((o: any) => o.id);
       // paid: each restaurant is told about ITS child only; its text says what it earns, never the customer's total
-      expect(lines().sort()).toEqual([`NEW_ORDER>vown-1`, `NEW_ORDER>vown-2`]);
-      expect(fake.sent.find((m) => m.data.orderId === a)!.body).toBe('1 item - You earn Rs 180. Tap to accept.');
+      expect(lines().sort()).toEqual([`NEW_ORDER>vown-1`, `NEW_ORDER>vown-2`,`ORDER_PLACED>cust-1`]);
+      expect(fake.sent.find((m) => m.data.orderId === a && m.data.event==='NEW_ORDER')!.body).toBe('1 item - You earn Rs 180. Tap to accept.');
       expect(count('NEW_ORDER', a)).toBe(1);
       expect(count('NEW_ORDER', b)).toBe(1);
       // accepted: the customer hears from each restaurant, by name
       await stepAll({ ...pg, vs: [v1] } as PG, 'ACCEPTED'); // v1 only (first child)
-      expect(fake.of('ORDER_ACCEPTED').map((m) => [m.data.orderId, m.body])).toEqual([[a, 'Kitchen 1 is preparing your food.']]);
+      expect(fake.of('ORDER_ACCEPTED').map((m) => [m.data.orderId, m.body])).toEqual([[a, 'Kitchen 1 is preparing your order.']]);
       expect((await api.setStatus(v2, b, 'ACCEPTED')).status).toBe(200);
       await flush();
-      expect(fake.of('ORDER_ACCEPTED').map((m) => [m.data.orderId, m.body])).toEqual([[a, 'Kitchen 1 is preparing your food.'], [b, 'Kitchen 2 is preparing your food.']]);
+      expect(fake.of('ORDER_ACCEPTED').map((m) => [m.data.orderId, m.body])).toEqual([[a, 'Kitchen 1 is preparing your order.'], [b, 'Kitchen 2 is preparing your order.']]);
       // cooking and ready: the customer is not told per kitchen; riders hear about the GROUP once (the primary id), one push per idle rider
       await stepAll(pg, 'PREPARING');
       await stepAll(pg, 'READY_FOR_PICKUP');
       expect(count('ORDER_READY')).toBe(0);
       const nd = fake.of('NEW_DELIVERY');
-      expect(nd.map((m) => owner.get(m.token)!.replace('gs-', '')).sort()).toEqual(['rider-1', 'rider-2', 'rider-3']);
+      expect(nd.map((m) => owner.get(m.token)!.replace('gs-', '')).sort()).toEqual(['rider-1']);
       expect(nd.every((m) => m.data.orderId === a)).toBe(true);
-      expect(nd[0].body).toBe('2 restaurants to BH2. Tap to accept.');
+      expect(nd[0].body).toBe('2 restaurants to Kothri, Bhopal. Tap to accept.');
       expect(await prisma.pushLog.count({ where: { event: 'NEW_DELIVERY', orderId: b } })).toBe(0);
       // claim, pickup stop by stop: ONE "picked up" when the last stop is done
       expect((await api.claim(r1, b)).status).toBe(200);
@@ -134,7 +134,7 @@ describe('Order groups: push and stress', () => {
       expect((await api.setStatus(r1, b, 'ARRIVED_AT_GATE')).status).toBe(200);
       await api.setStatus(r1, a, 'ARRIVED_AT_GATE'); // idempotent repeat: no second push
       await flush();
-      expect(fake.of('RIDER_AT_GATE').map((m) => [m.data.orderId, m.body])).toEqual([[a, 'Open Kraveo to see your code.']]);
+      expect(fake.of('RIDER_AT_GATE').map((m) => [m.data.orderId, m.body])).toEqual([[a, 'Open the app to see your delivery code.']]);
       const code = (await prisma.order.findUniqueOrThrow({ where: { id: a } })).otpCode!;
       expect((await api.otp(r1, b, code)).status).toBe(200);
       await api.otp(r1, a, code); // idempotent retry
@@ -142,7 +142,7 @@ describe('Order groups: push and stress', () => {
       expect(fake.of('ORDER_DELIVERED').map((m) => [m.data.orderId, owner.get(m.token)])).toEqual([[a, c.id]]);
       // the totals of the whole journey
       const byEvent = fake.sent.reduce<Record<string, number>>((acc, m) => ({ ...acc, [m.data.event]: (acc[m.data.event] ?? 0) + 1 }), {});
-      expect(byEvent).toEqual({ NEW_ORDER: 2, ORDER_ACCEPTED: 2, GROUP_READY_TO_COOK: 1, NEW_DELIVERY: 3, ORDER_PICKED_UP: 1, RIDER_AT_GATE: 1, ORDER_DELIVERED: 1 });
+      expect(byEvent).toEqual({ NEW_ORDER: 2, ORDER_PLACED:1, ORDER_ACCEPTED: 2, ORDER_PREPARING:2, GROUP_READY_TO_COOK: 1, NEW_DELIVERY: 1, RIDER_ASSIGNED_CUSTOMER:1,RIDER_ASSIGNED_VENDOR:2, ORDER_PICKED_UP: 1, RIDER_AT_GATE: 1, ORDER_DELIVERED: 1 });
       // no push ever carries the code (title, body or data)
       for (const m of fake.sent) expect(`${m.title} ${m.body} ${m.data.event}`).not.toContain(code);
       expect(await prisma.pushLog.count({ where: { orderId: b, event: { in: ['ORDER_PICKED_UP', 'RIDER_AT_GATE', 'ORDER_DELIVERED'] } } })).toBe(0);
@@ -169,7 +169,7 @@ describe('Order groups: push and stress', () => {
       expect(fake.of('ORDER_CANCELLED')[0]).toMatchObject({ data: { orderId: a }, body: expect.stringContaining('Out of paneer') });
       expect(fake.of('ORDER_CANCELLED')[0].body).toContain('Your refund is on its way.');
       expect(fake.of('ORDER_CANCELLED_VENDOR')[0]).toMatchObject({ data: { orderId: a }, body: expect.stringContaining('another restaurant could not take this combined order') });
-      expect(fake.of('REFUND_PROCESSED')[0]).toMatchObject({ data: { orderId: a }, body: 'Rs 400 is on its way to your account (5-7 working days).' });
+      expect(fake.of('REFUND_PROCESSED')[0]).toMatchObject({ data: { orderId: a }, body: 'Rs 410 is on its way to your account (5-7 working days).' });
       expect(count('DELIVERY_CANCELLED')).toBe(0);
       // repeating the cancel and replaying the money change nothing
       await api.reject(v2, b, 'Out of paneer');
@@ -214,13 +214,14 @@ describe('Order groups: push and stress', () => {
       await sweepMissedPushes(new Date());
       await sweepMissedPushes(new Date());
       await flush();
-      expect(fake.of('NEW_DELIVERY').map((m) => m.data.orderId)).toEqual([a, a, a]); // one per idle rider, all about the primary
-      expect(await prisma.pushLog.count({ where: { orderId: b } })).toBe(await prisma.pushLog.count({ where: { orderId: b, event: { in: ['NEW_ORDER', 'ORDER_ACCEPTED'] } } }));
+      expect(fake.of('NEW_DELIVERY')).toEqual([]); // the offer's durable intent already completed; deleting PushLog cannot recreate it
+      expect(await prisma.dispatchOffer.count({where:{orderId:a,state:'PENDING'}})).toBe(1); // one per idle rider, all about the primary
+      expect(await prisma.pushLog.count({where:{orderId:b,event:{in:['NEW_DELIVERY','ORDER_PICKED_UP','RIDER_AT_GATE','ORDER_DELIVERED']}}})).toBe(0);
       fake.sent.length = 0;
       expect((await api.reassign(W.admin, b, r2.profileId)).status).toBe(200);
       await api.reassign(W.admin, a, r2.profileId); // same rider again: nothing new
       await flush();
-      expect(fake.of('DELIVERY_ASSIGNED').map((m) => [m.data.orderId, owner.get(m.token), m.body])).toEqual([[a, r2.id, '2 restaurants to BH2.']]);
+      expect(fake.of('DELIVERY_ASSIGNED').map((m) => [m.data.orderId, owner.get(m.token), m.body])).toEqual([[a, r2.id, '2 restaurants to Kothri, Bhopal.']]);
       expect(count('NEW_DELIVERY')).toBe(0);
       // a rider that is busy is not announced a delivery any more
       fake.sent.length = 0;

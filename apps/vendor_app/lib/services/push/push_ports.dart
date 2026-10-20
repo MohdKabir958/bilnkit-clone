@@ -84,6 +84,7 @@ abstract class PushPermissions {
 }
 
 enum RegisterOutcome {
+  tokenOwned,
   ok,
 
   /// 401: the session is gone. The session gate handles it; nothing to retry.

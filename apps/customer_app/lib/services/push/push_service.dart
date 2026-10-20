@@ -44,6 +44,7 @@ class PushService extends ChangeNotifier {
   bool _available = false;
   PushPermission? _permission;
   String? _userId;
+  int _ownershipRotations = 0;
 
   /// What the backend has been told: this user owns this token.
   String? _registeredUser;
@@ -72,7 +73,8 @@ class PushService extends ChangeNotifier {
   PushPermission? get permission => _permission;
 
   /// Signed in on a phone that can do push, but the student has notifications switched off.
-  bool get blocked => _available && _userId != null && _permission == PushPermission.denied;
+  bool get blocked =>
+      _available && _userId != null && _permission == PushPermission.denied;
 
   /// A tapped notification waiting for the app shell to route it.
   PushPayload? get pendingTap => _pendingTap;
@@ -87,9 +89,12 @@ class PushService extends ChangeNotifier {
 
   Future<void> _start() async {
     try {
-      final ok = await _messaging.initialize().timeout(startTimeout, onTimeout: () => false);
+      final ok = await _messaging
+          .initialize()
+          .timeout(startTimeout, onTimeout: () => false);
       if (!ok) {
-        debugPrint('[Push] not available on this device; continuing without push');
+        debugPrint(
+            '[Push] not available on this device; continuing without push');
         return;
       }
       await _local.initialize();
@@ -100,8 +105,10 @@ class PushService extends ChangeNotifier {
         _permission = PushPermission.denied;
       }
       _subs
-        ..add(_messaging.tokenRefreshes.listen(_onTokenRefresh, onError: (_) {}))
-        ..add(_messaging.foregroundMessages.listen(_onForeground, onError: (_) {}))
+        ..add(
+            _messaging.tokenRefreshes.listen(_onTokenRefresh, onError: (_) {}))
+        ..add(_messaging.foregroundMessages
+            .listen(_onForeground, onError: (_) {}))
         ..add(_messaging.openedMessages.listen(_handleOpened, onError: (_) {}))
         ..add(_local.taps.listen(_handleLocalTap, onError: (_) {}));
       notifyListeners();
@@ -118,6 +125,7 @@ class PushService extends ChangeNotifier {
 
   /// A student is signed in: register this phone with the backend (once permission allows).
   Future<void> onSessionStarted(String userId) {
+    if (_userId != userId) _ownershipRotations = 0;
     _userId = userId;
     notifyListeners();
     return syncRegistration();
@@ -131,12 +139,17 @@ class PushService extends ChangeNotifier {
     _pendingTap = null;
     try {
       String? token = _registeredUser == userId ? _registeredToken : null;
-      if (token == null && userId != null && _available && _permission == PushPermission.granted) {
-        token = _refreshedToken ?? await _messaging.token().timeout(const Duration(seconds: 3));
+      if (token == null &&
+          userId != null &&
+          _available &&
+          _permission == PushPermission.granted) {
+        token = _refreshedToken ??
+            await _messaging.token().timeout(const Duration(seconds: 3));
       }
       if (token != null && token.isNotEmpty) await _api.unregister(token);
     } catch (e) {
-      debugPrint('[Push] could not remove the device token (ignored): ${e.runtimeType}');
+      debugPrint(
+          '[Push] could not remove the device token (ignored): ${e.runtimeType}');
     }
     await _dropLocalToken();
     notifyListeners();
@@ -197,7 +210,8 @@ class PushService extends ChangeNotifier {
       try {
         await _syncOnce();
       } catch (e) {
-        debugPrint('[Push] registration failed (will retry later): ${e.runtimeType}');
+        debugPrint(
+            '[Push] registration failed (will retry later): ${e.runtimeType}');
       }
     } while (_resync);
   }
@@ -205,11 +219,25 @@ class PushService extends ChangeNotifier {
   Future<void> _syncOnce() async {
     await start();
     final userId = _userId;
-    if (!_available || userId == null || _permission != PushPermission.granted) return;
+    if (!_available || userId == null || _permission != PushPermission.granted) {
+      return;
+    }
     final token = _refreshedToken ?? await _messaging.token();
     if (token == null || token.isEmpty || userId != _userId) return;
     if (_registeredUser == userId && _registeredToken == token) return;
     final result = await _api.register(token: token, appVersion: _appVersion);
+    if (result == DeviceCallResult.tokenOwned &&
+        userId == _userId &&
+        _ownershipRotations++ < 2) {
+      await _messaging.deleteToken().timeout(const Duration(seconds: 3));
+      final fresh =
+          await _messaging.token().timeout(const Duration(seconds: 3));
+      if (userId == _userId && fresh != null && fresh != token) {
+        _refreshedToken = fresh;
+        _resync = true;
+      }
+      return;
+    }
     // unauthorized: the existing session handling takes over. failed: retried on resume / refresh.
     if (result == DeviceCallResult.ok && userId == _userId) {
       _registeredUser = userId;
@@ -258,7 +286,8 @@ class PushService extends ChangeNotifier {
       // Android 7-12 has no permission dialog: the request answers "denied" at once while notifications are off. Take the
       // customer to the app's notification settings instead of leaving the button dead. (On Android 13+ a refusal of the dialog
       // that was really shown is respected: no second screen right after "Don't allow".)
-      if (result != PushPermission.granted && !(await (_settings?.hasPermissionDialog() ?? Future.value(true)))) {
+      if (result != PushPermission.granted &&
+          !(await (_settings?.hasPermissionDialog() ?? Future.value(true)))) {
         await _settings?.openNotificationSettings();
       }
       return;
@@ -291,7 +320,8 @@ class PushService extends ChangeNotifier {
     } catch (_) {}
     // Only things the student must not miss, and only if they are not already looking at that
     // order (the tracking screen updates itself).
-    if (payload.event.needsAttention && !(isOrderVisible?.call(payload.orderId) ?? false)) {
+    if (payload.event.needsAttention &&
+        !(isOrderVisible?.call(payload.orderId) ?? false)) {
       unawaited(_showBanner(payload, m));
     }
   }
@@ -325,7 +355,9 @@ class PushService extends ChangeNotifier {
   void _handleLocalTap(String? raw) => _setPending(PushPayload.tryDecode(raw));
 
   void _setPending(PushPayload? payload) {
-    if (payload == null) return; // malformed or unknown: just stay on the app's home
+    if (payload == null) {
+      return; // malformed or unknown: just stay on the app's home
+    }
     _pendingTap = payload;
     notifyListeners();
   }

@@ -30,7 +30,7 @@ const refundWhere = (r: IstRange) =>
   Prisma.sql`o."paymentStatus" = 'REFUNDED' AND COALESCE(o."cancelledAt", o."deliveredAt", o."updatedAt") >= ${ts(r.start)} AND COALESCE(o."cancelledAt", o."deliveredAt", o."updatedAt") < ${ts(r.end)}`;
 
 const n = (v: unknown): number => (typeof v === 'number' ? v : Number(v ?? 0));
-const money = (paise: unknown): number => fromPaise(n(paise));
+const money = (paise: unknown): number => {const v=n(paise);if(!Number.isSafeInteger(v))throw new AppError(503,'REPORT_TOO_LARGE','Narrow the report range.');return fromPaise(v);};
 
 type MoneyCols = { orders: number; foodP: number; vendorP: number; commP: number; feesP: number; discP: number };
 const moneyOf = (r: MoneyCols) => {
@@ -135,13 +135,7 @@ export const financeRiders = async (r: IstRange, limit: number) => {
   const totals = await prisma.$queryRaw<{ driverId: string; deliveries: number }[]>`
     SELECT o."driverId", COUNT(DISTINCT COALESCE(o."groupId", o."id"))::int AS "deliveries" FROM "Order" o
     WHERE ${revenueWhere(r)} AND o."driverId" IS NOT NULL GROUP BY o."driverId" ORDER BY "deliveries" DESC, o."driverId" ASC LIMIT ${limit}`;
-  const ledger = await prisma.riderPayout.groupBy({
-    by: ['driverUserId'],
-    where: { createdAt: { gte: r.start, lt: r.end } },
-    _count: { _all: true },
-    _sum: { amount: true },
-    _max: { createdAt: true },
-  });
+  const ledger = await prisma.$queryRaw<{driverUserId:string;count:number;paise:bigint;lastAt:Date}[]>`SELECT "driverUserId",COUNT(*)::int AS count,SUM(ROUND(amount::numeric*100))::bigint AS paise,MAX("createdAt") AS "lastAt" FROM "RiderPayout" WHERE "createdAt">=${ts(r.start)} AND "createdAt"<${ts(r.end)} GROUP BY "driverUserId"`;
   const ids = [...new Set([...totals.map((t) => t.driverId), ...ledger.map((l) => l.driverUserId)])].slice(0, limit + 200);
   const [perDay, drivers] = await Promise.all([
     totals.length === 0
@@ -169,7 +163,7 @@ export const financeRiders = async (r: IstRange, limit: number) => {
       runnerCode: names.get(id)?.runnerCode ?? null,
       deliveries: delivered.get(id) ?? 0,
       byDay: daysByRider.get(id) ?? [],
-      payouts: { count: l?._count._all ?? 0, total: Math.round((l?._sum.amount ?? 0) * 100) / 100, lastAt: l?._max.createdAt ? l._max.createdAt.toISOString() : null },
+      payouts: { count: l?.count ?? 0, total: money(l?.paise), lastAt: l?.lastAt?.toISOString() ?? null },
     };
   });
   return {
@@ -257,13 +251,13 @@ export const listRiderPayouts = async (q: { driverUserId?: string; range?: IstRa
   const [total, rows, sum] = await Promise.all([
     prisma.riderPayout.count({ where }),
     prisma.riderPayout.findMany({ where, orderBy: [{ createdAt: 'desc' }, { id: 'asc' }], skip: (q.page - 1) * q.pageSize, take: q.pageSize }),
-    prisma.riderPayout.aggregate({ where, _sum: { amount: true } }),
+    prisma.$queryRaw<{paise:bigint}[]>(Prisma.sql`SELECT COALESCE(SUM(ROUND(amount::numeric*100)),0)::bigint AS paise FROM "RiderPayout" WHERE true ${q.driverUserId?Prisma.sql`AND "driverUserId"=${q.driverUserId}`:Prisma.empty} ${q.range?Prisma.sql`AND "createdAt">=${ts(q.range.start)} AND "createdAt"<${ts(q.range.end)}`:Prisma.empty}`),
   ]);
   const users = await prisma.user.findMany({ where: { id: { in: [...new Set(rows.map((r) => r.driverUserId))] } }, select: { id: true, name: true } });
   const names = new Map(users.map((u) => [u.id, u.name]));
   return {
     total, page: q.page, pageSize: q.pageSize, pages: Math.max(1, Math.ceil(total / q.pageSize)),
-    totalAmount: Math.round((sum._sum.amount ?? 0) * 100) / 100,
+    totalAmount: money(sum[0]?.paise),
     data: rows.map((r) => riderPayoutView(r, names.get(r.driverUserId) ?? null)),
   };
 };

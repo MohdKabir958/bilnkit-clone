@@ -43,6 +43,11 @@ void main() {
   tearDown(() => push.dispose());
 
   group('token lifecycle', () {
+    test('an ownership conflict rotates FCM rather than transferring an existing token',()async{
+      registry.answers.add(RegisterOutcome.tokenOwned);await push.onSignedIn('new-owner');
+      expect(registry.registered.map((r)=>r.token),['fcm-token-1','fcm-vendor-rotated']);expect(push.registeredToken,'fcm-vendor-rotated');
+    });
+
     test('registers the FCM token once after sign-in, with the app version', () async {
       await push.onSignedIn('u1');
       expect(registry.registered, hasLength(1));

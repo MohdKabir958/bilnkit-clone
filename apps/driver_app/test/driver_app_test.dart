@@ -54,6 +54,7 @@ Future<void> _loadFonts() async {
 
 /// Drags the slide-to-confirm thumb the full width in small steps.
 Future<void> _slide(WidgetTester tester) async {
+  await tester.ensureVisible(find.byType(KSlideToConfirm));await tester.pump(const Duration(milliseconds:400));
   final thumb = find.descendant(of: find.byType(KSlideToConfirm), matching: find.byType(Icon)).first;
   final g = await tester.startGesture(tester.getCenter(thumb));
   for (var i = 0; i < 12; i++) {
@@ -260,7 +261,7 @@ void main() {
             await tester.pump();
             expect(f.api.calls, contains('status:ord-1:PICKED_UP'));
             await tester.pump(const Duration(milliseconds: 400));
-            expect(find.text('Ride to the drop point'), findsOneWidget);
+            await tester.drag(find.byType(Scrollable).first,const Offset(0,3000));await tester.pump(const Duration(milliseconds:500));expect(find.text('Ride to the drop point'), findsOneWidget);
           case 'PICKED_UP':
             expect(find.text('Prepaid order'), findsOneWidget);
             await _scrollToEnd(tester);
@@ -306,7 +307,7 @@ void main() {
       await tester.pumpWidget(_app(ActiveDeliveryScreen(controller: c, onGoHome: () {})));
       await tester.pump(const Duration(milliseconds: 600));
       expect(find.text(RiderController.supportMessage), findsOneWidget);
-      expect(find.text('Email Kraveo support'), findsOneWidget);
+      expect(find.text('Help and requests'), findsOneWidget);
       expect(find.byKey(const ValueKey('enter-code-button')), findsNothing);
       expect(tester.takeException(), isNull);
       c.dispose();
@@ -441,7 +442,7 @@ void main() {
     });
   });
 
-  group('DriverHomeScreen with a fake Kraveo', () {
+  group('DriverHomeScreen with a fake DailyMarket', () {
     Future<FakeRider> pumpHome(WidgetTester tester, {void Function(FakeRider f)? setup}) async {
       final f = FakeRider();
       setup?.call(f);
@@ -481,7 +482,7 @@ void main() {
       await tester.tap(find.text('OFF DUTY'));
       await _settle(tester);
       expect(find.text('ON DUTY'), findsOneWidget);
-      expect(find.text('Allow location'), findsOneWidget);
+      expect(find.text('Allow location'), findsNothing); // Idle riders do not request GPS.
       await _reveal(tester, find.text('NEW ORDERS (2)'));
       await _reveal(tester, find.text('Southern Spice'));
       expect(find.text('Southern Spice'), findsOneWidget);
@@ -538,7 +539,7 @@ void main() {
       expect(find.text('IN PROGRESS'), findsOneWidget);
       await tester.tap(find.descendant(of: find.byType(KGlassNav), matching: find.byIcon(LucideIcons.bike)));
       await tester.pump(const Duration(milliseconds: 600));
-      expect(find.text('Ride to the drop point'), findsOneWidget);
+      await tester.drag(find.byType(Scrollable).first,const Offset(0,3000));await tester.pump(const Duration(milliseconds:500));expect(find.text('Ride to the drop point'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     });

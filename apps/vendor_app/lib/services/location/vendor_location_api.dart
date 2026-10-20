@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -31,7 +32,7 @@ String locationSaveFailureText(ApiResult<Object?> result) {
   final failure = result.failure!;
   if (server.isNotEmpty && server.length <= 200 && failure != ApiFailure.server && failure != ApiFailure.unauthorized) return server;
   return switch (failure) {
-    ApiFailure.forbidden || ApiFailure.notApproved => 'Your restaurant account cannot save a location right now. Please call Kraveo.  ·  अभी लोकेशन सेव नहीं हो सकती, Kraveo को फ़ोन करें',
+    ApiFailure.forbidden || ApiFailure.notApproved => 'Your restaurant account cannot save a location right now. Please call ${BrandConfig.name}.  ·  अभी लोकेशन सेव नहीं हो सकती, ${BrandConfig.name} को फ़ोन करें',
     ApiFailure.rateLimited => 'Too many tries. Please try again in a while.  ·  बहुत कोशिशें हो गईं, थोड़ी देर बाद फिर कोशिश करें',
     ApiFailure.notFound => 'This server cannot save a location yet. Please try again later.  ·  अभी लोकेशन सेव नहीं हो सकती, बाद में कोशिश करें',
     _ => failureText(failure, serverMessage: result.message, code: result.code).both,

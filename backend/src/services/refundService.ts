@@ -1,3 +1,4 @@
+import { drainNotificationIntents } from './push/intents';
 import { prisma } from '../db';
 import { REFUND_LEASE_MS, REFUND_BACKOFF_BASE_MS, REFUND_BACKOFF_MAX_MS, MAX_REFUND_ATTEMPTS } from '../config/orderFlow';
 import { getPaymentProvider, withProviderTimeout, toProviderError, PaymentProviderError, ProviderRefund } from './paymentService';
@@ -97,9 +98,12 @@ export const recordSuccess = async (orderId: string, paymentRowId: string, refun
       siblingIds = siblings.map((x) => x.id);
       if (siblingIds.length > 0) await tx.order.updateMany({ where: { id: { in: siblingIds } }, data: { paymentStatus: 'REFUNDED' } });
     }
+    await tx.notificationIntent.create({data:{orderId,event:'REFUND_PROCESSED',options:{}}});
+    await tx.adminAuditLog.create({data:{action:'REFUND_BOOKED',targetType:'ORDER',targetId:orderId,summary:`Refund ${refundId}: ${amountPaise} paise`}});
     return { siblingIds };
   });
   if (done) {
+    drainNotificationIntents();
     await writeAudit('REFUND_DONE', 'ORDER', orderId, `Refunded ₹${(amountPaise / 100).toFixed(2)} (refund ${refundId}).${done.siblingIds.length ? ` Combined order: ${done.siblingIds.length + 1} orders refunded with this one payment.` : ''}`);
     await publish(orderId);
     for (const id of done.siblingIds) await publish(id);

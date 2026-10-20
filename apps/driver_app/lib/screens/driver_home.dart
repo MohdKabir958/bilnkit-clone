@@ -144,6 +144,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
       case PushEvent.newDelivery:
         _goTab(0);
         if (_rider.onDuty) unawaited(_rider.pollNow());
+      case PushEvent.pickupReady:
       case PushEvent.deliveryAssigned:
         _goTab(0);
         _rider.pollNow().then((_) {
@@ -301,7 +302,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                   const Spacer(),
                   KIconButton(icon: LucideIcons.badgeCheck, semanticLabel: 'Open runner ID pass', onTap: _openRunnerPass),
                   const SizedBox(width: 10),
-                  KIconButton(icon: LucideIcons.siren, semanticLabel: 'Contact Kraveo support', tint: KraveoPalette.danger, onTap: () => showSupportSheet(context)),
+                  KIconButton(icon: LucideIcons.siren, semanticLabel: 'Contact ${BrandConfig.name} support', tint: KraveoPalette.danger, onTap: () => showSupportSheet(context)),
                 ],
               ),
               if (partner != null) ...[
@@ -411,7 +412,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                     child: Row(children: [
                       Icon(LucideIcons.wifiOff, size: 18, color: k.inkMuted),
                       const SizedBox(width: 8),
-                      Expanded(child: Text('Can\'t reach Kraveo – retrying. Orders below may be out of date.', style: KraveoType.bodySm.copyWith(color: k.inkMuted))),
+                      Expanded(child: Text('Can\'t reach ${BrandConfig.name} – retrying. Orders below may be out of date.', style: KraveoType.bodySm.copyWith(color: k.inkMuted))),
                     ]),
                   ),
                 if (!r.offersLoaded)
@@ -434,7 +435,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> with WidgetsBinding
                         KEmptyState(
                           icon: LucideIcons.radar,
                           title: 'You\'re online - waiting for orders',
-                          message: 'Stay near the campus gate. New orders appear here.',
+                          message: 'Offers from your configured delivery area appear here. Ask operations if your area needs setup.',
                         ),
                       ],
                     ),
@@ -537,13 +538,13 @@ class _LocationLine extends StatelessWidget {
       LocationState.ok => (
           LucideIcons.locateFixed,
           k.brand,
-          postFailed ? 'GPS on – could not send it to Kraveo, retrying' : 'Live location is being shared',
+          postFailed ? 'GPS on – could not send it to ${BrandConfig.name}, retrying' : 'Live location is being shared',
           null,
         ),
       LocationState.waiting || LocationState.off => (LucideIcons.locate, k.inkMuted, 'Finding your location…', null),
       LocationState.serviceOff => (LucideIcons.mapPinOff, KraveoPalette.danger, 'Location unavailable: GPS is turned off', 'Turn on GPS'),
-      LocationState.permissionDenied => (LucideIcons.mapPinOff, KraveoPalette.danger, 'Location unavailable: Kraveo is not allowed to use it', 'Allow location'),
-      LocationState.permissionDeniedForever => (LucideIcons.mapPinOff, KraveoPalette.danger, 'Location blocked for Kraveo in phone settings', 'Open settings'),
+      LocationState.permissionDenied => (LucideIcons.mapPinOff, KraveoPalette.danger, 'Location unavailable: ${BrandConfig.name} is not allowed to use it', 'Allow location'),
+      LocationState.permissionDeniedForever => (LucideIcons.mapPinOff, KraveoPalette.danger, 'Location blocked for ${BrandConfig.name} in phone settings', 'Open settings'),
       LocationState.unavailable => (LucideIcons.mapPinOff, KStatus.placed.color, 'Location unavailable – no GPS signal. Still trying…', null),
     };
     return Padding(

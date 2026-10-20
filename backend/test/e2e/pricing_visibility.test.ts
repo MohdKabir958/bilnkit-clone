@@ -9,6 +9,7 @@
  */
 import fs from 'fs';
 import path from 'path';
+import { ensureFixtureGeography } from '../harness/geography';
 import { randomUUID } from 'crypto';
 import supertest from 'supertest';
 import { Socket } from 'socket.io-client';
@@ -99,6 +100,8 @@ describe('Pricing: money and visibility', () => {
     const phone = `+91 9999${String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0')}`;
     const id = `usr-pv-f${n}`;
     await prisma.user.create({ data: { id, name: 'Fresh Student', phone, role: Role.STUDENT, hostelBlock: 'BH2' } });
+    await ensureFixtureGeography('pv',[id],[VENDOR.vendorId,OTHER_VENDOR.vendorId],[RIDER.id]);
+    await prisma.menuItem.updateMany({where:{vendorId:{in:[VENDOR.vendorId,OTHER_VENDOR.vendorId]}},data:{stockQty:10000}});
     return { id, token: getStudentToken(id, phone) };
   };
   let dishA = '';
@@ -111,8 +114,8 @@ describe('Pricing: money and visibility', () => {
     return log;
   };
   const settle = async () => { await __waitForPushWork(); await __waitForBackgroundWork(); await __waitForPushWork(); await sleep(60); };
-  const adminPut = (group: string, body: unknown) => request.put(`/api/admin/settings/${group}`).set(H(tAdmin)).send(body as any);
-  const resetSettings = async () => { await prisma.appSetting.deleteMany({}); invalidateSettingsCache(); };
+  const adminPut = async(group:string,body:any)=>{const result=await request.put(`/api/admin/settings/${group}`).set(H(tAdmin)).send(body);if(group==='fees'&&body.baseFee!==undefined)await prisma.deliveryZone.updateMany({where:{id:'pv-zone'},data:{baseFeePaise:Math.round(body.baseFee*100)}});return result;};
+  const resetSettings = async () => { await prisma.appSetting.deleteMany({}); invalidateSettingsCache();await prisma.deliveryZone.updateMany({where:{id:'pv-zone'},data:{baseFeePaise:2500}}); };
 
   const place = (token = cur.token, extra: Record<string, unknown> = {}) =>
     request.post('/api/orders').set(H(token)).send({
@@ -162,9 +165,9 @@ describe('Pricing: money and visibility', () => {
     setPushProvider(fake);
     __resetRateLimits();
     await resetSettings();
-    await adminPut('fees', { baseFee: 37 });
     cur = await freshStudent();
     cur2 = await freshStudent();
+    await adminPut('fees',{baseFee:37});
     await prisma.pushLog.deleteMany({});
     await prisma.deviceToken.deleteMany({});
     await prisma.driverPartner.updateMany({ where: { userId: { not: RIDER.id } }, data: { dutyStatus: 'OFFLINE' } });
@@ -196,7 +199,7 @@ describe('Pricing: money and visibility', () => {
   // =========================================================================================
   describe('order totals', () => {
     test('one all-in fee from the settings, the old separate Rs 15 is gone, coupons only lower the customer total', async () => {
-      const r = await place(cur.token, { couponCode: 'vitfirst' });
+      const r = await place(cur.token, { couponCode: 'welcome20' });
       expect(r.status).toBe(201);
       expect(r.body.data).toMatchObject({ subtotal: 278, deliveryFee: 37, taxAndPackaging: 0, discount: 50, totalAmount: 265, paymentStatus: 'PENDING' });
       const row = await prisma.order.findUniqueOrThrow({ where: { id: r.body.data.id }, include: { items: { orderBy: { name: 'asc' } } } });
@@ -212,6 +215,7 @@ describe('Pricing: money and visibility', () => {
     test('the default fee is Rs 25 all-in: a Rs 100 food order costs Rs 125', async () => {
       await resetSettings();
       const dish = (await request.post('/api/admin/catalog').set(H(tAdmin)).send({ vendorId: VENDOR.vendorId, name: 'Hundred', vendorPrice: 100 })).body.data;
+      await prisma.menuItem.update({where:{id:dish.id},data:{stockQty:10}});
       const r = await place(cur.token, { items: [{ itemId: dish.id, quantity: 1 }] });
       expect(r.body.data).toMatchObject({ subtotal: 100, deliveryFee: 25, taxAndPackaging: 0, discount: 0, totalAmount: 125 });
       const row = await prisma.order.findUniqueOrThrow({ where: { id: r.body.data.id } });
@@ -422,6 +426,8 @@ describe('Pricing: money and visibility', () => {
       await resetSettings(); // default fee, as production starts
       await prisma.menuItem.create({ data: { id: 'pv-legacy-dish', vendorId: VENDOR.vendorId, name: 'Legacy thali', price: 99.5, vendorPrice: 99.5, category: 'Old', description: '', imageUrl: '' } });
       expect((await request.get(`/api/menus/${VENDOR.vendorId}`)).body.data.find((d: any) => d.id === 'pv-legacy-dish').price).toBe(99.5);
+      await prisma.menuItem.update({where:{id:'pv-legacy-dish'},data:{stockQty:10}});
+      await prisma.deliveryZone.update({where:{id:'pv-zone'},data:{baseFeePaise:2500}});
       const r = await place(cur.token, { items: [{ itemId: 'pv-legacy-dish', quantity: 2 }] });
       expect(r.body.data).toMatchObject({ subtotal: 199, deliveryFee: 25, taxAndPackaging: 0, totalAmount: 224 });
       expect(await prisma.order.findUniqueOrThrow({ where: { id: r.body.data.id } })).toMatchObject({ vendorSubtotal: 199, commissionTotal: 0 });

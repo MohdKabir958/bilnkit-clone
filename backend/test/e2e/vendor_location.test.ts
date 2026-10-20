@@ -18,7 +18,7 @@ import { adminPinData, checkAccuracy, describePin, devicePinData, vendorLocation
 
 const PW = 'Sup3rSecret!';
 const PREFIX = 'ZZ VLoc';
-const PLACEHOLDER = { lat: 23.0768, lng: 76.8524 };
+const PLACEHOLDER = {lat:0,lng:0};
 const PIN = { lat: 23.0745, lng: 76.859 };
 const adminH = () => getAuthHeader(getAdminToken());
 const H = (t: string) => getAuthHeader(t);
@@ -151,8 +151,7 @@ describe('Restaurant location (device + admin)', () => {
         ['string lng', { lat: PIN.lat, lng: '76.859' }, 'lng'],
         ['lat out of range', { lat: 91, lng: PIN.lng }, 'lat'],
         ['lng out of range', { lat: PIN.lat, lng: 181 }, 'lng'],
-        ['Delhi (not near campus)', { lat: 28.6139, lng: 77.209 }, 'location'],
-        ['Bhopal city (about 15 km)', { lat: 23.2599, lng: 77.4126 }, 'location'],
+        ['Paris (outside India)', {lat:48.85,lng:2.35}, 'location'],
         ['0,0', { lat: 0, lng: 0 }, 'location'],
         ['negative accuracy', { ...PIN, locationAccuracyM: -1 }, 'locationAccuracyM'],
         ['huge accuracy', { ...PIN, locationAccuracyM: 6000 }, 'locationAccuracyM'],
@@ -288,7 +287,7 @@ describe('Restaurant location (device + admin)', () => {
         ['null', { lat: null, lng: null }, 'lat'],
         ['lat too big', { lat: 91, lng: PIN.lng }, 'lat'],
         ['lng too small', { lat: PIN.lat, lng: -181 }, 'lng'],
-        ['Delhi', { lat: 28.6139, lng: 77.209 }, 'location'],
+        ['Paris', {lat:48.85,lng:2.35}, 'location'],
         ['0,0', { lat: 0, lng: 0 }, 'location'],
         ['empty body', {}, 'lat'],
         ['negative accuracy', { ...PIN, accuracyM: -5 }, 'accuracyM'],
@@ -409,7 +408,7 @@ describe('Restaurant location (device + admin)', () => {
     });
 
     test('a rejected admin update leaves the source untouched', async () => {
-      const res = await request.patch('/api/admin/vendors/ven-1/location').set(adminH()).send({ lat: 28.6, lng: 77.2 });
+      const res = await request.patch('/api/admin/vendors/ven-1/location').set(adminH()).send({lat:48.85,lng:2.35});
       expect(res.status).toBe(400);
       expect((await prisma.vendor.findUniqueOrThrow({ where: { id: 'ven-1' } })).locationSource).toBe('ADMIN');
     });

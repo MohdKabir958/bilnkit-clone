@@ -11,7 +11,7 @@ import 'sheet_chrome.dart';
 
 /// Sentence for a failed PUT /auth/profile that is not a field error.
 String profileSaveFailure(ProfileResult r, {String fallback = 'We couldn\'t save that. Please try again.'}) {
-  if (r.networkError) return 'We couldn\'t reach Kraveo. Check your connection and try again.';
+  if (r.networkError) return 'We couldn\'t reach ${BrandConfig.name}. Check your connection and try again.';
   return r.message ?? fallback;
 }
 

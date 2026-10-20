@@ -115,7 +115,7 @@ class _GateOtpDialogState extends State<GateOtpDialog> with SingleTickerProvider
         // Keep the digits: retrying the same code is safe.
         _fail('No internet – the code was not checked. Try again.');
       case OtpOutcomeKind.error:
-        _fail(outcome.message ?? 'Kraveo could not check the code. Try again.');
+        _fail(outcome.message ?? '${BrandConfig.name} could not check the code. Try again.');
     }
   }
 

@@ -62,7 +62,7 @@ class _StockManagerScreenState extends State<StockManagerScreen> {
               final pending = _c.lastAdded?.status == DishStatus.pending;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(pending ? '$name: Sent to Kraveo for approval  ·  मंज़ूरी के लिए भेजा' : '$name added to menu!  ·  मेनू में जुड़ गया'),
+                  content: Text(pending ? '$name: Sent to ${BrandConfig.name} for approval  ·  मंज़ूरी के लिए भेजा' : '$name added to menu!  ·  मेनू में जुड़ गया'),
                   duration: const Duration(seconds: 4),
                 ),
               );
@@ -218,7 +218,7 @@ class _StockManagerScreenState extends State<StockManagerScreen> {
                   icon: LucideIcons.utensils,
                   title: dishes.isEmpty ? 'Your menu is empty' : (_stockFilter == _StockFilter.needsAttention ? 'Nothing waiting for approval' : 'No dishes found'),
                   message: dishes.isEmpty
-                      ? 'Tap the yellow + button to add your first dish. Kraveo checks every new dish, then customers can see it.\nपहला व्यंजन जोड़ने के लिए पीला + दबाएं। Kraveo जाँचेगा, फिर ग्राहकों को दिखेगा।'
+                      ? 'Tap the yellow + button to add your first dish. ${BrandConfig.name} checks every new dish, then customers can see it.\nपहला व्यंजन जोड़ने के लिए पीला + दबाएं। ${BrandConfig.name} जाँचेगा, फिर ग्राहकों को दिखेगा।'
                       : (_stockFilter == _StockFilter.needsAttention
                           ? 'All your dishes are live.\nआपके सभी व्यंजन चालू हैं।'
                           : 'Try another search, or tap the yellow + button.\nदूसरा नाम खोजें या पीला + दबाएं।'),
@@ -289,7 +289,7 @@ class _ApprovalBanner extends StatelessWidget {
                 Text(headline, style: KraveoType.titleMd.copyWith(color: k.ink, fontWeight: FontWeight.w800, fontSize: 16)),
                 Text(
                   noLiveDish
-                      ? 'Customers will see your menu once Kraveo approves a dish.\nजब Kraveo एक व्यंजन मंज़ूर करेगा, तब ग्राहकों को मेनू दिखेगा।'
+                      ? 'Customers will see your menu once ${BrandConfig.name} approves a dish.\nजब ${BrandConfig.name} एक व्यंजन मंज़ूर करेगा, तब ग्राहकों को मेनू दिखेगा।'
                       : 'Tap to see them.  ·  देखने के लिए दबाएं',
                   style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13.5),
                 ),

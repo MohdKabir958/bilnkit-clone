@@ -1,3 +1,6 @@
+import { flushNotificationIntents } from './push/intents';
+import { pruneRiderLocations } from '../realtime';
+import { runDispatchMaintenance } from './dispatch';
 import { prisma } from '../db';
 import { paymentWindowMin, vendorAcceptWindowMin, MAX_REFUND_ATTEMPTS, REFUND_LEASE_MS, MAINTENANCE_INTERVAL_MS } from '../config/orderFlow';
 import { cancelOrder } from './orderFlow';
@@ -75,6 +78,9 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
     }
   }
 
+  await pruneRiderLocations(now).catch(()=>console.error('Location retention cleanup failed.'));
+  await runDispatchMaintenance(now).catch(()=>console.error('Dispatch maintenance failed; retrying next tick.'));
+
   // ---- provider phase ----
   const breaker = createBreaker();
   const due = await prisma.order.findMany({
@@ -132,6 +138,7 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
       console.error('maintenance: reconcile failed:', (err as Error).message);
     }
   }
+  await flushNotificationIntents(now).catch(()=>console.error('Notification outbox retry failed.'));
   // Push (FCM): retry transient failures whose backoff has passed, and clean old rows once an hour. Never affects the rest of the tick.
   try {
     await runPushMaintenance(now);

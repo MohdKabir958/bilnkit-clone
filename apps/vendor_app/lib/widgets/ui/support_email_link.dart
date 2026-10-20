@@ -12,7 +12,7 @@ class SupportEmailLink extends StatelessWidget {
     final k = context.k;
     return Semantics(
       button: true,
-      label: 'Email Kraveo support at $kSupportEmail',
+      label: 'Email ${BrandConfig.name} support at $kSupportEmail',
       excludeSemantics: true,
       onTap: () => SupportContact.openEmail(context),
       child: KPressable(
@@ -22,7 +22,7 @@ class SupportEmailLink extends StatelessWidget {
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             Icon(LucideIcons.mail, size: 20, color: k.brand),
             const SizedBox(width: 8),
-            Flexible(child: Text(kSupportEmail, style: KraveoType.titleMd.copyWith(color: k.brand, fontSize: 16, decoration: TextDecoration.underline))),
+            Flexible(child: Text(kSupportEmail.isEmpty?'Account recovery help':kSupportEmail, style: KraveoType.titleMd.copyWith(color: k.brand, fontSize: 16, decoration: TextDecoration.underline))),
           ]),
         ),
       ),

@@ -6,6 +6,7 @@ import '../driver_api_service.dart';
 
 /// Outcome of a `/devices` call.
 enum DeviceCallResult {
+  tokenOwned,
   ok,
 
   /// Network trouble or a server error: worth trying again later.
@@ -61,6 +62,7 @@ class HttpPushDeviceApi implements PushDeviceApi {
       DriverApiService.checkAuthResponse(response);
       final code = response.statusCode;
       if (code >= 200 && code < 300) return DeviceCallResult.ok;
+      if(code==409&&response.body.contains('DEVICE_TOKEN_OWNED'))return DeviceCallResult.tokenOwned;
       if (code == 401) return DeviceCallResult.unauthorized;
       if (code == 408 || code == 429 || code >= 500) return DeviceCallResult.retry;
       return DeviceCallResult.rejected;

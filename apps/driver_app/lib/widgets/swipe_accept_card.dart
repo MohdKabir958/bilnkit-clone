@@ -62,6 +62,7 @@ class OfferCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if(order.offerExpiresAt!=null) Padding(padding:const EdgeInsets.only(bottom:8),child:Text('Offer ends at ${TimeOfDay.fromDateTime(order.offerExpiresAt!.toLocal()).format(context)}')),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -88,7 +89,7 @@ class OfferCard extends StatelessWidget {
               if (onDeclined != null) ...[
                 const SizedBox(width: 8),
                 KPressable(
-                  semanticLabel: 'Hide this order',
+                  semanticLabel: order.offerId == null ? 'Hide this order' : 'Decline this delivery offer',
                   onTap: claiming ? null : onDeclined,
                   child: Container(
                     width: 48,

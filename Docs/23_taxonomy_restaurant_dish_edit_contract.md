@@ -1,3 +1,5 @@
+> Historical contract. Current grocery/serviceability/private-dispatch behavior is documented in [Docs/02 architecture](02_architecture.md); campus/shared-pool rules below are retained for history and legacy-data compatibility.
+
 # Categories, multi-category restaurants, edit restaurant, edit dishes (bulk, import, photos) - contract (12 Oct 2026)
 
 Binding for backend, dashboard, customer app, restaurant app. Builds on Docs/21 (pricing, catalog approval) and Docs/22 (groups). Nothing in this document may change the behaviour of orders, payments, refunds, settlement, pricing or order groups; no existing test may break (list any test you must change and why).

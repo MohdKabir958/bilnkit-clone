@@ -16,7 +16,7 @@ const mins = (s: string) => { const [h, m] = s.split(':').map(Number); return h 
 const inputClass = 'mt-1 w-full rounded-lg border border-kraveo-line bg-kraveo-surface2 p-2 text-kraveo-ink';
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="block text-sm">{label}{children}</label>; }
 
-export function GeographyPanel({ vendors, onChanged, onSessionError }: { onSessionError?: (error: unknown) => void; vendors: { id: string; name: string }[]; onChanged?: () => void }) {
+export function GeographyPanel({ vendors, drivers = [], onChanged, onSessionError }: { drivers?: {id: string; name: string}[]; onSessionError?: (error: unknown) => void; vendors: { id: string; name: string }[]; onChanged?: () => void }) {
   const [data, setData] = useState<Geography>({ cities: [], zones: [], coverage: [] });
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
   const [city, setCity] = useState({ code: '', name: '', state: '' });
@@ -24,6 +24,7 @@ export function GeographyPanel({ vendors, onChanged, onSessionError }: { onSessi
   const [editingZone, setEditingZone] = useState('');
   const [store, setStore] = useState({ vendorId: '', cityId: '', pinCode: '', locality: '', address: '', lat: '', lng: '' });
   const [coverage, setCoverage] = useState({ vendorId: '', zoneId: '', radiusKm: '' });
+  const [rider, setRider] = useState({id:'',zoneId:''});
   const [hours, setHours] = useState(Array.from({ length: 7 }, (_, day) => ({ day, enabled: true, opens: '09:00', closes: '21:00' })));
   const reload = async () => setData(await apiService.fetchGeography());
   useEffect(() => { void reload().catch((e) => { onSessionError?.(e); setError(e.message || 'Coverage could not be loaded.'); }); }, []);
@@ -68,6 +69,11 @@ export function GeographyPanel({ vendors, onChanged, onSessionError }: { onSessi
         <Field label="Store delivery radius (km, optional)"><input className={inputClass} value={coverage.radiusKm} onChange={(e) => setCoverage({ ...coverage, radiusKm: e.target.value })} /></Field>
         <button type="submit">Enable store coverage</button>
         <ul>{data.coverage.map((c) => <li key={`${c.vendorId}:${c.zoneId}`} className="flex flex-wrap items-center justify-between gap-2 py-2"><span>{vendors.find((v) => v.id === c.vendorId)?.name ?? c.vendorId} → {data.zones.find((z) => z.id === c.zoneId)?.name} · {c.active ? 'Enabled' : 'Disabled'}</span><button type="button" onClick={() => void run(() => apiService.setStoreCoverage(c.vendorId, c.zoneId, { active: !c.active, radiusKm: c.radiusKm }))}>{c.active ? 'Disable' : 'Enable'}</button></li>)}</ul>
+      </form>
+      <form className="space-y-3 rounded-xl border border-kraveo-line p-4" onSubmit={(e)=>submit(e,()=>apiService.configureRiderServiceArea(rider.id,rider.zoneId))}>
+        <h2 className="text-lg font-bold">Rider service area</h2><p className="text-sm">Only idle, approved riders in a matching enabled zone can receive offers. Existing deliveries must finish before changing an area.</p>
+        <Field label="Rider"><select required className={inputClass} value={rider.id} onChange={e=>setRider({...rider,id:e.target.value})}><option value="">Choose rider</option>{drivers.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}</select></Field>
+        <Field label="Enabled delivery zone"><select required className={inputClass} value={rider.zoneId} onChange={e=>setRider({...rider,zoneId:e.target.value})}><option value="">Choose zone</option>{data.zones.filter(z=>z.active&&data.cities.some(c=>c.id===z.cityId&&c.active)).map(z=><option key={z.id} value={z.id}>{data.cities.find(c=>c.id===z.cityId)?.name} — {z.name}</option>)}</select></Field><button type="submit" className="k-button">Save rider area</button>
       </form>
     </fieldset>
   </section>;

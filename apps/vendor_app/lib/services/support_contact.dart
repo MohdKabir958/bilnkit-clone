@@ -1,9 +1,12 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'package:flutter/material.dart';
+import 'package:kraveo_ui/kraveo_ui.dart' show SupportCenter;
+import 'product_api.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Where a restaurant asks Kraveo for help. Email only: there is no helpline number yet.
-const String kSupportEmail = 'kraveo.contact@gmail.com';
+const String kSupportEmail = BrandConfig.supportEmail;
 
 /// Opens a link outside the app. True when something opened.
 typedef MailOpener = Future<bool> Function(Uri uri);
@@ -21,11 +24,12 @@ class SupportContact {
   @visibleForTesting
   static MailOpener opener = _launchMail;
 
-  static Uri mailtoUri([String subject = 'Kraveo restaurant partner help']) => Uri.parse('mailto:$kSupportEmail?subject=${Uri.encodeComponent(subject)}');
+  static Uri mailtoUri([String subject = '${BrandConfig.name} restaurant partner help']) => Uri.parse('mailto:$kSupportEmail?subject=${Uri.encodeComponent(subject)}');
 
   /// Opens the phone's mail app with a new message to Kraveo support. When there is no mail app, the address is
   /// copied instead and the owner is told so.
   static Future<void> openEmail(BuildContext context) async {
+    if(kSupportEmail.isEmpty){await Navigator.push(context,MaterialPageRoute(builder:(_)=>SupportCenter(call:ProductApi().call)));return;}
     final messenger = ScaffoldMessenger.maybeOf(context);
     var opened = false;
     try {

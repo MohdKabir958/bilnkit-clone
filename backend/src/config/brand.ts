@@ -11,5 +11,6 @@ export const brand = {
     "customer": "in.dailymarket.customer",
     "vendor": "in.dailymarket.vendor",
     "driver": "in.dailymarket.driver"
-  }
+  },
+  "supportEmail": ""
 } as const;

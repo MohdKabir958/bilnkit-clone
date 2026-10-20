@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -27,12 +28,12 @@ String payoutFailureText(ApiResult<Object?> r) {
     case ApiFailure.offline:
       return 'No internet. Check the connection and try again.';
     case ApiFailure.timeout:
-      return 'Kraveo is slow to answer. Try again.';
+      return '${BrandConfig.name} is slow to answer. Try again.';
     case ApiFailure.unauthorized:
       return 'Session expired. Please log in again.';
     case ApiFailure.notApproved:
     case ApiFailure.forbidden:
-      return 'Your account cannot do this right now. Please contact Kraveo.';
+      return 'Your account cannot do this right now. Please contact ${BrandConfig.name}.';
     case ApiFailure.notFound:
       return 'Payout details are not available on this server yet. Please try again later.';
     case ApiFailure.rateLimited:
@@ -40,12 +41,12 @@ String payoutFailureText(ApiResult<Object?> r) {
     case ApiFailure.badRequest:
       // The server's own sentence says exactly what is wrong ("Account number must be 6 to 20 digits.").
       if (server.isNotEmpty && server.length <= 200) return server;
-      return 'Kraveo did not accept these details. Please check them.';
+      return '${BrandConfig.name} did not accept these details. Please check them.';
     case ApiFailure.conflict:
     case ApiFailure.locked:
     case ApiFailure.server:
     case ApiFailure.badResponse:
-      return 'Kraveo had a problem. Try again in a moment.';
+      return '${BrandConfig.name} had a problem. Try again in a moment.';
   }
 }
 

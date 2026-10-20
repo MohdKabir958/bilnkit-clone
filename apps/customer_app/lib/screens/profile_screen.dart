@@ -17,8 +17,7 @@ import '../widgets/ui/profile_sheets.dart';
 import '../widgets/ui/sheet_chrome.dart';
 import '../widgets/ui/snack.dart';
 import '../widgets/ui/status_map.dart';
-import '../widgets/ui/support_contact.dart';
-import '../services/external_links.dart';
+import '../services/support_api.dart';
 
 /// "Me" tab: avatar, name, e-mail, mobile, student status, drop-off point, coins, order summary
 /// and the account actions (log out, delete account).
@@ -45,7 +44,7 @@ class ProfileScreen extends StatelessWidget {
   Future<void> _logout(BuildContext context, SessionProvider session) async {
     final ok = await showKConfirm(
       context,
-      title: 'Log out of Kraveo?',
+      title: 'Log out of ${BrandConfig.name}?',
       message: 'You will sign back in with Google next time. Anything in your cart will be cleared.',
       confirmLabel: 'Log out',
     );
@@ -116,9 +115,9 @@ class ProfileScreen extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     child: _SettingsRow(
                       icon: LucideIcons.mail,
-                      title: 'Contact Kraveo support',
-                      subtitle: kSupportEmail,
-                      onTap: () => emailSupport(context, subject: 'Kraveo customer app help'),
+                      title: 'Help and requests',
+                      subtitle: 'Order issues, refunds and account help',
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportCenter(call: SupportApi.call))),
                     ),
                   ),
                 ),
@@ -150,7 +149,7 @@ class ProfileScreen extends StatelessWidget {
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     const Opacity(opacity: 0.85, child: KBrandMark(height: 30)),
                     const SizedBox(height: 8),
-                    Text('Kraveo v$kAppVersion', style: KraveoType.caption.copyWith(color: k.inkFaint, fontSize: 12)),
+                    Text('${BrandConfig.name} v$kAppVersion', style: KraveoType.caption.copyWith(color: k.inkFaint, fontSize: 12)),
                   ]),
                 ),
               ],
@@ -231,7 +230,7 @@ class _IdentityCard extends StatelessWidget {
             const SizedBox(height: 18),
             Semantics(
               container: true,
-              label: '$coins Kraveo Coins. Redeeming coins is coming soon',
+              label: '$coins ${BrandConfig.name} Coins. Redeeming coins is coming soon',
               child: ExcludeSemantics(
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(14, 12, 16, 12),
@@ -246,7 +245,7 @@ class _IdentityCard extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('Kraveo Coins', style: KraveoType.titleMd.copyWith(color: k.onBrand)),
+                        Text('${BrandConfig.name} Coins', style: KraveoType.titleMd.copyWith(color: k.onBrand)),
                         const SizedBox(height: 2),
                         Text('Redeeming soon', style: KraveoType.bodySm.copyWith(color: k.onBrand.withValues(alpha: 0.8))),
                       ]),
@@ -469,7 +468,7 @@ class _DeleteAccountSheetState extends State<DeleteAccountSheet> {
     setState(() {
       _busy = false;
       _error = result.networkError
-          ? 'We couldn\'t reach Kraveo. Check your connection and try again.'
+          ? 'We couldn\'t reach ${BrandConfig.name}. Check your connection and try again.'
           : result.conflict
               ? (result.message ?? 'You have an order in progress. You can delete your account once it is delivered or cancelled.')
               : (result.message ?? 'We couldn\'t delete your account. Please try again.');
@@ -505,8 +504,8 @@ class _DeleteAccountSheetState extends State<DeleteAccountSheet> {
           ),
           const SizedBox(height: 16),
           for (final line in const [
-            'Your name, phone number and drop-off point are removed from Kraveo.',
-            'Your Kraveo Coins are lost and can\'t be restored.',
+            'Your name, phone number and drop-off point are removed from ${BrandConfig.name}.',
+            'Your ${BrandConfig.name} Coins are lost and can\'t be restored.',
             'You will be logged out on this phone straight away.',
           ])
             Padding(

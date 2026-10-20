@@ -381,24 +381,24 @@ describe('Order groups: lifecycle', () => {
   // =========================================================================================
   describe('rider pool, claim, release', () => {
     test('POOL: grouped children are invisible to old apps; a new app (?groups=1) gets ONE entry per group, only when EVERY restaurant accepted; pool entry hides the customer', async () => {
-      const [c, c2] = W.customers; const [v1, v2, v3, v4] = W.vendors; const [r1] = W.riders;
+      const [c, c2] = W.customers; const [v1, v2, v3, v4] = W.vendors; const [r1,r2] = W.riders;
       const single = await api.place(c2, v4);
       await pay(c2, single.body.data.id);
       await api.setStatus(v4, single.body.data.id, 'ACCEPTED');
       const pg = await paidGroup(c, [v1, v2, v3]);
       const ids = pg.g.orders.map((o: any) => o.id);
       const oldApp = async () => (await api.available(r1)).body.data.map((o: any) => o.id);
-      const newApp = async () => (await api.availableGroups(r1)).body.data;
+      const newApp = async () => (await api.availableGroups(r2)).body.data;
       const oldApp2 = async () => (await api.raw('r', 'get', '/api/orders/available?groups=0', r1.token)).body.data.map((o: any) => o.id);
       expect(await oldApp()).toEqual([single.body.data.id]);
-      expect((await newApp()).map((o: any) => o.id)).toEqual([single.body.data.id]);
+      expect((await newApp()).map((o: any) => o.id)).toEqual([]);
       // not claimable until all three accepted
       await api.setStatus(v1, ids[0], 'ACCEPTED');
       await api.setStatus(v2, ids[1], 'ACCEPTED');
-      expect((await newApp()).map((o: any) => o.id)).toEqual([single.body.data.id]);
+      expect((await newApp()).map((o: any) => o.id)).toEqual([]);
       await api.setStatus(v3, ids[2], 'ACCEPTED');
       const pool = await newApp();
-      expect(pool.map((o: any) => o.id).sort()).toEqual([single.body.data.id, ids[0]].sort()); // one entry for the group: its primary child
+      expect(pool.map((o: any) => o.id)).toEqual([ids[0]]); // one entry for the group: its primary child
       const entry = pool.find((o: any) => o.id === ids[0]);
       expect(entry.group).toEqual({
         id: pg.g.id, index: 0, size: 3, primary: true,
@@ -408,12 +408,12 @@ describe('Order groups: lifecycle', () => {
       expect(JSON.stringify(entry)).not.toContain('Cust1');
       expect(await oldApp()).toEqual([single.body.data.id]); // old apps still never see a group
       expect(await oldApp2()).toEqual([single.body.data.id]);
-      expect((await api.get(r1, ids[0])).body.data).toMatchObject({ id: ids[0], customer: null, group: { id: pg.g.id } }); // the pool entry (the primary) can be opened like any pool order
+      expect((await api.get(r2, ids[0])).body.data).toMatchObject({ id: ids[0], customer: null, group: { id: pg.g.id } }); // the pool entry (the primary) can be opened like any pool order
       expect((await api.get(r1, ids[1])).status).toBe(404); // the other children are not offered, so they cannot be opened by a pool rider
       expect((await api.getGroup(r1, pg.g.id)).status).toBe(404);
       // a cancelled child takes the group out of the pool
       await api.adminCancel(W.admin, ids[2]);
-      expect((await newApp()).map((o: any) => o.id)).toEqual([single.body.data.id]);
+      expect((await newApp()).map((o: any) => o.id)).toEqual([]);
     });
 
     test('POOL SOCKETS: order_available once per group (only to riders that sent groups:1), order_unavailable for the primary when claimed', async () => {
@@ -434,7 +434,7 @@ describe('Order groups: lifecycle', () => {
       expect(wNew.count('order_available')).toBe(1);
       expect(wNew.last('order_available').id).toBe(a);
       expect(wNew.last('order_available').group.size).toBe(2);
-      expect(wNew2.count('order_available')).toBe(1);
+      expect(wNew2.count('order_available')).toBe(0);
       expect(wOld.count('order_available')).toBe(0);
       // claimed through the SECOND child
       expect((await api.claim(r1, b)).status).toBe(200);
@@ -445,7 +445,9 @@ describe('Order groups: lifecycle', () => {
       // released: offered again, once
       expect((await api.release(r1, a)).status).toBe(200);
       await flushAll();
-      expect(wNew2.count('order_available')).toBe(2);
+      const next=await prisma.dispatchOffer.findFirstOrThrow({where:{orderId:a,state:'PENDING'}});
+      expect((await api.raw('r2','post',`/api/v1/dispatch-offers/${next.id}/decline`,r2.token,{reason:'Not available'})).status).toBe(200);
+      await flushAll();expect(wNew2.count('order_available')).toBe(1);
       expect(wOld.count('order_available')).toBe(0);
     });
 
@@ -460,7 +462,7 @@ describe('Order groups: lifecycle', () => {
       const rs = await Promise.all([api.claim(r1, pg.g.orders[0].id), api.claim(r2, pg.g.orders[1].id), api.claim(r3, pg.g.orders[0].id)]);
       expect(rs.map((r) => r.status).sort()).toEqual([200, 409, 409]);
       const winner = [r1, r2, r3][rs.findIndex((r) => r.status === 200)];
-      expect(rs.filter((r) => r.status === 409).every((r) => r.body.code === 'ALREADY_TAKEN')).toBe(true);
+      expect(rs.filter((r) => r.status === 409).every((r) => ['ALREADY_TAKEN','OFFER_EXPIRED'].includes(r.body.code))).toBe(true);
       const k = await kids(pg.g.id);
       expect(k.map((o) => o.driverId)).toEqual([winner.id, winner.id]);
       expect(k.map((o) => o.status)).toEqual(['ACCEPTED', 'ACCEPTED']); // a claim never changes the status
@@ -630,7 +632,8 @@ describe('Order groups: lifecycle', () => {
       const s = await api.place(c2, v3);
       await pay(c2, s.body.data.id);
       for (const st of ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP']) await api.setStatus(v3, s.body.data.id, st);
-      await api.claim(r1, s.body.data.id);
+      expect((await api.reassign(W.admin,s.body.data.id,r1.id)).status).toBe(200);
+      expect((await api.claim(r1,s.body.data.id)).status).toBe(200);
       await api.setStatus(r1, s.body.data.id, 'PICKED_UP');
       await api.setStatus(r1, s.body.data.id, 'ARRIVED_AT_GATE');
       expect((await api.otp(r1, s.body.data.id, await otpOf(c2, s.body.data.id))).status).toBe(200);

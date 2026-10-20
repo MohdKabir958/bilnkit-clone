@@ -17,6 +17,7 @@ import { vendorLocationView, checkAccuracy, devicePinData, describePin } from '.
 import { CUISINES_INCLUDE, cuisineFields } from '../utils/catalog';
 import { applyOwnerCategoryText } from '../services/categories';
 import { badLabel } from '../utils/labels';
+import { runDispatchMaintenance } from '../services/dispatch';
 import { retryStaleRead } from '../utils/prismaRetry';
 
 /**
@@ -30,7 +31,7 @@ const UPI_RE = /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}$/;
 const FSSAI_RE = /^\d{14}$/;
 const VEHICLE_TYPES = ['Bike', 'Scooter', 'Cycle', 'On foot'];
 const NO_PLATE_VEHICLES = new Set(['Cycle', 'On foot']);
-export const DEFAULT_BANNER = 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600';
+export const DEFAULT_BANNER = '';
 
 type Kind = 'VENDOR' | 'DRIVER';
 
@@ -190,9 +191,10 @@ const vendorView = (v: any) => v && ({
   ...vendorLocationView(v),
   ...cuisineFields(v), // Docs/23: `cuisines` + `tags`
 });
-const driverView = (d: any) => d && ({
+export const driverView = (d: any) => d && ({
   id: d.id, runnerCode: d.runnerCode, vehicleType: d.vehicleType, vehicleRegNo: d.vehicleRegNo ?? null,
   emergencyPhone: d.emergencyPhone ?? null, upiId: d.upiId ?? null, approvalStatus: d.approvalStatus, rejectionReason: d.rejectionReason ?? null,
+  cityId:d.cityId??null,serviceZoneId:d.serviceZoneId??null,serviceAreaConfigured:!!d.serviceZoneId,
   dutyStatus: d.dutyStatus ?? 'OFFLINE', // lets the rider app re-read what the server believes (second phone, bad network, logout elsewhere)
 });
 
@@ -342,9 +344,16 @@ partnerRouter.post('/drivers/duty-status', requireAuth, requireRole('DRIVER'), r
     if (typeof req.body?.isOnline !== 'boolean') return res.status(400).json({ success: false, field: 'isOnline', message: 'isOnline (true or false) is required.' });
     const driver = await prisma.driverPartner.findUnique({ where: { userId: req.user!.id } });
     if (!driver) return res.status(404).json({ success: false, message: 'No rider profile is linked to this account.' });
-    const active = await prisma.order.count({ where: { driverId: req.user!.id, status: { in: ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'PICKED_UP', 'ARRIVED_AT_GATE'] } } });
-    const dutyStatus = !req.body.isOnline ? 'OFFLINE' : active > 0 ? 'IN_TRANSIT' : 'ONLINE';
-    const updated = await prisma.driverPartner.update({ where: { id: driver.id }, data: { dutyStatus } });
+    const updated = await prisma.$transaction(async(tx)=>{
+      await tx.$queryRaw`SELECT "id" FROM "DriverPartner" WHERE "id"=${driver.id} FOR UPDATE`;
+      const active = await tx.order.count({where:{driverId:req.user!.id,status:{in:['ACCEPTED','PREPARING','READY_FOR_PICKUP','PICKED_UP','ARRIVED_AT_GATE']}}});
+      const dutyStatus = !req.body.isOnline ? 'OFFLINE' : active>0 ? 'IN_TRANSIT' : 'ONLINE';
+      if(dutyStatus==='OFFLINE') await tx.dispatchOffer.updateMany({where:{driverId:driver.id,state:'PENDING'},data:{state:'REVOKED',reason:'Rider went offline'}});
+      if(!active) await tx.driverLocation.deleteMany({where:{driverId:req.user!.id}});
+      return tx.driverPartner.update({where:{id:driver.id},data:{dutyStatus}});
+    });
+    const dutyStatus=updated.dutyStatus;
+    void (driver.cityId?runDispatchMaintenance(new Date(),driver.cityId,true):Promise.resolve()).catch(()=>console.error('Duty dispatch scan will retry during maintenance.'));
     // Offers (`order_available`) only reach riders on duty: leave the room when going off duty, join when going on.
     if (dutyStatus === 'OFFLINE') await dropFromPartnerRooms(req.user!.id, ['drivers']);
     else addToPartnerRooms(req.user!.id, ['drivers']);
@@ -488,7 +497,10 @@ partnerRouter.post('/admin/partners/:kind/:id/status', requireAuth, requireRole(
     // Rejected / suspended partners get no pushes (new orders, deliveries) on any device; the recipient lookup also checks approval.
     if (next !== 'APPROVED' && row.userId) await disableUserTokens(row.userId, `PARTNER_${next}`);
     // A suspended rider must stop hearing about new orders at once (not only after a reconnect).
-    if (next !== 'APPROVED' && kind === 'DRIVER' && row.userId) await dropFromPartnerRooms(row.userId, ['drivers']);
+    if (next !== 'APPROVED' && kind === 'DRIVER' && row.userId) {
+      await prisma.$transaction([prisma.dispatchOffer.updateMany({where:{driverId:row.id,state:'PENDING'},data:{state:'REVOKED',reason:'Partner approval changed'}}),prisma.driverLocation.deleteMany({where:{driverId:row.userId}})]);
+      await dropFromPartnerRooms(row.userId, ['drivers']);
+    }
     if (next !== 'APPROVED' && kind === 'VENDOR' && row.userId) await dropFromPartnerRooms(row.userId, [`vendor_${row.id}`]);
     // A suspended partner's old sessions end now (they sign in again and get the "suspended" answer). Rejection of a
     // pending application changes nothing for a signed-in applicant: they keep their session to see the reason / re-apply.

@@ -62,7 +62,7 @@ abstract class SystemSettings {
 }
 
 /// Result of a call to `/devices`.
-enum DeviceCallResult { ok, unauthorized, failed }
+enum DeviceCallResult { ok, unauthorized, failed, tokenOwned }
 
 /// `POST /devices` and `DELETE /devices` (Docs/18 section 3).
 abstract class DeviceApi {

@@ -8,17 +8,29 @@ class HttpDeviceApi implements DeviceApi {
   const HttpDeviceApi();
 
   @override
-  Future<DeviceCallResult> register({required String token, required String appVersion}) async {
+  Future<DeviceCallResult> register(
+      {required String token, required String appVersion}) async {
     try {
       final r = await CustomerApiService.authorizedRequest(
         'POST',
         '/devices',
-        body: {'token': token, 'app': 'CUSTOMER', 'platform': 'android', 'appVersion': appVersion},
+        body: {
+          'token': token,
+          'app': 'CUSTOMER',
+          'platform': 'android',
+          'appVersion': appVersion
+        },
       );
+      if (r.statusCode == 409 && r.body.contains('DEVICE_TOKEN_OWNED')) {
+        return DeviceCallResult.tokenOwned;
+      }
       if (r.statusCode == 401) return DeviceCallResult.unauthorized;
-      return r.statusCode >= 200 && r.statusCode < 300 ? DeviceCallResult.ok : DeviceCallResult.failed;
+      return r.statusCode >= 200 && r.statusCode < 300
+          ? DeviceCallResult.ok
+          : DeviceCallResult.failed;
     } catch (e) {
-      debugPrint('[Push] device registration failed (will retry later): ${e.runtimeType}');
+      debugPrint(
+          '[Push] device registration failed (will retry later): ${e.runtimeType}');
       return DeviceCallResult.failed;
     }
   }
@@ -34,7 +46,9 @@ class HttpDeviceApi implements DeviceApi {
         handleUnauthorized: false,
       );
       if (r.statusCode == 401) return DeviceCallResult.unauthorized;
-      return r.statusCode >= 200 && r.statusCode < 300 ? DeviceCallResult.ok : DeviceCallResult.failed;
+      return r.statusCode >= 200 && r.statusCode < 300
+          ? DeviceCallResult.ok
+          : DeviceCallResult.failed;
     } catch (e) {
       debugPrint('[Push] device removal failed (ignored): ${e.runtimeType}');
       return DeviceCallResult.failed;

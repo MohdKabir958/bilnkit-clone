@@ -33,7 +33,8 @@ jobs:
       - run: npx prisma generate
       - run: npm run db:deploy
       - run: npm run build
-      - run: npm test -- --runTestsByPath test/e2e/lifecycle_journeys.test.ts test/e2e/auth_pipeline.test.ts test/e2e/hardening.test.ts test/e2e/payments_adversarial.test.ts test/unit/runtime_config.test.ts test/unit/payout_crypto.test.ts test/unit/pricing_engine.test.ts test/unit/image_probe.test.ts test/unit/order_groups_money.test.ts test/e2e/india_serviceability.test.ts test/unit/maps_adapter.test.ts test/e2e/grocery_inventory.test.ts
+      - run: npm test -- --silent
+      - run: npm audit --omit=dev
   web:
     runs-on: ubuntu-latest
     strategy:
@@ -51,6 +52,7 @@ jobs:
           cache-dependency-path: web/${{ matrix.component }}/package-lock.json
       - run: npm ci
       - run: npm run build
+      - run: npm audit --omit=dev
       - if: matrix.component == 'super_admin'
         run: npm test
       - run: python3 ../../scripts/configure_brand.py --check

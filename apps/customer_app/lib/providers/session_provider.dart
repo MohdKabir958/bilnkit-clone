@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/auth_results.dart';
@@ -186,11 +187,11 @@ class SessionProvider with ChangeNotifier {
   }
 
   static String _serverFailure(GoogleLoginResult r) {
-    if (r.networkError) return 'We couldn\'t reach Kraveo. Check your connection and try again.';
-    if (r.roleNotAllowed) return r.message ?? 'This Google account belongs to a Kraveo partner and can\'t be used in the customer app.';
+    if (r.networkError) return 'We couldn\'t reach ${BrandConfig.name}. Check your connection and try again.';
+    if (r.roleNotAllowed) return r.message ?? 'This Google account belongs to a ${BrandConfig.name} partner and can\'t be used in the customer app.';
     if (r.rejected) return r.message ?? 'Google sign-in was rejected. Please try again, or pick a different Google account.';
     if (r.rateLimited) return r.message ?? 'Too many attempts. Please wait a moment and try again.';
-    if (r.unavailable || (r.statusCode != null && r.statusCode! >= 500)) return 'Kraveo is unavailable right now. Please try again in a little while.';
+    if (r.unavailable || (r.statusCode != null && r.statusCode! >= 500)) return '${BrandConfig.name} is unavailable right now. Please try again in a little while.';
     return r.message ?? 'We couldn\'t sign you in. Please try again.';
   }
 

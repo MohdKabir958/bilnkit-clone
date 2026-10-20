@@ -353,7 +353,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       expect(find.byType(RunnerIdCardScreen), findsNothing);
       expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.text('Your Kraveo account is paused. Please contact Kraveo support.'), findsOneWidget);
+      expect(find.text('Your DailyMarket account is paused. Please contact DailyMarket support.'), findsOneWidget);
       expect(find.textContaining('Session expired'), findsNothing);
       expect((await SharedPreferences.getInstance()).getBool(RiderController.dutyPrefKey), isNull, reason: 'DR-15: the next login does not go on duty by itself');
       await _unmount(tester);
@@ -370,7 +370,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pump(const Duration(seconds: 1));
       expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.text('Your Kraveo account is paused. Please contact Kraveo support.'), findsOneWidget);
+      expect(find.text('Your DailyMarket account is paused. Please contact DailyMarket support.'), findsOneWidget);
       await _unmount(tester);
     });
 
@@ -440,7 +440,7 @@ void main() {
     });
   });
 
-  group('duty read from Kraveo (DR-07)', () {
+  group('duty read from DailyMarket (DR-07)', () {
     test('login and profile answers carry driver.dutyStatus; an older server without it gives null', () {
       final s = PartnerSession.fromLoginJson({
         'user': {'id': 'u', 'name': 'N'},
@@ -464,7 +464,7 @@ void main() {
       c.dispose();
     });
 
-    testWidgets('the phone shows ON when Kraveo says ONLINE, and OFF again when another phone logs out', (tester) async {
+    testWidgets('the phone shows ON when DailyMarket says ONLINE, and OFF again when another phone logs out', (tester) async {
       await _storedSession(_rider(PartnerApproval.approved, duty: 'ONLINE'));
       final auth = FakeAuth()..profile = ProfileResult(ProfileOutcome.valid, _rider(PartnerApproval.approved, duty: 'ONLINE'));
       final f = FakeRider();
@@ -480,7 +480,7 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
       await tester.pump(const Duration(seconds: 2));
       expect(find.text('OFF DUTY'), findsOneWidget);
-      expect(find.textContaining('Kraveo has you off duty'), findsOneWidget);
+      expect(find.textContaining('DailyMarket has you off duty'), findsOneWidget);
       await _unmount(tester);
     });
 

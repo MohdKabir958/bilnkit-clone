@@ -529,7 +529,7 @@ export const adminCreateDish = async (b: Record<string, unknown>, actor: Actor) 
   const name = requireNonEmptyText(b.name, MAX_NAME, 'name', 'Name');
   const category = optionalText(b.category, 40, 'category', 'Category') || undefined; // blank = 'Main Course' (resolved with the lock)
   const description = optionalText(b.description, 300, 'description', 'Description') ?? '';
-  const imageUrl = b.imageUrl === undefined || b.imageUrl === null || b.imageUrl === '' ? 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400' : checkImageUrl(b.imageUrl);
+  const imageUrl = b.imageUrl === undefined || b.imageUrl === null || b.imageUrl === '' ? '' : checkImageUrl(b.imageUrl);
   if (b.isVeg !== undefined && typeof b.isVeg !== 'boolean') throw new AppError(400, 'BAD_REQUEST', 'isVeg must be true or false.', 'isVeg');
   if (b.isAvailable !== undefined && typeof b.isAvailable !== 'boolean') throw new AppError(400, 'BAD_REQUEST', 'isAvailable must be true or false.', 'isAvailable');
   const commission = commissionOverrideFrom(b);

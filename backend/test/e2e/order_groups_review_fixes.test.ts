@@ -179,7 +179,7 @@ describe('Order groups: review fixes', () => {
     expect(first.body).toMatchObject({ coinsEarned: 10, totalCoins: 10 });
     expect(first.body.review.coinsEarned).toBe(10);
     const afterFirst = await rating();
-    expect(afterFirst).toBe(parseFloat(((4.5 * 20 + 5) / 21).toFixed(2)));
+    expect(afterFirst).toBe(5);
     // the other two, one after the other: reviewed, no more coins, rating untouched
     for (const [i, id] of [[1, ids[1]], [0, ids[0]]] as const) {
       const r = await review(c, id, { driverRating: 1, dishReviews: [{ dishId: pg.vs[i].items[0].id, rating: 4 }] });
@@ -423,7 +423,8 @@ describe('Order groups: review fixes', () => {
     await prisma.driverPartner.update({ where: { id: r3.profileId }, data: { dutyStatus: 'OFFLINE' } });
     const busy = await paidGroup(W.customers[1], [v3, v1]);
     await cook(busy, 'ACCEPTED');
-    expect((await api.claim(r2, busy.g.orders[0].id)).status).toBe(200); // r2 is busy now
+    expect((await api.reassign(W.admin,busy.g.orders[0].id,r2.id)).status).toBe(200);
+    expect((await api.claim(r2,busy.g.orders[0].id)).status).toBe(200); // r2 is busy now
     fake.sent.length = 0;
     const pg = await paidGroup(c, [v1, v2]);
     await cook(pg, 'READY_FOR_PICKUP');

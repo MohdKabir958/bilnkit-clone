@@ -17,19 +17,20 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS: Array<{ id: TabType; label: string; hint: string; icon: React.ElementType }> = [
+  { id: 'operations', label: 'Operations and support', hint: 'City metrics, dispatch, support and audit', icon: ClipboardCheck },
   { id: 'inventory', label: 'Products and inventory', hint: 'Grocery SKUs and stock movements', icon: ShoppingBag },
   { id: 'coverage', label: 'Delivery coverage', hint: 'Cities, zones and store opening hours', icon: MapPinned },
   { id: 'map', label: 'Live map', hint: 'Dispatch and runner positions', icon: MapPinned },
   { id: 'orders', label: 'Orders', hint: 'Every order and its status', icon: ShoppingBag },
   { id: 'attention', label: 'Needs attention', hint: 'Failed refunds, locked OTPs, stuck orders', icon: TriangleAlert },
   { id: 'applications', label: 'Applications', hint: 'Approve new restaurants and riders', icon: ClipboardCheck },
-  { id: 'vendors', label: 'Vendors', hint: 'Dhabas and availability', icon: Store },
-  { id: 'categories', label: 'Categories', hint: 'Cuisines and dish categories', icon: Tags },
-  { id: 'catalog', label: 'Catalog', hint: 'Approve dishes, prices and commission', icon: UtensilsCrossed },
+  { id: 'vendors', label: 'Vendors', hint: 'Stores and availability', icon: Store },
+  { id: 'categories', label: 'Categories', hint: 'Store and product categories', icon: Tags },
+  { id: 'catalog', label: 'Catalog', hint: 'Approve products, prices and commission', icon: UtensilsCrossed },
   { id: 'finance', label: 'Finance', hint: 'Revenue, settlements and rider payouts', icon: Landmark },
   { id: 'drivers', label: 'Drivers', hint: 'Runner partners and duty', icon: Bike },
   { id: 'customers', label: 'Customers', hint: 'Everyone who ordered', icon: Users },
-  { id: 'analytics', label: 'Analytics', hint: 'Campus delivery numbers', icon: TrendingUp },
+  { id: 'analytics', label: 'Analytics', hint: 'Delivery statistics', icon: TrendingUp },
   { id: 'settings', label: 'Settings', hint: 'Fees, commission and rounding', icon: SlidersHorizontal },
 ];
 

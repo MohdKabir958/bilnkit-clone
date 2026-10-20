@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
@@ -37,8 +38,8 @@ const Duration kLocationInterval = Duration(seconds: 10);
 
 /// The text of the Android foreground-service notification shown for as long as the rider is
 /// on duty (Docs/19 section 4).
-const String kDutyNotificationTitle = 'Kraveo - you are on duty';
-const String kDutyNotificationText = 'Sharing your location with Kraveo';
+const String kDutyNotificationTitle = '${BrandConfig.name} - you are on duty';
+const String kDutyNotificationText = 'Sharing your location with ${BrandConfig.name}';
 
 /// Android notification channel of the duty notification. The plugin creates a channel with this
 /// id as "importance none" (an invisible notification); MainActivity creates it first with low

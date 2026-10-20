@@ -57,7 +57,7 @@ Future<bool> showNotificationsExplainSheet(BuildContext context) async {
           Text('Get new-delivery alerts', textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
           const SizedBox(height: 8),
           Text(
-            'Kraveo plays a sound and shows a notification when a delivery is waiting, even when your phone is locked. '
+            '${BrandConfig.name} plays a sound and shows a notification when a delivery is waiting, even when your phone is locked. '
             'Without it you can miss orders.',
             textAlign: TextAlign.center,
             style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16),

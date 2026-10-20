@@ -37,6 +37,7 @@ const ROLE_DIGIT: Record<string, string> = { STUDENT: '1', VENDOR: '2', DRIVER: 
 
 export const purgeWorld = async (prefix: string) => {
   const p = `${prefix}-`;
+  await prisma.supportCase.deleteMany({where:{customerId:{startsWith:p}}});
   await prisma.payment.deleteMany({ where: { order: { OR: [{ customerId: { startsWith: p } }, { vendorId: { startsWith: p } }] } } });
   await prisma.order.deleteMany({ where: { OR: [{ customerId: { startsWith: p } }, { vendorId: { startsWith: p } }, { driverId: { startsWith: p } }] } });
   await prisma.orderGroup.deleteMany({ where: { customerId: { startsWith: p } } });
@@ -83,7 +84,7 @@ export const createWorld = async (prefix: string, digit: string, size: { custome
     await prisma.driverPartner.create({ data: { id: profileId, userId: r.id, name: r.name, phone: r.phone, runnerCode: `RUN-${prefix.toUpperCase()}${i}`.slice(0, 20), vehicleType: 'Bike', dutyStatus: 'ONLINE', approvalStatus: 'APPROVED' } });
     world.riders.push({ ...r, profileId });
   }
-  await ensureFixtureGeography(prefix, world.customers.map((c) => c.id), world.vendors.map((v) => v.vendorId));
+  await ensureFixtureGeography(prefix, world.customers.map((c) => c.id), world.vendors.map((v) => v.vendorId), world.riders.map((r)=>r.id));
   await prisma.menuItem.updateMany({ where: { vendorId: { in: world.vendors.map((v) => v.vendorId) } }, data: { stockQty: 10000 } });
   return world;
 };
@@ -97,11 +98,12 @@ export const reissue = async <P extends Person>(p: P): Promise<P> => {
 
 export const resetWorldState = async (w: World) => {
   const p = `${w.prefix}-`;
+  await prisma.supportCase.deleteMany({where:{customerId:{startsWith:p}}});
   await prisma.payment.deleteMany({ where: { order: { OR: [{ customerId: { startsWith: p } }, { vendorId: { startsWith: p } }] } } });
   await prisma.order.deleteMany({ where: { OR: [{ customerId: { startsWith: p } }, { vendorId: { startsWith: p } }, { driverId: { startsWith: p } }] } });
   await prisma.orderGroup.deleteMany({ where: { customerId: { startsWith: p } } });
   await prisma.vendor.updateMany({ where: { id: { startsWith: p } }, data: { approvalStatus: 'APPROVED', isAcceptingOrders: true } });
-  await prisma.driverPartner.updateMany({ where: { id: { startsWith: p } }, data: { approvalStatus: 'APPROVED', dutyStatus: 'ONLINE' } });
+  await prisma.driverPartner.updateMany({ where: { id: { startsWith: p } }, data: { approvalStatus: 'APPROVED', dutyStatus: 'ONLINE', lastOfferedAt: null } });
   await prisma.stockMovement.deleteMany({ where: { item: { vendorId: { startsWith: p } } } });
   await prisma.menuItem.updateMany({ where: { vendorId: { startsWith: p } }, data: { isAvailable: true, stockQty: 10000, stockVersion: 0 } });
   // Suspending a partner / resetting a password revokes their tokens (tokenVersion); the world's tokens carry tv 0.
