@@ -29,10 +29,12 @@ class ApplicationStatusScreen extends StatefulWidget {
   final Duration pollEvery;
 
   @override
-  State<ApplicationStatusScreen> createState() => _ApplicationStatusScreenState();
+  State<ApplicationStatusScreen> createState() =>
+      _ApplicationStatusScreenState();
 }
 
-class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> with WidgetsBindingObserver {
+class _ApplicationStatusScreenState extends State<ApplicationStatusScreen>
+    with WidgetsBindingObserver {
   Timer? _timer;
   bool _checking = false;
   bool _loggingOut = false;
@@ -62,7 +64,11 @@ class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> with 
   void _maybePromptForLocation() {
     if (_promptOpen) return;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted || _promptOpen || !shouldPromptForLocation(SessionScope.maybeOf(context))) return;
+      if (!mounted ||
+          _promptOpen ||
+          !shouldPromptForLocation(SessionScope.maybeOf(context))) {
+        return;
+      }
       _promptOpen = true;
       await promptForRestaurantLocation(context);
       _promptOpen = false;
@@ -105,7 +111,14 @@ class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> with 
   Widget build(BuildContext context) {
     final k = context.k;
     final s = widget.session;
-    final (IconData icon, Color tone, String title, String hindi, String body, String bodyHindi) = switch (s.approval) {
+    final (
+      IconData icon,
+      Color tone,
+      String title,
+      String hindi,
+      String body,
+      String bodyHindi
+    ) = switch (s.approval) {
       PartnerApproval.rejected => (
           LucideIcons.circleX,
           KraveoPalette.danger,
@@ -140,147 +153,201 @@ class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> with 
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(KSpace.gutter, 24, KSpace.gutter, 28),
+            padding:
+                const EdgeInsets.fromLTRB(KSpace.gutter, 24, KSpace.gutter, 28),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 460),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const KReveal(child: KBrandMark(height: 52)),
-                const SizedBox(height: 26),
-                KReveal(
-                  index: 1,
-                  child: Container(
-                    key: const ValueKey('status-icon'),
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(color: tone.withValues(alpha: 0.14), shape: BoxShape.circle),
-                    child: Icon(icon, size: 36, color: tone),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                KReveal(
-                  index: 2,
-                  child: Semantics(
-                    header: true,
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(title, key: const ValueKey('status-title'), style: KraveoType.headline.copyWith(color: k.ink, fontSize: 27)),
-                      const SizedBox(height: 4),
-                      Text(hindi, style: KraveoType.titleLg.copyWith(color: k.inkMuted, fontSize: 20)),
-                    ]),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                KReveal(
-                  index: 3,
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(body, style: KraveoType.body.copyWith(color: k.ink, fontSize: 17)),
-                    const SizedBox(height: 4),
-                    Text(bodyHindi, style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
-                  ]),
-                ),
-                if (reason.isNotEmpty && !pending) ...[
-                  const SizedBox(height: 18),
-                  KReveal(
-                    index: 4,
-                    child: KCard(
-                      key: const ValueKey('status-reason'),
-                      elevated: false,
-                      color: Color.alphaBlend(tone.withValues(alpha: 0.10), k.surface),
-                      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Icon(LucideIcons.messageSquareWarning, size: 24, color: tone),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text('Reason from ${BrandConfig.name}  ·  ${BrandConfig.name} का कारण', style: KraveoType.label.copyWith(color: k.inkMuted, fontSize: 13)),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const KReveal(child: KBrandMark(height: 52)),
+                    const SizedBox(height: 26),
+                    KReveal(
+                      index: 1,
+                      child: Container(
+                        key: const ValueKey('status-icon'),
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                            color: tone.withValues(alpha: 0.14),
+                            shape: BoxShape.circle),
+                        child: Icon(icon, size: 36, color: tone),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    KReveal(
+                      index: 2,
+                      child: Semantics(
+                        header: true,
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(title,
+                                  key: const ValueKey('status-title'),
+                                  style: KraveoType.headline
+                                      .copyWith(color: k.ink, fontSize: 27)),
+                              const SizedBox(height: 4),
+                              Text(hindi,
+                                  style: KraveoType.titleLg.copyWith(
+                                      color: k.inkMuted, fontSize: 20)),
+                            ]),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    KReveal(
+                      index: 3,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(body,
+                                style: KraveoType.body
+                                    .copyWith(color: k.ink, fontSize: 17)),
                             const SizedBox(height: 4),
-                            Text(reason, style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 18)),
+                            Text(bodyHindi,
+                                style: KraveoType.body
+                                    .copyWith(color: k.inkMuted, fontSize: 16)),
                           ]),
+                    ),
+                    if (reason.isNotEmpty && !pending) ...[
+                      const SizedBox(height: 18),
+                      KReveal(
+                        index: 4,
+                        child: KCard(
+                          key: const ValueKey('status-reason'),
+                          elevated: false,
+                          color: Color.alphaBlend(
+                              tone.withValues(alpha: 0.10), k.surface),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(LucideIcons.messageSquareWarning,
+                                    size: 24, color: tone),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                            'Reason from ${BrandConfig.name}  ·  ${BrandConfig.name} का कारण',
+                                            style: KraveoType.label.copyWith(
+                                                color: k.inkMuted,
+                                                fontSize: 13)),
+                                        const SizedBox(height: 4),
+                                        Text(reason,
+                                            style: KraveoType.titleMd.copyWith(
+                                                color: k.ink, fontSize: 18)),
+                                      ]),
+                                ),
+                              ]),
                         ),
-                      ]),
+                      ),
+                    ],
+                    if (pending && s.needsLocation) ...[
+                      const SizedBox(height: 18),
+                      const LocationBanner(key: kLocationBannerKey),
+                    ],
+                    const SizedBox(height: 18),
+                    KReveal(
+                      index: 5,
+                      child: KCard(
+                        elevated: false,
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _Row(
+                                  icon: LucideIcons.store,
+                                  label: 'Store  ·  रेस्टोरेंट',
+                                  value: s.restaurantName),
+                              if ((s.address ?? '').isNotEmpty)
+                                _Row(
+                                    icon: LucideIcons.mapPin,
+                                    label: 'Store  ·  रसोई',
+                                    value: s.address!),
+                              if ((s.category ?? '').isNotEmpty)
+                                _Row(
+                                    icon: LucideIcons.package,
+                                    label: 'Serves  ·  क्या बनाते हैं',
+                                    value: s.category!),
+                              _Row(
+                                  icon: LucideIcons.phone,
+                                  label: 'Your number  ·  आपका नंबर',
+                                  value: s.phone ?? '—',
+                                  last: true),
+                            ]),
+                      ),
                     ),
-                  ),
-                ],
-                if (pending && s.needsLocation) ...[
-                  const SizedBox(height: 18),
-                  const LocationBanner(key: kLocationBannerKey),
-                ],
-                const SizedBox(height: 18),
-                KReveal(
-                  index: 5,
-                  child: KCard(
-                    elevated: false,
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      _Row(icon: LucideIcons.store, label: 'Restaurant  ·  रेस्टोरेंट', value: s.restaurantName),
-                      if ((s.address ?? '').isNotEmpty) _Row(icon: LucideIcons.mapPin, label: 'Kitchen  ·  रसोई', value: s.address!),
-                      if ((s.category ?? '').isNotEmpty) _Row(icon: LucideIcons.chefHat, label: 'Serves  ·  क्या बनाते हैं', value: s.category!),
-                      _Row(icon: LucideIcons.phone, label: 'Your number  ·  आपका नंबर', value: s.phone ?? '—', last: true),
-                    ]),
-                  ),
-                ),
-                const SizedBox(height: 22),
-                if (rejected)
-                  KReveal(
-                    index: 6,
-                    child: KButton(
-                      key: const ValueKey('edit-button'),
-                      label: 'Update details and apply again',
-                      sublabel: 'जानकारी सुधारकर फिर भेजें',
-                      icon: LucideIcons.pencil,
-                      large: true,
-                      onPressed: widget.onEdit,
+                    const SizedBox(height: 22),
+                    if (rejected)
+                      KReveal(
+                        index: 6,
+                        child: KButton(
+                          key: const ValueKey('edit-button'),
+                          label: 'Update details and apply again',
+                          sublabel: 'जानकारी सुधारकर फिर भेजें',
+                          icon: LucideIcons.pencil,
+                          large: true,
+                          onPressed: widget.onEdit,
+                        ),
+                      )
+                    else
+                      KReveal(
+                        index: 6,
+                        child: KButton(
+                          key: const ValueKey('check-button'),
+                          label: _checking ? 'Checking…' : 'Check status',
+                          sublabel: 'स्थिति देखें',
+                          icon: LucideIcons.refreshCw,
+                          large: true,
+                          loading: _checking,
+                          onPressed: () => _check(),
+                        ),
+                      ),
+                    if (_checkedOnce && !_checking && pending)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Text(
+                            'Still waiting. We will update this screen by itself.  ·  अभी इंतज़ार है। यह स्क्रीन अपने आप बदल जाएगी।',
+                            key: const ValueKey('still-waiting'),
+                            style: KraveoType.bodySm
+                                .copyWith(color: k.inkMuted, fontSize: 14)),
+                      ),
+                    if (pending) ...[
+                      const SizedBox(height: 12),
+                      KReveal(
+                        index: 7,
+                        child: KButton(
+                          key: const ValueKey('edit-button'),
+                          label: 'Change my details',
+                          sublabel: 'जानकारी बदलें',
+                          kind: KButtonKind.ghost,
+                          icon: LucideIcons.pencil,
+                          onPressed: widget.onEdit,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    KReveal(
+                      index: 8,
+                      child: KButton(
+                        key: const ValueKey('logout-button'),
+                        label: 'Log out',
+                        sublabel: 'लॉग आउट',
+                        kind: KButtonKind.ghost,
+                        icon: LucideIcons.logOut,
+                        loading: _loggingOut,
+                        onPressed: _logout,
+                      ),
                     ),
-                  )
-                else
-                  KReveal(
-                    index: 6,
-                    child: KButton(
-                      key: const ValueKey('check-button'),
-                      label: _checking ? 'Checking…' : 'Check status',
-                      sublabel: 'स्थिति देखें',
-                      icon: LucideIcons.refreshCw,
-                      large: true,
-                      loading: _checking,
-                      onPressed: () => _check(),
-                    ),
-                  ),
-                if (_checkedOnce && !_checking && pending)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Text('Still waiting. We will update this screen by itself.  ·  अभी इंतज़ार है। यह स्क्रीन अपने आप बदल जाएगी।',
-                        key: const ValueKey('still-waiting'), style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
-                  ),
-                if (pending) ...[
-                  const SizedBox(height: 12),
-                  KReveal(
-                    index: 7,
-                    child: KButton(
-                      key: const ValueKey('edit-button'),
-                      label: 'Change my details',
-                      sublabel: 'जानकारी बदलें',
-                      kind: KButtonKind.ghost,
-                      icon: LucideIcons.pencil,
-                      onPressed: widget.onEdit,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 12),
-                KReveal(
-                  index: 8,
-                  child: KButton(
-                    key: const ValueKey('logout-button'),
-                    label: 'Log out',
-                    sublabel: 'लॉग आउट',
-                    kind: KButtonKind.ghost,
-                    icon: LucideIcons.logOut,
-                    loading: _loggingOut,
-                    onPressed: _logout,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                Text('Need help? Email ${BrandConfig.name} support.  ·  मदद चाहिए? ${BrandConfig.name} सपोर्ट को ईमेल करें।',
-                    style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
-                const SizedBox(height: 4),
-                const SupportEmailLink(key: ValueKey('status-support-email')),
-              ]),
+                    const SizedBox(height: 18),
+                    Text(
+                        'Need help? Email ${BrandConfig.name} support.  ·  मदद चाहिए? ${BrandConfig.name} सपोर्ट को ईमेल करें।',
+                        style: KraveoType.bodySm
+                            .copyWith(color: k.inkMuted, fontSize: 14)),
+                    const SizedBox(height: 4),
+                    const SupportEmailLink(
+                        key: ValueKey('status-support-email')),
+                  ]),
             ),
           ),
         ),
@@ -290,7 +357,11 @@ class _ApplicationStatusScreenState extends State<ApplicationStatusScreen> with 
 }
 
 class _Row extends StatelessWidget {
-  const _Row({required this.icon, required this.label, required this.value, this.last = false});
+  const _Row(
+      {required this.icon,
+      required this.label,
+      required this.value,
+      this.last = false});
 
   final IconData icon;
   final String label;
@@ -306,10 +377,14 @@ class _Row extends StatelessWidget {
         Icon(icon, size: 22, color: k.inkMuted),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: KraveoType.label.copyWith(color: k.inkMuted, fontSize: 12)),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label,
+                style:
+                    KraveoType.label.copyWith(color: k.inkMuted, fontSize: 12)),
             const SizedBox(height: 2),
-            Text(value, style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 17)),
+            Text(value,
+                style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 17)),
           ]),
         ),
       ]),

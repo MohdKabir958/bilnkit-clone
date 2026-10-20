@@ -47,7 +47,10 @@ class _StockManagerScreenState extends State<StockManagerScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('Not saved. ${text.both}'), backgroundColor: kDangerDeep, duration: const Duration(seconds: 4)));
+      ..showSnackBar(SnackBar(
+          content: Text('Not saved. ${text.both}'),
+          backgroundColor: kDangerDeep,
+          duration: const Duration(seconds: 4)));
   }
 
   void _openAddDishModal() {
@@ -56,13 +59,21 @@ class _StockManagerScreenState extends State<StockManagerScreen> {
       builder: (sheetContext) {
         return AddDishModal(
           loadCategories: _c.loadDishCategories,
-          onSubmit: (name, category, price, inStock, {bool isVeg = true}) async {
-            final problem = await _c.addDish(name: name, category: category, price: price, inStock: inStock, isVeg: isVeg);
+          onSubmit: (name, category, price, inStock,
+              {bool isVeg = true}) async {
+            final problem = await _c.addDish(
+                name: name,
+                category: category,
+                price: price,
+                inStock: inStock,
+                isVeg: isVeg);
             if (problem == null && mounted) {
               final pending = _c.lastAdded?.status == DishStatus.pending;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(pending ? '$name: Sent to ${BrandConfig.name} for approval  ·  मंज़ूरी के लिए भेजा' : '$name added to menu!  ·  मेनू में जुड़ गया'),
+                  content: Text(pending
+                      ? '$name: Sent to ${BrandConfig.name} for approval  ·  मंज़ूरी के लिए भेजा'
+                      : '$name added to catalog!  ·  मेनू में जुड़ गया'),
                   duration: const Duration(seconds: 4),
                 ),
               );
@@ -76,9 +87,20 @@ class _StockManagerScreenState extends State<StockManagerScreen> {
 
   @override
   Widget build(BuildContext context) => Column(children: [
-    Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), child: FilledButton.icon(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductInventoryScreen(vendorId: _c.vendorId))), icon: const Icon(Icons.inventory_2_outlined), label: const Text('Products and inventory'))),
-    Expanded(child: ListenableBuilder(listenable: _c, builder: (context, _) => _build(context))),
-  ]);
+        Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: FilledButton.icon(
+                onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            ProductInventoryScreen(vendorId: _c.vendorId))),
+                icon: const Icon(Icons.inventory_2_outlined),
+                label: const Text('Products and inventory'))),
+        Expanded(
+            child: ListenableBuilder(
+                listenable: _c, builder: (context, _) => _build(context))),
+      ]);
 
   Widget _build(BuildContext context) {
     final k = context.k;
@@ -91,9 +113,14 @@ class _StockManagerScreenState extends State<StockManagerScreen> {
             : VScrollCenter(
                 child: KEmptyState(
                   icon: LucideIcons.wifiOff,
-                  title: "Can't load your menu",
+                  title: "Can't load your catalog",
                   message: failureText(_c.loadFailure!).both,
-                  action: KButton(label: 'Retry', sublabel: 'फिर कोशिश करें', icon: LucideIcons.rotateCcw, large: true, onPressed: _c.load),
+                  action: KButton(
+                      label: 'Retry',
+                      sublabel: 'फिर कोशिश करें',
+                      icon: LucideIcons.rotateCcw,
+                      large: true,
+                      onPressed: _c.load),
                 ),
               ),
       );
@@ -106,12 +133,17 @@ class _StockManagerScreenState extends State<StockManagerScreen> {
     final waitingCount = _c.waitingCount;
     final rejectedCount = _c.rejectedCount;
     final liveCount = dishes.where((d) => d.isLive).length;
-    final categories = ['All', ...{for (final d in dishes) d.category}];
+    final categories = [
+      'All',
+      ...{for (final d in dishes) d.category}
+    ];
     if (!categories.contains(_selectedCategory)) _selectedCategory = 'All';
 
     final filteredDishes = dishes.where((dish) {
-      final matchesCategory = _selectedCategory == 'All' || dish.category == _selectedCategory;
-      final matchesSearch = _searchQuery.isEmpty || dish.name.toLowerCase().contains(_searchQuery.toLowerCase());
+      final matchesCategory =
+          _selectedCategory == 'All' || dish.category == _selectedCategory;
+      final matchesSearch = _searchQuery.isEmpty ||
+          dish.name.toLowerCase().contains(_searchQuery.toLowerCase());
       final matchesStock = switch (_stockFilter) {
         _StockFilter.all => true,
         _StockFilter.inStock => dish.isLive && dish.inStock,
@@ -127,120 +159,141 @@ class _StockManagerScreenState extends State<StockManagerScreen> {
         child: RefreshIndicator(
           onRefresh: _c.load,
           child: ListView(
-          padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 32),
-          children: [
-            // Tap a tile to show only that group
-            Row(children: [
-              Expanded(
-                child: _CountTile(
-                  count: totalDishes,
-                  label: 'All',
-                  hindi: 'सभी',
-                  color: k.brand,
-                  selected: _stockFilter == _StockFilter.all,
-                  onTap: () => setState(() => _stockFilter = _StockFilter.all),
+            padding:
+                const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 32),
+            children: [
+              // Tap a tile to show only that group
+              Row(children: [
+                Expanded(
+                  child: _CountTile(
+                    count: totalDishes,
+                    label: 'All',
+                    hindi: 'सभी',
+                    color: k.brand,
+                    selected: _stockFilter == _StockFilter.all,
+                    onTap: () =>
+                        setState(() => _stockFilter = _StockFilter.all),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _CountTile(
-                  count: inStockCount,
-                  label: 'In stock',
-                  hindi: 'उपलब्ध',
-                  color: k.brand,
-                  selected: _stockFilter == _StockFilter.inStock,
-                  onTap: () => setState(() => _stockFilter = _stockFilter == _StockFilter.inStock ? _StockFilter.all : _StockFilter.inStock),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _CountTile(
+                    count: inStockCount,
+                    label: 'In stock',
+                    hindi: 'उपलब्ध',
+                    color: k.brand,
+                    selected: _stockFilter == _StockFilter.inStock,
+                    onTap: () => setState(() => _stockFilter =
+                        _stockFilter == _StockFilter.inStock
+                            ? _StockFilter.all
+                            : _StockFilter.inStock),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _CountTile(
-                  count: soldOutCount,
-                  label: 'Sold out',
-                  hindi: 'खत्म',
-                  color: kDangerDeep,
-                  selected: _stockFilter == _StockFilter.soldOut,
-                  onTap: () => setState(() => _stockFilter = _stockFilter == _StockFilter.soldOut ? _StockFilter.all : _StockFilter.soldOut),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _CountTile(
+                    count: soldOutCount,
+                    label: 'Sold out',
+                    hindi: 'खत्म',
+                    color: kDangerDeep,
+                    selected: _stockFilter == _StockFilter.soldOut,
+                    onTap: () => setState(() => _stockFilter =
+                        _stockFilter == _StockFilter.soldOut
+                            ? _StockFilter.all
+                            : _StockFilter.soldOut),
+                  ),
                 ),
-              ),
-            ]),
-            if (waitingCount > 0 || rejectedCount > 0) ...[
+              ]),
+              if (waitingCount > 0 || rejectedCount > 0) ...[
+                const SizedBox(height: 12),
+                _ApprovalBanner(
+                  waiting: waitingCount,
+                  rejected: rejectedCount,
+                  noLiveDish: liveCount == 0,
+                  selected: _stockFilter == _StockFilter.needsAttention,
+                  onTap: () => setState(() => _stockFilter =
+                      _stockFilter == _StockFilter.needsAttention
+                          ? _StockFilter.all
+                          : _StockFilter.needsAttention),
+                ),
+              ],
+              const SizedBox(height: 14),
+
+              Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                Expanded(
+                  child: TextField(
+                    onChanged: (val) => setState(() => _searchQuery = val),
+                    style:
+                        KraveoType.titleMd.copyWith(color: k.ink, fontSize: 18),
+                    decoration: InputDecoration(
+                      hintText: 'Search product · खोजें',
+                      prefixIcon:
+                          Icon(LucideIcons.search, size: 22, color: k.inkFaint),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                _AddDishButton(onTap: _openAddDishModal),
+              ]),
               const SizedBox(height: 12),
-              _ApprovalBanner(
-                waiting: waitingCount,
-                rejected: rejectedCount,
-                noLiveDish: liveCount == 0,
-                selected: _stockFilter == _StockFilter.needsAttention,
-                onTap: () => setState(() => _stockFilter = _stockFilter == _StockFilter.needsAttention ? _StockFilter.all : _StockFilter.needsAttention),
-              ),
-            ],
-            const SizedBox(height: 14),
 
-            Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-              Expanded(
-                child: TextField(
-                  onChanged: (val) => setState(() => _searchQuery = val),
-                  style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 18),
-                  decoration: InputDecoration(
-                    hintText: 'Search dish · खोजें',
-                    prefixIcon: Icon(LucideIcons.search, size: 22, color: k.inkFaint),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              _AddDishButton(onTap: _openAddDishModal),
-            ]),
-            const SizedBox(height: 12),
-
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              child: Row(
-                children: [
-                  for (final cat in categories) ...[
-                    VChoiceChip(
-                      label: cat,
-                      sublabel: hindiCategory(cat).isEmpty ? null : hindiCategory(cat),
-                      selected: _selectedCategory == cat,
-                      onTap: () => setState(() => _selectedCategory = cat),
-                    ),
-                    const SizedBox(width: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                child: Row(
+                  children: [
+                    for (final cat in categories) ...[
+                      VChoiceChip(
+                        label: cat,
+                        sublabel: hindiCategory(cat).isEmpty
+                            ? null
+                            : hindiCategory(cat),
+                        selected: _selectedCategory == cat,
+                        onTap: () => setState(() => _selectedCategory = cat),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                   ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-
-            if (filteredDishes.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: KEmptyState(
-                  icon: LucideIcons.utensils,
-                  title: dishes.isEmpty ? 'Your menu is empty' : (_stockFilter == _StockFilter.needsAttention ? 'Nothing waiting for approval' : 'No dishes found'),
-                  message: dishes.isEmpty
-                      ? 'Tap the yellow + button to add your first dish. ${BrandConfig.name} checks every new dish, then customers can see it.\nपहला व्यंजन जोड़ने के लिए पीला + दबाएं। ${BrandConfig.name} जाँचेगा, फिर ग्राहकों को दिखेगा।'
-                      : (_stockFilter == _StockFilter.needsAttention
-                          ? 'All your dishes are live.\nआपके सभी व्यंजन चालू हैं।'
-                          : 'Try another search, or tap the yellow + button.\nदूसरा नाम खोजें या पीला + दबाएं।'),
                 ),
-              )
-            else
-              for (var i = 0; i < filteredDishes.length; i++)
+              ),
+              const SizedBox(height: 18),
+
+              if (filteredDishes.isEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: KReveal(
-                    key: ValueKey('dish-${filteredDishes[i].id}'),
-                    index: i,
-                    child: StockCard(
-                      dish: filteredDishes[i],
-                      onToggleStock: () => _c.toggleStock(filteredDishes[i]),
-                      onUpdatePrice: (newPrice) => _c.changePrice(filteredDishes[i], newPrice),
-                      onResubmit: (price) => _c.resubmit(filteredDishes[i], price),
+                  padding: const EdgeInsets.only(top: 12),
+                  child: KEmptyState(
+                    icon: LucideIcons.utensils,
+                    title: dishes.isEmpty
+                        ? 'Your catalog is empty'
+                        : (_stockFilter == _StockFilter.needsAttention
+                            ? 'Nothing waiting for approval'
+                            : 'No products found'),
+                    message: dishes.isEmpty
+                        ? 'Tap the yellow + button to add your first product. ${BrandConfig.name} checks every new product, then customers can see it.\nपहला व्यंजन जोड़ने के लिए पीला + दबाएं। ${BrandConfig.name} जाँचेगा, फिर ग्राहकों को दिखेगा।'
+                        : (_stockFilter == _StockFilter.needsAttention
+                            ? 'All your products are live.\nआपके सभी व्यंजन चालू हैं।'
+                            : 'Try another search, or tap the yellow + button.\nदूसरा नाम खोजें या पीला + दबाएं।'),
+                  ),
+                )
+              else
+                for (var i = 0; i < filteredDishes.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: KReveal(
+                      key: ValueKey('dish-${filteredDishes[i].id}'),
+                      index: i,
+                      child: StockCard(
+                        dish: filteredDishes[i],
+                        onToggleStock: () => _c.toggleStock(filteredDishes[i]),
+                        onUpdatePrice: (newPrice) =>
+                            _c.changePrice(filteredDishes[i], newPrice),
+                        onResubmit: (price) =>
+                            _c.resubmit(filteredDishes[i], price),
+                      ),
                     ),
                   ),
-                ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
@@ -249,7 +302,12 @@ class _StockManagerScreenState extends State<StockManagerScreen> {
 
 /// "2 waiting for approval · 1 rejected": tap to show only those dishes.
 class _ApprovalBanner extends StatelessWidget {
-  const _ApprovalBanner({required this.waiting, required this.rejected, required this.noLiveDish, required this.selected, required this.onTap});
+  const _ApprovalBanner(
+      {required this.waiting,
+      required this.rejected,
+      required this.noLiveDish,
+      required this.selected,
+      required this.onTap});
   final int waiting;
   final int rejected;
   final bool noLiveDish;
@@ -277,23 +335,34 @@ class _ApprovalBanner extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Color.alphaBlend(KraveoPalette.warning.withValues(alpha: selected ? 0.26 : 0.14), k.surface),
+            color: Color.alphaBlend(
+                KraveoPalette.warning.withValues(alpha: selected ? 0.26 : 0.14),
+                k.surface),
             borderRadius: BorderRadius.circular(KRadius.lg),
-            border: Border.all(color: selected ? KraveoPalette.warning : Colors.transparent, width: 1.5),
+            border: Border.all(
+                color: selected ? KraveoPalette.warning : Colors.transparent,
+                width: 1.5),
           ),
           child: Row(children: [
             Icon(LucideIcons.clock, size: 24, color: k.ink),
             const SizedBox(width: 10),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(headline, style: KraveoType.titleMd.copyWith(color: k.ink, fontWeight: FontWeight.w800, fontSize: 16)),
-                Text(
-                  noLiveDish
-                      ? 'Customers will see your menu once ${BrandConfig.name} approves a dish.\nजब ${BrandConfig.name} एक व्यंजन मंज़ूर करेगा, तब ग्राहकों को मेनू दिखेगा।'
-                      : 'Tap to see them.  ·  देखने के लिए दबाएं',
-                  style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13.5),
-                ),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(headline,
+                        style: KraveoType.titleMd.copyWith(
+                            color: k.ink,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16)),
+                    Text(
+                      noLiveDish
+                          ? 'Customers will see your catalog once ${BrandConfig.name} approves a product.\nजब ${BrandConfig.name} एक व्यंजन मंज़ूर करेगा, तब ग्राहकों को मेनू दिखेगा।'
+                          : 'Tap to see them.  ·  देखने के लिए दबाएं',
+                      style: KraveoType.bodySm
+                          .copyWith(color: k.inkMuted, fontSize: 13.5),
+                    ),
+                  ]),
             ),
             Icon(LucideIcons.chevronRight, size: 22, color: k.inkFaint),
           ]),
@@ -304,7 +373,13 @@ class _ApprovalBanner extends StatelessWidget {
 }
 
 class _CountTile extends StatelessWidget {
-  const _CountTile({required this.count, required this.label, required this.hindi, required this.color, required this.selected, required this.onTap});
+  const _CountTile(
+      {required this.count,
+      required this.label,
+      required this.hindi,
+      required this.color,
+      required this.selected,
+      required this.onTap});
   final int count;
   final String label;
   final String hindi;
@@ -334,9 +409,28 @@ class _CountTile extends StatelessWidget {
             border: Border.all(color: selected ? color : k.line, width: 1.5),
           ),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            FittedBox(fit: BoxFit.scaleDown, child: Text('$count', style: KraveoType.displayMd.copyWith(fontSize: 32, height: 1.1, color: selected ? k.onBrand : color))),
-            FittedBox(fit: BoxFit.scaleDown, child: Text(label, maxLines: 1, style: KraveoType.titleMd.copyWith(fontSize: 14, fontWeight: FontWeight.w800, color: selected ? k.onBrand : k.ink))),
-            FittedBox(fit: BoxFit.scaleDown, child: Text(hindi, maxLines: 1, style: KraveoType.caption.copyWith(fontSize: 12, color: selected ? k.onBrand : k.inkMuted))),
+            FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text('$count',
+                    style: KraveoType.displayMd.copyWith(
+                        fontSize: 32,
+                        height: 1.1,
+                        color: selected ? k.onBrand : color))),
+            FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(label,
+                    maxLines: 1,
+                    style: KraveoType.titleMd.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: selected ? k.onBrand : k.ink))),
+            FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(hindi,
+                    maxLines: 1,
+                    style: KraveoType.caption.copyWith(
+                        fontSize: 12,
+                        color: selected ? k.onBrand : k.inkMuted))),
           ]),
         ),
       ),
@@ -354,7 +448,7 @@ class _AddDishButton extends StatelessWidget {
     final k = context.k;
     return Semantics(
       button: true,
-      label: 'Add a new dish',
+      label: 'Add a new product',
       excludeSemantics: true,
       onTap: onTap,
       child: KPressable(
@@ -365,11 +459,17 @@ class _AddDishButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: k.accent,
             borderRadius: BorderRadius.circular(KRadius.lg),
-            boxShadow: KShadow.glow(k.accent).map((s) => s.copyWith(color: s.color.withValues(alpha: 0.30))).toList(),
+            boxShadow: KShadow.glow(k.accent)
+                .map((s) => s.copyWith(color: s.color.withValues(alpha: 0.30)))
+                .toList(),
           ),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(LucideIcons.plus, size: 28, color: k.onAccent),
-            Text('Add', style: KraveoType.caption.copyWith(color: k.onAccent, fontSize: 13, fontWeight: FontWeight.w800)),
+            Text('Add',
+                style: KraveoType.caption.copyWith(
+                    color: k.onAccent,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800)),
           ]),
         ),
       ),

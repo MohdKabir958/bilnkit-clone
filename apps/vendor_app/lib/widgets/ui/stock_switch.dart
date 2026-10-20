@@ -6,7 +6,11 @@ import 'vendor_ui.dart';
 /// One big 64px pill: green "IN STOCK" with the knob on the right, red "SOLD OUT" with
 /// the knob on the left. A single tap anywhere flips it, with an animated slide + haptic.
 class VStockSwitch extends StatelessWidget {
-  const VStockSwitch({super.key, required this.inStock, required this.onToggle, this.dishName});
+  const VStockSwitch(
+      {super.key,
+      required this.inStock,
+      required this.onToggle,
+      this.dishName});
   final bool inStock;
   final VoidCallback onToggle;
   final String? dishName;
@@ -20,7 +24,8 @@ class VStockSwitch extends StatelessWidget {
       toggled: inStock,
       button: true,
       excludeSemantics: true,
-      label: '${dishName ?? 'Dish'}: ${inStock ? 'in stock' : 'sold out'}. Double tap to mark ${inStock ? 'sold out' : 'in stock'}',
+      label:
+          '${dishName ?? 'Product'}: ${inStock ? 'in stock' : 'sold out'}. Double tap to mark ${inStock ? 'sold out' : 'in stock'}',
       onTap: onToggle,
       child: KPressable(
         onTap: onToggle,
@@ -32,13 +37,17 @@ class VStockSwitch extends StatelessWidget {
           decoration: BoxDecoration(
             color: track,
             borderRadius: BorderRadius.circular(KRadius.pill),
-            boxShadow: KShadow.glow(track).map((s) => s.copyWith(color: s.color.withValues(alpha: 0.22))).toList(),
+            boxShadow: KShadow.glow(track)
+                .map((s) => s.copyWith(color: s.color.withValues(alpha: 0.22)))
+                .toList(),
           ),
           child: Stack(children: [
             AnimatedPadding(
               duration: KMotion.base,
               curve: KMotion.emphasized,
-              padding: EdgeInsets.only(left: inStock ? 20 : knob + pad * 2, right: inStock ? knob + pad * 2 : 20),
+              padding: EdgeInsets.only(
+                  left: inStock ? 20 : knob + pad * 2,
+                  right: inStock ? knob + pad * 2 : 20),
               child: Center(
                 child: AnimatedSwitcher(
                   duration: KMotion.fast,
@@ -49,8 +58,15 @@ class VStockSwitch extends StatelessWidget {
                       Text(inStock ? 'IN STOCK' : 'SOLD OUT',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: KraveoType.button.copyWith(color: k.onBrand, fontSize: 19, fontWeight: FontWeight.w800)),
-                      Text(inStock ? 'उपलब्ध' : 'खत्म', maxLines: 1, style: KraveoType.caption.copyWith(color: k.onBrand.withValues(alpha: 0.9), fontSize: 13)),
+                          style: KraveoType.button.copyWith(
+                              color: k.onBrand,
+                              fontSize: 19,
+                              fontWeight: FontWeight.w800)),
+                      Text(inStock ? 'उपलब्ध' : 'खत्म',
+                          maxLines: 1,
+                          style: KraveoType.caption.copyWith(
+                              color: k.onBrand.withValues(alpha: 0.9),
+                              fontSize: 13)),
                     ],
                   ),
                 ),
@@ -65,8 +81,10 @@ class VStockSwitch extends StatelessWidget {
                 child: Container(
                   width: knob,
                   height: knob,
-                  decoration: BoxDecoration(color: k.onBrand, shape: BoxShape.circle),
-                  child: Icon(inStock ? LucideIcons.check : LucideIcons.x, size: 28, color: track),
+                  decoration:
+                      BoxDecoration(color: k.onBrand, shape: BoxShape.circle),
+                  child: Icon(inStock ? LucideIcons.check : LucideIcons.x,
+                      size: 28, color: track),
                 ),
               ),
             ),

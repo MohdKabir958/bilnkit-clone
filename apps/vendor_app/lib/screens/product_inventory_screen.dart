@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:kraveo_ui/kraveo_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/product_api.dart';
 
@@ -17,6 +19,8 @@ class _ProductInventoryScreenState extends State<ProductInventoryScreen> {
   String? cursor, error;
   bool busy = false;
   int epoch = 0;
+  Timer? debounce;
+  String filter = 'All';
   @override
   void initState() {
     super.initState();
@@ -26,6 +30,7 @@ class _ProductInventoryScreenState extends State<ProductInventoryScreen> {
   @override
   void dispose() {
     epoch++;
+    debounce?.cancel();
     search.dispose();
     super.dispose();
   }
@@ -128,7 +133,17 @@ class _ProductInventoryScreenState extends State<ProductInventoryScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    final k = context.k;
+    final visible = rows
+        .where((row) => switch (filter) {
+              'Low stock' => row['lowStock'] == true,
+              'Out of stock' => row['stockQty'] == 0,
+              'Pending' => row['approvalStatus'] == 'PENDING',
+              _ => true,
+            })
+        .toList();
+    return Scaffold(
       appBar: AppBar(title: const Text('Products and inventory')),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: busy ? null : () => edit(),
@@ -136,68 +151,279 @@ class _ProductInventoryScreenState extends State<ProductInventoryScreen> {
           icon: const Icon(Icons.add)),
       body: RefreshIndicator(
           onRefresh: load,
-          child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-              children: [
-                const Text(
-                    'Each SKU is one sellable pack or variant. Use the same product group for related packs. Product edits need admin approval; stock adjustments are saved immediately.'),
-                TextField(
-                    controller: search,
-                    decoration: InputDecoration(
-                        labelText: 'Search products or SKU',
-                        suffixIcon: IconButton(
-                            onPressed: busy ? null : load,
-                            icon: const Icon(Icons.search))),
-                    onSubmitted: (_) => load()),
-                if (error != null)
-                  Text(error!, style: const TextStyle(color: Colors.red)),
-                if (busy) const LinearProgressIndicator(),
-                if (!busy && rows.isEmpty)
-                  const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text(
-                          'No products found. Add a product or change your search.')),
-                for (final row in rows)
-                  Card(
-                      child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                    '${row['name']} · ${row['packSize']} ${row['unit']}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium),
-                                Text(
-                                    'SKU ${row['sku'] ?? 'needs setup'} · ${row['approvalStatus']}'),
-                                if (row['rejectionReason'] != null)
-                                  Text('${row['rejectionReason']}',
-                                      style:
-                                          const TextStyle(color: Colors.red)),
-                                Text(
-                                    '₹${((row['pricePaise'] as num) / 100).toStringAsFixed(2)} · Available ${row['stockQty']} packs${row['lowStock'] == true ? ' · Low stock' : ''}'),
-                                Wrap(children: [
-                                  TextButton(
-                                      onPressed: busy ? null : () => edit(row),
-                                      child: const Text('Edit / variants')),
-                                  TextButton(
-                                      onPressed: busy ? null : () => stock(row),
-                                      child: const Text('Adjust stock')),
-                                  TextButton(
-                                      onPressed: () => history(row),
-                                      child: const Text('History')),
-                                  TextButton(
-                                      onPressed:
-                                          busy ? null : () => archive(row),
-                                      child: const Text('Archive'))
-                                ]),
-                              ]))),
+          child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                    child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Keep your shelves ready',
+                                  style: KraveoType.headlineSm),
+                              const SizedBox(height: 6),
+                              Text(
+                                  'Manage packs, pricing and stock. Product edits go for approval; stock updates apply immediately.',
+                                  style: KraveoType.bodySm
+                                      .copyWith(color: k.inkMuted)),
+                              const SizedBox(height: 16),
+                              Wrap(spacing: 8, runSpacing: 8, children: [
+                                _InventoryStat(
+                                    label: 'Loaded products',
+                                    value: rows.length),
+                                _InventoryStat(
+                                    label: 'Low stock',
+                                    value: rows
+                                        .where((p) => p['lowStock'] == true)
+                                        .length),
+                                _InventoryStat(
+                                    label: 'Pending approval',
+                                    value: rows
+                                        .where((p) =>
+                                            p['approvalStatus'] == 'PENDING')
+                                        .length),
+                              ]),
+                              const SizedBox(height: 16),
+                              TextField(
+                                  controller: search,
+                                  decoration: InputDecoration(
+                                      labelText: 'Search products or SKU',
+                                      prefixIcon: const Icon(Icons.search),
+                                      suffixIcon: IconButton(
+                                          tooltip: 'Search inventory',
+                                          onPressed: busy ? null : load,
+                                          icon:
+                                              const Icon(Icons.arrow_forward))),
+                                  onChanged: (_) {
+                                    debounce?.cancel();
+                                    debounce = Timer(
+                                        const Duration(milliseconds: 350), () {
+                                      if (mounted) load();
+                                    });
+                                  },
+                                  onSubmitted: (_) {
+                                    debounce?.cancel();
+                                    load();
+                                  }),
+                              const SizedBox(height: 12),
+                              Wrap(spacing: 8, runSpacing: 8, children: [
+                                for (final label in [
+                                  'All',
+                                  'Low stock',
+                                  'Out of stock',
+                                  'Pending'
+                                ])
+                                  KChoiceChip(
+                                      label: label,
+                                      selected: filter == label,
+                                      onTap: () =>
+                                          setState(() => filter = label))
+                              ]),
+                              if (error != null) ...[
+                                const SizedBox(height: 12),
+                                Text(error!,
+                                    style: KraveoType.bodySm
+                                        .copyWith(color: k.error)),
+                                TextButton(
+                                    onPressed: busy ? null : load,
+                                    child: const Text('Try again'))
+                              ],
+                              if (busy)
+                                const Padding(
+                                    padding: EdgeInsets.only(top: 12),
+                                    child: LinearProgressIndicator()),
+                              if (cursor != null)
+                                Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: Text(
+                                        'Counts and filters cover loaded products. Load more to include the next page.',
+                                        style: KraveoType.caption
+                                            .copyWith(color: k.inkMuted))),
+                            ]))),
+                if (!busy && visible.isEmpty)
+                  const SliverToBoxAdapter(
+                      child: KEmptyState(
+                          icon: Icons.inventory_2_outlined,
+                          title: 'No products found',
+                          message:
+                              'Add a product or change your search and filters.')),
+                SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverList.builder(
+                        itemCount: visible.length,
+                        itemBuilder: (context, index) {
+                          final row = visible[index];
+                          final stockQty = row['stockQty'] as num? ?? 0;
+                          final images = row['imageUrls'] as List? ?? [];
+                          return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: KCard(
+                                  elevated: false,
+                                  padding: const EdgeInsets.all(14),
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              SizedBox(
+                                                  width: 64,
+                                                  height: 76,
+                                                  child: KProductMedia(
+                                                      url: images.isEmpty
+                                                          ? ''
+                                                          : '${images.first}',
+                                                      label: '${row['name']}')),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                  child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                    Text(
+                                                        '${row['name']} · ${row['packSize']} ${row['unit']}',
+                                                        style:
+                                                            KraveoType.titleMd),
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                        'SKU ${row['sku'] ?? 'needs setup'}',
+                                                        style: KraveoType
+                                                            .caption
+                                                            .copyWith(
+                                                                color: k
+                                                                    .inkMuted)),
+                                                    Text(
+                                                        '₹${((row['pricePaise'] as num) / 100).toStringAsFixed(2)}',
+                                                        style: KraveoType
+                                                            .titleMd
+                                                            .copyWith(
+                                                                color: k.ink)),
+                                                  ])),
+                                              PopupMenuButton<String>(
+                                                  tooltip: 'Product actions',
+                                                  onSelected: (action) {
+                                                    if (action ==
+                                                        'Edit / variants') {
+                                                      edit(row);
+                                                    }
+                                                    if (action == 'History') {
+                                                      history(row);
+                                                    }
+                                                    if (action == 'Archive') {
+                                                      archive(row);
+                                                    }
+                                                  },
+                                                  itemBuilder: (_) => [
+                                                        for (final action in [
+                                                          'Edit / variants',
+                                                          'History',
+                                                          'Archive'
+                                                        ])
+                                                          PopupMenuItem(
+                                                              value: action,
+                                                              enabled: !busy,
+                                                              child:
+                                                                  Text(action))
+                                                      ]),
+                                            ]),
+                                        const SizedBox(height: 12),
+                                        Wrap(
+                                            spacing: 8,
+                                            runSpacing: 8,
+                                            children: [
+                                              _InventoryBadge(
+                                                  label:
+                                                      '${row['approvalStatus'] ?? 'Unknown approval'}',
+                                                  color:
+                                                      row['approvalStatus'] ==
+                                                              'APPROVED'
+                                                          ? k.success
+                                                          : k.warning),
+                                              _InventoryBadge(
+                                                  label: stockQty == 0
+                                                      ? 'Out of stock'
+                                                      : '${stockQty.toInt()} packs${row['lowStock'] == true ? ' · Low stock' : ' available'}',
+                                                  color: stockQty == 0
+                                                      ? k.error
+                                                      : row['lowStock'] == true
+                                                          ? k.warning
+                                                          : k.inkMuted),
+                                            ]),
+                                        if (row['rejectionReason'] != null)
+                                          Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 8),
+                                              child: Text(
+                                                  '${row['rejectionReason']}',
+                                                  style: KraveoType.bodySm
+                                                      .copyWith(
+                                                          color: k.error))),
+                                        const SizedBox(height: 8),
+                                        Wrap(spacing: 8, children: [
+                                          TextButton.icon(
+                                              onPressed:
+                                                  busy ? null : () => edit(row),
+                                              icon: const Icon(
+                                                  Icons.edit_outlined,
+                                                  size: 18),
+                                              label: const Text(
+                                                  'Edit / variants')),
+                                          TextButton.icon(
+                                              onPressed: busy
+                                                  ? null
+                                                  : () => stock(row),
+                                              icon: const Icon(
+                                                  Icons.inventory_2_outlined,
+                                                  size: 18),
+                                              label: const Text('Adjust stock'))
+                                        ]),
+                                      ])));
+                        })),
                 if (cursor != null)
-                  TextButton(
-                      onPressed: busy ? null : () => load(more: true),
-                      child: const Text('Load more products')),
-              ])));
+                  SliverToBoxAdapter(
+                      child: TextButton(
+                          onPressed: busy ? null : () => load(more: true),
+                          child: const Text('Load more products'))),
+                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+              ])),
+    );
+  }
+}
+
+class _InventoryStat extends StatelessWidget {
+  const _InventoryStat({required this.label, required this.value});
+  final String label;
+  final int value;
+  @override
+  Widget build(BuildContext context) => Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+          color: context.k.surface,
+          border: Border.all(color: context.k.line),
+          borderRadius: KRadius.card),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('$value', style: KraveoType.titleLg),
+        Text(label,
+            style: KraveoType.caption.copyWith(color: context.k.inkMuted))
+      ]));
+}
+
+class _InventoryBadge extends StatelessWidget {
+  const _InventoryBadge({required this.label, required this.color});
+  final String label;
+  final Color color;
+  @override
+  Widget build(BuildContext context) => Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+          color: color.withValues(alpha: .08),
+          borderRadius: BorderRadius.circular(6)),
+      child: Text(label.replaceAll('_', ' '),
+          style: KraveoType.caption.copyWith(color: color)));
 }
 
 class _StockAdjustmentDialog extends StatefulWidget {
@@ -465,7 +691,13 @@ class _ProductEditorState extends State<ProductEditor> {
               : 'Edit grocery product')),
       body: Form(
           key: form,
-          child: ListView(padding: const EdgeInsets.all(16), children: [
+          child: ListView(padding: const EdgeInsets.all(20), children: [
+            Text('Product details', style: KraveoType.headlineSm),
+            const SizedBox(height: 8),
+            Text(
+                'Create one sellable pack per SKU. Related packs share a product group.',
+                style: KraveoType.bodySm.copyWith(color: context.k.inkMuted)),
+            const SizedBox(height: 16),
             if (error != null)
               Text(error!, style: const TextStyle(color: Colors.red)),
             OutlinedButton.icon(
@@ -485,27 +717,51 @@ class _ProductEditorState extends State<ProductEditor> {
               'tax': 'Tax rate (%)',
               'imageUrls': 'Owned HTTPS image URLs (one per line)',
               'threshold': 'Low stock threshold'
-            }.entries)
-              TextFormField(
-                  controller: fields[entry.key],
-                  enabled: !saving,
-                  maxLines:
-                      entry.key == 'description' || entry.key == 'imageUrls'
-                          ? 3
-                          : 1,
-                  decoration: InputDecoration(labelText: entry.value),
-                  validator: (v) => [
-                            'name',
-                            'sku',
-                            'productKey',
-                            'packSize',
-                            'price',
-                            'tax',
-                            'threshold'
-                          ].contains(entry.key) &&
-                          (v ?? '').trim().isEmpty
-                      ? 'Required'
-                      : null),
+            }.entries) ...[
+              if (entry.key == 'price' ||
+                  entry.key == 'description' ||
+                  entry.key == 'barcode' ||
+                  entry.key == 'imageUrls')
+                Padding(
+                    padding: const EdgeInsets.only(top: 20, bottom: 12),
+                    child: Text(
+                        switch (entry.key) {
+                          'price' => 'Pricing',
+                          'description' => 'Product information',
+                          'barcode' => 'Tax and identifiers',
+                          _ => 'Photos and stock'
+                        },
+                        style: KraveoType.titleLg)),
+              Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: TextFormField(
+                      controller: fields[entry.key],
+                      enabled: !saving,
+                      maxLines:
+                          entry.key == 'description' || entry.key == 'imageUrls'
+                              ? 3
+                              : 1,
+                      keyboardType: ['price', 'mrp', 'tax'].contains(entry.key)
+                          ? const TextInputType.numberWithOptions(decimal: true)
+                          : ['threshold'].contains(entry.key)
+                              ? TextInputType.number
+                              : TextInputType.text,
+                      decoration: InputDecoration(
+                          labelText: entry.value, alignLabelWithHint: true),
+                      validator: (v) => [
+                                'name',
+                                'sku',
+                                'productKey',
+                                'packSize',
+                                'price',
+                                'tax',
+                                'threshold'
+                              ].contains(entry.key) &&
+                              (v ?? '').trim().isEmpty
+                          ? 'Required'
+                          : null)),
+            ],
+            const SizedBox(height: 8),
             DropdownButtonFormField<String>(
                 initialValue: unit,
                 items: [
@@ -515,6 +771,7 @@ class _ProductEditorState extends State<ProductEditor> {
                 onChanged: saving ? null : (v) => setState(() => unit = v!),
                 decoration:
                     const InputDecoration(labelText: 'Measurement unit')),
+            const SizedBox(height: 16),
             DropdownButtonFormField<String>(
                 initialValue: categories.any((c) => c['id'] == categoryId)
                     ? categoryId

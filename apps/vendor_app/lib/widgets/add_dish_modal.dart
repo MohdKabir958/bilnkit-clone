@@ -11,7 +11,9 @@ import 'ui/ui.dart';
 class AddDishModal extends StatefulWidget {
   /// Saves the dish on Grozo. Resolves to null on success (the sheet closes) or to what went wrong
   /// (the sheet stays open with the message, nothing typed is lost).
-  final Future<FailureText?> Function(String name, String category, double price, bool inStock, {bool isVeg}) onSubmit;
+  final Future<FailureText?> Function(
+      String name, String category, double price, bool inStock,
+      {bool isVeg}) onSubmit;
 
   /// Loads the ACTIVE dish categories in the admin's order (null / empty / throws = not available: the built-in
   /// six stay). Called when the sheet opens and again after the server refused a category. Without it the form
@@ -28,6 +30,7 @@ class _AddDishModalState extends State<AddDishModal> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
+
   /// The picked category name (sent as is), or null when the list changed under the cook and the pick is gone.
   String? _selectedCategory = DishCategory.defaultName;
 
@@ -71,7 +74,9 @@ class _AddDishModalState extends State<AddDishModal> {
       if (loaded == null || loaded.isEmpty) return;
       _categories = loaded;
       final current = _selectedCategory?.toLowerCase();
-      final same = current == null ? null : loaded.where((c) => c.name.toLowerCase() == current).firstOrNull;
+      final same = current == null
+          ? null
+          : loaded.where((c) => c.name.toLowerCase() == current).firstOrNull;
       if (same != null) {
         _selectedCategory = same.name;
       } else {
@@ -99,7 +104,9 @@ class _AddDishModalState extends State<AddDishModal> {
       _error = null;
       _categoryError = null;
     });
-    final problem = await widget.onSubmit(_nameController.text.trim(), category, double.parse(_priceController.text.trim()), true, isVeg: _isVeg);
+    final problem = await widget.onSubmit(_nameController.text.trim(), category,
+        double.parse(_priceController.text.trim()), true,
+        isVeg: _isVeg);
     if (!mounted) return;
     if (problem == null) {
       Navigator.pop(context);
@@ -116,8 +123,14 @@ class _AddDishModalState extends State<AddDishModal> {
   Widget _fieldLabel(KraveoTokens k, String en, String hi) => Padding(
         padding: const EdgeInsets.only(left: 4, bottom: 8),
         child: Text.rich(TextSpan(children: [
-          TextSpan(text: en, style: KraveoType.titleMd.copyWith(color: k.ink, fontWeight: FontWeight.w800)),
-          TextSpan(text: '   $hi', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
+          TextSpan(
+              text: en,
+              style: KraveoType.titleMd
+                  .copyWith(color: k.ink, fontWeight: FontWeight.w800)),
+          TextSpan(
+              text: '   $hi',
+              style:
+                  KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
         ])),
       );
 
@@ -125,7 +138,8 @@ class _AddDishModalState extends State<AddDishModal> {
   Widget build(BuildContext context) {
     final k = context.k;
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(KSpace.gutter, 8, KSpace.gutter, 20 + MediaQuery.viewInsetsOf(context).bottom),
+      padding: EdgeInsets.fromLTRB(KSpace.gutter, 8, KSpace.gutter,
+          20 + MediaQuery.viewInsetsOf(context).bottom),
       child: Form(
         key: _formKey,
         child: Column(
@@ -134,10 +148,15 @@ class _AddDishModalState extends State<AddDishModal> {
           children: [
             Row(children: [
               Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('Add a dish', style: KraveoType.headline.copyWith(color: k.ink)),
-                  Text('नया व्यंजन जोड़ें', style: KraveoType.titleMd.copyWith(color: k.inkMuted)),
-                ]),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Add a product',
+                          style: KraveoType.headline.copyWith(color: k.ink)),
+                      Text('नया व्यंजन जोड़ें',
+                          style:
+                              KraveoType.titleMd.copyWith(color: k.inkMuted)),
+                    ]),
               ),
               Semantics(
                 button: true,
@@ -148,15 +167,15 @@ class _AddDishModalState extends State<AddDishModal> {
                   child: Container(
                     width: 56,
                     height: 56,
-                    decoration: BoxDecoration(color: k.surfaceAlt, shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                        color: k.surfaceAlt, shape: BoxShape.circle),
                     child: Icon(LucideIcons.x, size: 26, color: k.ink),
                   ),
                 ),
               ),
             ]),
             const SizedBox(height: 18),
-
-            _fieldLabel(k, 'Dish name', 'नाम'),
+            _fieldLabel(k, 'Product name', 'नाम'),
             TextFormField(
               controller: _nameController,
               textCapitalization: TextCapitalization.words,
@@ -167,19 +186,22 @@ class _AddDishModalState extends State<AddDishModal> {
               ),
               validator: (val) {
                 if (val == null || val.trim().isEmpty) {
-                  return 'Please enter dish name';
+                  return 'Please enter product name';
                 }
                 return null;
               },
             ),
             const SizedBox(height: 18),
-
             Row(children: [
               Flexible(child: _fieldLabel(k, 'Category', 'प्रकार')),
               if (_loadingCategories)
                 const Padding(
                   padding: EdgeInsets.only(left: 8, bottom: 8),
-                  child: SizedBox(key: ValueKey('dish-categories-loading'), width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: SizedBox(
+                      key: ValueKey('dish-categories-loading'),
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2)),
                 ),
             ]),
             Wrap(spacing: 8, runSpacing: 8, children: [
@@ -202,11 +224,11 @@ class _AddDishModalState extends State<AddDishModal> {
                 child: Text(
                   '$_categoryError  ·  सूची में से प्रकार चुनें',
                   key: const ValueKey('add-dish-category-error'),
-                  style: KraveoType.titleMd.copyWith(color: kDangerDeep, fontSize: 15),
+                  style: KraveoType.titleMd
+                      .copyWith(color: kDangerDeep, fontSize: 15),
                 ),
               ),
             const SizedBox(height: 18),
-
             _fieldLabel(k, 'Veg or non-veg?', 'शाकाहारी या मांसाहारी?'),
             Row(children: [
               Expanded(
@@ -230,19 +252,21 @@ class _AddDishModalState extends State<AddDishModal> {
               ),
             ]),
             const SizedBox(height: 18),
-
             _fieldLabel(k, 'Your price', 'आपका दाम'),
             TextFormField(
               controller: _priceController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               style: KraveoType.displayMd.copyWith(color: k.ink, fontSize: 30),
               decoration: InputDecoration(
                 hintText: '180',
                 prefixIcon: Padding(
                   padding: const EdgeInsets.only(left: 18, right: 6),
-                  child: Icon(LucideIcons.indianRupee, size: 26, color: k.brand),
+                  child:
+                      Icon(LucideIcons.indianRupee, size: 26, color: k.brand),
                 ),
-                prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                prefixIconConstraints:
+                    const BoxConstraints(minWidth: 0, minHeight: 0),
               ),
               validator: (val) {
                 if (val == null || val.trim().isEmpty) {
@@ -260,34 +284,47 @@ class _AddDishModalState extends State<AddDishModal> {
               child: Text(
                 'The price you want to receive for one portion. ${BrandConfig.name} sets the price customers pay.\nएक प्लेट पर आपको जो दाम चाहिए। ग्राहक का दाम ${BrandConfig.name} तय करता है।',
                 key: const ValueKey('add-dish-price-help'),
-                style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13.5),
+                style: KraveoType.bodySm
+                    .copyWith(color: k.inkMuted, fontSize: 13.5),
               ),
             ),
             const SizedBox(height: 18),
-
             KCard(
               key: const ValueKey('add-dish-approval-note'),
-              color: Color.alphaBlend(KraveoPalette.warning.withValues(alpha: 0.14), k.surface),
+              color: Color.alphaBlend(
+                  KraveoPalette.warning.withValues(alpha: 0.14), k.surface),
               elevated: false,
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              child:
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Icon(LucideIcons.clock, size: 22, color: k.ink),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    '${BrandConfig.name} checks every new dish before customers can see it. You will see "Pending approval" until then.\nहर नया व्यंजन ${BrandConfig.name} जाँचेगा, फिर ग्राहकों को दिखेगा।',
-                    style: KraveoType.bodySm.copyWith(color: k.ink, fontSize: 14),
+                    '${BrandConfig.name} checks every new product before customers can see it. You will see "Pending approval" until then.\nहर नया व्यंजन ${BrandConfig.name} जाँचेगा, फिर ग्राहकों को दिखेगा।',
+                    style:
+                        KraveoType.bodySm.copyWith(color: k.ink, fontSize: 14),
                   ),
                 ),
               ]),
             ),
             const SizedBox(height: 24),
-
             if (_error != null) ...[
-              Text('Not saved: ${_error!.english}', key: const ValueKey('add-dish-error'), style: KraveoType.titleMd.copyWith(color: kDangerDeep, fontSize: 15)),
-              Text(_error!.hindi, style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
+              Text('Not saved: ${_error!.english}',
+                  key: const ValueKey('add-dish-error'),
+                  style: KraveoType.titleMd
+                      .copyWith(color: kDangerDeep, fontSize: 15)),
+              Text(_error!.hindi,
+                  style: KraveoType.bodySm
+                      .copyWith(color: k.inkMuted, fontSize: 14)),
               const SizedBox(height: 10),
             ],
-            KButton(label: 'Add to menu', sublabel: 'मेनू में जोड़ें', icon: LucideIcons.plus, large: true, loading: _saving, onPressed: _saving ? null : _submitForm),
+            KButton(
+                label: 'Add to catalog',
+                sublabel: 'मेनू में जोड़ें',
+                icon: LucideIcons.plus,
+                large: true,
+                loading: _saving,
+                onPressed: _saving ? null : _submitForm),
           ],
         ),
       ),

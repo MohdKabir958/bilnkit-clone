@@ -41,8 +41,10 @@ PartnerSession _with(PartnerApproval a, {String? reason}) => PartnerSession(
     );
 
 class FakeAuth implements PartnerAuthService {
-  SignupResult Function(PartnerSignupForm f) onSignUp = (_) => const SignupResult.success(token: 'jwt-new', session: _pending);
-  SignupResult Function(PartnerSignupForm f) onResubmit = (_) => const SignupResult.success(session: _pending);
+  SignupResult Function(PartnerSignupForm f) onSignUp =
+      (_) => const SignupResult.success(token: 'jwt-new', session: _pending);
+  SignupResult Function(PartnerSignupForm f) onResubmit =
+      (_) => const SignupResult.success(session: _pending);
   ProfileResult profile = const ProfileResult(ProfileOutcome.valid, _pending);
   final signUps = <PartnerSignupForm>[];
   final resubmits = <PartnerSignupForm>[];
@@ -50,7 +52,9 @@ class FakeAuth implements PartnerAuthService {
   final loggedOut = <String>[];
 
   @override
-  Future<LoginResult> login({required String phone, required String password}) async => const LoginResult.failure(LoginFailure.server);
+  Future<LoginResult> login(
+          {required String phone, required String password}) async =>
+      const LoginResult.failure(LoginFailure.server);
 
   @override
   Future<ProfileResult> fetchProfile(String token) async {
@@ -98,7 +102,10 @@ Future<void> _tapKey(WidgetTester tester, String key) async {
   await tester.pump(const Duration(milliseconds: 150));
 }
 
-Future<void> _fillSignup(WidgetTester tester, {String restaurant = 'Shiv Shakti Dhaba', String phone = '9811100001', String password = 'Passw0rd!x'}) async {
+Future<void> _fillSignup(WidgetTester tester,
+    {String restaurant = 'Shiv Shakti Dhaba',
+    String phone = '9811100001',
+    String password = 'Passw0rd!x'}) async {
   Future<void> type(String key, String text) async {
     final f = find.byKey(ValueKey(key));
     await tester.ensureVisible(f);
@@ -129,8 +136,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
-    for (final ch in const ['xyz.luan/audioplayers.global', 'xyz.luan/audioplayers']) {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel(ch), (call) async => null);
+    for (final ch in const [
+      'xyz.luan/audioplayers.global',
+      'xyz.luan/audioplayers'
+    ]) {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(MethodChannel(ch), (call) async => null);
     }
   });
 
@@ -141,32 +152,37 @@ void main() {
   });
 
   group('Create account', () {
-    testWidgets('login screen offers "Create account" and it opens the sign-up form', (tester) async {
+    testWidgets(
+        'login screen offers "Create account" and it opens the sign-up form',
+        (tester) async {
       await _pumpApp(tester, FakeAuth());
       expect(find.byType(LoginScreen), findsOneWidget);
       await _tapKey(tester, 'create-account-button');
       await tester.pump(const Duration(milliseconds: 600));
       expect(find.byType(SignupScreen), findsOneWidget);
-      expect(find.text('Create your restaurant account'), findsOneWidget);
+      expect(find.text('Create your store account'), findsOneWidget);
       await _unmount(tester);
     });
 
-    testWidgets('empty form shows every missing field and sends nothing', (tester) async {
+    testWidgets('empty form shows every missing field and sends nothing',
+        (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       await _tapKey(tester, 'create-account-button');
       await tester.pump(const Duration(milliseconds: 600));
       await _tapKey(tester, 'signup-button');
       expect(auth.signUps, isEmpty);
-      expect(find.textContaining('Enter the restaurant name'), findsOneWidget);
-      expect(find.textContaining('Tell us where the kitchen is'), findsOneWidget);
+      expect(find.textContaining('Enter the store name'), findsOneWidget);
+      expect(find.textContaining('Tell us where the store is'), findsOneWidget);
       expect(find.textContaining('Enter your name'), findsOneWidget);
       expect(find.textContaining('10-digit mobile number'), findsOneWidget);
       expect(find.textContaining('at least 8 characters'), findsOneWidget);
       await _unmount(tester);
     });
 
-    testWidgets('a bad FSSAI number and a short password are caught on the phone', (tester) async {
+    testWidgets(
+        'a bad FSSAI number and a short password are caught on the phone',
+        (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       await _tapKey(tester, 'create-account-button');
@@ -183,13 +199,16 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('a valid form creates the account and lands on "checking your details"', (tester) async {
+    testWidgets(
+        'a valid form creates the account and lands on "checking your details"',
+        (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       await _tapKey(tester, 'create-account-button');
       await tester.pump(const Duration(milliseconds: 600));
       await _fillSignup(tester);
-      await tester.ensureVisible(find.byKey(const ValueKey('category-Rolls & Wraps')));
+      await tester
+          .ensureVisible(find.byKey(const ValueKey('category-Rolls & Wraps')));
       await tester.tap(find.byKey(const ValueKey('category-Rolls & Wraps')));
       await tester.pump();
       await _tapKey(tester, 'signup-button');
@@ -210,8 +229,12 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('server says the number is taken -> the message sits under the phone field', (tester) async {
-      final auth = FakeAuth()..onSignUp = (_) => const SignupResult.failure(SignupFailure.phoneTaken, field: 'phone');
+    testWidgets(
+        'server says the number is taken -> the message sits under the phone field',
+        (tester) async {
+      final auth = FakeAuth()
+        ..onSignUp = (_) => const SignupResult.failure(SignupFailure.phoneTaken,
+            field: 'phone');
       await _pumpApp(tester, auth);
       await _tapKey(tester, 'create-account-button');
       await tester.pump(const Duration(milliseconds: 600));
@@ -219,12 +242,16 @@ void main() {
       await _tapKey(tester, 'signup-button');
       await _settle(tester);
       expect(find.byType(SignupScreen), findsOneWidget);
-      expect(find.textContaining('already registered in another Grozo app'), findsOneWidget);
+      expect(find.textContaining('already registered in another Grozo app'),
+          findsOneWidget);
       await _unmount(tester);
     });
 
-    testWidgets('offline and rate-limit problems are explained, and the form keeps what was typed', (tester) async {
-      final auth = FakeAuth()..onSignUp = (_) => const SignupResult.failure(SignupFailure.offline);
+    testWidgets(
+        'offline and rate-limit problems are explained, and the form keeps what was typed',
+        (tester) async {
+      final auth = FakeAuth()
+        ..onSignUp = (_) => const SignupResult.failure(SignupFailure.offline);
       await _pumpApp(tester, auth);
       await _tapKey(tester, 'create-account-button');
       await tester.pump(const Duration(milliseconds: 600));
@@ -235,14 +262,16 @@ void main() {
       expect(find.textContaining("Can't reach Grozo"), findsOneWidget);
       expect(find.text('Shiv Shakti Dhaba'), findsOneWidget);
 
-      auth.onSignUp = (_) => const SignupResult.failure(SignupFailure.rateLimited);
+      auth.onSignUp =
+          (_) => const SignupResult.failure(SignupFailure.rateLimited);
       await _tapKey(tester, 'signup-button');
       await _settle(tester);
       expect(find.textContaining('Too many tries'), findsOneWidget);
       await _unmount(tester);
     });
 
-    testWidgets('the form does not overflow on a small phone at 1.3x text', (tester) async {
+    testWidgets('the form does not overflow on a small phone at 1.3x text',
+        (tester) async {
       _smallPhone(tester);
       await _pumpApp(tester, FakeAuth());
       await _tapKey(tester, 'create-account-button');
@@ -262,7 +291,8 @@ void main() {
       });
     });
 
-    testWidgets('a pending restaurant never sees the order screens', (tester) async {
+    testWidgets('a pending restaurant never sees the order screens',
+        (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       expect(find.byType(ApplicationStatusScreen), findsOneWidget);
@@ -273,7 +303,9 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('"Check status" asks Grozo and, when still pending, says it will update by itself', (tester) async {
+    testWidgets(
+        '"Check status" asks Grozo and, when still pending, says it will update by itself',
+        (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       final before = auth.profileCalls;
@@ -284,12 +316,15 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('it re-checks by itself every 20 seconds and opens the app as soon as the admin approves', (tester) async {
+    testWidgets(
+        'it re-checks by itself every 20 seconds and opens the app as soon as the admin approves',
+        (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       expect(find.byType(ApplicationStatusScreen), findsOneWidget);
 
-      auth.profile = ProfileResult(ProfileOutcome.valid, _with(PartnerApproval.approved));
+      auth.profile =
+          ProfileResult(ProfileOutcome.valid, _with(PartnerApproval.approved));
       await tester.pump(const Duration(seconds: 21));
       await tester.pump(const Duration(milliseconds: 900));
       expect(find.byType(ApplicationStatusScreen), findsNothing);
@@ -297,8 +332,14 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('a rejected application shows the reason and an Update button that re-sends the details', (tester) async {
-      final auth = FakeAuth()..profile = ProfileResult(ProfileOutcome.valid, _with(PartnerApproval.rejected, reason: 'FSSAI number does not match'));
+    testWidgets(
+        'a rejected application shows the reason and an Update button that re-sends the details',
+        (tester) async {
+      final auth = FakeAuth()
+        ..profile = ProfileResult(
+            ProfileOutcome.valid,
+            _with(PartnerApproval.rejected,
+                reason: 'FSSAI number does not match'));
       await _pumpApp(tester, auth);
       expect(find.text('We could not approve this yet'), findsOneWidget);
       expect(find.text('FSSAI number does not match'), findsOneWidget);
@@ -306,16 +347,21 @@ void main() {
 
       await _tapKey(tester, 'edit-button');
       await tester.pump(const Duration(milliseconds: 1500)); // route transition
-      await tester.pump(const Duration(milliseconds: 1500)); // the form's staggered fade-in (starts one frame later)
+      await tester.pump(const Duration(
+          milliseconds:
+              1500)); // the form's staggered fade-in (starts one frame later)
       expect(find.text('Update your details'), findsOneWidget);
       // Phone and password are not asked again, and the old answers are prefilled.
       expect(find.byKey(const ValueKey('phone-field')), findsNothing);
       expect(find.byKey(const ValueKey('password-field')), findsNothing);
       expect(find.text('Shiv Shakti Dhaba'), findsOneWidget);
 
-      await tester.enterText(find.byKey(const ValueKey('address-field')), 'Gate 2 food court');
-      auth.onResubmit = (_) => SignupResult.success(session: _with(PartnerApproval.pending));
-      await tester.pump(const Duration(seconds: 3)); // let the form's staggered fade-in finish
+      await tester.enterText(
+          find.byKey(const ValueKey('address-field')), 'Gate 2 food court');
+      auth.onResubmit =
+          (_) => SignupResult.success(session: _with(PartnerApproval.pending));
+      await tester.pump(const Duration(
+          seconds: 3)); // let the form's staggered fade-in finish
       await tester.pump(const Duration(seconds: 3));
       await tester.ensureVisible(find.byKey(const ValueKey('signup-button')));
       await tester.pump(const Duration(seconds: 2));
@@ -330,8 +376,11 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('a suspended restaurant is told why and can only log out', (tester) async {
-      final auth = FakeAuth()..profile = ProfileResult(ProfileOutcome.valid, _with(PartnerApproval.suspended, reason: 'Customer complaints'));
+    testWidgets('a suspended restaurant is told why and can only log out',
+        (tester) async {
+      final auth = FakeAuth()
+        ..profile = ProfileResult(ProfileOutcome.valid,
+            _with(PartnerApproval.suspended, reason: 'Customer complaints'));
       await _pumpApp(tester, auth);
       expect(find.text('Your account is paused'), findsOneWidget);
       expect(find.text('Customer complaints'), findsOneWidget);
@@ -343,9 +392,14 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('the status screens fit a small phone at 1.3x text', (tester) async {
+    testWidgets('the status screens fit a small phone at 1.3x text',
+        (tester) async {
       _smallPhone(tester);
-      final auth = FakeAuth()..profile = ProfileResult(ProfileOutcome.valid, _with(PartnerApproval.rejected, reason: 'FSSAI number does not match the licence on file'));
+      final auth = FakeAuth()
+        ..profile = ProfileResult(
+            ProfileOutcome.valid,
+            _with(PartnerApproval.rejected,
+                reason: 'FSSAI number does not match the licence on file'));
       await _pumpApp(tester, auth);
       expect(tester.takeException(), isNull);
       await _unmount(tester);
@@ -353,7 +407,9 @@ void main() {
   });
 
   group('Suspended while the app is open', () {
-    test('a 403 PARTNER_NOT_APPROVED fires onNotApproved; a plain 403 or a 200 does not', () async {
+    test(
+        'a 403 PARTNER_NOT_APPROVED fires onNotApproved; a plain 403 or a 200 does not',
+        () async {
       var fired = 0;
       VendorApiService.onNotApproved = () => fired++;
       await VendorApiService.saveToken('jwt-abc');
@@ -363,10 +419,17 @@ void main() {
         await VendorApiService.updateOrderStatus('ord-1', 'PREPARING');
         expect(fired, 0);
         status = 403;
-        body = jsonEncode({'success': false, 'message': 'Forbidden. You do not own this vendor.'});
+        body = jsonEncode({
+          'success': false,
+          'message': 'Forbidden. You do not own this vendor.'
+        });
         await VendorApiService.toggleStoreStatus('ven-1', false);
         expect(fired, 0);
-        body = jsonEncode({'success': false, 'code': 'PARTNER_NOT_APPROVED', 'approvalStatus': 'SUSPENDED'});
+        body = jsonEncode({
+          'success': false,
+          'code': 'PARTNER_NOT_APPROVED',
+          'approvalStatus': 'SUSPENDED'
+        });
         final ok = await VendorApiService.toggleStoreStatus('ven-1', false);
         expect(ok, isFalse);
       }, () => MockClient((request) async => http.Response(body, status)));
@@ -374,17 +437,23 @@ void main() {
       VendorApiService.onNotApproved = null;
     });
 
-    testWidgets('an approved restaurant that gets suspended moves to the status screen, and again on app resume', (tester) async {
+    testWidgets(
+        'an approved restaurant that gets suspended moves to the status screen, and again on app resume',
+        (tester) async {
       SharedPreferences.setMockInitialValues({
         'kraveo_vendor_jwt_token': 'stored-jwt',
-        SessionController.sessionPrefKey: jsonEncode(_with(PartnerApproval.approved).toJson()),
+        SessionController.sessionPrefKey:
+            jsonEncode(_with(PartnerApproval.approved).toJson()),
       });
-      final auth = FakeAuth()..profile = ProfileResult(ProfileOutcome.valid, _with(PartnerApproval.approved));
+      final auth = FakeAuth()
+        ..profile = ProfileResult(
+            ProfileOutcome.valid, _with(PartnerApproval.approved));
       await _pumpApp(tester, auth);
       expect(find.byType(VendorHomeScreen), findsOneWidget);
 
       // The admin suspends the account; the next field action is refused with PARTNER_NOT_APPROVED.
-      auth.profile = ProfileResult(ProfileOutcome.valid, _with(PartnerApproval.suspended, reason: 'Hygiene complaint'));
+      auth.profile = ProfileResult(ProfileOutcome.valid,
+          _with(PartnerApproval.suspended, reason: 'Hygiene complaint'));
       VendorApiService.onNotApproved!.call();
       await _settle(tester);
       expect(find.byType(VendorHomeScreen), findsNothing);
@@ -392,7 +461,8 @@ void main() {
       expect(find.text('Hygiene complaint'), findsOneWidget);
 
       // Reactivated while the phone was in the pocket: coming back to the app re-checks and reopens it.
-      auth.profile = ProfileResult(ProfileOutcome.valid, _with(PartnerApproval.approved));
+      auth.profile =
+          ProfileResult(ProfileOutcome.valid, _with(PartnerApproval.approved));
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await _settle(tester);
       expect(find.byType(VendorHomeScreen), findsOneWidget);
@@ -401,15 +471,24 @@ void main() {
   });
 
   group('API layer', () {
-    Future<SignupResult> signUpWith(http.Response Function(http.Request) h, {Object? throws}) => http.runWithClient(
-          () => ApiPartnerAuthService().signUp(const PartnerSignupForm(ownerName: 'R', phone: '9811100001', password: 'Passw0rd!x', restaurantName: 'Shiv', address: 'Gate 2', category: 'Biryani')),
+    Future<SignupResult> signUpWith(http.Response Function(http.Request) h,
+            {Object? throws}) =>
+        http.runWithClient(
+          () => ApiPartnerAuthService().signUp(const PartnerSignupForm(
+              ownerName: 'R',
+              phone: '9811100001',
+              password: 'Passw0rd!x',
+              restaurantName: 'Shiv',
+              address: 'Gate 2',
+              category: 'Biryani')),
           () => MockClient((r) async {
             if (throws != null) throw throws;
             return h(r);
           }),
         );
 
-    test('sign-up posts the role and details, and parses a pending account', () async {
+    test('sign-up posts the role and details, and parses a pending account',
+        () async {
       late http.Request seen;
       final r = await signUpWith((req) {
         seen = req;
@@ -418,8 +497,21 @@ void main() {
             'success': true,
             'token': 'jwt',
             'approvalStatus': 'PENDING',
-            'user': {'id': 'u1', 'name': 'R', 'phone': '+91 9811100001', 'role': 'VENDOR'},
-            'vendor': {'id': 'v1', 'name': 'Shiv', 'category': 'Biryani', 'address': 'Gate 2', 'fssaiNumber': null, 'isAcceptingOrders': false, 'approvalStatus': 'PENDING'},
+            'user': {
+              'id': 'u1',
+              'name': 'R',
+              'phone': '+91 9811100001',
+              'role': 'VENDOR'
+            },
+            'vendor': {
+              'id': 'v1',
+              'name': 'Shiv',
+              'category': 'Biryani',
+              'address': 'Gate 2',
+              'fssaiNumber': null,
+              'isAcceptingOrders': false,
+              'approvalStatus': 'PENDING'
+            },
           }),
           201,
         );
@@ -436,16 +528,34 @@ void main() {
       expect(r.session!.address, 'Gate 2');
     });
 
-    test('maps 400 (with the field), 409, 429, 5xx and a dead network', () async {
-      final bad = await signUpWith((_) => http.Response(jsonEncode({'success': false, 'field': 'fssaiNumber', 'message': 'FSSAI number has 14 digits.'}), 400));
+    test('maps 400 (with the field), 409, 429, 5xx and a dead network',
+        () async {
+      final bad = await signUpWith((_) => http.Response(
+          jsonEncode({
+            'success': false,
+            'field': 'fssaiNumber',
+            'message': 'FSSAI number has 14 digits.'
+          }),
+          400));
       expect(bad.failure, SignupFailure.invalid);
       expect(bad.field, 'fssaiNumber');
       expect(bad.message, 'FSSAI number has 14 digits.');
-      expect((await signUpWith((_) => http.Response(jsonEncode({'field': 'phone', 'message': 'taken'}), 409))).failure, SignupFailure.phoneTaken);
-      expect((await signUpWith((_) => http.Response('{}', 429))).failure, SignupFailure.rateLimited);
-      expect((await signUpWith((_) => http.Response('oops', 502))).failure, SignupFailure.server);
-      expect((await signUpWith((_) => http.Response('{}', 201))).failure, SignupFailure.server); // no token
-      expect((await signUpWith((_) => http.Response('', 200), throws: http.ClientException('x'))).failure, SignupFailure.offline);
+      expect(
+          (await signUpWith((_) => http.Response(
+                  jsonEncode({'field': 'phone', 'message': 'taken'}), 409)))
+              .failure,
+          SignupFailure.phoneTaken);
+      expect((await signUpWith((_) => http.Response('{}', 429))).failure,
+          SignupFailure.rateLimited);
+      expect((await signUpWith((_) => http.Response('oops', 502))).failure,
+          SignupFailure.server);
+      expect((await signUpWith((_) => http.Response('{}', 201))).failure,
+          SignupFailure.server); // no token
+      expect(
+          (await signUpWith((_) => http.Response('', 200),
+                  throws: http.ClientException('x')))
+              .failure,
+          SignupFailure.offline);
     });
 
     test('login now carries the approval state and the reason', () {
@@ -459,19 +569,28 @@ void main() {
       expect(s.rejectionReason, 'Details incomplete');
       expect(s.isApproved, isFalse);
       // Accounts from before approvals existed have no field and keep working.
-      expect(PartnerSession.fromLoginJson({'user': {'id': 'u', 'name': 'N'}})!.approval, PartnerApproval.approved);
+      expect(
+          PartnerSession.fromLoginJson({
+            'user': {'id': 'u', 'name': 'N'}
+          })!
+              .approval,
+          PartnerApproval.approved);
     });
 
     test('the stored session keeps the approval state across restarts', () {
-      final restored = PartnerSession.fromStoredJson(jsonDecode(jsonEncode(_with(PartnerApproval.suspended, reason: 'Late').toJson())));
+      final restored = PartnerSession.fromStoredJson(jsonDecode(jsonEncode(
+          _with(PartnerApproval.suspended, reason: 'Late').toJson())));
       expect(restored!.approval, PartnerApproval.suspended);
       expect(restored.rejectionReason, 'Late');
       expect(restored.address, 'Ashta road, near Gate 2');
     });
   });
 
-  test('refreshApproval updates the session when the admin decides, and ignores a dead network', () async {
-    SharedPreferences.setMockInitialValues({'kraveo_vendor_jwt_token': 'stored-jwt'});
+  test(
+      'refreshApproval updates the session when the admin decides, and ignores a dead network',
+      () async {
+    SharedPreferences.setMockInitialValues(
+        {'kraveo_vendor_jwt_token': 'stored-jwt'});
     final auth = FakeAuth();
     final controller = SessionController(auth: auth);
     await controller.restore();
@@ -481,7 +600,8 @@ void main() {
     expect(await controller.refreshApproval(), isFalse);
     expect(controller.session!.approval, PartnerApproval.pending);
 
-    auth.profile = ProfileResult(ProfileOutcome.valid, _with(PartnerApproval.approved));
+    auth.profile =
+        ProfileResult(ProfileOutcome.valid, _with(PartnerApproval.approved));
     expect(await controller.refreshApproval(), isTrue);
     expect(controller.session!.approval, PartnerApproval.approved);
     expect(await controller.refreshApproval(), isFalse); // nothing new

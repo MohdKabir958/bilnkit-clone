@@ -24,12 +24,21 @@ class SupportContact {
   @visibleForTesting
   static MailOpener opener = _launchMail;
 
-  static Uri mailtoUri([String subject = '${BrandConfig.name} restaurant partner help']) => Uri.parse('mailto:$kSupportEmail?subject=${Uri.encodeComponent(subject)}');
+  static Uri mailtoUri(
+          [String subject = '${BrandConfig.name} store partner help']) =>
+      Uri.parse(
+          'mailto:$kSupportEmail?subject=${Uri.encodeComponent(subject)}');
 
   /// Opens the phone's mail app with a new message to Grozo support. When there is no mail app, the address is
   /// copied instead and the owner is told so.
   static Future<void> openEmail(BuildContext context) async {
-    if(kSupportEmail.isEmpty){await Navigator.push(context,MaterialPageRoute(builder:(_)=>SupportCenter(call:ProductApi().call)));return;}
+    if (kSupportEmail.isEmpty) {
+      await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => SupportCenter(call: ProductApi().call)));
+      return;
+    }
     final messenger = ScaffoldMessenger.maybeOf(context);
     var opened = false;
     try {
@@ -42,7 +51,8 @@ class SupportContact {
     messenger
       ?..hideCurrentSnackBar()
       ..showSnackBar(const SnackBar(
-        content: Text('No email app found. Address copied: $kSupportEmail  ·  ईमेल पता कॉपी हो गया'),
+        content: Text(
+            'No email app found. Address copied: $kSupportEmail  ·  ईमेल पता कॉपी हो गया'),
         duration: Duration(seconds: 5),
       ));
   }

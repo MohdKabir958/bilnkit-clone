@@ -25,14 +25,18 @@ class StockCard extends StatelessWidget {
   void _showPriceEditSheet(BuildContext context) {
     showKSheet<void>(
       context,
-      builder: (ctx) => _PriceEditSheet(dish: dish, onSave: dish.status == DishStatus.rejected ? _resubmit : onUpdatePrice),
+      builder: (ctx) => _PriceEditSheet(
+          dish: dish,
+          onSave:
+              dish.status == DishStatus.rejected ? _resubmit : onUpdatePrice),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final k = context.k;
-    final inStock = dish.inStock || !dish.isLive; // "sold out" only means something for a live dish
+    final inStock = dish.inStock ||
+        !dish.isLive; // "sold out" only means something for a live dish
     final rejected = dish.status == DishStatus.rejected;
     final hindi = hindiCategory(dish.category);
 
@@ -41,9 +45,16 @@ class StockCard extends StatelessWidget {
       curve: KMotion.emphasized,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: inStock ? k.surface : Color.alphaBlend(KraveoPalette.danger.withValues(alpha: 0.06), k.surface),
+        color: inStock
+            ? k.surface
+            : Color.alphaBlend(
+                KraveoPalette.danger.withValues(alpha: 0.06), k.surface),
         borderRadius: KRadius.card,
-        border: Border.all(color: (inStock && !rejected) ? k.line : KraveoPalette.danger.withValues(alpha: 0.55), width: (inStock && !rejected) ? 1.5 : 2),
+        border: Border.all(
+            color: (inStock && !rejected)
+                ? k.line
+                : KraveoPalette.danger.withValues(alpha: 0.55),
+            width: (inStock && !rejected) ? 1.5 : 2),
         boxShadow: KShadow.soft(k.shadowTint),
       ),
       child: Column(
@@ -53,30 +64,38 @@ class StockCard extends StatelessWidget {
             _DishPhoto(imageUrl: dish.imageUrl, dimmed: !inStock || rejected),
             const SizedBox(width: 14),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(
-                  dish.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: KraveoType.titleLg.copyWith(
-                    fontSize: 21,
-                    fontWeight: FontWeight.w800,
-                    height: 1.2,
-                    color: inStock ? k.ink : k.inkMuted,
-                    decoration: inStock ? null : TextDecoration.lineThrough,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  hindi.isEmpty ? dish.category : '${dish.category} · $hindi',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14),
-                ),
-                const SizedBox(height: 8),
-                // Only a dish the server reported a status for gets a chip; an old server has no approval step.
-                if (dish.statusKnown) VDishStatusChip(key: ValueKey('chip-${dish.id}'), status: dish.status),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      dish.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: KraveoType.titleLg.copyWith(
+                        fontSize: 21,
+                        fontWeight: FontWeight.w800,
+                        height: 1.2,
+                        color: inStock ? k.ink : k.inkMuted,
+                        decoration: inStock ? null : TextDecoration.lineThrough,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      hindi.isEmpty
+                          ? dish.category
+                          : '${dish.category} · $hindi',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: KraveoType.bodySm
+                          .copyWith(color: k.inkMuted, fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    // Only a dish the server reported a status for gets a chip; an old server has no approval step.
+                    if (dish.statusKnown)
+                      VDishStatusChip(
+                          key: ValueKey('chip-${dish.id}'),
+                          status: dish.status),
+                  ]),
             ),
           ]),
           const SizedBox(height: 14),
@@ -98,7 +117,8 @@ class StockCard extends StatelessWidget {
             Expanded(
               child: Semantics(
                 button: true,
-                label: 'Your price ${formatRupees(dish.price)}. Double tap to type a new price.',
+                label:
+                    'Your price ${formatRupees(dish.price)}. Double tap to type a new price.',
                 excludeSemantics: true,
                 child: KPressable(
                   onTap: () => _showPriceEditSheet(context),
@@ -110,11 +130,22 @@ class StockCard extends StatelessWidget {
                       fit: BoxFit.scaleDown,
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
                         Row(mainAxisSize: MainAxisSize.min, children: [
-                          Text(formatRupees(dish.price), key: const ValueKey('your-price'), style: KraveoType.displayMd.copyWith(fontSize: 34, color: (inStock && !rejected) ? k.brand : k.inkMuted)),
+                          Text(formatRupees(dish.price),
+                              key: const ValueKey('your-price'),
+                              style: KraveoType.displayMd.copyWith(
+                                  fontSize: 34,
+                                  color: (inStock && !rejected)
+                                      ? k.brand
+                                      : k.inkMuted)),
                           const SizedBox(width: 8),
                           Icon(LucideIcons.pencil, size: 18, color: k.inkFaint),
                         ]),
-                        Text('Your price · आपका दाम', maxLines: 1, style: KraveoType.caption.copyWith(color: k.inkMuted, fontSize: 12.5, fontWeight: FontWeight.w700)),
+                        Text('Your price · आपका दाम',
+                            maxLines: 1,
+                            style: KraveoType.caption.copyWith(
+                                color: k.inkMuted,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700)),
                       ]),
                     ),
                   ),
@@ -137,7 +168,9 @@ class StockCard extends StatelessWidget {
           ],
 
           // The one big IN STOCK / SOLD OUT switch (live dishes only; a dish customers cannot see has nothing to sell out)
-          if (dish.isLive) VStockSwitch(inStock: inStock, onToggle: onToggleStock, dishName: dish.name),
+          if (dish.isLive)
+            VStockSwitch(
+                inStock: inStock, onToggle: onToggleStock, dishName: dish.name),
         ],
       ),
     );
@@ -160,22 +193,33 @@ class _ApprovalNote extends StatelessWidget {
           key: const ValueKey('price-change-note'),
           width: double.infinity,
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: Color.alphaBlend(KraveoPalette.warning.withValues(alpha: 0.14), k.surface), borderRadius: BorderRadius.circular(KRadius.lg)),
+          decoration: BoxDecoration(
+              color: Color.alphaBlend(
+                  KraveoPalette.warning.withValues(alpha: 0.14), k.surface),
+              borderRadius: BorderRadius.circular(KRadius.lg)),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Icon(LucideIcons.clock, size: 22, color: k.ink),
             const SizedBox(width: 10),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(
-                  dish.pendingPrice == null ? 'New price sent for approval' : 'New price ${formatRupees(dish.pendingPrice!)} · Sent for approval',
-                  key: const ValueKey('pending-price'),
-                  style: KraveoType.titleMd.copyWith(color: k.ink, fontWeight: FontWeight.w800, fontSize: 16),
-                ),
-                Text(
-                  'Customers still get the old price (${formatRupees(dish.price)}) until ${BrandConfig.name} approves.\nमंज़ूरी तक पुराना दाम चलेगा।',
-                  style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13.5),
-                ),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      dish.pendingPrice == null
+                          ? 'New price sent for approval'
+                          : 'New price ${formatRupees(dish.pendingPrice!)} · Sent for approval',
+                      key: const ValueKey('pending-price'),
+                      style: KraveoType.titleMd.copyWith(
+                          color: k.ink,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16),
+                    ),
+                    Text(
+                      'Customers still get the old price (${formatRupees(dish.price)}) until ${BrandConfig.name} approves.\nमंज़ूरी तक पुराना दाम चलेगा।',
+                      style: KraveoType.bodySm
+                          .copyWith(color: k.inkMuted, fontSize: 13.5),
+                    ),
+                  ]),
             ),
           ]),
         );
@@ -184,13 +228,16 @@ class _ApprovalNote extends StatelessWidget {
           key: const ValueKey('pending-note'),
           width: double.infinity,
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: Color.alphaBlend(KraveoPalette.warning.withValues(alpha: 0.14), k.surface), borderRadius: BorderRadius.circular(KRadius.lg)),
+          decoration: BoxDecoration(
+              color: Color.alphaBlend(
+                  KraveoPalette.warning.withValues(alpha: 0.14), k.surface),
+              borderRadius: BorderRadius.circular(KRadius.lg)),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Icon(LucideIcons.clock, size: 22, color: k.ink),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Waiting for ${BrandConfig.name} to approve. Customers cannot see this dish yet.\nKraveo की मंज़ूरी का इंतज़ार। ग्राहकों को अभी नहीं दिखेगा।',
+                'Waiting for ${BrandConfig.name} to approve. Customers cannot see this product yet.\nKraveo की मंज़ूरी का इंतज़ार। ग्राहकों को अभी नहीं दिखेगा।',
                 style: KraveoType.bodySm.copyWith(color: k.ink, fontSize: 14),
               ),
             ),
@@ -198,27 +245,47 @@ class _ApprovalNote extends StatelessWidget {
         );
       case DishStatus.rejected:
         final reason = dish.rejectionReason;
-        return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Container(
-            key: const ValueKey('rejected-note'),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: Color.alphaBlend(KraveoPalette.danger.withValues(alpha: 0.08), k.surface), borderRadius: BorderRadius.circular(KRadius.lg)),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('${BrandConfig.name} did not approve this dish · मंज़ूर नहीं हुआ', style: KraveoType.titleMd.copyWith(color: kDangerDeep, fontWeight: FontWeight.w800, fontSize: 16)),
-              if (reason != null) Text('Reason: $reason', key: const ValueKey('rejection-reason'), style: KraveoType.body.copyWith(color: k.ink, fontSize: 15)),
-              Text('Fix the price if needed, then send it again.\nदाम ठीक करके दोबारा भेजें।', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13.5)),
-            ]),
-          ),
-          const SizedBox(height: 12),
-          KButton(
-            key: ValueKey('resubmit-${dish.id}'),
-            label: 'Send again for approval',
-            sublabel: 'फिर से भेजें',
-            icon: LucideIcons.send,
-            large: true,
-            onPressed: onResubmit,
-          ),
-        ]);
+        return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                key: const ValueKey('rejected-note'),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                    color: Color.alphaBlend(
+                        KraveoPalette.danger.withValues(alpha: 0.08),
+                        k.surface),
+                    borderRadius: BorderRadius.circular(KRadius.lg)),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          '${BrandConfig.name} did not approve this product · मंज़ूर नहीं हुआ',
+                          style: KraveoType.titleMd.copyWith(
+                              color: kDangerDeep,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16)),
+                      if (reason != null)
+                        Text('Reason: $reason',
+                            key: const ValueKey('rejection-reason'),
+                            style: KraveoType.body
+                                .copyWith(color: k.ink, fontSize: 15)),
+                      Text(
+                          'Fix the price if needed, then send it again.\nदाम ठीक करके दोबारा भेजें।',
+                          style: KraveoType.bodySm
+                              .copyWith(color: k.inkMuted, fontSize: 13.5)),
+                    ]),
+              ),
+              const SizedBox(height: 12),
+              KButton(
+                key: ValueKey('resubmit-${dish.id}'),
+                label: 'Send again for approval',
+                sublabel: 'फिर से भेजें',
+                icon: LucideIcons.send,
+                large: true,
+                onPressed: onResubmit,
+              ),
+            ]);
       case DishStatus.live:
         return const SizedBox.shrink();
     }
@@ -226,7 +293,12 @@ class _ApprovalNote extends StatelessWidget {
 }
 
 class _StepButton extends StatelessWidget {
-  const _StepButton({super.key, required this.icon, required this.semanticLabel, required this.onTap, this.enabled = true});
+  const _StepButton(
+      {super.key,
+      required this.icon,
+      required this.semanticLabel,
+      required this.onTap,
+      this.enabled = true});
   final IconData icon;
   final String semanticLabel;
   final VoidCallback onTap;
@@ -251,7 +323,8 @@ class _StepButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: k.brandSoft,
               borderRadius: BorderRadius.circular(KRadius.lg),
-              border: Border.all(color: k.brand.withValues(alpha: 0.35), width: 1.5),
+              border: Border.all(
+                  color: k.brand.withValues(alpha: 0.35), width: 1.5),
             ),
             child: Icon(icon, size: 30, color: k.brand),
           ),
@@ -268,10 +341,26 @@ class _DishPhoto extends StatelessWidget {
 
   // Luminance-only colour matrix -> black & white for sold-out dishes.
   static const _grey = ColorFilter.matrix(<double>[
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0.2126, 0.7152, 0.0722, 0, 0,
-    0, 0, 0, 1, 0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0.2126,
+    0.7152,
+    0.0722,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
   ]);
 
   @override
@@ -285,9 +374,12 @@ class _DishPhoto extends StatelessWidget {
     final url = imageUrl;
     Widget photo = (url == null || url.isEmpty)
         ? placeholder
-        : Image.network(url, fit: BoxFit.cover, errorBuilder: (_, __, ___) => placeholder);
+        : Image.network(url,
+            fit: BoxFit.cover, errorBuilder: (_, __, ___) => placeholder);
     if (dimmed) {
-      photo = Opacity(opacity: 0.55, child: ColorFiltered(colorFilter: _grey, child: photo));
+      photo = Opacity(
+          opacity: 0.55,
+          child: ColorFiltered(colorFilter: _grey, child: photo));
     }
     return ClipRRect(
       borderRadius: BorderRadius.circular(KRadius.lg),
@@ -331,10 +423,13 @@ double? parseDishPrice(String raw) {
 }
 
 /// "49" for a whole price, "49.50" when it has paise, so opening the sheet never silently rounds a price.
-String priceFieldText(double price) => price == price.roundToDouble() ? price.toStringAsFixed(0) : price.toStringAsFixed(2);
+String priceFieldText(double price) => price == price.roundToDouble()
+    ? price.toStringAsFixed(0)
+    : price.toStringAsFixed(2);
 
 class _PriceEditSheetState extends State<_PriceEditSheet> {
-  late final TextEditingController _controller = TextEditingController(text: priceFieldText(widget.dish.editPrice));
+  late final TextEditingController _controller =
+      TextEditingController(text: priceFieldText(widget.dish.editPrice));
   String? _error;
 
   bool get _rejected => widget.dish.status == DishStatus.rejected;
@@ -343,9 +438,15 @@ class _PriceEditSheetState extends State<_PriceEditSheet> {
   bool get _asksApproval => widget.dish.statusKnown && widget.dish.isLive;
 
   String _helperText() {
-    if (_rejected) return '${BrandConfig.name} will check the dish again.\nKraveo इसे दोबारा जाँचेगा।';
-    if (_asksApproval) return 'The new price is sent to ${BrandConfig.name}. The old price stays live until it is approved.\nनया दाम ${BrandConfig.name} को जाएगा। मंज़ूरी तक पुराना दाम चलेगा।';
-    if (widget.dish.statusKnown) return 'This dish is still waiting for approval, so the price changes at once.\nमंज़ूरी से पहले दाम सीधे बदल जाएगा।';
+    if (_rejected) {
+      return '${BrandConfig.name} will check the product again.\nKraveo इसे दोबारा जाँचेगा।';
+    }
+    if (_asksApproval) {
+      return 'The new price is sent to ${BrandConfig.name}. The old price stays live until it is approved.\nनया दाम ${BrandConfig.name} को जाएगा। मंज़ूरी तक पुराना दाम चलेगा।';
+    }
+    if (widget.dish.statusKnown) {
+      return 'This product is still waiting for approval, so the price changes at once.\nमंज़ूरी से पहले दाम सीधे बदल जाएगा।';
+    }
     return 'The price you receive for each portion.\nहर प्लेट पर आपको मिलने वाला दाम।';
   }
 
@@ -358,7 +459,8 @@ class _PriceEditSheetState extends State<_PriceEditSheet> {
   void _save() {
     final parsed = parseDishPrice(_controller.text);
     if (parsed == null || parsed <= 0 || parsed > kMaxDishPrice) {
-      setState(() => _error = 'Enter a price from ₹1 to ₹10,000, like 120 or 49.50.\nसही दाम डालें, जैसे 120 या 49.50');
+      setState(() => _error =
+          'Enter a price from ₹1 to ₹10,000, like 120 or 49.50.\nसही दाम डालें, जैसे 120 या 49.50');
       return;
     }
     // A rejected dish is sent again even with the same price; otherwise only a real change is saved.
@@ -370,52 +472,80 @@ class _PriceEditSheetState extends State<_PriceEditSheet> {
   Widget build(BuildContext context) {
     final k = context.k;
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 20 + MediaQuery.viewInsetsOf(context).bottom),
-      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text(_rejected ? 'Fix price, send again' : 'Change price', style: KraveoType.headline.copyWith(color: k.ink)),
-        Text(_rejected ? 'दाम ठीक करके फिर भेजें' : 'दाम बदलें', style: KraveoType.titleLg.copyWith(color: k.inkMuted)),
-        const SizedBox(height: 6),
-        Text(widget.dish.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
-        const SizedBox(height: 6),
-        Text(_helperText(), key: const ValueKey('price-helper'), style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 6),
-          child: Text.rich(TextSpan(children: [
-            TextSpan(text: 'Your price', style: KraveoType.titleMd.copyWith(color: k.ink, fontWeight: FontWeight.w800)),
-            TextSpan(text: '   आपका दाम', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
-          ])),
-        ),
-        TextField(
-          key: const ValueKey('price-field'),
-          controller: _controller,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          style: KraveoType.displayMd.copyWith(color: k.ink, fontSize: 36),
-          onChanged: (_) {
-            if (_error != null) setState(() => _error = null);
-          },
-          onSubmitted: (_) => _save(),
-          decoration: InputDecoration(
-            errorText: _error,
-            errorMaxLines: 3,
-            prefixIcon: Padding(
-              padding: const EdgeInsets.only(left: 18, right: 6),
-              child: Icon(LucideIcons.indianRupee, size: 30, color: k.brand),
+      padding: EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter,
+          20 + MediaQuery.viewInsetsOf(context).bottom),
+      child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(_rejected ? 'Fix price, send again' : 'Change price',
+                style: KraveoType.headline.copyWith(color: k.ink)),
+            Text(_rejected ? 'दाम ठीक करके फिर भेजें' : 'दाम बदलें',
+                style: KraveoType.titleLg.copyWith(color: k.inkMuted)),
+            const SizedBox(height: 6),
+            Text(widget.dish.name,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style:
+                    KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
+            const SizedBox(height: 6),
+            Text(_helperText(),
+                key: const ValueKey('price-helper'),
+                style: KraveoType.bodySm
+                    .copyWith(color: k.inkMuted, fontSize: 14)),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 6),
+              child: Text.rich(TextSpan(children: [
+                TextSpan(
+                    text: 'Your price',
+                    style: KraveoType.titleMd
+                        .copyWith(color: k.ink, fontWeight: FontWeight.w800)),
+                TextSpan(
+                    text: '   आपका दाम',
+                    style: KraveoType.bodySm
+                        .copyWith(color: k.inkMuted, fontSize: 14)),
+              ])),
             ),
-            prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-            hintText: '0',
-          ),
-        ),
-        const SizedBox(height: 20),
-        KButton(
-          label: _rejected ? 'Send for approval' : (_asksApproval ? 'Send for approval' : 'Save price'),
-          sublabel: _rejected || _asksApproval ? 'मंज़ूरी के लिए भेजें' : 'दाम सेव करें',
-          icon: _rejected || _asksApproval ? LucideIcons.send : LucideIcons.check,
-          large: true,
-          onPressed: _save,
-        ),
-      ]),
+            TextField(
+              key: const ValueKey('price-field'),
+              controller: _controller,
+              autofocus: true,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              style: KraveoType.displayMd.copyWith(color: k.ink, fontSize: 36),
+              onChanged: (_) {
+                if (_error != null) setState(() => _error = null);
+              },
+              onSubmitted: (_) => _save(),
+              decoration: InputDecoration(
+                errorText: _error,
+                errorMaxLines: 3,
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.only(left: 18, right: 6),
+                  child:
+                      Icon(LucideIcons.indianRupee, size: 30, color: k.brand),
+                ),
+                prefixIconConstraints:
+                    const BoxConstraints(minWidth: 0, minHeight: 0),
+                hintText: '0',
+              ),
+            ),
+            const SizedBox(height: 20),
+            KButton(
+              label: _rejected
+                  ? 'Send for approval'
+                  : (_asksApproval ? 'Send for approval' : 'Save price'),
+              sublabel: _rejected || _asksApproval
+                  ? 'मंज़ूरी के लिए भेजें'
+                  : 'दाम सेव करें',
+              icon: _rejected || _asksApproval
+                  ? LucideIcons.send
+                  : LucideIcons.check,
+              large: true,
+              onPressed: _save,
+            ),
+          ]),
     );
   }
 }

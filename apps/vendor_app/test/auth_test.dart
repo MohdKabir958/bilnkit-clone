@@ -30,12 +30,20 @@ const _sessionFromLogin = PartnerSession(
 
 /// A scriptable stand-in for the backend.
 class FakeAuth implements PartnerAuthService {
-  LoginResult Function(String phone, String password) onLogin =
-      (_, __) => const LoginResult.success(token: 'jwt-123', session: _sessionFromLogin);
-  ProfileResult profile = const ProfileResult(ProfileOutcome.valid, PartnerSession(userId: 'u1', name: 'Ramesh Sharma', phone: '+91 9876543210', avatarId: 3));
+  LoginResult Function(String phone, String password) onLogin = (_, __) =>
+      const LoginResult.success(token: 'jwt-123', session: _sessionFromLogin);
+  ProfileResult profile = const ProfileResult(
+      ProfileOutcome.valid,
+      PartnerSession(
+          userId: 'u1',
+          name: 'Ramesh Sharma',
+          phone: '+91 9876543210',
+          avatarId: 3));
   Completer<void>? loginGate;
-  SignupResult Function(PartnerSignupForm form) onSignUp = (_) => const SignupResult.failure(SignupFailure.server);
-  SignupResult Function(PartnerSignupForm form) onResubmit = (_) => const SignupResult.failure(SignupFailure.server);
+  SignupResult Function(PartnerSignupForm form) onSignUp =
+      (_) => const SignupResult.failure(SignupFailure.server);
+  SignupResult Function(PartnerSignupForm form) onResubmit =
+      (_) => const SignupResult.failure(SignupFailure.server);
 
   final signUpForms = <PartnerSignupForm>[];
   final resubmitForms = <PartnerSignupForm>[];
@@ -44,7 +52,8 @@ class FakeAuth implements PartnerAuthService {
   final loggedOutTokens = <String>[];
 
   @override
-  Future<LoginResult> login({required String phone, required String password}) async {
+  Future<LoginResult> login(
+      {required String phone, required String password}) async {
     loginCalls.add((phone, password));
     if (loginGate != null) await loginGate!.future;
     return onLogin(phone, password);
@@ -93,9 +102,11 @@ Future<void> _pumpApp(WidgetTester tester, FakeAuth auth) async {
   await _settle(tester);
 }
 
-Future<void> _type(WidgetTester tester, {String phone = _phone, String password = _secret}) async {
+Future<void> _type(WidgetTester tester,
+    {String phone = _phone, String password = _secret}) async {
   await tester.enterText(find.byKey(const ValueKey('phone-field')), phone);
-  await tester.enterText(find.byKey(const ValueKey('password-field')), password);
+  await tester.enterText(
+      find.byKey(const ValueKey('password-field')), password);
   await tester.pump();
 }
 
@@ -116,8 +127,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
-    for (final ch in const ['xyz.luan/audioplayers.global', 'xyz.luan/audioplayers']) {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel(ch), (call) async => null);
+    for (final ch in const [
+      'xyz.luan/audioplayers.global',
+      'xyz.luan/audioplayers'
+    ]) {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(MethodChannel(ch), (call) async => null);
     }
   });
 
@@ -128,50 +143,73 @@ void main() {
   });
 
   group('Vendor login', () {
-    testWidgets('no stored token -> login screen, no network call for the session check', (tester) async {
+    testWidgets(
+        'no stored token -> login screen, no network call for the session check',
+        (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.text('Restaurant partner login'), findsOneWidget);
-      expect(find.text('रेस्टोरेंट लॉगिन'), findsOneWidget);
-      expect(find.textContaining('Forgot password? Ask Grozo support'), findsOneWidget);
+      expect(find.text('Store partner login'), findsOneWidget);
+      expect(find.text('स्टोर लॉगिन'), findsOneWidget);
+      expect(find.textContaining('Forgot password? Ask Grozo support'),
+          findsOneWidget);
       expect(auth.profileTokens, isEmpty);
       // Nothing is pre-filled: the app never holds or shows a default password.
-      final password = tester.widget<TextField>(find.byKey(const ValueKey('password-field')));
+      final password = tester
+          .widget<TextField>(find.byKey(const ValueKey('password-field')));
       expect(password.controller!.text, isEmpty);
       expect(password.obscureText, isTrue);
       await _unmount(tester);
     });
 
-    testWidgets('validation: bad phone and empty password never reach the server', (tester) async {
+    testWidgets(
+        'validation: bad phone and empty password never reach the server',
+        (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
 
       await _tapLogin(tester);
-      expect(find.textContaining('Enter your 10-digit mobile number'), findsOneWidget);
+      expect(find.textContaining('Enter your 10-digit mobile number'),
+          findsOneWidget);
       expect(find.textContaining('Enter your password'), findsOneWidget);
 
       await _type(tester, phone: '12345', password: 'x');
       await _tapLogin(tester);
-      expect(find.textContaining('Enter your 10-digit mobile number'), findsOneWidget);
+      expect(find.textContaining('Enter your 10-digit mobile number'),
+          findsOneWidget);
       expect(auth.loginCalls, isEmpty);
       await _unmount(tester);
     });
 
-    testWidgets('phone field keeps 10 digits from a pasted +91 number; password can be shown', (tester) async {
+    testWidgets(
+        'phone field keeps 10 digits from a pasted +91 number; password can be shown',
+        (tester) async {
       await _pumpApp(tester, FakeAuth());
-      await tester.enterText(find.byKey(const ValueKey('phone-field')), '+91 98765 43210');
-      expect(tester.widget<TextField>(find.byKey(const ValueKey('phone-field'))).controller!.text, _phone);
+      await tester.enterText(
+          find.byKey(const ValueKey('phone-field')), '+91 98765 43210');
+      expect(
+          tester
+              .widget<TextField>(find.byKey(const ValueKey('phone-field')))
+              .controller!
+              .text,
+          _phone);
 
-      await tester.enterText(find.byKey(const ValueKey('password-field')), _secret);
+      await tester.enterText(
+          find.byKey(const ValueKey('password-field')), _secret);
       await tester.tap(find.bySemanticsLabel('Show password'));
       await tester.pump();
-      expect(tester.widget<TextField>(find.byKey(const ValueKey('password-field'))).obscureText, isFalse);
+      expect(
+          tester
+              .widget<TextField>(find.byKey(const ValueKey('password-field')))
+              .obscureText,
+          isFalse);
       expect(find.bySemanticsLabel('Hide password'), findsOneWidget);
       await _unmount(tester);
     });
 
-    testWidgets('success: sends phone + password, saves token and basics, shows the restaurant', (tester) async {
+    testWidgets(
+        'success: sends phone + password, saves token and basics, shows the restaurant',
+        (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       await _type(tester);
@@ -185,23 +223,27 @@ void main() {
       expect(await VendorApiService.getSavedToken(), 'jwt-123');
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('kraveo_vendor_jwt_token'), isNull); // JWT is protected, never stored in preferences.
+      expect(prefs.getString('kraveo_vendor_jwt_token'),
+          isNull); // JWT is protected, never stored in preferences.
       final stored = prefs.getString(SessionController.sessionPrefKey)!;
       expect(jsonDecode(stored)['vendorName'], 'Sharma Dhaba');
       // The password is never persisted anywhere.
       for (final key in prefs.getKeys()) {
-        expect(prefs.get(key).toString().contains(_secret), isFalse, reason: 'password found in "$key"');
+        expect(prefs.get(key).toString().contains(_secret), isFalse,
+            reason: 'password found in "$key"');
       }
       await _unmount(tester);
     });
 
-    testWidgets('busy state: button shows progress and a second tap is ignored', (tester) async {
+    testWidgets('busy state: button shows progress and a second tap is ignored',
+        (tester) async {
       final auth = FakeAuth()..loginGate = Completer<void>();
       await _pumpApp(tester, auth);
       await _type(tester);
       await _tapLogin(tester);
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      await tester.tap(find.byKey(const ValueKey('login-button')), warnIfMissed: false);
+      await tester.tap(find.byKey(const ValueKey('login-button')),
+          warnIfMissed: false);
       await tester.pump();
       expect(auth.loginCalls.length, 1);
       auth.loginGate!.complete();
@@ -209,8 +251,12 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('401: wrong phone or password, password cleared, phone kept', (tester) async {
-      final auth = FakeAuth()..onLogin = (_, __) => const LoginResult.failure(LoginFailure.invalidCredentials, message: 'Wrong phone or password.');
+    testWidgets('401: wrong phone or password, password cleared, phone kept',
+        (tester) async {
+      final auth = FakeAuth()
+        ..onLogin = (_, __) => const LoginResult.failure(
+            LoginFailure.invalidCredentials,
+            message: 'Wrong phone or password.');
       await _pumpApp(tester, auth);
       await _type(tester);
       await _tapLogin(tester);
@@ -218,8 +264,18 @@ void main() {
 
       expect(find.text('Wrong phone or password.'), findsOneWidget);
       expect(find.text('फ़ोन नंबर या पासवर्ड गलत है।'), findsOneWidget);
-      expect(tester.widget<TextField>(find.byKey(const ValueKey('password-field'))).controller!.text, isEmpty);
-      expect(tester.widget<TextField>(find.byKey(const ValueKey('phone-field'))).controller!.text, _phone);
+      expect(
+          tester
+              .widget<TextField>(find.byKey(const ValueKey('password-field')))
+              .controller!
+              .text,
+          isEmpty);
+      expect(
+          tester
+              .widget<TextField>(find.byKey(const ValueKey('phone-field')))
+              .controller!
+              .text,
+          _phone);
       expect(await VendorApiService.getSavedToken(), isNull);
 
       // Typing again clears the error.
@@ -229,23 +285,35 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('429: live countdown disables the button, then re-enables', (tester) async {
+    testWidgets('429: live countdown disables the button, then re-enables',
+        (tester) async {
       final auth = FakeAuth()
-        ..onLogin = (_, __) => const LoginResult.failure(LoginFailure.locked, message: 'Locked', retryAfterSeconds: 90);
+        ..onLogin = (_, __) => const LoginResult.failure(LoginFailure.locked,
+            message: 'Locked', retryAfterSeconds: 90);
       await _pumpApp(tester, auth);
       await _type(tester);
       await _tapLogin(tester);
       await tester.pump(const Duration(milliseconds: 400));
 
       expect(find.text('Too many wrong tries.'), findsOneWidget);
-      expect(find.text('Try again in 1:30'), findsNWidgets(2)); // banner + button
-      expect(tester.widget<Opacity>(find.descendant(of: find.byKey(const ValueKey('login-button')), matching: find.byType(Opacity)).first).opacity, lessThan(1));
+      expect(
+          find.text('Try again in 1:30'), findsNWidgets(2)); // banner + button
+      expect(
+          tester
+              .widget<Opacity>(find
+                  .descendant(
+                      of: find.byKey(const ValueKey('login-button')),
+                      matching: find.byType(Opacity))
+                  .first)
+              .opacity,
+          lessThan(1));
 
       await tester.pump(const Duration(seconds: 1));
       expect(find.text('Try again in 1:29'), findsNWidgets(2));
 
       // A tap while locked does nothing.
-      await tester.tap(find.byKey(const ValueKey('login-button')), warnIfMissed: false);
+      await tester.tap(find.byKey(const ValueKey('login-button')),
+          warnIfMissed: false);
       await tester.pump();
       expect(auth.loginCalls.length, 1);
 
@@ -257,37 +325,46 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('429: editing to a different number lifts the lock display', (tester) async {
+    testWidgets('429: editing to a different number lifts the lock display',
+        (tester) async {
       final auth = FakeAuth()
-        ..onLogin = (_, __) => const LoginResult.failure(LoginFailure.locked, retryAfterSeconds: 600);
+        ..onLogin = (_, __) => const LoginResult.failure(LoginFailure.locked,
+            retryAfterSeconds: 600);
       await _pumpApp(tester, auth);
       await _type(tester);
       await _tapLogin(tester);
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.text('Try again in 10:00'), findsNWidgets(2));
 
-      await tester.enterText(find.byKey(const ValueKey('phone-field')), '9123456789');
+      await tester.enterText(
+          find.byKey(const ValueKey('phone-field')), '9123456789');
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.textContaining('Try again in'), findsNothing);
       expect(find.text('Log in'), findsOneWidget);
       await _unmount(tester);
     });
 
-    testWidgets('403 wrong app, offline and server error each get a clear message', (tester) async {
+    testWidgets(
+        '403 wrong app, offline and server error each get a clear message',
+        (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       await _type(tester);
 
-      auth.onLogin = (_, __) => const LoginResult.failure(LoginFailure.wrongRole, message: 'This number belongs to a delivery partner.');
+      auth.onLogin = (_, __) => const LoginResult.failure(
+          LoginFailure.wrongRole,
+          message: 'This number belongs to a delivery partner.');
       await _tapLogin(tester);
       await _settle(tester);
-      expect(find.text('This number belongs to a delivery partner.'), findsOneWidget);
+      expect(find.text('This number belongs to a delivery partner.'),
+          findsOneWidget);
 
       auth.onLogin = (_, __) => const LoginResult.failure(LoginFailure.offline);
       await _tapLogin(tester);
       await _settle(tester);
       expect(find.textContaining('Can\'t reach Grozo'), findsOneWidget);
-      expect(find.text('This number belongs to a delivery partner.'), findsNothing);
+      expect(find.text('This number belongs to a delivery partner.'),
+          findsNothing);
 
       auth.onLogin = (_, __) => const LoginResult.failure(LoginFailure.server);
       await _tapLogin(tester);
@@ -299,14 +376,18 @@ void main() {
   });
 
   group('Vendor session gate', () {
-    testWidgets('valid stored token -> splash, then home with the saved restaurant name', (tester) async {
+    testWidgets(
+        'valid stored token -> splash, then home with the saved restaurant name',
+        (tester) async {
       SharedPreferences.setMockInitialValues({
         'kraveo_vendor_jwt_token': 'stored-jwt',
-        SessionController.sessionPrefKey: jsonEncode(_sessionFromLogin.toJson()),
+        SessionController.sessionPrefKey:
+            jsonEncode(_sessionFromLogin.toJson()),
       });
       final auth = FakeAuth();
       await tester.pumpWidget(KraveoVendorApp(auth: auth));
-      expect(find.byType(CircularProgressIndicator), findsOneWidget); // splash while validating
+      expect(find.byType(CircularProgressIndicator),
+          findsOneWidget); // splash while validating
       await _settle(tester);
 
       expect(auth.profileTokens, ['stored-jwt']);
@@ -315,12 +396,15 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('401 on the session check clears the token and shows login', (tester) async {
+    testWidgets('401 on the session check clears the token and shows login',
+        (tester) async {
       SharedPreferences.setMockInitialValues({
         'kraveo_vendor_jwt_token': 'dead-jwt',
-        SessionController.sessionPrefKey: jsonEncode(_sessionFromLogin.toJson()),
+        SessionController.sessionPrefKey:
+            jsonEncode(_sessionFromLogin.toJson()),
       });
-      final auth = FakeAuth()..profile = const ProfileResult(ProfileOutcome.unauthorized);
+      final auth = FakeAuth()
+        ..profile = const ProfileResult(ProfileOutcome.unauthorized);
       await _pumpApp(tester, auth);
 
       expect(find.byType(LoginScreen), findsOneWidget);
@@ -331,12 +415,15 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('offline session check keeps the token and offers Retry', (tester) async {
+    testWidgets('offline session check keeps the token and offers Retry',
+        (tester) async {
       SharedPreferences.setMockInitialValues({
         'kraveo_vendor_jwt_token': 'stored-jwt',
-        SessionController.sessionPrefKey: jsonEncode(_sessionFromLogin.toJson()),
+        SessionController.sessionPrefKey:
+            jsonEncode(_sessionFromLogin.toJson()),
       });
-      final auth = FakeAuth()..profile = const ProfileResult(ProfileOutcome.unreachable);
+      final auth = FakeAuth()
+        ..profile = const ProfileResult(ProfileOutcome.unreachable);
       await _pumpApp(tester, auth);
 
       expect(find.text('Can\'t reach Grozo'), findsOneWidget);
@@ -344,24 +431,31 @@ void main() {
       expect(find.byType(LoginScreen), findsNothing);
       expect(await VendorApiService.getSavedToken(), 'stored-jwt');
 
-      auth.profile = const ProfileResult(ProfileOutcome.valid, PartnerSession(userId: 'u1', name: 'Ramesh Sharma'));
+      auth.profile = const ProfileResult(ProfileOutcome.valid,
+          PartnerSession(userId: 'u1', name: 'Ramesh Sharma'));
       await tester.tap(find.text('Retry'));
       await _settle(tester);
       expect(auth.profileTokens.length, 2);
       expect(find.text('Can\'t reach Grozo'), findsNothing);
-      expect(find.text('Sharma Dhaba'), findsOneWidget); // vendor details survive from the stored login
+      expect(find.text('Sharma Dhaba'),
+          findsOneWidget); // vendor details survive from the stored login
       await _unmount(tester);
     });
 
-    testWidgets('a token that belongs to another role does not open the app', (tester) async {
-      SharedPreferences.setMockInitialValues({'kraveo_vendor_jwt_token': 'other-role-jwt'});
-      final auth = FakeAuth()..profile = const ProfileResult(ProfileOutcome.unauthorized);
+    testWidgets('a token that belongs to another role does not open the app',
+        (tester) async {
+      SharedPreferences.setMockInitialValues(
+          {'kraveo_vendor_jwt_token': 'other-role-jwt'});
+      final auth = FakeAuth()
+        ..profile = const ProfileResult(ProfileOutcome.unauthorized);
       await _pumpApp(tester, auth);
       expect(find.byType(LoginScreen), findsOneWidget);
       await _unmount(tester);
     });
 
-    testWidgets('401 from any authenticated call -> login with a Session expired snackbar', (tester) async {
+    testWidgets(
+        '401 from any authenticated call -> login with a Session expired snackbar',
+        (tester) async {
       final auth = FakeAuth();
       await _pumpApp(tester, auth);
       await _type(tester);
@@ -400,7 +494,9 @@ void main() {
       await _settle(tester);
     }
 
-    testWidgets('help sheet -> Log out -> confirm clears everything and returns to login', (tester) async {
+    testWidgets(
+        'help sheet -> Log out -> confirm clears everything and returns to login',
+        (tester) async {
       final auth = FakeAuth();
       await signIn(tester, auth);
       await openLogoutConfirm(tester);
@@ -417,7 +513,12 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('kraveo_vendor_jwt_token'), isNull);
       expect(prefs.getString(SessionController.sessionPrefKey), isNull);
-      expect(tester.widget<TextField>(find.byKey(const ValueKey('phone-field'))).controller!.text, isEmpty);
+      expect(
+          tester
+              .widget<TextField>(find.byKey(const ValueKey('phone-field')))
+              .controller!
+              .text,
+          isEmpty);
       await tester.pump(const Duration(seconds: 7));
       await _unmount(tester);
     });
@@ -437,7 +538,9 @@ void main() {
   });
 
   group('VendorApiService 401 handling', () {
-    test('a 401 from an authenticated call fires onUnauthorized; a 200 does not', () async {
+    test(
+        'a 401 from an authenticated call fires onUnauthorized; a 200 does not',
+        () async {
       var fired = 0;
       VendorApiService.onUnauthorized = () => fired++;
       await VendorApiService.saveToken('jwt-abc');
@@ -449,17 +552,19 @@ void main() {
         status = 401;
         final ok = await VendorApiService.toggleStoreStatus('ven-1', false);
         expect(ok, isFalse);
-      }, () => MockClient((request) async {
-            sentAuth = request.headers['Authorization'];
-            return http.Response('{}', status);
-          }));
+      },
+          () => MockClient((request) async {
+                sentAuth = request.headers['Authorization'];
+                return http.Response('{}', status);
+              }));
       expect(fired, 1);
       expect(sentAuth, 'Bearer jwt-abc');
     });
   });
 
   group('ApiPartnerAuthService', () {
-    Future<LoginResult> loginWith(http.Response Function(http.Request) handler, {Object? throws}) {
+    Future<LoginResult> loginWith(http.Response Function(http.Request) handler,
+        {Object? throws}) {
       return http.runWithClient(
         () => ApiPartnerAuthService().login(phone: _phone, password: _secret),
         () => MockClient((request) async {
@@ -469,7 +574,9 @@ void main() {
       );
     }
 
-    test('sends phone, password and role VENDOR to /auth/partner-login and parses success', () async {
+    test(
+        'sends phone, password and role VENDOR to /auth/partner-login and parses success',
+        () async {
       late http.Request seen;
       final result = await loginWith((request) {
         seen = request;
@@ -477,14 +584,25 @@ void main() {
           jsonEncode({
             'success': true,
             'token': 'jwt',
-            'user': {'id': 7, 'name': 'Ramesh', 'phone': '+91 9876543210', 'role': 'VENDOR', 'avatarId': null},
-            'vendor': {'id': 'v1', 'name': 'Sharma Dhaba', 'isAcceptingOrders': false},
+            'user': {
+              'id': 7,
+              'name': 'Ramesh',
+              'phone': '+91 9876543210',
+              'role': 'VENDOR',
+              'avatarId': null
+            },
+            'vendor': {
+              'id': 'v1',
+              'name': 'Sharma Dhaba',
+              'isAcceptingOrders': false
+            },
           }),
           200,
         );
       });
       expect(seen.url.toString(), endsWith('/auth/partner-login'));
-      expect(jsonDecode(seen.body), {'phone': _phone, 'password': _secret, 'role': 'VENDOR'});
+      expect(jsonDecode(seen.body),
+          {'phone': _phone, 'password': _secret, 'role': 'VENDOR'});
       expect(result.ok, isTrue);
       expect(result.token, 'jwt');
       expect(result.session!.userId, '7');
@@ -493,30 +611,45 @@ void main() {
     });
 
     test('maps 401 / 403 / 429 / 500 / network errors', () async {
-      final r401 = await loginWith((_) => http.Response(jsonEncode({'success': false, 'message': 'Wrong phone or password.'}), 401));
+      final r401 = await loginWith((_) => http.Response(
+          jsonEncode({'success': false, 'message': 'Wrong phone or password.'}),
+          401));
       expect(r401.failure, LoginFailure.invalidCredentials);
       expect(r401.message, 'Wrong phone or password.');
 
-      final r403 = await loginWith((_) => http.Response(jsonEncode({'success': false, 'message': 'Driver account'}), 403));
+      final r403 = await loginWith((_) => http.Response(
+          jsonEncode({'success': false, 'message': 'Driver account'}), 403));
       expect(r403.failure, LoginFailure.wrongRole);
       expect(r403.message, 'Driver account');
 
-      final r429 = await loginWith((_) => http.Response(jsonEncode({'success': false, 'message': 'Locked', 'retryAfterSeconds': 840}), 429));
+      final r429 = await loginWith((_) => http.Response(
+          jsonEncode({
+            'success': false,
+            'message': 'Locked',
+            'retryAfterSeconds': 840
+          }),
+          429));
       expect(r429.failure, LoginFailure.locked);
       expect(r429.retryAfterSeconds, 840);
 
-      final r500 = await loginWith((_) => http.Response('<html>oops</html>', 502));
+      final r500 =
+          await loginWith((_) => http.Response('<html>oops</html>', 502));
       expect(r500.failure, LoginFailure.server);
 
       final rBad = await loginWith((_) => http.Response('{}', 200));
       expect(rBad.failure, LoginFailure.server);
 
-      final offline = await loginWith((_) => http.Response('', 200), throws: http.ClientException('no route'));
+      final offline = await loginWith((_) => http.Response('', 200),
+          throws: http.ClientException('no route'));
       expect(offline.failure, LoginFailure.offline);
     });
 
-    test('profile: 200 valid, 401 unauthorized, other role unauthorized, 5xx/network unreachable', () async {
-      Future<ProfileResult> profileWith(http.Response Function(http.Request) h, {Object? throws}) => http.runWithClient(
+    test(
+        'profile: 200 valid, 401 unauthorized, other role unauthorized, 5xx/network unreachable',
+        () async {
+      Future<ProfileResult> profileWith(http.Response Function(http.Request) h,
+              {Object? throws}) =>
+          http.runWithClient(
             () => ApiPartnerAuthService().fetchProfile('tok'),
             () => MockClient((r) async {
               if (throws != null) throw throws;
@@ -524,19 +657,38 @@ void main() {
               return h(r);
             }),
           );
-      String body(String role) => jsonEncode({'success': true, 'user': {'id': 'u', 'name': 'N', 'role': role}});
-      expect((await profileWith((_) => http.Response(body('VENDOR'), 200))).outcome, ProfileOutcome.valid);
-      expect((await profileWith((_) => http.Response(body('DRIVER'), 200))).outcome, ProfileOutcome.unauthorized);
-      expect((await profileWith((_) => http.Response('{}', 401))).outcome, ProfileOutcome.unauthorized);
-      expect((await profileWith((_) => http.Response('{}', 503))).outcome, ProfileOutcome.unreachable);
-      expect((await profileWith((_) => http.Response('', 200), throws: http.ClientException('x'))).outcome, ProfileOutcome.unreachable);
+      String body(String role) => jsonEncode({
+            'success': true,
+            'user': {'id': 'u', 'name': 'N', 'role': role}
+          });
+      expect(
+          (await profileWith((_) => http.Response(body('VENDOR'), 200)))
+              .outcome,
+          ProfileOutcome.valid);
+      expect(
+          (await profileWith((_) => http.Response(body('DRIVER'), 200)))
+              .outcome,
+          ProfileOutcome.unauthorized);
+      expect((await profileWith((_) => http.Response('{}', 401))).outcome,
+          ProfileOutcome.unauthorized);
+      expect((await profileWith((_) => http.Response('{}', 503))).outcome,
+          ProfileOutcome.unreachable);
+      expect(
+          (await profileWith((_) => http.Response('', 200),
+                  throws: http.ClientException('x')))
+              .outcome,
+          ProfileOutcome.unreachable);
     });
   });
 
   group('Vendor auth layout (360x640 @ 1.3x)', () {
-    testWidgets('login with a lock banner, validation errors and shown password does not overflow', (tester) async {
+    testWidgets(
+        'login with a lock banner, validation errors and shown password does not overflow',
+        (tester) async {
       _smallPhone(tester);
-      final auth = FakeAuth()..onLogin = (_, __) => const LoginResult.failure(LoginFailure.locked, retryAfterSeconds: 900);
+      final auth = FakeAuth()
+        ..onLogin = (_, __) => const LoginResult.failure(LoginFailure.locked,
+            retryAfterSeconds: 900);
       await _pumpApp(tester, auth);
       await _tapLogin(tester); // both validation errors
       expect(tester.takeException(), isNull);
@@ -548,17 +700,25 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('offline retry screen and help sheet with account card do not overflow', (tester) async {
+    testWidgets(
+        'offline retry screen and help sheet with account card do not overflow',
+        (tester) async {
       _smallPhone(tester);
       SharedPreferences.setMockInitialValues({'kraveo_vendor_jwt_token': 't'});
-      final auth = FakeAuth()..profile = const ProfileResult(ProfileOutcome.unreachable);
+      final auth = FakeAuth()
+        ..profile = const ProfileResult(ProfileOutcome.unreachable);
       await _pumpApp(tester, auth);
       expect(find.text('Retry'), findsOneWidget);
       expect(tester.takeException(), isNull);
       // The retry button must be on screen without scrolling.
-      expect(tester.getBottomLeft(find.byType(KButton)).dy, lessThanOrEqualTo(640));
+      expect(tester.getBottomLeft(find.byType(KButton)).dy,
+          lessThanOrEqualTo(640));
 
-      auth.profile = const ProfileResult(ProfileOutcome.valid, PartnerSession(userId: 'u1', name: 'A Very Long Restaurant Owner Name Kumar Srivastava'));
+      auth.profile = const ProfileResult(
+          ProfileOutcome.valid,
+          PartnerSession(
+              userId: 'u1',
+              name: 'A Very Long Restaurant Owner Name Kumar Srivastava'));
       await tester.ensureVisible(find.text('Retry'));
       await tester.tap(find.text('Retry'));
       await _settle(tester);

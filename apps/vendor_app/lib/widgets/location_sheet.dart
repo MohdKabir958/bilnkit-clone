@@ -163,11 +163,16 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
       final yes = await showConfirmSheet(
         context,
         icon: weak ? LucideIcons.triangleAlert : LucideIcons.mapPin,
-        title: changing ? 'Change your restaurant location?' : 'Save a rough location?',
-        hindiTitle: changing ? 'रेस्टोरेंट की लोकेशन बदलें?' : 'अनुमानित लोकेशन सेव करें?',
+        title:
+            changing ? 'Change your store location?' : 'Save a rough location?',
+        hindiTitle: changing
+            ? 'रेस्टोरेंट की लोकेशन बदलें?'
+            : 'अनुमानित लोकेशन सेव करें?',
         message: [
-          if (changing) 'Riders will go to this new spot from now on.\nअब राइडर इस नई जगह पर आएंगे।',
-          if (weak) 'The GPS is weak (${formatAccuracy(fix.accuracyM)}). Riders may be sent a little away from your kitchen.\nGPS कमज़ोर है, राइडर रसोई से थोड़ा दूर पहुँच सकते हैं।',
+          if (changing)
+            'Riders will go to this new spot from now on.\nअब राइडर इस नई जगह पर आएंगे।',
+          if (weak)
+            'The GPS is weak (${formatAccuracy(fix.accuracyM)}). Riders may be sent a little away from your store.\nGPS कमज़ोर है, राइडर रसोई से थोड़ा दूर पहुँच सकते हैं।',
         ].join('\n\n'),
         safeLabel: 'Go back',
         safeSublabel: 'वापस जाएं',
@@ -190,7 +195,8 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
     try {
       error = await save(fix);
     } catch (_) {
-      error = 'Could not save the location. Please try again.  ·  लोकेशन सेव नहीं हुई, फिर कोशिश करें';
+      error =
+          'Could not save the location. Please try again.  ·  लोकेशन सेव नहीं हुई, फिर कोशिश करें';
     }
     if (!mounted) return;
     if (error == null) {
@@ -210,13 +216,16 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
     final k = context.k;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 24),
-      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: switch (_phase) {
-        _Phase.intro => _intro(k),
-        _Phase.detecting => _detecting(k),
-        _Phase.result => _resultView(k),
-        _Phase.problem => _problemView(k),
-        _Phase.outside => _outsideView(k),
-      }),
+      child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: switch (_phase) {
+            _Phase.intro => _intro(k),
+            _Phase.detecting => _detecting(k),
+            _Phase.result => _resultView(k),
+            _Phase.problem => _problemView(k),
+            _Phase.outside => _outsideView(k),
+          }),
     );
   }
 
@@ -226,7 +235,8 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
         child: Container(
           width: 76,
           height: 76,
-          decoration: BoxDecoration(color: tone.withValues(alpha: 0.12), shape: BoxShape.circle),
+          decoration: BoxDecoration(
+              color: tone.withValues(alpha: 0.12), shape: BoxShape.circle),
           child: Icon(icon, size: 36, color: tone),
         ),
       );
@@ -234,16 +244,25 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
   List<Widget> _heading(KraveoTokens k, String en, String hi, {Key? key}) => [
         Semantics(
           header: true,
-          child: Text(en, key: key, textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
+          child: Text(en,
+              key: key,
+              textAlign: TextAlign.center,
+              style: KraveoType.headline.copyWith(color: k.ink)),
         ),
         const SizedBox(height: 4),
-        Text(hi, textAlign: TextAlign.center, style: KraveoType.titleLg.copyWith(color: k.inkMuted)),
+        Text(hi,
+            textAlign: TextAlign.center,
+            style: KraveoType.titleLg.copyWith(color: k.inkMuted)),
       ];
 
   Widget _body(KraveoTokens k, String en, String hi) => Column(children: [
-        Text(en, textAlign: TextAlign.center, style: KraveoType.body.copyWith(color: k.ink, fontSize: 16)),
+        Text(en,
+            textAlign: TextAlign.center,
+            style: KraveoType.body.copyWith(color: k.ink, fontSize: 16)),
         const SizedBox(height: 4),
-        Text(hi, textAlign: TextAlign.center, style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 15)),
+        Text(hi,
+            textAlign: TextAlign.center,
+            style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 15)),
       ]);
 
   Widget _skipButton() => KButton(
@@ -260,13 +279,23 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
         const SizedBox(height: 16),
         ..._heading(k, widget.title, widget.hindiTitle),
         const SizedBox(height: 12),
-        _body(k, 'Riders use this to find your kitchen. We only read your location when you tap Detect.',
+        _body(
+            k,
+            'Riders use this to find your store. We only read your location when you tap Detect.',
             'राइडर इससे आपकी रसोई ढूंढते हैं। हम आपकी लोकेशन तभी पढ़ते हैं जब आप Detect दबाते हैं।'),
         const SizedBox(height: 8),
-        Text('Stand at your kitchen, outside if you can.  ·  रसोई पर खड़े हों, हो सके तो बाहर।',
-            textAlign: TextAlign.center, style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
+        Text(
+            'Stand at your store, outside if you can.  ·  रसोई पर खड़े हों, हो सके तो बाहर।',
+            textAlign: TextAlign.center,
+            style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
         const SizedBox(height: 22),
-        KButton(key: kLocationDetectKey, label: 'Detect my location', sublabel: 'मेरी लोकेशन पता करें', icon: LucideIcons.crosshair, large: true, onPressed: _detect),
+        KButton(
+            key: kLocationDetectKey,
+            label: 'Detect my location',
+            sublabel: 'मेरी लोकेशन पता करें',
+            icon: LucideIcons.crosshair,
+            large: true,
+            onPressed: _detect),
         const SizedBox(height: 12),
         _skipButton(),
       ];
@@ -274,7 +303,12 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
   List<Widget> _detecting(KraveoTokens k) {
     final best = _progress;
     return [
-      Center(child: SizedBox(width: 56, height: 56, child: CircularProgressIndicator(strokeWidth: 4, color: k.brand))),
+      Center(
+          child: SizedBox(
+              width: 56,
+              height: 56,
+              child:
+                  CircularProgressIndicator(strokeWidth: 4, color: k.brand))),
       const SizedBox(height: 18),
       ..._heading(k, 'Looking for your location…', 'लोकेशन ढूंढ रहे हैं…'),
       const SizedBox(height: 12),
@@ -282,12 +316,22 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
         liveRegion: true,
         child: _body(
           k,
-          best == null ? 'This can take up to 20 seconds. Stay still, outside if you can.' : 'Best so far: ${formatAccuracy(best.accuracyM)}. Still checking…',
-          best == null ? '20 सेकंड तक लग सकते हैं। रुके रहें, हो सके तो बाहर।' : 'अब तक सबसे अच्छा। जाँच जारी है…',
+          best == null
+              ? 'This can take up to 20 seconds. Stay still, outside if you can.'
+              : 'Best so far: ${formatAccuracy(best.accuracyM)}. Still checking…',
+          best == null
+              ? '20 सेकंड तक लग सकते हैं। रुके रहें, हो सके तो बाहर।'
+              : 'अब तक सबसे अच्छा। जाँच जारी है…',
         ),
       ),
       const SizedBox(height: 22),
-      KButton(key: kLocationCancelKey, label: 'Cancel', sublabel: 'रद्द करें', kind: KButtonKind.ghost, large: true, onPressed: _cancelDetect),
+      KButton(
+          key: kLocationCancelKey,
+          label: 'Cancel',
+          sublabel: 'रद्द करें',
+          kind: KButtonKind.ghost,
+          large: true,
+          onPressed: _cancelDetect),
     ];
   }
 
@@ -301,12 +345,16 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
               child: Text(
                 '${fix.lat.toStringAsFixed(6)}, ${fix.lng.toStringAsFixed(6)}',
                 key: kLocationCoordsKey,
-                style: KraveoType.titleLg.copyWith(color: k.ink, fontWeight: FontWeight.w800),
+                style: KraveoType.titleLg
+                    .copyWith(color: k.ink, fontWeight: FontWeight.w800),
               ),
             ),
           ]),
           const SizedBox(height: 6),
-          Text('Accuracy: ${formatAccuracy(fix.accuracyM)}  ·  सटीकता', key: kLocationAccuracyKey, style: KraveoType.titleMd.copyWith(color: k.inkMuted, fontSize: 16)),
+          Text('Accuracy: ${formatAccuracy(fix.accuracyM)}  ·  सटीकता',
+              key: kLocationAccuracyKey,
+              style:
+                  KraveoType.titleMd.copyWith(color: k.inkMuted, fontSize: 16)),
           const SizedBox(height: 10),
           KButton(
             key: kLocationMapLinkKey,
@@ -319,13 +367,21 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
           if (_linkFailed)
             Padding(
               padding: const EdgeInsets.only(top: 8),
-              child: Text('Could not open Maps on this phone. The coordinates above are the location.  ·  मैप्स नहीं खुला, ऊपर लिखे अंक ही लोकेशन हैं।',
-                  style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13)),
+              child: Text(
+                  'Could not open Maps on this phone. The coordinates above are the location.  ·  मैप्स नहीं खुला, ऊपर लिखे अंक ही लोकेशन हैं।',
+                  style: KraveoType.bodySm
+                      .copyWith(color: k.inkMuted, fontSize: 13)),
             ),
         ]),
       );
 
-  Widget _notice(KraveoTokens k, {required Key key, required IconData icon, required Color tone, required String en, required String hi}) => Container(
+  Widget _notice(KraveoTokens k,
+          {required Key key,
+          required IconData icon,
+          required Color tone,
+          required String en,
+          required String hi}) =>
+      Container(
         key: key,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -337,10 +393,15 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
           Icon(icon, size: 24, color: tone),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(en, style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16, fontWeight: FontWeight.w800)),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(en,
+                  style: KraveoType.titleMd.copyWith(
+                      color: k.ink, fontSize: 16, fontWeight: FontWeight.w800)),
               const SizedBox(height: 2),
-              Text(hi, style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
+              Text(hi,
+                  style: KraveoType.bodySm
+                      .copyWith(color: k.inkMuted, fontSize: 14)),
             ]),
           ),
         ]),
@@ -350,13 +411,17 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
     final r = _result!;
     final fix = r.fix!;
     final weak = r.weak;
-    final saveWord = widget.onSave == null ? 'Use this location' : widget.acceptLabel;
-    final saveHindi = widget.onSave == null ? 'यह लोकेशन लें' : widget.acceptSublabel;
+    final saveWord =
+        widget.onSave == null ? 'Use this location' : widget.acceptLabel;
+    final saveHindi =
+        widget.onSave == null ? 'यह लोकेशन लें' : widget.acceptSublabel;
     final err = _saveError;
     return [
-      _badge(weak ? LucideIcons.triangleAlert : LucideIcons.circleCheck, weak ? KraveoPalette.warning : k.brand),
+      _badge(weak ? LucideIcons.triangleAlert : LucideIcons.circleCheck,
+          weak ? KraveoPalette.warning : k.brand),
       const SizedBox(height: 16),
-      ..._heading(k, weak ? 'Found, but the GPS is weak' : 'Location found', weak ? 'मिली, पर GPS कमज़ोर है' : 'लोकेशन मिल गई'),
+      ..._heading(k, weak ? 'Found, but the GPS is weak' : 'Location found',
+          weak ? 'मिली, पर GPS कमज़ोर है' : 'लोकेशन मिल गई'),
       const SizedBox(height: 14),
       _coordsCard(k, fix),
       if (weak) ...[
@@ -372,12 +437,23 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
         const SizedBox(height: 12),
         Semantics(
           liveRegion: true,
-          child: _notice(k, key: kLocationSaveErrorKey, icon: LucideIcons.circleAlert, tone: kDangerDeep, en: err, hi: 'लोकेशन अभी सेव नहीं हुई।'),
+          child: _notice(k,
+              key: kLocationSaveErrorKey,
+              icon: LucideIcons.circleAlert,
+              tone: kDangerDeep,
+              en: err,
+              hi: 'लोकेशन अभी सेव नहीं हुई।'),
         ),
       ],
       const SizedBox(height: 20),
       if (weak) ...[
-        KButton(key: kLocationRetryKey, label: 'Try again', sublabel: 'फिर कोशिश करें', icon: LucideIcons.rotateCcw, large: true, onPressed: _saving ? null : _detect),
+        KButton(
+            key: kLocationRetryKey,
+            label: 'Try again',
+            sublabel: 'फिर कोशिश करें',
+            icon: LucideIcons.rotateCcw,
+            large: true,
+            onPressed: _saving ? null : _detect),
         const SizedBox(height: 12),
         KButton(
             key: kLocationAcceptWeakKey,
@@ -397,7 +473,13 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
             loading: _saving,
             onPressed: () => _accept(weak: false)),
         const SizedBox(height: 12),
-        KButton(key: kLocationRetryKey, label: 'Try again', sublabel: 'फिर कोशिश करें', kind: KButtonKind.ghost, large: true, onPressed: _saving ? null : _detect),
+        KButton(
+            key: kLocationRetryKey,
+            label: 'Try again',
+            sublabel: 'फिर कोशिश करें',
+            kind: KButtonKind.ghost,
+            large: true,
+            onPressed: _saving ? null : _detect),
       ],
       const SizedBox(height: 12),
       _skipButton(),
@@ -409,14 +491,24 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
     return [
       _badge(LucideIcons.mapPinOff, KraveoPalette.warning),
       const SizedBox(height: 16),
-      ..._heading(k, 'Choose a location in India', 'भारत में दुकान की जगह चुनें', key: kLocationOutsideKey),
+      ..._heading(
+          k, 'Choose a location in India', 'भारत में दुकान की जगह चुनें',
+          key: kLocationOutsideKey),
       const SizedBox(height: 12),
-      _body(k, 'This location is outside India’s supported coordinate range, so it was not saved. Check the location or try again at your store.',
+      _body(
+          k,
+          'This location is outside India’s supported coordinate range, so it was not saved. Check the location or try again at your store.',
           'यह जगह समर्थित क्षेत्र में नहीं है। दुकान पर जाकर फिर कोशिश करें।'),
       const SizedBox(height: 14),
       _coordsCard(k, fix),
       const SizedBox(height: 20),
-      KButton(key: kLocationRetryKey, label: 'Try again', sublabel: 'फिर कोशिश करें', icon: LucideIcons.rotateCcw, large: true, onPressed: _detect),
+      KButton(
+          key: kLocationRetryKey,
+          label: 'Try again',
+          sublabel: 'फिर कोशिश करें',
+          icon: LucideIcons.rotateCcw,
+          large: true,
+          onPressed: _detect),
       const SizedBox(height: 12),
       _skipButton(),
     ];
@@ -424,7 +516,8 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
 
   List<Widget> _problemView(KraveoTokens k) {
     final p = _problem ?? LocationProblem.unavailable;
-    final (IconData icon, String en, String hi, String bodyEn, String bodyHi) = switch (p) {
+    final (IconData icon, String en, String hi, String bodyEn, String bodyHi) =
+        switch (p) {
       LocationProblem.serviceOff => (
           LucideIcons.locateOff,
           'Location is switched off',
@@ -436,7 +529,7 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
           LucideIcons.lock,
           'Allow location to continue',
           'आगे बढ़ने के लिए लोकेशन की अनुमति दें',
-          '${BrandConfig.name} only reads your location when you tap Detect, and only to show riders your kitchen.',
+          '${BrandConfig.name} only reads your location when you tap Detect, and only to show riders your store.',
           '${BrandConfig.name} आपकी लोकेशन सिर्फ़ Detect दबाने पर पढ़ता है, ताकि राइडर आपकी रसोई ढूंढ सकें।',
         ),
       LocationProblem.permissionDeniedForever => (
@@ -461,7 +554,8 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
           'फ़ोन में कुछ दिक्कत आई। फिर कोशिश करें।',
         ),
     };
-    final opensSettings = p == LocationProblem.serviceOff || p == LocationProblem.permissionDeniedForever;
+    final opensSettings = p == LocationProblem.serviceOff ||
+        p == LocationProblem.permissionDeniedForever;
     return [
       _badge(icon, KraveoPalette.warning),
       const SizedBox(height: 16),
@@ -472,19 +566,33 @@ class _LocationSheetBodyState extends State<_LocationSheetBody> {
       if (opensSettings) ...[
         KButton(
           key: kLocationSettingsKey,
-          label: p == LocationProblem.serviceOff ? 'Open location settings' : 'Open app settings',
-          sublabel: p == LocationProblem.serviceOff ? 'लोकेशन सेटिंग खोलें' : 'ऐप सेटिंग खोलें',
+          label: p == LocationProblem.serviceOff
+              ? 'Open location settings'
+              : 'Open app settings',
+          sublabel: p == LocationProblem.serviceOff
+              ? 'लोकेशन सेटिंग खोलें'
+              : 'ऐप सेटिंग खोलें',
           icon: LucideIcons.settings,
           large: true,
           onPressed: () => _capture.openSettingsFor(p),
         ),
         const SizedBox(height: 12),
-        KButton(key: kLocationRetryKey, label: 'Try again', sublabel: 'फिर कोशिश करें', kind: KButtonKind.tonal, large: true, onPressed: _detect),
+        KButton(
+            key: kLocationRetryKey,
+            label: 'Try again',
+            sublabel: 'फिर कोशिश करें',
+            kind: KButtonKind.tonal,
+            large: true,
+            onPressed: _detect),
       ] else
         KButton(
           key: kLocationRetryKey,
-          label: p == LocationProblem.permissionDenied ? 'Allow location' : 'Try again',
-          sublabel: p == LocationProblem.permissionDenied ? 'लोकेशन की अनुमति दें' : 'फिर कोशिश करें',
+          label: p == LocationProblem.permissionDenied
+              ? 'Allow location'
+              : 'Try again',
+          sublabel: p == LocationProblem.permissionDenied
+              ? 'लोकेशन की अनुमति दें'
+              : 'फिर कोशिश करें',
           icon: LucideIcons.rotateCcw,
           large: true,
           onPressed: _detect,

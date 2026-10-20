@@ -21,13 +21,13 @@ import '../session/session_controller.dart';
 import '../models/partner_session.dart';
 import '../models/order_model.dart';
 import 'kitchen_queue.dart';
-import 'stock_manager.dart';
+import 'product_inventory_screen.dart';
 import 'payout_details_screen.dart';
 import 'settlements_screen.dart';
 import 'sales_analytics.dart';
-import '../widgets/first_run_card.dart';
 import '../widgets/location_flow.dart';
 import '../widgets/order_cancelled_notice.dart';
+import '../widgets/first_run_card.dart';
 import '../widgets/payout_banner.dart';
 import '../widgets/push_status_cards.dart';
 import '../widgets/ui/support_email_link.dart';
@@ -39,6 +39,7 @@ class VendorHomeScreen extends StatefulWidget {
 
   /// Payout details and settlements; tests pass a fake. Defaults to the real Grozo API.
   final PayoutApi? payoutApi;
+  final ProductApi? productApi;
 
   /// Live order events; tests pass a fake. Defaults to Socket.io. Pass a factory returning null-free fakes.
   final OrderSocketFactory? socketFactory;
@@ -51,15 +52,26 @@ class VendorHomeScreen extends StatefulWidget {
 
   final Duration pollInterval;
 
-  const VendorHomeScreen({super.key, this.backend, this.payoutApi, this.socketFactory, this.alarm, this.vendorId, this.pollInterval = const Duration(seconds: 15)});
+  const VendorHomeScreen(
+      {super.key,
+      this.backend,
+      this.payoutApi,
+      this.productApi,
+      this.socketFactory,
+      this.alarm,
+      this.vendorId,
+      this.pollInterval = const Duration(seconds: 15)});
 
   @override
   State<VendorHomeScreen> createState() => _VendorHomeScreenState();
 }
 
-class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBindingObserver {
+class _VendorHomeScreenState extends State<VendorHomeScreen>
+    with WidgetsBindingObserver {
   int _currentIndex = 0;
-  late final VendorBackend _backend = widget.backend ?? const HttpVendorBackend();
+  bool _productsVisited = false;
+  late final VendorBackend _backend =
+      widget.backend ?? const HttpVendorBackend();
   OrderQueueController? _orders;
   MenuStockController? _menu;
   late final PayoutApi _payoutApi = widget.payoutApi ?? HttpPayoutApi();
@@ -143,7 +155,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
     // The in-app alarm only rings while the app is on screen; in the background the system notification rings instead.
     // `inactive` (notification shade pulled down, a permission dialog, a call overlay, split screen) still has the
     // order on screen, so the alarm keeps ringing; only paused / hidden / detached count as background.
-    _orders?.setAppInForeground(state == AppLifecycleState.resumed || state == AppLifecycleState.inactive);
+    _orders?.setAppInForeground(state == AppLifecycleState.resumed ||
+        state == AppLifecycleState.inactive);
     if (state == AppLifecycleState.resumed) {
       _orders?.onResumed();
       _syncStoreStatus();
@@ -218,11 +231,15 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
   Future<void> _onPushAction(PushAction action) async {
     final c = _orders;
     if (!mounted || c == null || c.isDisposed) return;
-    if (action.kind == PushActionKind.showQueue && _currentIndex != 0) setState(() => _currentIndex = 0);
+    if (action.kind == PushActionKind.showQueue && _currentIndex != 0) {
+      setState(() => _currentIndex = 0);
+    }
     await c.refresh();
     if (!mounted || c.isDisposed) return;
     final id = action.orderId;
-    if (action.kind == PushActionKind.showQueue && id != null && c.byId(id)?.isIncoming == true) {
+    if (action.kind == PushActionKind.showQueue &&
+        id != null &&
+        c.byId(id)?.isIncoming == true) {
       OrderQueueService.enqueueIncomingOrder(context, id, c);
     }
   }
@@ -242,7 +259,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
         icon: LucideIcons.bellRing,
         title: 'Hear every new order',
         hindiTitle: 'हर नया ऑर्डर सुनें',
-        message: '${BrandConfig.name} needs to send you notifications so a new order rings on this phone, even when the app is closed or the screen is locked.\nऐप बंद या स्क्रीन लॉक होने पर भी नया ऑर्डर बजे, इसके लिए नोटिफिकेशन चालू करें।',
+        message:
+            '${BrandConfig.name} needs to send you notifications so a new order rings on this phone, even when the app is closed or the screen is locked.\nऐप बंद या स्क्रीन लॉक होने पर भी नया ऑर्डर बजे, इसके लिए नोटिफिकेशन चालू करें।',
         safeLabel: 'Not now',
         safeSublabel: 'अभी नहीं',
         confirmLabel: 'Allow notifications',
@@ -257,7 +275,10 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
 
   /// Notification permission is settled: not waiting for the system to report it, and no explainer open or due.
   bool _pushSettled(PushController? push) =>
-      push == null || (!_explainerOpen && !push.shouldExplain && (!push.isActive || push.notificationAccess != null));
+      push == null ||
+      (!_explainerOpen &&
+          !push.shouldExplain &&
+          (!push.isActive || push.notificationAccess != null));
 
   /// Once per app start / login, when Grozo says this restaurant has no map location: offer the detect sheet.
   /// It waits for the notification explainer (one thing at a time, notifications first); the banner stays either way.
@@ -266,7 +287,9 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
     if (!shouldPromptForLocation(SessionScope.maybeOf(context))) return;
     _locationPromptOpen = true;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted || _explainerOpen || !shouldPromptForLocation(SessionScope.maybeOf(context))) {
+      if (!mounted ||
+          _explainerOpen ||
+          !shouldPromptForLocation(SessionScope.maybeOf(context))) {
         _locationPromptOpen = false;
         return;
       }
@@ -306,7 +329,9 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
     final id = _vendorId;
     if (_storeBusy) return;
     if (id == null) {
-      _toast('This login is not linked to a restaurant. Email Help and requests  ·  ${BrandConfig.name} को ईमेल करें', error: true);
+      _toast(
+          'This login is not linked to a store. Email Help and requests  ·  ${BrandConfig.name} को ईमेल करें',
+          error: true);
       return;
     }
     if (!newValue) {
@@ -315,7 +340,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
         icon: LucideIcons.powerOff,
         title: 'Close the store?',
         hindiTitle: 'दुकान बंद करें?',
-        message: 'You will stop getting new orders until you open again. Orders you already have stay.\nनए ऑर्डर आना बंद हो जाएंगे। चालू ऑर्डर बने रहेंगे।',
+        message:
+            'You will stop getting new orders until you open again. Orders you already have stay.\nनए ऑर्डर आना बंद हो जाएंगे। चालू ऑर्डर बने रहेंगे।',
         safeLabel: 'Keep open',
         safeSublabel: 'खुला रखें',
         confirmLabel: 'Yes, close store',
@@ -329,11 +355,12 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
       final open = await showConfirmSheet(
         context,
         icon: LucideIcons.utensils,
-        title: 'Open with no dishes?',
-        hindiTitle: 'बिना व्यंजन के दुकान खोलें?',
-        message: 'You have no dishes yet - customers will see an empty menu. Open anyway?\nअभी कोई व्यंजन नहीं है - ग्राहकों को खाली मेनू दिखेगा। फिर भी खोलें?',
-        safeLabel: 'Add a dish first',
-        safeSublabel: 'पहले व्यंजन जोड़ें',
+        title: 'Open with no products?',
+        hindiTitle: 'बिना उत्पाद के दुकान खोलें?',
+        message:
+            'You have no products yet - customers will see an empty catalog. Open anyway?\nअभी कोई उत्पाद नहीं है - ग्राहकों को खाली उत्पाद सूची दिखेगा। फिर भी खोलें?',
+        safeLabel: 'Add a product first',
+        safeSublabel: 'पहले उत्पाद जोड़ें',
         confirmLabel: 'Open anyway',
         confirmSublabel: 'फिर भी खोलें',
       );
@@ -357,9 +384,13 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
       _storeOpen = res.ok ? res.data : before;
     });
     if (res.ok) {
-      _toast(res.data == true ? 'Store is now OPEN for orders  ·  दुकान खुली' : 'Store is now CLOSED  ·  दुकान बंद');
+      _toast(res.data == true
+          ? 'Store is now OPEN for orders  ·  दुकान खुली'
+          : 'Store is now CLOSED  ·  दुकान बंद');
     } else {
-      _toast('Could not ${newValue ? 'open' : 'close'} the store. ${failureText(res.failure!, serverMessage: res.message, code: res.code).both}', error: true);
+      _toast(
+          'Could not ${newValue ? 'open' : 'close'} the store. ${failureText(res.failure!, serverMessage: res.message, code: res.code).both}',
+          error: true);
     }
   }
 
@@ -380,7 +411,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
       icon: LucideIcons.bellRing,
       title: 'Can you hear the alarm?',
       hindiTitle: 'क्या अलार्म सुनाई दे रहा है?',
-      message: 'Turn the phone volume up if it is quiet.\nआवाज़ कम है तो फ़ोन की आवाज़ बढ़ाएं।',
+      message:
+          'Turn the phone volume up if it is quiet.\nआवाज़ कम है तो फ़ोन की आवाज़ बढ़ाएं।',
       safeLabel: 'Stop alarm',
       safeSublabel: 'अलार्म बंद करें',
       confirmLabel: 'Yes, I hear it',
@@ -402,7 +434,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
       icon: LucideIcons.logOut,
       title: 'Log out?',
       hindiTitle: 'लॉग आउट करें?',
-      message: 'You will not get new order alerts on this phone until you log in again.\nदोबारा लॉग इन करने तक इस फ़ोन पर नए ऑर्डर नहीं आएंगे।',
+      message:
+          'You will not get new order alerts on this phone until you log in again.\nदोबारा लॉग इन करने तक इस फ़ोन पर नए ऑर्डर नहीं आएंगे।',
       safeLabel: 'Stay logged in',
       safeSublabel: 'लॉग इन रहें',
       confirmLabel: 'Yes, log out',
@@ -412,7 +445,9 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
     final messenger = ScaffoldMessenger.of(context);
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text('Logging out…  ·  लॉग आउट हो रहा है'), duration: Duration(seconds: 6)));
+      ..showSnackBar(const SnackBar(
+          content: Text('Logging out…  ·  लॉग आउट हो रहा है'),
+          duration: Duration(seconds: 6)));
     await controller.logout();
     messenger.hideCurrentSnackBar();
   }
@@ -420,11 +455,13 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
   void _openPayoutDetails() {
     final c = _payout;
     if (c == null) return;
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => PayoutDetailsScreen(controller: c)));
+    Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => PayoutDetailsScreen(controller: c)));
   }
 
   void _openSettlements() {
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => _SettlementsRoute(api: _payoutApi)));
+    Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => _SettlementsRoute(api: _payoutApi)));
   }
 
   void _openHelpSheet() {
@@ -434,124 +471,157 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
       builder: (sheetContext) {
         final k = sheetContext.k;
         return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 24),
-          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('Need help?', style: KraveoType.headline.copyWith(color: k.ink)),
-            Text('मदद चाहिए?', style: KraveoType.titleLg.copyWith(color: k.inkMuted)),
-            const SizedBox(height: 16),
-            KCard(
-              color: k.brandSoft,
-              elevated: false,
-              child: Row(children: [
-                Icon(LucideIcons.headset, size: 30, color: k.brand),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Help and requests', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
-                    FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text('Contact your operations team', key: const ValueKey('support-email'), style: KraveoType.titleLg.copyWith(color: k.ink, fontWeight: FontWeight.w800))),
+          padding:
+              const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 24),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Need help?',
+                    style: KraveoType.headline.copyWith(color: k.ink)),
+                Text('मदद चाहिए?',
+                    style: KraveoType.titleLg.copyWith(color: k.inkMuted)),
+                const SizedBox(height: 16),
+                KCard(
+                  color: k.brandSoft,
+                  elevated: false,
+                  child: Row(children: [
+                    Icon(LucideIcons.headset, size: 30, color: k.brand),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Help and requests',
+                                style: KraveoType.bodySm
+                                    .copyWith(color: k.inkMuted, fontSize: 14)),
+                            FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text('Contact your operations team',
+                                    key: const ValueKey('support-email'),
+                                    style: KraveoType.titleLg.copyWith(
+                                        color: k.ink,
+                                        fontWeight: FontWeight.w800))),
+                          ]),
+                    ),
                   ]),
                 ),
+                const SizedBox(height: 16),
+                KButton(
+                  key: const ValueKey('email-support'),
+                  label: 'Help and requests',
+                  sublabel: '${BrandConfig.name} सपोर्ट को ईमेल करें',
+                  icon: LucideIcons.mail,
+                  large: true,
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    if (mounted) {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) =>
+                                  SupportCenter(call: ProductApi().call)));
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+                KButton(
+                  label: 'Test the order alarm',
+                  sublabel: 'अलार्म जाँचें',
+                  icon: LucideIcons.bellRing,
+                  kind: KButtonKind.tonal,
+                  large: true,
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    _testAlarm();
+                  },
+                ),
+                if (partner != null) ...[
+                  const SizedBox(height: 20),
+                  _AccountCard(partner: partner),
+                  const SizedBox(height: 12),
+                  KButton(
+                    key: const ValueKey('store-profile-row'),
+                    label: 'Store profile',
+                    sublabel: 'दुकान की जानकारी',
+                    icon: LucideIcons.store,
+                    kind: KButtonKind.tonal,
+                    large: true,
+                    onPressed: () async {
+                      Navigator.of(sheetContext).pop();
+                      await Navigator.of(context).push(MaterialPageRoute<void>(
+                          builder: (_) => const StoreProfileScreen()));
+                      if (mounted) {
+                        await SessionScope.maybeOf(context)?.refreshApproval();
+                      }
+                    },
+                  ),
+                  if (_payout != null) ...[
+                    const SizedBox(height: 12),
+                    KButton(
+                      key: const ValueKey('payout-details-row'),
+                      label: 'Payout details',
+                      sublabel: 'पेआउट की जानकारी',
+                      icon: LucideIcons.landmark,
+                      kind: KButtonKind.tonal,
+                      large: true,
+                      onPressed: () {
+                        Navigator.of(sheetContext).pop();
+                        if (mounted) _openPayoutDetails();
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    KButton(
+                      key: const ValueKey('settlements-row'),
+                      label: 'My settlements',
+                      sublabel: 'मेरे भुगतान',
+                      icon: LucideIcons.wallet,
+                      kind: KButtonKind.tonal,
+                      large: true,
+                      onPressed: () {
+                        Navigator.of(sheetContext).pop();
+                        if (mounted) _openSettlements();
+                      },
+                    ),
+                  ],
+                  if (partner.hasLocation != null) ...[
+                    const SizedBox(height: 12),
+                    KButton(
+                      key: kLocationRowKey,
+                      label: partner.hasLocation == true
+                          ? 'Update store location'
+                          : 'Set store location',
+                      sublabel: partner.hasLocation == true
+                          ? 'स्टोर की लोकेशन बदलें'
+                          : 'स्टोर की लोकेशन डालें',
+                      icon: LucideIcons.mapPin,
+                      kind: KButtonKind.tonal,
+                      large: true,
+                      onPressed: () {
+                        Navigator.of(sheetContext).pop();
+                        if (mounted) {
+                          runRestaurantLocationFlow(context,
+                              update: partner.hasLocation == true);
+                        }
+                      },
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  KButton(
+                    key: const ValueKey('logout-button'),
+                    label: 'Log out',
+                    sublabel: 'लॉग आउट',
+                    icon: LucideIcons.logOut,
+                    kind: KButtonKind.ghost,
+                    large: true,
+                    onPressed: () {
+                      Navigator.of(sheetContext).pop();
+                      _confirmLogout();
+                    },
+                  ),
+                ],
               ]),
-            ),
-            const SizedBox(height: 16),
-            KButton(
-              key: const ValueKey('email-support'),
-              label: 'Help and requests',
-              sublabel: '${BrandConfig.name} सपोर्ट को ईमेल करें',
-              icon: LucideIcons.mail,
-              large: true,
-              onPressed: () {
-                Navigator.of(sheetContext).pop();
-                if (mounted) Navigator.push(context, MaterialPageRoute(builder: (_) => SupportCenter(call: ProductApi().call)));
-              },
-            ),
-            const SizedBox(height: 12),
-            KButton(
-              label: 'Test the order alarm',
-              sublabel: 'अलार्म जाँचें',
-              icon: LucideIcons.bellRing,
-              kind: KButtonKind.tonal,
-              large: true,
-              onPressed: () {
-                Navigator.of(sheetContext).pop();
-                _testAlarm();
-              },
-            ),
-            if (partner != null) ...[
-              const SizedBox(height: 20),
-              _AccountCard(partner: partner),
-              const SizedBox(height: 12),
-              KButton(
-                key: const ValueKey('store-profile-row'),
-                label: 'Store profile',
-                sublabel: 'दुकान की जानकारी',
-                icon: LucideIcons.store,
-                kind: KButtonKind.tonal,
-                large: true,
-                onPressed: () async {
-                  Navigator.of(sheetContext).pop();
-                  await Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const StoreProfileScreen()));
-                  if (mounted) await SessionScope.maybeOf(context)?.refreshApproval();
-                },
-              ),
-              if (_payout != null) ...[
-                const SizedBox(height: 12),
-                KButton(
-                  key: const ValueKey('payout-details-row'),
-                  label: 'Payout details',
-                  sublabel: 'पेआउट की जानकारी',
-                  icon: LucideIcons.landmark,
-                  kind: KButtonKind.tonal,
-                  large: true,
-                  onPressed: () {
-                    Navigator.of(sheetContext).pop();
-                    if (mounted) _openPayoutDetails();
-                  },
-                ),
-                const SizedBox(height: 12),
-                KButton(
-                  key: const ValueKey('settlements-row'),
-                  label: 'My settlements',
-                  sublabel: 'मेरे भुगतान',
-                  icon: LucideIcons.wallet,
-                  kind: KButtonKind.tonal,
-                  large: true,
-                  onPressed: () {
-                    Navigator.of(sheetContext).pop();
-                    if (mounted) _openSettlements();
-                  },
-                ),
-              ],
-              if (partner.hasLocation != null) ...[
-                const SizedBox(height: 12),
-                KButton(
-                  key: kLocationRowKey,
-                  label: partner.hasLocation == true ? 'Update restaurant location' : 'Set restaurant location',
-                  sublabel: partner.hasLocation == true ? 'रेस्टोरेंट की लोकेशन बदलें' : 'रेस्टोरेंट की लोकेशन डालें',
-                  icon: LucideIcons.mapPin,
-                  kind: KButtonKind.tonal,
-                  large: true,
-                  onPressed: () {
-                    Navigator.of(sheetContext).pop();
-                    if (mounted) runRestaurantLocationFlow(context, update: partner.hasLocation == true);
-                  },
-                ),
-              ],
-              const SizedBox(height: 12),
-              KButton(
-                key: const ValueKey('logout-button'),
-                label: 'Log out',
-                sublabel: 'लॉग आउट',
-                icon: LucideIcons.logOut,
-                kind: KButtonKind.ghost,
-                large: true,
-                onPressed: () {
-                  Navigator.of(sheetContext).pop();
-                  _confirmLogout();
-                },
-              ),
-            ],
-          ]),
         );
       },
     );
@@ -559,10 +629,12 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
 
   /// Owner name under the restaurant name (or the phone when the account is named after it).
   static String _headerSubtitle(PartnerSession? partner) {
-    if (partner == null) return '${BrandConfig.name} Restaurant Partner';
+    if (partner == null) return '${BrandConfig.name} Store Partner';
     final owner = partner.name.trim();
     if (owner.isNotEmpty && owner != partner.restaurantName) return owner;
-    return (partner.phone?.trim().isNotEmpty ?? false) ? partner.phone! : '${BrandConfig.name} Restaurant Partner';
+    return (partner.phone?.trim().isNotEmpty ?? false)
+        ? partner.phone!
+        : '${BrandConfig.name} Store Partner';
   }
 
   @override
@@ -577,142 +649,189 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> with WidgetsBinding
       canPop: false,
       onPopInvokedWithResult: _onBackPressed,
       child: Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // Top bar: which store + help
-            Padding(
-              padding: const EdgeInsets.fromLTRB(KSpace.gutter, 6, 12, 0),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(color: k.brand, borderRadius: BorderRadius.circular(KRadius.md)),
-                    child: Icon(LucideIcons.store, color: k.onBrand, size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(partner?.restaurantName ?? 'Your restaurant', maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.titleLg.copyWith(color: k.ink, fontWeight: FontWeight.w800)),
-                        Text(_headerSubtitle(partner), maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
-                      ],
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              // Top bar: which store + help
+              Padding(
+                padding: const EdgeInsets.fromLTRB(KSpace.gutter, 6, 12, 0),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                          color: k.brand,
+                          borderRadius: BorderRadius.circular(KRadius.md)),
+                      child:
+                          Icon(LucideIcons.store, color: k.onBrand, size: 24),
                     ),
-                  ),
-                  Semantics(
-                    button: true,
-                    label: 'Help and support',
-                    excludeSemantics: true,
-                    child: KPressable(
-                      onTap: _openHelpSheet,
-                      child: Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(color: k.brandSoft, shape: BoxShape.circle),
-                        child: Icon(LucideIcons.headset, size: 26, color: k.brand),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(partner?.restaurantName ?? 'Your store',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: KraveoType.titleLg.copyWith(
+                                  color: k.ink, fontWeight: FontWeight.w800)),
+                          Text(_headerSubtitle(partner),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: KraveoType.bodySm
+                                  .copyWith(color: k.inkMuted, fontSize: 14)),
+                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // The store OPEN / CLOSED control - always visible
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: KSpace.gutter),
-              child: VMaxWidth(
-                child: VStoreStatusHero(
-                  isOpen: _storeOpen ?? true,
-                  onTap: () => _toggleStoreStatusWithConfirmation(!(_storeOpen ?? true)),
+                    Semantics(
+                      button: true,
+                      label: 'Help and support',
+                      excludeSemantics: true,
+                      child: KPressable(
+                        onTap: _openHelpSheet,
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                              color: k.brandSoft, shape: BoxShape.circle),
+                          child: Icon(LucideIcons.headset,
+                              size: 26, color: k.brand),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
+              const SizedBox(height: 8),
 
-            if (push != null)
-              PushStatusCards(push: push, locationNotice: partner?.needsLocation == true ? const LocationBanner(key: kLocationBannerKey) : null)
-            else if (partner?.needsLocation == true)
-              const NoticeFrame(child: LocationBanner(key: kLocationBannerKey)),
+              // The store OPEN / CLOSED control - always visible
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: KSpace.gutter),
+                child: VMaxWidth(
+                  child: VStoreStatusHero(
+                    isOpen: _storeOpen ?? true,
+                    onTap: () => _toggleStoreStatusWithConfirmation(
+                        !(_storeOpen ?? true)),
+                  ),
+                ),
+              ),
 
-            Expanded(
-              child: (orders == null || menu == null)
-                  ? const _NoRestaurantLinked()
-                  : IndexedStack(
-                      index: _currentIndex,
-                      children: [
-                        KitchenQueueScreen(
-                          controller: orders,
-                          onOpenIncoming: _openIncoming,
-                          firstRun: ListenableBuilder(
-                            listenable: menu,
+              if (push != null)
+                PushStatusCards(
+                    push: push,
+                    locationNotice: partner?.needsLocation == true
+                        ? const LocationBanner(key: kLocationBannerKey)
+                        : null)
+              else if (partner?.needsLocation == true)
+                const NoticeFrame(
+                    child: LocationBanner(key: kLocationBannerKey)),
+
+              Expanded(
+                child: (orders == null || menu == null)
+                    ? const _NoRestaurantLinked()
+                    : IndexedStack(
+                        index: _currentIndex,
+                        children: [
+                          KitchenQueueScreen(
+                            controller: orders,
+                            onOpenIncoming: _openIncoming,
+                            firstRun: ListenableBuilder(
+                              listenable: menu,
+                              builder: (context, _) {
+                                final noDishes =
+                                    menu.loadedOnce && menu.dishes.isEmpty;
+                                final closed = _storeOpen == false;
+                                final waiting = menu.loadedOnce &&
+                                    menu.dishes.isNotEmpty &&
+                                    !menu.dishes.any((d) => d.isLive) &&
+                                    menu.waitingCount > 0;
+                                if (!noDishes && !closed && !waiting) {
+                                  return const SizedBox.shrink();
+                                }
+                                return FirstRunCard(
+                                  waitingApproval: waiting,
+                                  hasDishes: !noDishes,
+                                  isOpen: !closed,
+                                  onAddDish: () =>
+                                      setState(() => _currentIndex = 1),
+                                  onOpenStore: () =>
+                                      _toggleStoreStatusWithConfirmation(true),
+                                );
+                              },
+                            ),
+                          ),
+                          _productsVisited || _currentIndex == 1
+                              ? ProductInventoryScreen(
+                                  vendorId: _vendorId!, api: widget.productApi)
+                              : const SizedBox.shrink(),
+                          ListenableBuilder(
+                            listenable: orders,
                             builder: (context, _) {
-                              final noDishes = menu.loadedOnce && menu.dishes.isEmpty;
-                              final closed = _storeOpen == false;
-                              final waiting = menu.loadedOnce && menu.dishes.isNotEmpty && !menu.dishes.any((d) => d.isLive) && menu.waitingCount > 0;
-                              if (!noDishes && !closed && !waiting) return const SizedBox.shrink();
-                              return FirstRunCard(
-                                waitingApproval: waiting,
-                                hasDishes: !noDishes,
-                                isOpen: !closed,
-                                onAddDish: () => setState(() => _currentIndex = 1),
-                                onOpenStore: () => _toggleStoreStatusWithConfirmation(true),
+                              final now = DateTime.now();
+                              final today =
+                                  DateTime(now.year, now.month, now.day);
+                              final earnings = SalesAnalyticsScreen(
+                                orders: orders.allOrders,
+                                now: now,
+                                complete: orders.historyCovers(today),
+                                loading: orders.historyLoading,
+                                onRetry: () => orders.loadHistorySince(today),
+                                header: _payout == null
+                                    ? null
+                                    : VMaxWidth(
+                                        child: PayoutBanner(
+                                            controller: _payout!,
+                                            onAdd: _openPayoutDetails)),
                               );
+                              return earnings;
                             },
                           ),
-                        ),
-                        StockManagerScreen(controller: menu),
-                        ListenableBuilder(
-                          listenable: orders,
-                          builder: (context, _) {
-                            final now = DateTime.now();
-                            final today = DateTime(now.year, now.month, now.day);
-                            final earnings = SalesAnalyticsScreen(
-                              orders: orders.allOrders,
-                              now: now,
-                              complete: orders.historyCovers(today),
-                              loading: orders.historyLoading,
-                              onRetry: () => orders.loadHistorySince(today),
-                            );
-                            final payout = _payout;
-                            if (payout == null) return earnings;
-                            // A small, closable reminder above the earnings while no payout details are saved.
-                            return Column(children: [
-                              VMaxWidth(child: PayoutBanner(controller: payout, onAdd: _openPayoutDetails)),
-                              Expanded(child: earnings),
-                            ]);
-                          },
-                        ),
-                      ],
-                    ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: orders == null
-          ? null
-          : ListenableBuilder(
-              listenable: orders,
-              builder: (context, _) => VBigNav(
-                index: _currentIndex,
-                onChanged: (index) {
-                  setState(() => _currentIndex = index);
-                  if (index == 2) {
-                    final payout = _payout;
-                    if (payout != null && !payout.loaded && !payout.loading) payout.load();
-                    final now = DateTime.now();
-                    orders.loadHistorySince(DateTime(now.year, now.month, now.day));
-                  }
-                },
-                items: [
-                  VNavItem(icon: LucideIcons.chefHat, label: 'Orders', hindi: 'ऑर्डर', badge: orders.incoming.length + orders.kitchen.length),
-                  const VNavItem(icon: LucideIcons.utensils, label: 'Menu', hindi: 'मेनू'),
-                  const VNavItem(icon: LucideIcons.wallet, label: 'Earnings', hindi: 'कमाई'),
-                ],
+                        ],
+                      ),
               ),
-            ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: orders == null
+            ? null
+            : ListenableBuilder(
+                listenable: orders,
+                builder: (context, _) => VBigNav(
+                  index: _currentIndex,
+                  onChanged: (index) {
+                    setState(() {
+                      _currentIndex = index;
+                      if (index == 1) _productsVisited = true;
+                    });
+                    if (index == 2) {
+                      final payout = _payout;
+                      if (payout != null && !payout.loaded && !payout.loading) {
+                        payout.load();
+                      }
+                      final now = DateTime.now();
+                      orders.loadHistorySince(
+                          DateTime(now.year, now.month, now.day));
+                    }
+                  },
+                  items: [
+                    VNavItem(
+                        icon: LucideIcons.receiptText,
+                        label: 'Orders',
+                        hindi: 'ऑर्डर',
+                        badge: orders.incoming.length + orders.kitchen.length),
+                    const VNavItem(
+                        icon: LucideIcons.package,
+                        label: 'Products',
+                        hindi: 'उत्पाद'),
+                    const VNavItem(
+                        icon: LucideIcons.wallet,
+                        label: 'Earnings',
+                        hindi: 'कमाई'),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -728,8 +847,9 @@ class _NoRestaurantLinked extends StatelessWidget {
       child: VScrollCenter(
         child: KEmptyState(
           icon: LucideIcons.store,
-          title: 'No restaurant linked',
-          message: 'This login is not linked to a restaurant yet. Email ${BrandConfig.name} support.\nयह खाता किसी रेस्टोरेंट से जुड़ा नहीं है। ${BrandConfig.name} सपोर्ट को ईमेल करें।',
+          title: 'No store linked',
+          message:
+              'This login is not linked to a store yet. Email ${BrandConfig.name} support.\nयह खाता किसी स्टोर से जुड़ा नहीं है। ${BrandConfig.name} सपोर्ट को ईमेल करें।',
           action: SupportEmailLink(),
         ),
       ),
@@ -753,10 +873,22 @@ class _AccountCard extends StatelessWidget {
         KAvatar(id: partner.avatarId, size: 48),
         const SizedBox(width: 14),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Logged in as · लॉग इन', style: KraveoType.label.copyWith(color: k.inkMuted, fontSize: 12.5)),
-            Text(partner.restaurantName, maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.titleLg.copyWith(color: k.ink, fontWeight: FontWeight.w800)),
-            if (phone.isNotEmpty) Text(phone, maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Logged in as · लॉग इन',
+                style: KraveoType.label
+                    .copyWith(color: k.inkMuted, fontSize: 12.5)),
+            Text(partner.restaurantName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: KraveoType.titleLg
+                    .copyWith(color: k.ink, fontWeight: FontWeight.w800)),
+            if (phone.isNotEmpty)
+              Text(phone,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: KraveoType.bodySm
+                      .copyWith(color: k.inkMuted, fontSize: 14)),
           ]),
         ),
       ]),
@@ -775,7 +907,8 @@ class _SettlementsRoute extends StatefulWidget {
 }
 
 class _SettlementsRouteState extends State<_SettlementsRoute> {
-  late final SettlementsController _controller = SettlementsController(api: widget.api);
+  late final SettlementsController _controller =
+      SettlementsController(api: widget.api);
 
   @override
   void dispose() {
@@ -784,5 +917,6 @@ class _SettlementsRouteState extends State<_SettlementsRoute> {
   }
 
   @override
-  Widget build(BuildContext context) => SettlementsScreen(controller: _controller, api: widget.api);
+  Widget build(BuildContext context) =>
+      SettlementsScreen(controller: _controller, api: widget.api);
 }

@@ -17,8 +17,8 @@ class RejectReason {
 
   static const List<RejectReason> quickPicks = [
     RejectReason('Item out of stock', 'सामान खत्म है'),
-    RejectReason('Kitchen is too busy right now', 'अभी किचन में बहुत काम है'),
-    RejectReason('Restaurant is closing', 'दुकान बंद हो रही है'),
+    RejectReason('Store is too busy right now', 'अभी किचन में बहुत काम है'),
+    RejectReason('Store is closing', 'दुकान बंद हो रही है'),
     RejectReason('Cannot make this order', 'यह ऑर्डर नहीं बन सकता'),
   ];
 }
@@ -31,7 +31,8 @@ enum _Panel { main, reject }
 /// server says the order is gone (cancelled, expired, answered on another phone) the screen says so plainly
 /// and the alarm has already stopped.
 class IncomingOrderDialog extends StatefulWidget {
-  const IncomingOrderDialog({super.key, required this.orderId, required this.controller});
+  const IncomingOrderDialog(
+      {super.key, required this.orderId, required this.controller});
 
   final String orderId;
   final OrderQueueController controller;
@@ -40,8 +41,10 @@ class IncomingOrderDialog extends StatefulWidget {
   State<IncomingOrderDialog> createState() => _IncomingOrderDialogState();
 }
 
-class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTickerProviderStateMixin {
-  late final AnimationController _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2400));
+class _IncomingOrderDialogState extends State<IncomingOrderDialog>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 2400));
   final TextEditingController _otherReason = TextEditingController();
   Timer? _ticker;
 
@@ -103,7 +106,10 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
       return;
     }
     final o = _c.byId(widget.orderId);
-    if (o != null && o.isIncoming && !_askedAfterDeadline && !_c.now().isBefore(o.acceptDeadline)) {
+    if (o != null &&
+        o.isIncoming &&
+        !_askedAfterDeadline &&
+        !_c.now().isBefore(o.acceptDeadline)) {
       // Time is up: Grozo cancels within about a minute. Ask now so the screen follows quickly.
       _askedAfterDeadline = true;
       _c.refresh();
@@ -119,7 +125,8 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
     if (message != null) {
       messenger
         ?..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(message), duration: const Duration(seconds: 4)));
+        ..showSnackBar(SnackBar(
+            content: Text(message), duration: const Duration(seconds: 4)));
     }
   }
 
@@ -129,16 +136,22 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
       _working = OrderAction.accept;
       _error = null;
     });
-    final out = await _c.accept(widget.orderId, prepMinutes: _selectedPrepTimeMinutes);
+    final out =
+        await _c.accept(widget.orderId, prepMinutes: _selectedPrepTimeMinutes);
     if (!mounted) return;
     setState(() => _working = null);
     if (out.ok) {
-      _close(message: 'Order ${_lastSeen?.shortCode ?? ''} accepted  ·  ऑर्डर स्वीकार, किचन में जुड़ गया');
+      _close(
+          message:
+              'Order ${_lastSeen?.shortCode ?? ''} accepted  ·  ऑर्डर स्वीकार, किचन में जुड़ गया');
       return;
     }
     if (out.ignored) return;
     // If the order is gone or moved on, the "gone" panel explains it; otherwise show why and allow a retry.
-    if (_c.byId(widget.orderId)?.isIncoming == true) setState(() => _error = failureText(out.failure!, serverMessage: out.message, code: out.code));
+    if (_c.byId(widget.orderId)?.isIncoming == true) {
+      setState(() => _error = failureText(out.failure!,
+          serverMessage: out.message, code: out.code));
+    }
   }
 
   String? get _chosenReason {
@@ -160,11 +173,16 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
     if (!mounted) return;
     setState(() => _working = null);
     if (out.ok) {
-      _close(message: 'Order ${_lastSeen?.shortCode ?? ''} rejected. The customer gets a refund.  ·  ऑर्डर मना किया');
+      _close(
+          message:
+              'Order ${_lastSeen?.shortCode ?? ''} rejected. The customer gets a refund.  ·  ऑर्डर मना किया');
       return;
     }
     if (out.ignored) return;
-    if (_c.byId(widget.orderId)?.isIncoming == true) setState(() => _error = failureText(out.failure!, serverMessage: out.message, code: out.code));
+    if (_c.byId(widget.orderId)?.isIncoming == true) {
+      setState(() => _error = failureText(out.failure!,
+          serverMessage: out.message, code: out.code));
+    }
   }
 
   @override
@@ -188,7 +206,10 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
                   return SingleChildScrollView(
                     child: Column(children: [
                       _buildHeader(k, order),
-                      Padding(padding: const EdgeInsets.fromLTRB(KSpace.gutter, 14, KSpace.gutter, 14), child: _buildBody(k, order)),
+                      Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                              KSpace.gutter, 14, KSpace.gutter, 14),
+                          child: _buildBody(k, order)),
                       _buildActionPanel(k),
                     ]),
                   );
@@ -198,7 +219,8 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
                     _buildHeader(k, order),
                     Expanded(
                       child: ListView(
-                        padding: const EdgeInsets.fromLTRB(KSpace.gutter, 14, KSpace.gutter, 14),
+                        padding: const EdgeInsets.fromLTRB(
+                            KSpace.gutter, 14, KSpace.gutter, 14),
                         children: [_buildBody(k, order)],
                       ),
                     ),
@@ -222,7 +244,8 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
           VNoteCallout(note: order.customerNote!, compact: true),
           const SizedBox(height: 10),
         ],
-        VSectionLabel(english: 'Items', hindi: 'सामान', count: order.items.length),
+        VSectionLabel(
+            english: 'Items', hindi: 'सामान', count: order.items.length),
         _buildItems(k, order),
       ]),
     );
@@ -235,16 +258,20 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
     final late = left.inSeconds <= 0;
     final urgent = left.inSeconds <= 120;
     final mm = (late ? 0 : left.inMinutes).toString().padLeft(2, '0');
-    final ss = (late ? 0 : left.inSeconds.remainder(60)).toString().padLeft(2, '0');
+    final ss =
+        (late ? 0 : left.inSeconds.remainder(60)).toString().padLeft(2, '0');
     return Semantics(
       liveRegion: true,
-      label: 'New order ${order.shortCode}. You earn ${formatRupees(order.earned)}',
+      label:
+          'New order ${order.shortCode}. You earn ${formatRupees(order.earned)}',
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 14),
+        padding:
+            const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 14),
         decoration: BoxDecoration(
           color: k.brand,
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(KRadius.xxl)),
+          borderRadius:
+              const BorderRadius.vertical(bottom: Radius.circular(KRadius.xxl)),
         ),
         child: SafeArea(
           bottom: false,
@@ -254,7 +281,9 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: BoxDecoration(color: k.onBrand.withValues(alpha: 0.16), shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                      color: k.onBrand.withValues(alpha: 0.16),
+                      shape: BoxShape.circle),
                   child: Icon(LucideIcons.bellRing, size: 24, color: k.onBrand),
                 ),
                 const SizedBox(width: 12),
@@ -262,17 +291,30 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('New order', maxLines: 1, style: KraveoType.headline.copyWith(color: k.onBrand)),
-                      Text('नया ऑर्डर', maxLines: 1, style: KraveoType.titleMd.copyWith(color: k.onBrand.withValues(alpha: 0.9))),
-                    ]),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('New order',
+                              maxLines: 1,
+                              style: KraveoType.headline
+                                  .copyWith(color: k.onBrand)),
+                          Text('नया ऑर्डर',
+                              maxLines: 1,
+                              style: KraveoType.titleMd.copyWith(
+                                  color: k.onBrand.withValues(alpha: 0.9))),
+                        ]),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(color: k.onBrand.withValues(alpha: 0.16), borderRadius: BorderRadius.circular(KRadius.pill)),
-                  child: Text(order.shortCode, maxLines: 1, style: KraveoType.titleMd.copyWith(color: k.onBrand)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                      color: k.onBrand.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(KRadius.pill)),
+                  child: Text(order.shortCode,
+                      maxLines: 1,
+                      style: KraveoType.titleMd.copyWith(color: k.onBrand)),
                 ),
               ]),
               SizedBox(
@@ -280,15 +322,31 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
                 width: double.infinity,
                 child: ClipRect(
                   child: Stack(alignment: Alignment.center, children: [
-                    Positioned.fill(child: CustomPaint(painter: _RipplePainter(_pulseController, k.onBrand))),
+                    Positioned.fill(
+                        child: CustomPaint(
+                            painter:
+                                _RipplePainter(_pulseController, k.onBrand))),
                     AnimatedBuilder(
                       animation: _pulseController,
-                      builder: (context, child) => Transform.scale(scale: 1 + 0.03 * math.sin(_pulseController.value * math.pi * 2), child: child),
+                      builder: (context, child) => Transform.scale(
+                          scale: 1 +
+                              0.03 *
+                                  math.sin(
+                                      _pulseController.value * math.pi * 2),
+                          child: child),
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: Column(mainAxisSize: MainAxisSize.min, children: [
-                          Text('You earn  ·  आपकी कमाई', maxLines: 1, style: KraveoType.label.copyWith(color: k.onBrand.withValues(alpha: 0.9), fontSize: 13)),
-                          Text(formatRupees(order.earned), key: const ValueKey('you-earn'), style: KraveoType.displayLg.copyWith(fontSize: 64, height: 1.05, color: k.accent)),
+                        child:
+                            Column(mainAxisSize: MainAxisSize.min, children: [
+                          Text('You earn  ·  आपकी कमाई',
+                              maxLines: 1,
+                              style: KraveoType.label.copyWith(
+                                  color: k.onBrand.withValues(alpha: 0.9),
+                                  fontSize: 13)),
+                          Text(formatRupees(order.earned),
+                              key: const ValueKey('you-earn'),
+                              style: KraveoType.displayLg.copyWith(
+                                  fontSize: 64, height: 1.05, color: k.accent)),
                         ]),
                       ),
                     ),
@@ -301,19 +359,24 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
                   'At your prices  ·  आपके दाम पर',
                   key: const ValueKey('earn-help'),
                   maxLines: 1,
-                  style: KraveoType.titleMd.copyWith(color: k.onBrand, fontSize: 15, fontWeight: FontWeight.w800),
+                  style: KraveoType.titleMd.copyWith(
+                      color: k.onBrand,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800),
                 ),
               ),
               const SizedBox(height: 6),
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Icon(LucideIcons.mapPin, size: 18, color: k.onBrand.withValues(alpha: 0.9)),
+                Icon(LucideIcons.mapPin,
+                    size: 18, color: k.onBrand.withValues(alpha: 0.9)),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
                     '${order.studentName} · ${order.studentLocation}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: KraveoType.titleMd.copyWith(color: k.onBrand.withValues(alpha: 0.95), fontSize: 15),
+                    style: KraveoType.titleMd.copyWith(
+                        color: k.onBrand.withValues(alpha: 0.95), fontSize: 15),
                   ),
                 ),
               ]),
@@ -331,7 +394,9 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
                 const SizedBox(width: 8),
                 Expanded(
                   child: Semantics(
-                    label: late ? 'Answer time is over' : 'Answer within $mm minutes $ss seconds',
+                    label: late
+                        ? 'Answer time is over'
+                        : 'Answer within $mm minutes $ss seconds',
                     excludeSemantics: true,
                     child: _HeaderChip(
                       key: const ValueKey('accept-countdown'),
@@ -365,18 +430,33 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
                 constraints: const BoxConstraints(minWidth: 64, minHeight: 52),
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: k.brandSoft, borderRadius: BorderRadius.circular(KRadius.md)),
-                child: Text('${order.items[i].quantity}×', style: KraveoType.headline.copyWith(fontSize: 30, color: k.brand)),
+                decoration: BoxDecoration(
+                    color: k.brandSoft,
+                    borderRadius: BorderRadius.circular(KRadius.md)),
+                child: Text('${order.items[i].quantity}×',
+                    style: KraveoType.headline
+                        .copyWith(fontSize: 30, color: k.brand)),
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: Text(order.items[i].name, maxLines: 3, overflow: TextOverflow.ellipsis, style: KraveoType.titleLg.copyWith(color: k.ink, fontSize: 21, fontWeight: FontWeight.w700)),
+                child: Text(order.items[i].name,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: KraveoType.titleLg.copyWith(
+                        color: k.ink,
+                        fontSize: 21,
+                        fontWeight: FontWeight.w700)),
               ),
               const SizedBox(width: 10),
               // A big line total shrinks a little instead of squeezing the dish name out of the row.
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 110),
-                child: FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerRight, child: Text(formatRupees(order.items[i].totalPrice), maxLines: 1, style: KraveoType.titleMd.copyWith(color: k.inkMuted))),
+                child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(formatRupees(order.items[i].totalPrice),
+                        maxLines: 1,
+                        style: KraveoType.titleMd.copyWith(color: k.inkMuted))),
               ),
             ]),
           ),
@@ -388,8 +468,10 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
   Widget _buildReasons(KraveoTokens k) {
     return VMaxWidth(
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text('Why are you rejecting?', style: KraveoType.headlineSm.copyWith(color: k.ink)),
-        Text('मना करने का कारण चुनें · ग्राहक को दिखेगा', style: KraveoType.titleMd.copyWith(color: k.inkMuted)),
+        Text('Why are you rejecting?',
+            style: KraveoType.headlineSm.copyWith(color: k.ink)),
+        Text('मना करने का कारण चुनें · ग्राहक को दिखेगा',
+            style: KraveoType.titleMd.copyWith(color: k.inkMuted)),
         const SizedBox(height: 12),
         for (final r in RejectReason.quickPicks) ...[
           _ReasonTile(
@@ -422,7 +504,8 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
             maxLines: 3,
             onChanged: (_) => setState(() {}),
             style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 18),
-            decoration: const InputDecoration(hintText: 'Type the reason (at least 3 letters)'),
+            decoration: const InputDecoration(
+                hintText: 'Type the reason (at least 3 letters)'),
           ),
         ],
       ]),
@@ -437,27 +520,33 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
       padding: const EdgeInsets.fromLTRB(KSpace.gutter, 10, KSpace.gutter, 12),
       decoration: BoxDecoration(
         color: k.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(KRadius.xxl)),
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(KRadius.xxl)),
         boxShadow: KShadow.lift(k.shadowTint),
       ),
       child: SafeArea(
         top: false,
         child: VMaxWidth(
-          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            if (_error != null) ...[
-              _ErrorBanner(text: _error!),
-              const SizedBox(height: 8),
-            ],
-            AnimatedSize(
-              duration: KMotion.base,
-              curve: KMotion.emphasized,
-              alignment: Alignment.bottomCenter,
-              child: AnimatedSwitcher(
-                duration: KMotion.fast,
-                child: _panel == _Panel.reject ? _buildRejectActions(k) : _buildMainActions(k),
-              ),
-            ),
-          ]),
+          child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (_error != null) ...[
+                  _ErrorBanner(text: _error!),
+                  const SizedBox(height: 8),
+                ],
+                AnimatedSize(
+                  duration: KMotion.base,
+                  curve: KMotion.emphasized,
+                  alignment: Alignment.bottomCenter,
+                  child: AnimatedSwitcher(
+                    duration: KMotion.fast,
+                    child: _panel == _Panel.reject
+                        ? _buildRejectActions(k)
+                        : _buildMainActions(k),
+                  ),
+                ),
+              ]),
         ),
       ),
     );
@@ -473,8 +562,14 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 6),
           child: Text.rich(TextSpan(children: [
-            TextSpan(text: 'Ready in', style: KraveoType.titleMd.copyWith(color: k.ink, fontWeight: FontWeight.w800)),
-            TextSpan(text: '   कितनी देर में', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
+            TextSpan(
+                text: 'Ready in',
+                style: KraveoType.titleMd
+                    .copyWith(color: k.ink, fontWeight: FontWeight.w800)),
+            TextSpan(
+                text: '   कितनी देर में',
+                style: KraveoType.bodySm
+                    .copyWith(color: k.inkMuted, fontSize: 14)),
           ])),
         ),
         Row(children: [
@@ -535,8 +630,12 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Decline this order?', textAlign: TextAlign.center, style: KraveoType.headlineSm.copyWith(color: k.ink)),
-        Text('क्या यह ऑर्डर मना करना है?', textAlign: TextAlign.center, style: KraveoType.titleMd.copyWith(color: k.inkMuted)),
+        Text('Decline this order?',
+            textAlign: TextAlign.center,
+            style: KraveoType.headlineSm.copyWith(color: k.ink)),
+        Text('क्या यह ऑर्डर मना करना है?',
+            textAlign: TextAlign.center,
+            style: KraveoType.titleMd.copyWith(color: k.inkMuted)),
         const SizedBox(height: 10),
         Row(children: [
           Expanded(
@@ -570,7 +669,12 @@ class _IncomingOrderDialogState extends State<IncomingOrderDialog> with SingleTi
 }
 
 class _HeaderChip extends StatelessWidget {
-  const _HeaderChip({super.key, required this.icon, required this.text, required this.bg, required this.fg});
+  const _HeaderChip(
+      {super.key,
+      required this.icon,
+      required this.text,
+      required this.bg,
+      required this.fg});
   final IconData icon;
   final String text;
   final Color bg;
@@ -581,14 +685,18 @@ class _HeaderChip extends StatelessWidget {
     return Container(
       constraints: const BoxConstraints(minHeight: 40),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(KRadius.pill)),
+      decoration: BoxDecoration(
+          color: bg, borderRadius: BorderRadius.circular(KRadius.pill)),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(icon, size: 18, color: fg),
         const SizedBox(width: 6),
         Flexible(
           child: FittedBox(
             fit: BoxFit.scaleDown,
-            child: Text(text, maxLines: 1, style: KraveoType.titleMd.copyWith(color: fg, fontWeight: FontWeight.w800, fontSize: 16)),
+            child: Text(text,
+                maxLines: 1,
+                style: KraveoType.titleMd.copyWith(
+                    color: fg, fontWeight: FontWeight.w800, fontSize: 16)),
           ),
         ),
       ]),
@@ -597,7 +705,11 @@ class _HeaderChip extends StatelessWidget {
 }
 
 class _ReasonTile extends StatelessWidget {
-  const _ReasonTile({required this.english, required this.hindi, required this.selected, required this.onTap});
+  const _ReasonTile(
+      {required this.english,
+      required this.hindi,
+      required this.selected,
+      required this.onTap});
   final String english;
   final String hindi;
   final bool selected;
@@ -621,18 +733,33 @@ class _ReasonTile extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 64),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: selected ? Color.alphaBlend(KraveoPalette.danger.withValues(alpha: 0.10), k.surface) : k.surface,
+            color: selected
+                ? Color.alphaBlend(
+                    KraveoPalette.danger.withValues(alpha: 0.10), k.surface)
+                : k.surface,
             borderRadius: BorderRadius.circular(KRadius.lg),
-            border: Border.all(color: selected ? KraveoPalette.danger : k.line, width: selected ? 2 : 1.5),
+            border: Border.all(
+                color: selected ? KraveoPalette.danger : k.line,
+                width: selected ? 2 : 1.5),
           ),
           child: Row(children: [
-            Icon(selected ? LucideIcons.circleCheck : LucideIcons.circle, size: 26, color: selected ? kDangerDeep : k.inkFaint),
+            Icon(selected ? LucideIcons.circleCheck : LucideIcons.circle,
+                size: 26, color: selected ? kDangerDeep : k.inkFaint),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                Text(english, style: KraveoType.titleMd.copyWith(color: k.ink, fontWeight: FontWeight.w800, fontSize: 17)),
-                Text(hindi, style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(english,
+                        style: KraveoType.titleMd.copyWith(
+                            color: k.ink,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17)),
+                    Text(hindi,
+                        style: KraveoType.bodySm
+                            .copyWith(color: k.inkMuted, fontSize: 14)),
+                  ]),
             ),
           ]),
         ),
@@ -653,7 +780,8 @@ class _ErrorBanner extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Color.alphaBlend(KraveoPalette.danger.withValues(alpha: 0.10), k.surface),
+          color: Color.alphaBlend(
+              KraveoPalette.danger.withValues(alpha: 0.10), k.surface),
           borderRadius: BorderRadius.circular(KRadius.md),
           border: Border.all(color: KraveoPalette.danger, width: 1.5),
         ),
@@ -661,9 +789,14 @@ class _ErrorBanner extends StatelessWidget {
           Icon(LucideIcons.triangleAlert, size: 22, color: kDangerDeep),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(text.english, style: KraveoType.titleMd.copyWith(color: k.ink, fontWeight: FontWeight.w700, fontSize: 15)),
-              Text('${text.hindi}. Tap again to retry.', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13)),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(text.english,
+                  style: KraveoType.titleMd.copyWith(
+                      color: k.ink, fontWeight: FontWeight.w700, fontSize: 15)),
+              Text('${text.hindi}. Tap again to retry.',
+                  style: KraveoType.bodySm
+                      .copyWith(color: k.inkMuted, fontSize: 13)),
             ]),
           ),
         ]),
@@ -674,32 +807,67 @@ class _ErrorBanner extends StatelessWidget {
 
 /// Shown when the order stopped waiting for us while the takeover was open.
 class _GonePanel extends StatelessWidget {
-  const _GonePanel({required this.order, required this.lastSeen, required this.onOk});
+  const _GonePanel(
+      {required this.order, required this.lastSeen, required this.onOk});
   final OrderModel? order;
   final OrderModel? lastSeen;
   final VoidCallback onOk;
 
   (String, String, String?) _text() {
     final o = order;
-    if (o == null) return ('This order is no longer available.', 'यह ऑर्डर अब उपलब्ध नहीं है।', null);
+    if (o == null) {
+      return (
+        'This order is no longer available.',
+        'यह ऑर्डर अब उपलब्ध नहीं है।',
+        null
+      );
+    }
     if (o.status == OrderStatus.cancelled) {
       switch (o.cancelledBy) {
         case CancelledBy.system:
-          return ('Cancelled: not accepted within 10 minutes.', '10 मिनट में जवाब नहीं मिला, ऑर्डर रद्द हो गया।', 'The customer gets a full refund.');
+          return (
+            'Cancelled: not accepted within 10 minutes.',
+            '10 मिनट में जवाब नहीं मिला, ऑर्डर रद्द हो गया।',
+            'The customer gets a full refund.'
+          );
         case CancelledBy.customer:
-          return ('The customer cancelled this order.', 'ग्राहक ने ऑर्डर रद्द कर दिया।', o.cancelReason);
+          return (
+            'The customer cancelled this order.',
+            'ग्राहक ने ऑर्डर रद्द कर दिया।',
+            o.cancelReason
+          );
         case CancelledBy.vendor:
-          return ('This order was declined.', 'यह ऑर्डर मना कर दिया गया।', o.cancelReason);
+          return (
+            'This order was declined.',
+            'यह ऑर्डर मना कर दिया गया।',
+            o.cancelReason
+          );
         case CancelledBy.admin:
-          return ('${BrandConfig.name} cancelled this order.', '${BrandConfig.name} ने ऑर्डर रद्द कर दिया।', o.cancelReason);
+          return (
+            '${BrandConfig.name} cancelled this order.',
+            '${BrandConfig.name} ने ऑर्डर रद्द कर दिया।',
+            o.cancelReason
+          );
         default:
-          return ('This order was cancelled.', 'यह ऑर्डर रद्द हो गया।', o.cancelReason);
+          return (
+            'This order was cancelled.',
+            'यह ऑर्डर रद्द हो गया।',
+            o.cancelReason
+          );
       }
     }
     if (o.status.rank >= OrderStatus.accepted.rank) {
-      return ('Already accepted (maybe on another phone).', 'यह ऑर्डर पहले ही स्वीकार हो चुका है।', 'It is in your Orders list.');
+      return (
+        'Already accepted (maybe on another phone).',
+        'यह ऑर्डर पहले ही स्वीकार हो चुका है।',
+        'It is in your Orders list.'
+      );
     }
-    return ('This order changed.', 'यह ऑर्डर बदल गया।', 'Check the Orders list.');
+    return (
+      'This order changed.',
+      'यह ऑर्डर बदल गया।',
+      'Check the Orders list.'
+    );
   }
 
   @override
@@ -712,27 +880,48 @@ class _GonePanel extends StatelessWidget {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(KSpace.gutter),
           child: VMaxWidth(
-            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Center(
-                child: Container(
-                  width: 84,
-                  height: 84,
-                  decoration: BoxDecoration(color: KraveoPalette.danger.withValues(alpha: 0.12), shape: BoxShape.circle),
-                  child: Icon(LucideIcons.circleX, size: 40, color: kDangerDeep),
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (code != null) Text('Order $code', textAlign: TextAlign.center, style: KraveoType.titleLg.copyWith(color: k.inkMuted)),
-              Text(en, key: const ValueKey('gone-title'), textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
-              const SizedBox(height: 4),
-              Text(hi, textAlign: TextAlign.center, style: KraveoType.titleMd.copyWith(color: k.inkMuted)),
-              if (extra != null && extra.trim().isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Text(extra, textAlign: TextAlign.center, style: KraveoType.body.copyWith(color: k.ink, fontSize: 17)),
-              ],
-              const SizedBox(height: 24),
-              KButton(label: 'OK', sublabel: 'ठीक है', large: true, onPressed: onOk),
-            ]),
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 84,
+                      height: 84,
+                      decoration: BoxDecoration(
+                          color: KraveoPalette.danger.withValues(alpha: 0.12),
+                          shape: BoxShape.circle),
+                      child: Icon(LucideIcons.circleX,
+                          size: 40, color: kDangerDeep),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (code != null)
+                    Text('Order $code',
+                        textAlign: TextAlign.center,
+                        style: KraveoType.titleLg.copyWith(color: k.inkMuted)),
+                  Text(en,
+                      key: const ValueKey('gone-title'),
+                      textAlign: TextAlign.center,
+                      style: KraveoType.headline.copyWith(color: k.ink)),
+                  const SizedBox(height: 4),
+                  Text(hi,
+                      textAlign: TextAlign.center,
+                      style: KraveoType.titleMd.copyWith(color: k.inkMuted)),
+                  if (extra != null && extra.trim().isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Text(extra,
+                        textAlign: TextAlign.center,
+                        style: KraveoType.body
+                            .copyWith(color: k.ink, fontSize: 17)),
+                  ],
+                  const SizedBox(height: 24),
+                  KButton(
+                      label: 'OK',
+                      sublabel: 'ठीक है',
+                      large: true,
+                      onPressed: onOk),
+                ]),
           ),
         ),
       ),
@@ -757,10 +946,12 @@ class _RipplePainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3
         ..color = color.withValues(alpha: (1 - t) * 0.30);
-      canvas.drawCircle(center, minR + (maxR - minR) * Curves.easeOut.transform(t), paint);
+      canvas.drawCircle(
+          center, minR + (maxR - minR) * Curves.easeOut.transform(t), paint);
     }
   }
 
   @override
-  bool shouldRepaint(_RipplePainter old) => old.color != color || old.animation != animation;
+  bool shouldRepaint(_RipplePainter old) =>
+      old.color != color || old.animation != animation;
 }

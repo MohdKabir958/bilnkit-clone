@@ -22,8 +22,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
-    for (final ch in const ['xyz.luan/audioplayers.global', 'xyz.luan/audioplayers']) {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel(ch), (call) async => null);
+    for (final ch in const [
+      'xyz.luan/audioplayers.global',
+      'xyz.luan/audioplayers'
+    ]) {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(MethodChannel(ch), (call) async => null);
     }
   });
 
@@ -68,7 +72,8 @@ void main() {
 
   Future<void> launch(WidgetTester tester, {PushController? withPush}) async {
     if (!customSize) {
-      tester.view.physicalSize = const Size(412, 915); // a normal phone; the default 800x600 test window is not one
+      tester.view.physicalSize = const Size(412,
+          915); // a normal phone; the default 800x600 test window is not one
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
     }
@@ -101,7 +106,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
   }
 
-  testWidgets('signed-in start registers the device once and shows no notice when everything is allowed', (tester) async {
+  testWidgets(
+      'signed-in start registers the device once and shows no notice when everything is allowed',
+      (tester) async {
     permissions.battery = true;
     await launch(tester);
     expect(registry.registered.map((r) => r.token), ['fcm-token-1']);
@@ -111,22 +118,28 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('never asked: the explanation comes first, "Allow" then shows the system dialog', (tester) async {
+  testWidgets(
+      'never asked: the explanation comes first, "Allow" then shows the system dialog',
+      (tester) async {
     permissions.access = NotificationAccess.denied;
     permissions.afterRequest = NotificationAccess.granted;
     await launch(tester);
     expect(find.text('Hear every new order'), findsOneWidget);
-    expect(permissions.requests, 0, reason: 'the system dialog must wait for the partner');
+    expect(permissions.requests, 0,
+        reason: 'the system dialog must wait for the partner');
     await tapButton(tester, 'Allow notifications');
     await settle(tester);
     expect(permissions.requests, 1);
     expect(find.text('Hear every new order'), findsNothing);
     expect(find.byKey(kNotificationBannerKey), findsNothing);
-    expect(find.byKey(kBatteryCardKey), findsOneWidget); // next: the one-time battery hint
+    expect(find.byKey(kBatteryCardKey),
+        findsOneWidget); // next: the one-time battery hint
     await unmount(tester);
   });
 
-  testWidgets('"Not now" on the explanation leaves a persistent banner with an Allow button', (tester) async {
+  testWidgets(
+      '"Not now" on the explanation leaves a persistent banner with an Allow button',
+      (tester) async {
     permissions.access = NotificationAccess.denied;
     await launch(tester);
     await tapButton(tester, 'Not now');
@@ -137,11 +150,15 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('blocked notifications: persistent banner with a button that opens settings; hides again once allowed', (tester) async {
+  testWidgets(
+      'blocked notifications: persistent banner with a button that opens settings; hides again once allowed',
+      (tester) async {
     permissions.access = NotificationAccess.blocked;
     await launch(tester);
-    expect(find.text('Turn on notifications or you will miss orders'), findsOneWidget);
-    expect(find.text('Hear every new order'), findsNothing); // no pop-up, the banner is enough
+    expect(find.text('Turn on notifications or you will miss orders'),
+        findsOneWidget);
+    expect(find.text('Hear every new order'),
+        findsNothing); // no pop-up, the banner is enough
     await tapButton(tester, 'Open settings');
     expect(permissions.settingsOpened, 1);
 
@@ -152,9 +169,12 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('battery hint: shown once, "Allow" asks the system, and it never comes back', (tester) async {
+  testWidgets(
+      'battery hint: shown once, "Allow" asks the system, and it never comes back',
+      (tester) async {
     await launch(tester);
-    expect(find.text('Allow unrestricted battery so orders are never missed'), findsOneWidget);
+    expect(find.text('Allow unrestricted battery so orders are never missed'),
+        findsOneWidget);
     await tapButton(tester, 'Allow');
     await settle(tester);
     expect(permissions.batteryRequests, 1);
@@ -162,7 +182,9 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('banner and battery card do not overflow on a small phone with large text', (tester) async {
+  testWidgets(
+      'banner and battery card do not overflow on a small phone with large text',
+      (tester) async {
     customSize = true;
     tester.view.physicalSize = const Size(360, 640);
     tester.view.devicePixelRatio = 1.0;
@@ -181,57 +203,76 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('tapping a NEW_ORDER push opens the Orders tab and the takeover for an order that is still PLACED', (tester) async {
+  testWidgets(
+      'tapping a NEW_ORDER push opens the Orders tab and the takeover for an order that is still PLACED',
+      (tester) async {
     await launch(tester);
-    await tester.tap(find.text('Menu'));
+    await tester.tap(find.text('Products'));
     await settle(tester);
 
-    backend.put(order(id: 'ord-push')); // exists on the server; the socket never told the app
-    messaging.opened.add(PushMessage.fromData({'event': 'NEW_ORDER', 'orderId': 'ord-push', 'v': '1'}));
+    backend.put(order(
+        id: 'ord-push')); // exists on the server; the socket never told the app
+    messaging.opened.add(PushMessage.fromData(
+        {'event': 'NEW_ORDER', 'orderId': 'ord-push', 'v': '1'}));
     await settle(tester);
 
     expect(find.byType(IncomingOrderDialog), findsOneWidget);
     expect(OrderQueueService.showingOrderId, 'ord-push');
-    expect(backend.calls.where((c) => c == 'list:active').length, greaterThanOrEqualTo(2));
+    expect(backend.calls.where((c) => c == 'list:active').length,
+        greaterThanOrEqualTo(2));
     await unmount(tester);
   });
 
-  testWidgets('a NEW_ORDER tap that started the app from closed is held through login check, then opens the takeover', (tester) async {
+  testWidgets(
+      'a NEW_ORDER tap that started the app from closed is held through login check, then opens the takeover',
+      (tester) async {
     backend.put(order(id: 'ord-cold'));
-    messaging.initial = PushMessage.fromData({'event': 'NEW_ORDER', 'orderId': 'ord-cold', 'v': '1'});
+    messaging.initial = PushMessage.fromData(
+        {'event': 'NEW_ORDER', 'orderId': 'ord-cold', 'v': '1'});
     await launch(tester);
     expect(find.byType(IncomingOrderDialog), findsOneWidget);
     expect(alarm.ringing, isTrue);
-    expect(alarm.starts, 1, reason: 'one alarm, not one from push and one from the order list');
+    expect(alarm.starts, 1,
+        reason: 'one alarm, not one from push and one from the order list');
     await unmount(tester);
   });
 
-  testWidgets('foreground NEW_ORDER: the queue is reloaded once, the in-app alarm rings once, no notification is built', (tester) async {
+  testWidgets(
+      'foreground NEW_ORDER: the queue is reloaded once, the in-app alarm rings once, no notification is built',
+      (tester) async {
     await launch(tester);
     final listsBefore = backend.calls.where((c) => c == 'list:active').length;
     backend.put(order(id: 'ord-fg'));
-    messaging.foreground.add(PushMessage.fromData({'event': 'NEW_ORDER', 'orderId': 'ord-fg', 'v': '1'}));
+    messaging.foreground.add(PushMessage.fromData(
+        {'event': 'NEW_ORDER', 'orderId': 'ord-fg', 'v': '1'}));
     await settle(tester);
 
-    expect(backend.calls.where((c) => c == 'list:active').length, listsBefore + 1);
+    expect(
+        backend.calls.where((c) => c == 'list:active').length, listsBefore + 1);
     expect(find.byType(IncomingOrderDialog), findsOneWidget);
     expect(alarm.starts, 1);
     expect(notifications.shown, isEmpty);
     await unmount(tester);
   });
 
-  testWidgets('a cancelled order push refreshes the queue and the open takeover explains it', (tester) async {
+  testWidgets(
+      'a cancelled order push refreshes the queue and the open takeover explains it',
+      (tester) async {
     backend.put(order(id: 'ord-x'));
     await launch(tester);
     expect(find.byType(IncomingOrderDialog), findsOneWidget);
-    backend.serverChange('ord-x', OrderStatus.cancelled, by: CancelledBy.customer);
-    messaging.foreground.add(PushMessage.fromData({'event': 'ORDER_CANCELLED_VENDOR', 'orderId': 'ord-x', 'v': '1'}));
+    backend.serverChange('ord-x', OrderStatus.cancelled,
+        by: CancelledBy.customer);
+    messaging.foreground.add(PushMessage.fromData(
+        {'event': 'ORDER_CANCELLED_VENDOR', 'orderId': 'ord-x', 'v': '1'}));
     await settle(tester);
     expect(find.text('The customer cancelled this order.'), findsOneWidget);
     await unmount(tester);
   });
 
-  testWidgets('malformed pushes (foreground and tapped) change nothing and do not crash', (tester) async {
+  testWidgets(
+      'malformed pushes (foreground and tapped) change nothing and do not crash',
+      (tester) async {
     await launch(tester);
     final listsBefore = backend.calls.where((c) => c == 'list:active').length;
     for (final junk in <Object?>[
@@ -253,7 +294,9 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('Firebase cannot start: the app still loads orders and rings through sockets and polling', (tester) async {
+  testWidgets(
+      'Firebase cannot start: the app still loads orders and rings through sockets and polling',
+      (tester) async {
     messaging.initThrows = true;
     backend.put(order(id: 'ord-1'));
     await launch(tester);
@@ -273,7 +316,9 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('logging out from the app: DELETE /devices while the JWT is still saved, then the login screen', (tester) async {
+  testWidgets(
+      'logging out from the app: DELETE /devices while the JWT is still saved, then the login screen',
+      (tester) async {
     await launch(tester);
     log.events.clear();
 
@@ -296,11 +341,19 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('the app without a push controller (as in every older test) shows no push UI', (tester) async {
-    await tester.pumpWidget(KraveoVendorApp(auth: SignedInAuth(), backend: backend, socketFactory: FakeSocket.new, alarm: alarm));
+  testWidgets(
+      'the app without a push controller (as in every older test) shows no push UI',
+      (tester) async {
+    await tester.pumpWidget(KraveoVendorApp(
+        auth: SignedInAuth(),
+        backend: backend,
+        socketFactory: FakeSocket.new,
+        alarm: alarm));
     await settle(tester);
     expect(find.byKey(kNotificationBannerKey), findsNothing);
-    await tester.scrollUntilVisible(find.text('No orders right now'),100,scrollable:find.byType(Scrollable).first);await tester.pump(const Duration(milliseconds:400));
+    await tester.scrollUntilVisible(find.text('No orders right now'), 100,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('No orders right now'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 6));

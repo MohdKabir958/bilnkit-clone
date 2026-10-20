@@ -50,7 +50,8 @@ class ApiResult<T> {
         statusCode = null,
         retryAfterSeconds = null;
 
-  const ApiResult.failure(ApiFailure this.failure, {this.message, this.code, this.statusCode, this.retryAfterSeconds})
+  const ApiResult.failure(ApiFailure this.failure,
+      {this.message, this.code, this.statusCode, this.retryAfterSeconds})
       : data = null,
         serverTime = null;
 
@@ -70,7 +71,11 @@ class ApiResult<T> {
 
   bool get ok => failure == null;
 
-  ApiResult<R> cast<R>() => ApiResult<R>.failure(failure!, message: message, code: code, statusCode: statusCode, retryAfterSeconds: retryAfterSeconds);
+  ApiResult<R> cast<R>() => ApiResult<R>.failure(failure!,
+      message: message,
+      code: code,
+      statusCode: statusCode,
+      retryAfterSeconds: retryAfterSeconds);
 }
 
 enum OrderScope { active, history }
@@ -88,7 +93,8 @@ class OrdersPage {
 /// only talk to this interface, so tests can drive every state with a fake.
 abstract class VendorBackend {
   /// `GET /orders?scope=active|history&limit&cursor` (only PAID orders of this restaurant).
-  Future<ApiResult<OrdersPage>> fetchOrders(OrderScope scope, {String? cursor, int limit = 50});
+  Future<ApiResult<OrdersPage>> fetchOrders(OrderScope scope,
+      {String? cursor, int limit = 50});
 
   /// `GET /orders/:id`.
   Future<ApiResult<OrderModel>> fetchOrder(String id);
@@ -112,12 +118,17 @@ abstract class VendorBackend {
   Future<ApiResult<List<DishModel>>> fetchMenu(String vendorId);
 
   /// `POST /vendors/:id/items` (a new dish; a current server answers with status PENDING).
-  Future<ApiResult<DishModel>> addDish(String vendorId, {required String name, required String category, required double price, bool isVeg = true});
+  Future<ApiResult<DishModel>> addDish(String vendorId,
+      {required String name,
+      required String category,
+      required double price,
+      bool isVeg = true});
 
   /// `PATCH /vendors/items/:itemId` `{isAvailable?, price?}`. On a current server a price on a live dish is a
   /// request for approval (the answer then carries `pendingPrice`), on a pending dish it edits it, on a rejected dish
   /// it sends it again.
-  Future<ApiResult<DishModel>> updateDish(String itemId, {bool? isAvailable, double? price});
+  Future<ApiResult<DishModel>> updateDish(String itemId,
+      {bool? isAvailable, double? price});
 }
 
 /// Optional capability of a backend: the managed dish categories (`GET /categories?for=dishes`, public). Kept apart
@@ -157,15 +168,18 @@ class HttpVendorBackend implements VendorBackend, DishCategorySource {
     return null;
   }
 
-  Future<ApiResult<Object?>> _send(String method, String path, {Map<String, dynamic>? body}) async {
+  Future<ApiResult<Object?>> _send(String method, String path,
+      {Map<String, dynamic>? body}) async {
     final uri = Uri.parse('$_base$path');
     final headers = await VendorApiService.getAuthHeaders();
     final http.Response response;
     try {
       final Future<http.Response> call = switch (method) {
         'GET' => http.get(uri, headers: headers),
-        'PATCH' => http.patch(uri, headers: headers, body: jsonEncode(body ?? const {})),
-        'POST' => http.post(uri, headers: headers, body: jsonEncode(body ?? const {})),
+        'PATCH' =>
+          http.patch(uri, headers: headers, body: jsonEncode(body ?? const {})),
+        'POST' =>
+          http.post(uri, headers: headers, body: jsonEncode(body ?? const {})),
         _ => throw ArgumentError(method),
       };
       response = await call.timeout(timeout);
@@ -196,7 +210,9 @@ class HttpVendorBackend implements VendorBackend, DishCategorySource {
     final failure = switch (status) {
       400 || 422 => ApiFailure.invalid,
       401 => ApiFailure.unauthorized,
-      403 => code == 'PARTNER_NOT_APPROVED' ? ApiFailure.notApproved : ApiFailure.forbidden,
+      403 => code == 'PARTNER_NOT_APPROVED'
+          ? ApiFailure.notApproved
+          : ApiFailure.forbidden,
       404 => ApiFailure.notFound,
       409 || 423 => ApiFailure.conflict,
       429 => ApiFailure.rateLimited,
@@ -205,19 +221,35 @@ class HttpVendorBackend implements VendorBackend, DishCategorySource {
     int? retryAfter;
     if (status == 429) {
       final raw = map['retryAfterSeconds'];
-      retryAfter = raw is num ? raw.toInt() : int.tryParse(response.headers['retry-after'] ?? '');
+      retryAfter = raw is num
+          ? raw.toInt()
+          : int.tryParse(response.headers['retry-after'] ?? '');
     }
-    return ApiResult.failure(failure, message: message, code: code, statusCode: status, retryAfterSeconds: retryAfter);
+    return ApiResult.failure(failure,
+        message: message,
+        code: code,
+        statusCode: status,
+        retryAfterSeconds: retryAfter);
   }
 
   @override
-  Future<ApiResult<OrdersPage>> fetchOrders(OrderScope scope, {String? cursor, int limit = 50}) async {
-    final q = <String, String>{'scope': scope.name, 'limit': '$limit', if (cursor != null && cursor.isNotEmpty) 'cursor': cursor};
+  Future<ApiResult<OrdersPage>> fetchOrders(OrderScope scope,
+      {String? cursor, int limit = 50}) async {
+    final q = <String, String>{
+      'scope': scope.name,
+      'limit': '$limit',
+      if (cursor != null && cursor.isNotEmpty) 'cursor': cursor
+    };
     final res = await _send('GET', '/orders?${Uri(queryParameters: q).query}');
     if (!res.ok) return res.cast();
     final json = res.data;
-    final List<dynamic>? rawList = json is List ? json : (json is Map && json['data'] is List ? json['data'] as List : null);
-    if (rawList == null) return const ApiResult.failure(ApiFailure.server, message: 'Unreadable order list');
+    final List<dynamic>? rawList = json is List
+        ? json
+        : (json is Map && json['data'] is List ? json['data'] as List : null);
+    if (rawList == null) {
+      return const ApiResult.failure(ApiFailure.server,
+          message: 'Unreadable order list');
+    }
     final orders = <OrderModel>[];
     var skipped = 0;
     for (final raw in rawList) {
@@ -229,7 +261,12 @@ class HttpVendorBackend implements VendorBackend, DishCategorySource {
       }
     }
     final next = json is Map ? json['nextCursor']?.toString() : null;
-    return ApiResult.success(OrdersPage(orders: orders, nextCursor: (next == null || next.isEmpty) ? null : next, skipped: skipped), serverTime: res.serverTime);
+    return ApiResult.success(
+        OrdersPage(
+            orders: orders,
+            nextCursor: (next == null || next.isEmpty) ? null : next,
+            skipped: skipped),
+        serverTime: res.serverTime);
   }
 
   @override
@@ -237,20 +274,27 @@ class HttpVendorBackend implements VendorBackend, DishCategorySource {
     final res = await _send('GET', '/orders/${Uri.encodeComponent(id)}');
     if (!res.ok) return res.cast();
     final order = _orderFrom(res.data);
-    if (order == null) return const ApiResult.failure(ApiFailure.server, message: 'Unreadable order');
+    if (order == null) {
+      return const ApiResult.failure(ApiFailure.server,
+          message: 'Unreadable order');
+    }
     return ApiResult.success(order, serverTime: res.serverTime);
   }
 
   @override
-  Future<ApiResult<OrderModel>> updateStatus(String id, OrderStatus status) async {
-    final res = await _send('PATCH', '/orders/${Uri.encodeComponent(id)}/status', body: {'status': status.wire});
+  Future<ApiResult<OrderModel>> updateStatus(
+      String id, OrderStatus status) async {
+    final res = await _send(
+        'PATCH', '/orders/${Uri.encodeComponent(id)}/status',
+        body: {'status': status.wire});
     if (!res.ok) return res.cast();
     return ApiResult.success(_orderFrom(res.data), serverTime: res.serverTime);
   }
 
   @override
   Future<ApiResult<OrderModel>> reject(String id, String reason) async {
-    final res = await _send('POST', '/orders/${Uri.encodeComponent(id)}/reject', body: {'reason': reason});
+    final res = await _send('POST', '/orders/${Uri.encodeComponent(id)}/reject',
+        body: {'reason': reason});
     if (!res.ok) return res.cast();
     return ApiResult.success(_orderFrom(res.data), serverTime: res.serverTime);
   }
@@ -260,26 +304,42 @@ class HttpVendorBackend implements VendorBackend, DishCategorySource {
     final res = await _send('GET', '/vendors/${Uri.encodeComponent(vendorId)}');
     if (!res.ok) return res.cast();
     final json = res.data;
-    final data = json is Map ? (json['data'] is Map ? json['data'] as Map : json) : null;
+    final data =
+        json is Map ? (json['data'] is Map ? json['data'] as Map : json) : null;
     final open = data?['isAcceptingOrders'];
-    if (open is! bool) return const ApiResult.failure(ApiFailure.server, message: 'Unreadable store status');
+    if (open is! bool) {
+      return const ApiResult.failure(ApiFailure.server,
+          message: 'Unreadable store status');
+    }
     return ApiResult.success(open);
   }
 
   @override
   Future<ApiResult<bool>> setStoreOpen(String vendorId, bool open) async {
-    final res = await _send('PATCH', '/vendors/${Uri.encodeComponent(vendorId)}/status', body: {'isAcceptingOrders': open});
+    final res = await _send(
+        'PATCH', '/vendors/${Uri.encodeComponent(vendorId)}/status',
+        body: {'isAcceptingOrders': open});
     if (!res.ok) return res.cast();
     final json = res.data;
-    final saved = json is Map ? (json['isAcceptingOrders'] ?? (json['data'] is Map ? (json['data'] as Map)['isAcceptingOrders'] : null)) : null;
+    final saved = json is Map
+        ? (json['isAcceptingOrders'] ??
+            (json['data'] is Map
+                ? (json['data'] as Map)['isAcceptingOrders']
+                : null))
+        : null;
     return ApiResult.success(saved is bool ? saved : open);
   }
 
   static ApiResult<List<DishModel>> _menuFrom(ApiResult<Object?> res) {
     if (!res.ok) return res.cast();
     final json = res.data;
-    final List<dynamic>? raw = json is List ? json : (json is Map && json['data'] is List ? json['data'] as List : null);
-    if (raw == null) return const ApiResult.failure(ApiFailure.server, message: 'Unreadable menu');
+    final List<dynamic>? raw = json is List
+        ? json
+        : (json is Map && json['data'] is List ? json['data'] as List : null);
+    if (raw == null) {
+      return const ApiResult.failure(ApiFailure.server,
+          message: 'Unreadable catalog');
+    }
     return ApiResult.success([
       for (final it in raw)
         if (DishModel.fromJson(it) case final DishModel d) d,
@@ -302,28 +362,49 @@ class HttpVendorBackend implements VendorBackend, DishCategorySource {
     final res = await _send('GET', '/categories?for=dishes');
     if (!res.ok) return res.cast();
     final json = res.data;
-    if (json is! Map || json['data'] is! List) return const ApiResult.failure(ApiFailure.server, message: 'Unreadable category list');
+    if (json is! Map || json['data'] is! List) {
+      return const ApiResult.failure(ApiFailure.server,
+          message: 'Unreadable category list');
+    }
     return ApiResult.success(DishCategory.parseList(json['data']));
   }
 
   @override
-  Future<ApiResult<DishModel>> addDish(String vendorId, {required String name, required String category, required double price, bool isVeg = true}) async {
-    final res = await _send('POST', '/vendors/${Uri.encodeComponent(vendorId)}/items', body: {'name': name, 'category': category, 'price': price, 'isVeg': isVeg});
+  Future<ApiResult<DishModel>> addDish(String vendorId,
+      {required String name,
+      required String category,
+      required double price,
+      bool isVeg = true}) async {
+    final res = await _send(
+        'POST', '/vendors/${Uri.encodeComponent(vendorId)}/items', body: {
+      'name': name,
+      'category': category,
+      'price': price,
+      'isVeg': isVeg
+    });
     if (!res.ok) return res.cast();
     final json = res.data;
-    final dish = DishModel.fromJson(json is Map ? (json['data'] ?? json['item'] ?? json) : null);
-    if (dish == null) return const ApiResult.failure(ApiFailure.server, message: 'Unreadable dish');
+    final dish = DishModel.fromJson(
+        json is Map ? (json['data'] ?? json['item'] ?? json) : null);
+    if (dish == null) {
+      return const ApiResult.failure(ApiFailure.server,
+          message: 'Unreadable product');
+    }
     return ApiResult.success(dish);
   }
 
   @override
-  Future<ApiResult<DishModel>> updateDish(String itemId, {bool? isAvailable, double? price}) async {
-    final res = await _send('PATCH', '/vendors/items/${Uri.encodeComponent(itemId)}', body: {
-      if (isAvailable != null) 'isAvailable': isAvailable,
-      if (price != null) 'price': price,
-    });
+  Future<ApiResult<DishModel>> updateDish(String itemId,
+      {bool? isAvailable, double? price}) async {
+    final res = await _send(
+        'PATCH', '/vendors/items/${Uri.encodeComponent(itemId)}',
+        body: {
+          if (isAvailable != null) 'isAvailable': isAvailable,
+          if (price != null) 'price': price,
+        });
     if (!res.ok) return res.cast();
     final json = res.data;
-    return ApiResult.success(DishModel.fromJson(json is Map ? (json['item'] ?? json['data'] ?? json) : null));
+    return ApiResult.success(DishModel.fromJson(
+        json is Map ? (json['item'] ?? json['data'] ?? json) : null));
   }
 }

@@ -10,20 +10,29 @@ import 'push_ports.dart';
 /// A push that carries a `notification` block is shown by Android itself on its own channel, so nothing is added
 /// here (that is what prevents a double alarm). A data-only push is turned into a notification by the app:
 /// NEW_ORDER becomes the loud full-screen alarm, ORDER_CANCELLED_VENDOR a quiet update. Anything else is ignored.
-Future<void> showBackgroundPush(PushMessage message, AlarmNotifications notifications) async {
+Future<void> showBackgroundPush(
+    PushMessage message, AlarmNotifications notifications) async {
   if (message.hasNotificationBlock || !message.isActionable) return;
   final orderId = message.orderId!;
   switch (message.event) {
     case PushEvent.newOrderReminder:
     case PushEvent.newOrder:
-      await notifications.showNewOrder(orderId, title: message.title, body: message.body);
+      await notifications.showNewOrder(orderId,
+          title: message.title, body: message.body);
     case PushEvent.orderCancelledVendor:
-      await notifications.showUpdate(orderId, title: message.title ?? 'Order cancelled', body: message.body ?? 'An order was cancelled.');
+      await notifications.showUpdate(orderId,
+          title: message.title ?? 'Order cancelled',
+          body: message.body ?? 'An order was cancelled.');
     case PushEvent.riderAssigned:
     case PushEvent.riderAtPickup:
-      await notifications.showUpdate(orderId, title: message.title ?? 'Pickup update', body: message.body ?? 'Open the app for your delivery partner update.');
+      await notifications.showUpdate(orderId,
+          title: message.title ?? 'Pickup update',
+          body:
+              message.body ?? 'Open the app for your delivery partner update.');
     case PushEvent.groupReadyToCook:
-      await notifications.showUpdate(orderId, title: message.title ?? 'Start cooking', body: message.body ?? 'All restaurants accepted - you can start cooking.');
+      await notifications.showUpdate(orderId,
+          title: message.title ?? 'Start cooking',
+          body: message.body ?? 'All stores accepted - you can start cooking.');
     case PushEvent.unknown:
       break;
   }
@@ -42,7 +51,9 @@ Future<void> kraveoVendorBackgroundHandler(RemoteMessage remote) async {
       title: remote.notification?.title,
       body: remote.notification?.body,
     );
-    if (message.hasNotificationBlock || !message.isActionable) return; // Android shows it, or nothing to do
+    if (message.hasNotificationBlock || !message.isActionable) {
+      return; // Android shows it, or nothing to do
+    }
     final notifications = LocalAlarmNotifications();
     await notifications.initialize();
     await showBackgroundPush(message, notifications);

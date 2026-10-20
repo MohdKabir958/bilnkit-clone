@@ -11,10 +11,14 @@ import 'ui/ui.dart';
 
 /// One order in the kitchen list or the history. Shows only what the restaurant may see (customer first
 /// name, drop point, note, items, paid amount, runner once assigned) and ONE obvious action for the state:
-/// Start cooking (ACCEPTED), Mark ready (PREPARING). Pickup and delivery belong to the runner, so a ready
+/// Start packing (ACCEPTED), Mark ready (PREPARING). Pickup and delivery belong to the runner, so a ready
 /// order shows who is coming instead of a button.
 class OrderCard extends StatefulWidget {
-  const OrderCard({super.key, required this.order, required this.controller, this.onOpenIncoming});
+  const OrderCard(
+      {super.key,
+      required this.order,
+      required this.controller,
+      this.onOpenIncoming});
 
   final OrderModel order;
   final OrderQueueController controller;
@@ -32,7 +36,10 @@ class _OrderCardState extends State<OrderCard> {
   OrderModel get order => widget.order;
   OrderQueueController get _c => widget.controller;
 
-  bool get _ticking => order.status == OrderStatus.placed || order.status == OrderStatus.accepted || order.status == OrderStatus.preparing;
+  bool get _ticking =>
+      order.status == OrderStatus.placed ||
+      order.status == OrderStatus.accepted ||
+      order.status == OrderStatus.preparing;
 
   @override
   void initState() {
@@ -70,16 +77,19 @@ class _OrderCardState extends State<OrderCard> {
     return KraveoPalette.success;
   }
 
-  Future<void> _run(Future<ActionOutcome> Function() action, String doneMessage) async {
+  Future<void> _run(
+      Future<ActionOutcome> Function() action, String doneMessage) async {
     final messenger = ScaffoldMessenger.maybeOf(context);
     final out = await action();
     if (out.ignored) return;
     messenger?.hideCurrentSnackBar();
     if (out.ok) {
-      messenger?.showSnackBar(SnackBar(content: Text(doneMessage), duration: const Duration(seconds: 2)));
+      messenger?.showSnackBar(SnackBar(
+          content: Text(doneMessage), duration: const Duration(seconds: 2)));
       return;
     }
-    final text = failureText(out.failure!, serverMessage: out.message, code: out.code);
+    final text =
+        failureText(out.failure!, serverMessage: out.message, code: out.code);
     final now = out.current;
     final extra = now == null
         ? ''
@@ -121,8 +131,11 @@ class _OrderCardState extends State<OrderCard> {
     final urgency = _urgencyColor(progress, isLate);
 
     final pill = _pillFor(order);
-    final ringColor = timed ? urgency : (isReady ? KStatus.ready.color : k.line);
-    final borderColor = isIncoming ? KStatus.placed.color : (timed ? urgency : (isReady ? KStatus.ready.color : k.line));
+    final ringColor =
+        timed ? urgency : (isReady ? KStatus.ready.color : k.line);
+    final borderColor = isIncoming
+        ? KStatus.placed.color
+        : (timed ? urgency : (isReady ? KStatus.ready.color : k.line));
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -140,53 +153,80 @@ class _OrderCardState extends State<OrderCard> {
           Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
             Semantics(
               label: isIncoming
-                  ? (isLate ? 'Answer time is over' : '${remaining.inMinutes} minutes left to answer')
+                  ? (isLate
+                      ? 'Answer time is over'
+                      : '${remaining.inMinutes} minutes left to answer')
                   : timed
-                      ? (isLate ? 'Late' : '${remaining.inMinutes} minutes left')
+                      ? (isLate
+                          ? 'Late'
+                          : '${remaining.inMinutes} minutes left')
                       : pill.$2,
               excludeSemantics: true,
               child: VCountdownRing(
                 size: 98,
                 progress: timed ? progress : (isReady ? 1 : 0),
                 color: ringColor,
-                child: _ringCenter(k, timed: timed, isIncoming: isIncoming, isLate: isLate, remaining: remaining, isReady: isReady),
+                child: _ringCenter(k,
+                    timed: timed,
+                    isIncoming: isIncoming,
+                    isLate: isLate,
+                    remaining: remaining,
+                    isReady: isReady),
               ),
             ),
             const SizedBox(width: 14),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(order.shortCode, style: KraveoType.headline.copyWith(color: k.ink)),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${order.studentName} · ${order.studentLocation}',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: KraveoType.body.copyWith(color: k.inkMuted),
-                ),
-                const SizedBox(height: 8),
-                Wrap(spacing: 10, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
-                  // FittedBox: a longer label ("Preparing") at 360 px and large text shrinks a little instead of overflowing.
-                  FittedBox(fit: BoxFit.scaleDown, child: KStatusPill(status: pill.$1, label: pill.$2)),
-                  Text(pill.$3, style: KraveoType.titleMd.copyWith(color: k.inkMuted)),
-                ]),
-                const SizedBox(height: 6),
-                // Only what the restaurant earns: no customer total, fees, discount or coupon (Docs/21 section 7).
-                Semantics(
-                  label: 'You earn ${formatRupees(order.earned)}',
-                  excludeSemantics: true,
-                  child: Text.rich(
-                    key: ValueKey('earn-${order.id}'),
-                    TextSpan(children: [
-                      TextSpan(text: 'You earn ${formatRupees(order.earned)}', style: KraveoType.titleLg.copyWith(color: k.ink, fontWeight: FontWeight.w800)),
-                      TextSpan(text: '  ·  आपकी कमाई', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13)),
-                    ]),
-                  ),
-                ),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(order.shortCode,
+                          style: KraveoType.headline.copyWith(color: k.ink)),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${order.studentName} · ${order.studentLocation}',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: KraveoType.body.copyWith(color: k.inkMuted),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                        spacing: 10,
+                        runSpacing: 6,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          // FittedBox: a longer label ("Preparing") at 360 px and large text shrinks a little instead of overflowing.
+                          FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child:
+                                  KStatusPill(status: pill.$1, label: pill.$2)),
+                          Text(pill.$3,
+                              style: KraveoType.titleMd
+                                  .copyWith(color: k.inkMuted)),
+                        ]),
+                    const SizedBox(height: 6),
+                    // Only what the restaurant earns: no customer total, fees, discount or coupon (Docs/21 section 7).
+                    Semantics(
+                      label: 'You earn ${formatRupees(order.earned)}',
+                      excludeSemantics: true,
+                      child: Text.rich(
+                        key: ValueKey('earn-${order.id}'),
+                        TextSpan(children: [
+                          TextSpan(
+                              text: 'You earn ${formatRupees(order.earned)}',
+                              style: KraveoType.titleLg.copyWith(
+                                  color: k.ink, fontWeight: FontWeight.w800)),
+                          TextSpan(
+                              text: '  ·  आपकी कमाई',
+                              style: KraveoType.bodySm
+                                  .copyWith(color: k.inkMuted, fontSize: 13)),
+                        ]),
+                      ),
+                    ),
+                  ]),
             ),
           ]),
 
@@ -240,13 +280,16 @@ class _OrderCardState extends State<OrderCard> {
           else if (isAccepted)
             KButton(
               key: ValueKey('start-${order.id}'),
-              label: 'Start cooking',
+              label: 'Start packing',
               sublabel: 'बनाना शुरू करें',
               icon: LucideIcons.flame,
               large: true,
               loading: busy,
               // A combined order: nobody starts cooking while another restaurant may still decline (Docs/22 section 4.5).
-              onPressed: (busy || order.waitingForGroup) ? null : () => _run(() => _c.startCooking(order.id), 'Order ${order.shortCode}: preparing  ·  बन रहा है'),
+              onPressed: (busy || order.waitingForGroup)
+                  ? null
+                  : () => _run(() => _c.startCooking(order.id),
+                      'Order ${order.shortCode}: preparing  ·  बन रहा है'),
             )
           else if (isPreparing)
             KButton(
@@ -256,7 +299,10 @@ class _OrderCardState extends State<OrderCard> {
               icon: LucideIcons.circleCheck,
               large: true,
               loading: busy,
-              onPressed: busy ? null : () => _run(() => _c.markReady(order.id), 'Order ${order.shortCode} is ready. The runner will collect it.  ·  तैयार'),
+              onPressed: busy
+                  ? null
+                  : () => _run(() => _c.markReady(order.id),
+                      'Order ${order.shortCode} is ready. The delivery partner will collect it.  ·  तैयार'),
             )
           else
             _StatusFooter(text: pill.$4),
@@ -266,34 +312,93 @@ class _OrderCardState extends State<OrderCard> {
   }
 
   /// (pill status, English pill label, Hindi, footer line)
-  (KStatus, String, String, String) _pillFor(OrderModel o) => switch (o.status) {
-        OrderStatus.placed => (KStatus.placed, 'New', 'नया', 'Waiting for your answer · जवाब दें'),
+  (KStatus, String, String, String) _pillFor(OrderModel o) =>
+      switch (o.status) {
+        OrderStatus.placed => (
+            KStatus.placed,
+            'New',
+            'नया',
+            'Waiting for your answer · जवाब दें'
+          ),
         OrderStatus.accepted => (KStatus.accepted, 'Accepted', 'स्वीकार', ''),
-        OrderStatus.preparing => (KStatus.preparing, 'Preparing', 'बन रहा है', ''),
+        OrderStatus.preparing => (
+            KStatus.preparing,
+            'Preparing',
+            'बन रहा है',
+            ''
+          ),
         OrderStatus.readyForPickup => (
             KStatus.ready,
             'Ready',
             'तैयार',
-            o.rider == null ? 'Ready. Waiting for a runner · रनर का इंतज़ार' : 'Ready. ${o.rider!.name} will collect it · रनर आ रहा है'
+            o.rider == null
+                ? 'Ready. Waiting for a delivery partner · रनर का इंतज़ार'
+                : 'Ready. ${o.rider!.name} will collect it · रनर आ रहा है'
           ),
-        OrderStatus.pickedUp => (KStatus.pickedUp, 'Picked up', 'सुपुर्द', 'Picked up by runner · सुपुर्द हो चुका है'),
-        OrderStatus.arrivedAtGate => (KStatus.atGate, 'At gate', 'गेट पर', 'Runner is at the gate · रनर गेट पर है'),
-        OrderStatus.delivered => (KStatus.delivered, 'Delivered', 'पहुँच गया', 'Delivered to the customer · ग्राहक को मिल गया'),
-        OrderStatus.cancelled => (KStatus.cancelled, 'Cancelled', 'रद्द', 'Cancelled · रद्द'),
-        OrderStatus.unknown => (KStatus.placed, 'Updating', 'अपडेट', 'Status updating · अपडेट हो रहा है'),
+        OrderStatus.pickedUp => (
+            KStatus.pickedUp,
+            'Picked up',
+            'सुपुर्द',
+            'Picked up by delivery partner · सुपुर्द हो चुका है'
+          ),
+        OrderStatus.arrivedAtGate => (
+            KStatus.atGate,
+            'At your door',
+            'गेट पर',
+            'Delivery partner is at your door · रनर गेट पर है'
+          ),
+        OrderStatus.delivered => (
+            KStatus.delivered,
+            'Delivered',
+            'पहुँच गया',
+            'Delivered to the customer · ग्राहक को मिल गया'
+          ),
+        OrderStatus.cancelled => (
+            KStatus.cancelled,
+            'Cancelled',
+            'रद्द',
+            'Cancelled · रद्द'
+          ),
+        OrderStatus.unknown => (
+            KStatus.placed,
+            'Updating',
+            'अपडेट',
+            'Status updating · अपडेट हो रहा है'
+          ),
       };
 
-  Widget _ringCenter(KraveoTokens k, {required bool timed, required bool isIncoming, required bool isLate, required Duration remaining, required bool isReady}) {
+  Widget _ringCenter(KraveoTokens k,
+      {required bool timed,
+      required bool isIncoming,
+      required bool isLate,
+      required Duration remaining,
+      required bool isReady}) {
     if (timed && isLate) {
       return Column(mainAxisSize: MainAxisSize.min, children: [
-        FittedBox(fit: BoxFit.scaleDown, child: Text(isIncoming ? 'TIME UP' : 'LATE', style: KraveoType.headlineSm.copyWith(color: kDangerDeep, fontSize: 20))),
-        FittedBox(fit: BoxFit.scaleDown, child: Text(isIncoming ? 'समय खत्म' : 'देर', style: KraveoType.caption.copyWith(color: kDangerDeep, fontSize: 13))),
+        FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(isIncoming ? 'TIME UP' : 'LATE',
+                style: KraveoType.headlineSm
+                    .copyWith(color: kDangerDeep, fontSize: 20))),
+        FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(isIncoming ? 'समय खत्म' : 'देर',
+                style: KraveoType.caption
+                    .copyWith(color: kDangerDeep, fontSize: 13))),
       ]);
     }
     if (timed) {
       return Column(mainAxisSize: MainAxisSize.min, children: [
-        FittedBox(fit: BoxFit.scaleDown, child: Text(formatMmSs(remaining), style: KraveoType.headlineSm.copyWith(color: k.ink, fontSize: 22))),
-        FittedBox(fit: BoxFit.scaleDown, child: Text(isIncoming ? 'to answer' : 'min left', style: KraveoType.caption.copyWith(color: k.inkMuted, fontSize: 11))),
+        FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(formatMmSs(remaining),
+                style: KraveoType.headlineSm
+                    .copyWith(color: k.ink, fontSize: 22))),
+        FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(isIncoming ? 'to answer' : 'min left',
+                style: KraveoType.caption
+                    .copyWith(color: k.inkMuted, fontSize: 11))),
       ]);
     }
     final icon = switch (order.status) {
@@ -321,15 +426,28 @@ class _MetaLine extends StatelessWidget {
     final parts = <String>[
       pay,
       'placed ${formatClock(order.createdAt)}',
-      if (order.acceptedAt != null) 'accepted ${formatClock(order.acceptedAt!)}',
-      if (order.pickedUpAt != null) 'picked up ${formatClock(order.pickedUpAt!)}',
-      if (order.deliveredAt != null) 'delivered ${formatClock(order.deliveredAt!)}',
-      if (order.cancelledAt != null) 'cancelled ${formatClock(order.cancelledAt!)}',
+      if (order.acceptedAt != null)
+        'accepted ${formatClock(order.acceptedAt!)}',
+      if (order.pickedUpAt != null)
+        'picked up ${formatClock(order.pickedUpAt!)}',
+      if (order.deliveredAt != null)
+        'delivered ${formatClock(order.deliveredAt!)}',
+      if (order.cancelledAt != null)
+        'cancelled ${formatClock(order.cancelledAt!)}',
     ];
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Icon(order.paymentStatus == PaymentStatus.paid ? LucideIcons.badgeCheck : LucideIcons.receipt, size: 18, color: order.paymentStatus == PaymentStatus.paid ? k.brand : k.inkMuted),
+      Icon(
+          order.paymentStatus == PaymentStatus.paid
+              ? LucideIcons.badgeCheck
+              : LucideIcons.receipt,
+          size: 18,
+          color:
+              order.paymentStatus == PaymentStatus.paid ? k.brand : k.inkMuted),
       const SizedBox(width: 6),
-      Expanded(child: Text(parts.join(' · '), style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14))),
+      Expanded(
+          child: Text(parts.join(' · '),
+              style:
+                  KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14))),
     ]);
   }
 }
@@ -346,11 +464,16 @@ class _RiderBlock extends StatelessWidget {
     if (rider == null) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(color: k.surfaceAlt, borderRadius: BorderRadius.circular(KRadius.lg)),
+        decoration: BoxDecoration(
+            color: k.surfaceAlt,
+            borderRadius: BorderRadius.circular(KRadius.lg)),
         child: Row(children: [
           Icon(LucideIcons.bike, size: 24, color: k.inkMuted),
           const SizedBox(width: 10),
-          Expanded(child: Text('Looking for a runner · रनर ढूंढ रहे हैं', style: KraveoType.titleMd.copyWith(color: k.inkMuted, fontSize: 16))),
+          Expanded(
+              child: Text('Looking for a delivery partner · रनर ढूंढ रहे हैं',
+                  style: KraveoType.titleMd
+                      .copyWith(color: k.inkMuted, fontSize: 16))),
         ]),
       );
     }
@@ -359,31 +482,50 @@ class _RiderBlock extends StatelessWidget {
       key: ValueKey('rider-${order.id}'),
       padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
       constraints: const BoxConstraints(minHeight: 64),
-      decoration: BoxDecoration(color: k.brandSoft, borderRadius: BorderRadius.circular(KRadius.lg)),
+      decoration: BoxDecoration(
+          color: k.brandSoft, borderRadius: BorderRadius.circular(KRadius.lg)),
       child: Row(children: [
         Icon(LucideIcons.bike, size: 26, color: k.brand),
         const SizedBox(width: 10),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-            Text('Runner · रनर', style: KraveoType.label.copyWith(color: k.inkMuted, fontSize: 12.5)),
-            Text(rider.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: KraveoType.titleLg.copyWith(color: k.ink, fontWeight: FontWeight.w800, fontSize: 18)),
-            if (phone != null) Text(phone, maxLines: 1, style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16)),
-          ]),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Delivery partner · रनर',
+                    style: KraveoType.label
+                        .copyWith(color: k.inkMuted, fontSize: 12.5)),
+                Text(rider.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: KraveoType.titleLg.copyWith(
+                        color: k.ink,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18)),
+                if (phone != null)
+                  Text(phone,
+                      maxLines: 1,
+                      style: KraveoType.titleMd
+                          .copyWith(color: k.ink, fontSize: 16)),
+              ]),
         ),
         if (phone != null)
           Semantics(
             button: true,
-            label: 'Copy runner phone number',
+            label: 'Copy delivery partner phone number',
             excludeSemantics: true,
             child: KPressable(
               onTap: () {
                 Clipboard.setData(ClipboardData(text: phone));
-                ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(content: Text('Phone number copied  ·  नंबर कॉपी हो गया'), duration: Duration(seconds: 2)));
+                ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(
+                    content: Text('Phone number copied  ·  नंबर कॉपी हो गया'),
+                    duration: Duration(seconds: 2)));
               },
               child: Container(
                 width: 56,
                 height: 56,
-                decoration: BoxDecoration(color: k.surface, shape: BoxShape.circle),
+                decoration:
+                    BoxDecoration(color: k.surface, shape: BoxShape.circle),
                 child: Icon(LucideIcons.copy, size: 22, color: k.brand),
               ),
             ),
@@ -403,23 +545,35 @@ class _CancelBlock extends StatelessWidget {
     final who = switch (order.cancelledBy) {
       CancelledBy.customer => 'Cancelled by the customer · ग्राहक ने रद्द किया',
       CancelledBy.vendor => 'Declined by you · आपने मना किया',
-      CancelledBy.admin => 'Cancelled by ${BrandConfig.name} · ${BrandConfig.name} ने रद्द किया',
-      CancelledBy.system => order.cancelReason == 'Restaurant did not respond'
-          ? 'Not accepted in 10 minutes · समय पर जवाब नहीं'
-          : 'Cancelled automatically · अपने आप रद्द',
+      CancelledBy.admin =>
+        'Cancelled by ${BrandConfig.name} · ${BrandConfig.name} ने रद्द किया',
+      CancelledBy.system => [
+          'Restaurant did not respond',
+          'Store did not respond'
+        ].contains(order.cancelReason)
+            ? 'Not accepted in 10 minutes · समय पर जवाब नहीं'
+            : 'Cancelled automatically · अपने आप रद्द',
       _ => 'Cancelled · रद्द',
     };
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Color.alphaBlend(KraveoPalette.danger.withValues(alpha: 0.08), k.surface),
+        color: Color.alphaBlend(
+            KraveoPalette.danger.withValues(alpha: 0.08), k.surface),
         borderRadius: BorderRadius.circular(KRadius.lg),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(who, style: KraveoType.titleMd.copyWith(color: kDangerDeep, fontWeight: FontWeight.w800, fontSize: 16)),
-        if (order.cancelReason != null) Text('Reason: ${order.cancelReason}', style: KraveoType.body.copyWith(color: k.ink, fontSize: 15)),
-        if (order.paymentStatus == PaymentStatus.refunded) Text('Customer refunded · पैसे वापस', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
+        Text(who,
+            style: KraveoType.titleMd.copyWith(
+                color: kDangerDeep, fontWeight: FontWeight.w800, fontSize: 16)),
+        if (order.cancelReason != null)
+          Text('Reason: ${order.cancelReason}',
+              style: KraveoType.body.copyWith(color: k.ink, fontSize: 15)),
+        if (order.paymentStatus == PaymentStatus.refunded)
+          Text('Customer refunded · पैसे वापस',
+              style:
+                  KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
       ]),
     );
   }
@@ -436,18 +590,26 @@ class _StatusFooter extends StatelessWidget {
       width: double.infinity,
       constraints: const BoxConstraints(minHeight: 64),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(color: k.surfaceAlt, borderRadius: BorderRadius.circular(KRadius.lg)),
+      decoration: BoxDecoration(
+          color: k.surfaceAlt, borderRadius: BorderRadius.circular(KRadius.lg)),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(LucideIcons.info, size: 22, color: k.inkMuted),
         const SizedBox(width: 10),
-        Flexible(child: Text(text, textAlign: TextAlign.center, style: KraveoType.titleMd.copyWith(color: k.inkMuted))),
+        Flexible(
+            child: Text(text,
+                textAlign: TextAlign.center,
+                style: KraveoType.titleMd.copyWith(color: k.inkMuted))),
       ]),
     );
   }
 }
 
 class _ItemRow extends StatelessWidget {
-  const _ItemRow({required this.item, required this.done, required this.enabled, required this.onTap});
+  const _ItemRow(
+      {required this.item,
+      required this.done,
+      required this.enabled,
+      required this.onTap});
   final OrderItem item;
   final bool done;
   final bool enabled;
@@ -472,34 +634,45 @@ class _ItemRow extends StatelessWidget {
           decoration: BoxDecoration(
             color: done ? k.brandSoft : k.surfaceAlt,
             borderRadius: BorderRadius.circular(KRadius.lg),
-            border: Border.all(color: done ? k.brand.withValues(alpha: 0.5) : Colors.transparent, width: 1.5),
+            border: Border.all(
+                color:
+                    done ? k.brand.withValues(alpha: 0.5) : Colors.transparent,
+                width: 1.5),
           ),
           child: Row(children: [
             SizedBox(
               width: 52,
-              child: Text('${item.quantity}×', style: KraveoType.headline.copyWith(fontSize: 28, color: done ? k.brand : k.ink)),
+              child: Text('${item.quantity}×',
+                  style: KraveoType.headline
+                      .copyWith(fontSize: 28, color: done ? k.brand : k.ink)),
             ),
             Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                Text(
-                  item.name,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: KraveoType.titleLg.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: done ? k.inkMuted : k.ink,
-                    decoration: done ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                // The restaurant's own price for the line (the server sends vendor prices to the restaurant).
-                if (item.unitPrice > 0)
-                  Text(
-                    item.quantity > 1 ? '${formatRupees(item.unitPrice)} each · ${formatRupees(item.totalPrice)}' : formatRupees(item.totalPrice),
-                    key: ValueKey('item-price-${item.id ?? item.name}'),
-                    style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14),
-                  ),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      item.name,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: KraveoType.titleLg.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: done ? k.inkMuted : k.ink,
+                        decoration: done ? TextDecoration.lineThrough : null,
+                      ),
+                    ),
+                    // The restaurant's own price for the line (the server sends vendor prices to the restaurant).
+                    if (item.unitPrice > 0)
+                      Text(
+                        item.quantity > 1
+                            ? '${formatRupees(item.unitPrice)} each · ${formatRupees(item.totalPrice)}'
+                            : formatRupees(item.totalPrice),
+                        key: ValueKey('item-price-${item.id ?? item.name}'),
+                        style: KraveoType.bodySm
+                            .copyWith(color: k.inkMuted, fontSize: 14),
+                      ),
+                  ]),
             ),
             const SizedBox(width: 10),
             AnimatedContainer(
@@ -510,9 +683,12 @@ class _ItemRow extends StatelessWidget {
               decoration: BoxDecoration(
                 color: done ? k.brand : Colors.transparent,
                 shape: BoxShape.circle,
-                border: Border.all(color: done ? k.brand : k.inkFaint, width: 2.5),
+                border:
+                    Border.all(color: done ? k.brand : k.inkFaint, width: 2.5),
               ),
-              child: done ? Icon(LucideIcons.check, size: 24, color: k.onBrand) : null,
+              child: done
+                  ? Icon(LucideIcons.check, size: 24, color: k.onBrand)
+                  : null,
             ),
           ]),
         ),

@@ -12,9 +12,11 @@ class GroupNote extends StatelessWidget {
 
   final OrderModel order;
 
-  static const String waitingEnglish = 'Combined order - waiting for the other restaurant(s) to accept';
-  static const String waitingHindi = 'कंबाइंड ऑर्डर - दूसरे रेस्टोरेंट के स्वीकार करने का इंतज़ार';
-  static const String acceptedEnglish = 'All restaurants accepted';
+  static const String waitingEnglish =
+      'Combined order - waiting for the other store(s) to accept';
+  static const String waitingHindi =
+      'कंबाइंड ऑर्डर - दूसरे रेस्टोरेंट के स्वीकार करने का इंतज़ार';
+  static const String acceptedEnglish = 'All stores accepted';
   static const String acceptedHindi = 'सभी रेस्टोरेंट ने स्वीकार किया';
 
   @override
@@ -39,12 +41,18 @@ class GroupNote extends StatelessWidget {
         label: english,
         excludeSemantics: true,
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(waiting ? LucideIcons.clock : LucideIcons.circleCheck, size: 20, color: waiting ? k.ink : k.brand),
+          Icon(waiting ? LucideIcons.clock : LucideIcons.circleCheck,
+              size: 20, color: waiting ? k.ink : k.brand),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(english, style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 15, fontWeight: FontWeight.w700)),
-              Text(hindi, style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13)),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(english,
+                  style: KraveoType.titleMd.copyWith(
+                      color: k.ink, fontSize: 15, fontWeight: FontWeight.w700)),
+              Text(hindi,
+                  style: KraveoType.bodySm
+                      .copyWith(color: k.inkMuted, fontSize: 13)),
             ]),
           ),
         ]),

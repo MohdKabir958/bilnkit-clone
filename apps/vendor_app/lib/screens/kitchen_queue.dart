@@ -9,7 +9,11 @@ import '../widgets/ui/ui.dart';
 
 /// The Orders tab: everything comes from [OrderQueueController] (the server's copy of each order).
 class KitchenQueueScreen extends StatefulWidget {
-  const KitchenQueueScreen({super.key, required this.controller, this.onOpenIncoming, this.firstRun});
+  const KitchenQueueScreen(
+      {super.key,
+      required this.controller,
+      this.onOpenIncoming,
+      this.firstRun});
 
   /// A card shown above the "No orders right now" text on the Active tab ("1. Add a dish  2. Tap OPEN").
   final Widget? firstRun;
@@ -54,7 +58,8 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(listenable: _c, builder: (context, _) => _build(context));
+    return ListenableBuilder(
+        listenable: _c, builder: (context, _) => _build(context));
   }
 
   Widget _build(BuildContext context) {
@@ -64,13 +69,19 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
     final finished = _c.finished.where(_matches).toList();
     final activeCount = _c.incoming.length + kitchen.length;
 
-    final toStart = kitchen.where((o) => o.status == OrderStatus.accepted && _matches(o)).toList()
+    final toStart = kitchen
+        .where((o) => o.status == OrderStatus.accepted && _matches(o))
+        .toList()
       ..sort((a, b) => _c.prepDeadlineFor(a).compareTo(_c.prepDeadlineFor(b)));
     // Most urgent first: the promised-by time never changes, so this order stays put
     // under the cook's thumb while the countdowns tick.
-    final cooking = kitchen.where((o) => o.status == OrderStatus.preparing && _matches(o)).toList()
+    final cooking = kitchen
+        .where((o) => o.status == OrderStatus.preparing && _matches(o))
+        .toList()
       ..sort((a, b) => _c.prepDeadlineFor(a).compareTo(_c.prepDeadlineFor(b)));
-    final ready = kitchen.where((o) => o.status == OrderStatus.readyForPickup && _matches(o)).toList()
+    final ready = kitchen
+        .where((o) => o.status == OrderStatus.readyForPickup && _matches(o))
+        .toList()
       ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     final children = <Widget>[];
@@ -82,33 +93,46 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
             key: ValueKey(o.id),
             order: o,
             controller: _c,
-            onOpenIncoming: widget.onOpenIncoming == null ? null : () => widget.onOpenIncoming!(o.id),
+            onOpenIncoming: widget.onOpenIncoming == null
+                ? null
+                : () => widget.onOpenIncoming!(o.id),
           ),
         );
 
     if (_selectedTab == 0) {
       if (incoming.isNotEmpty) {
-        children.add(VSectionLabel(english: 'New orders', hindi: 'नए ऑर्डर', count: incoming.length, color: kDangerDeep));
+        children.add(VSectionLabel(
+            english: 'New orders',
+            hindi: 'नए ऑर्डर',
+            count: incoming.length,
+            color: kDangerDeep));
         children.addAll(incoming.map(card));
       }
       if (toStart.isNotEmpty) {
-        children.add(VSectionLabel(english: 'Accepted', hindi: 'शुरू करना है', count: toStart.length));
+        children.add(VSectionLabel(
+            english: 'Accepted', hindi: 'शुरू करना है', count: toStart.length));
         children.addAll(toStart.map(card));
       }
       if (cooking.isNotEmpty) {
-        children.add(VSectionLabel(english: 'Preparing', hindi: 'बन रहे हैं', count: cooking.length));
+        children.add(VSectionLabel(
+            english: 'Preparing', hindi: 'बन रहे हैं', count: cooking.length));
         children.addAll(cooking.map(card));
       }
       if (ready.isNotEmpty) {
-        children.add(VSectionLabel(english: 'Ready for pickup', hindi: 'तैयार', count: ready.length));
+        children.add(VSectionLabel(
+            english: 'Ready for pickup', hindi: 'तैयार', count: ready.length));
         children.addAll(ready.map(card));
       }
     } else {
       children.addAll(finished.map(card));
       if (_c.historyFailure != null) {
-        children.add(_InlineProblem(text: failureText(_c.historyFailure!), onRetry: _c.loadMoreHistory));
+        children.add(_InlineProblem(
+            text: failureText(_c.historyFailure!),
+            onRetry: _c.loadMoreHistory));
       } else if (_c.historyLoading) {
-        children.add(const Padding(padding: EdgeInsets.all(20), child: Center(child: CircularProgressIndicator())));
+        children.add(const Padding(
+            padding: EdgeInsets.all(20),
+            child: Center(child: CircularProgressIndicator())));
       } else if (_c.historyHasMore && _c.historyLoadedOnce) {
         children.add(Padding(
           padding: const EdgeInsets.only(top: 4, bottom: 8),
@@ -128,20 +152,32 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
     if (!_c.loadedOnce && _selectedTab == 0 && children.isEmpty) {
       body = _c.syncFailure == null
           ? const VScrollCenter(child: _Loading())
-          : VScrollCenter(child: KEmptyState(
+          : VScrollCenter(
+              child: KEmptyState(
               icon: LucideIcons.wifiOff,
               title: "Can't load orders",
-              message: '${failureText(_c.syncFailure!).both}\nRetrying every 15 seconds.',
-              action: KButton(label: 'Retry', sublabel: 'फिर कोशिश करें', icon: LucideIcons.rotateCcw, large: true, onPressed: _c.refresh),
+              message:
+                  '${failureText(_c.syncFailure!).both}\nRetrying every 15 seconds.',
+              action: KButton(
+                  label: 'Retry',
+                  sublabel: 'फिर कोशिश करें',
+                  icon: LucideIcons.rotateCcw,
+                  large: true,
+                  onPressed: _c.refresh),
             ));
     } else if (children.isEmpty) {
       body = RefreshIndicator(
         onRefresh: _selectedTab == 0 ? _c.refresh : _c.reloadHistory,
         child: ListView(children: [
-          if (_selectedTab == 0 && _searchQuery.isEmpty && widget.firstRun != null)
-            Padding(padding: const EdgeInsets.fromLTRB(KSpace.gutter, 4, KSpace.gutter, 0), child: widget.firstRun),
+          if (_selectedTab == 0 &&
+              _searchQuery.isEmpty &&
+              widget.firstRun != null)
+            Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    KSpace.gutter, 4, KSpace.gutter, 0),
+                child: widget.firstRun),
           KEmptyState(
-            icon: _selectedTab == 0 ? LucideIcons.chefHat : LucideIcons.history,
+            icon: _selectedTab == 0 ? LucideIcons.package : LucideIcons.history,
             title: _searchQuery.isNotEmpty
                 ? 'No matching orders'
                 : _selectedTab == 0
@@ -161,7 +197,8 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
         child: ListView(
           // One scroll position per tab (switching tabs must not land in the middle of the other list).
           key: PageStorageKey<String>('orders-tab-$_selectedTab'),
-          padding: const EdgeInsets.fromLTRB(KSpace.gutter, 4, KSpace.gutter, 24),
+          padding:
+              const EdgeInsets.fromLTRB(KSpace.gutter, 4, KSpace.gutter, 24),
           children: children,
         ),
       );
@@ -172,29 +209,36 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
         children: [
           if (_c.syncFailure != null && _c.loadedOnce)
             Padding(
-              padding: const EdgeInsets.fromLTRB(KSpace.gutter, 10, KSpace.gutter, 0),
+              padding: const EdgeInsets.fromLTRB(
+                  KSpace.gutter, 10, KSpace.gutter, 0),
               child: _SyncBanner(controller: _c),
             ),
           if (_c.liveAlertsRefused && _c.syncFailure == null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(KSpace.gutter, 10, KSpace.gutter, 0),
+              padding: const EdgeInsets.fromLTRB(
+                  KSpace.gutter, 10, KSpace.gutter, 0),
               child: Container(
                 key: const ValueKey('live-alerts-off'),
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: k.surfaceAlt, borderRadius: BorderRadius.circular(KRadius.md)),
+                decoration: BoxDecoration(
+                    color: k.surfaceAlt,
+                    borderRadius: BorderRadius.circular(KRadius.md)),
                 child: Row(children: [
                   Icon(LucideIcons.radioTower, size: 20, color: k.inkMuted),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text('Live alerts are off. New orders still show within 15 seconds.  ·  लाइव अलर्ट बंद, हर 15 सेकंड में जाँच',
-                        style: KraveoType.bodySm.copyWith(color: k.ink, fontSize: 13)),
+                    child: Text(
+                        'Live alerts are off. New orders still show within 15 seconds.  ·  लाइव अलर्ट बंद, हर 15 सेकंड में जाँच',
+                        style: KraveoType.bodySm
+                            .copyWith(color: k.ink, fontSize: 13)),
                   ),
                 ]),
               ),
             ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 8),
+            padding:
+                const EdgeInsets.fromLTRB(KSpace.gutter, 12, KSpace.gutter, 8),
             child: Row(children: [
               Expanded(
                 child: VChoiceChip(
@@ -232,9 +276,13 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
                     decoration: BoxDecoration(
                       color: _searchOpen ? k.brandSoft : k.surface,
                       borderRadius: BorderRadius.circular(KRadius.lg),
-                      border: Border.all(color: _searchOpen ? k.brand : k.line, width: 1.5),
+                      border: Border.all(
+                          color: _searchOpen ? k.brand : k.line, width: 1.5),
                     ),
-                    child: Icon(_searchOpen ? LucideIcons.x : LucideIcons.search, size: 26, color: k.brand),
+                    child: Icon(
+                        _searchOpen ? LucideIcons.x : LucideIcons.search,
+                        size: 26,
+                        color: k.brand),
                   ),
                 ),
               ),
@@ -246,15 +294,18 @@ class _KitchenQueueScreenState extends State<KitchenQueueScreen> {
             alignment: Alignment.topCenter,
             child: _searchOpen
                 ? Padding(
-                    padding: const EdgeInsets.fromLTRB(KSpace.gutter, 0, KSpace.gutter, 8),
+                    padding: const EdgeInsets.fromLTRB(
+                        KSpace.gutter, 0, KSpace.gutter, 8),
                     child: TextField(
                       controller: _searchController,
                       autofocus: true,
                       onChanged: (val) => setState(() => _searchQuery = val),
-                      style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 18),
+                      style: KraveoType.titleMd
+                          .copyWith(color: k.ink, fontSize: 18),
                       decoration: InputDecoration(
-                        hintText: 'Search order, name or dish  ·  खोजें',
-                        prefixIcon: Icon(LucideIcons.search, size: 22, color: k.inkFaint),
+                        hintText: 'Search order, name or product  ·  खोजें',
+                        prefixIcon: Icon(LucideIcons.search,
+                            size: 22, color: k.inkFaint),
                       ),
                     ),
                   )
@@ -275,10 +326,15 @@ class _Loading extends StatelessWidget {
     final k = context.k;
     return Center(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const SizedBox(width: 32, height: 32, child: CircularProgressIndicator(strokeWidth: 3)),
+        const SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(strokeWidth: 3)),
         const SizedBox(height: 14),
-        Text('Loading orders…', style: KraveoType.titleMd.copyWith(color: k.ink)),
-        Text('ऑर्डर आ रहे हैं', style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
+        Text('Loading orders…',
+            style: KraveoType.titleMd.copyWith(color: k.ink)),
+        Text('ऑर्डर आ रहे हैं',
+            style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
       ]),
     );
   }
@@ -300,7 +356,8 @@ class _SyncBanner extends StatelessWidget {
         key: const ValueKey('sync-banner'),
         padding: const EdgeInsets.fromLTRB(12, 8, 6, 8),
         decoration: BoxDecoration(
-          color: Color.alphaBlend(KraveoPalette.warning.withValues(alpha: 0.16), k.surface),
+          color: Color.alphaBlend(
+              KraveoPalette.warning.withValues(alpha: 0.16), k.surface),
           borderRadius: BorderRadius.circular(KRadius.md),
           border: Border.all(color: KraveoPalette.warning, width: 1.5),
         ),
@@ -308,13 +365,23 @@ class _SyncBanner extends StatelessWidget {
           Icon(LucideIcons.wifiOff, size: 22, color: k.ink),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-              Text(text.english, style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 15, fontWeight: FontWeight.w700)),
-              Text(
-                at == null ? 'Retrying every 15 s · फिर कोशिश जारी' : 'Showing orders from ${formatClock(at)} · पुरानी जानकारी',
-                style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 13),
-              ),
-            ]),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(text.english,
+                      style: KraveoType.titleMd.copyWith(
+                          color: k.ink,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700)),
+                  Text(
+                    at == null
+                        ? 'Retrying every 15 s · फिर कोशिश जारी'
+                        : 'Showing orders from ${formatClock(at)} · पुरानी जानकारी',
+                    style: KraveoType.bodySm
+                        .copyWith(color: k.inkMuted, fontSize: 13),
+                  ),
+                ]),
           ),
           Semantics(
             button: true,
@@ -322,7 +389,10 @@ class _SyncBanner extends StatelessWidget {
             excludeSemantics: true,
             child: KPressable(
               onTap: controller.refresh,
-              child: SizedBox(width: 52, height: 52, child: Icon(LucideIcons.rotateCcw, size: 24, color: k.brand)),
+              child: SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: Icon(LucideIcons.rotateCcw, size: 24, color: k.brand)),
             ),
           ),
         ]),
@@ -342,10 +412,19 @@ class _InlineProblem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(children: [
-        Text(text.english, textAlign: TextAlign.center, style: KraveoType.titleMd.copyWith(color: k.ink)),
-        Text(text.hindi, textAlign: TextAlign.center, style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
+        Text(text.english,
+            textAlign: TextAlign.center,
+            style: KraveoType.titleMd.copyWith(color: k.ink)),
+        Text(text.hindi,
+            textAlign: TextAlign.center,
+            style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 14)),
         const SizedBox(height: 8),
-        KButton(label: 'Try again', sublabel: 'फिर कोशिश करें', kind: KButtonKind.tonal, large: true, onPressed: onRetry),
+        KButton(
+            label: 'Try again',
+            sublabel: 'फिर कोशिश करें',
+            kind: KButtonKind.tonal,
+            large: true,
+            onPressed: onRetry),
       ]),
     );
   }

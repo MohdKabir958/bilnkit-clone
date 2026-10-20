@@ -56,7 +56,10 @@ void main() {
         home: ProductInventoryScreen(vendorId: 'store-a', api: api)));
     await tester.pumpAndSettle();
     expect(find.textContaining('Milk a'), findsOneWidget);
-    expect(find.textContaining('Low stock'), findsOneWidget);
+    expect(find.textContaining('Low stock'), findsWidgets);
+    await tester.scrollUntilVisible(find.text('Load more products'), 180,
+        scrollable: find.byType(Scrollable).first);
+    await tester.pump();
     await tester.tap(find.text('Load more products'));
     await tester.pumpAndSettle();
     expect(paths.last.path, endsWith('/v1/vendors/store-a/products'));

@@ -9,7 +9,12 @@ import '../vendor_backend.dart';
 
 /// What `PUT /partner/vendor/location` answers with (`data`).
 class SavedLocation {
-  const SavedLocation({required this.lat, required this.lng, this.source, this.setAt, this.accuracyM});
+  const SavedLocation(
+      {required this.lat,
+      required this.lng,
+      this.source,
+      this.setAt,
+      this.accuracyM});
 
   final double lat;
   final double lng;
@@ -22,7 +27,8 @@ class SavedLocation {
 abstract class VendorLocationApi {
   /// `PUT /api/partner/vendor/location` `{lat, lng, accuracyM?}` for the signed-in restaurant (the server never takes
   /// a restaurant id from the app).
-  Future<ApiResult<SavedLocation>> save({required double lat, required double lng, double? accuracyM});
+  Future<ApiResult<SavedLocation>> save(
+      {required double lat, required double lng, double? accuracyM});
 }
 
 /// The text to show when a save failed: the server's own message when it sent one (it says exactly what is wrong,
@@ -30,34 +36,50 @@ abstract class VendorLocationApi {
 String locationSaveFailureText(ApiResult<Object?> result) {
   final server = result.message?.trim() ?? '';
   final failure = result.failure!;
-  if (server.isNotEmpty && server.length <= 200 && failure != ApiFailure.server && failure != ApiFailure.unauthorized) return server;
+  if (server.isNotEmpty &&
+      server.length <= 200 &&
+      failure != ApiFailure.server &&
+      failure != ApiFailure.unauthorized) {
+    return server;
+  }
   return switch (failure) {
-    ApiFailure.forbidden || ApiFailure.notApproved => 'Your restaurant account cannot save a location right now. Please call ${BrandConfig.name}.  ·  अभी लोकेशन सेव नहीं हो सकती, ${BrandConfig.name} को फ़ोन करें',
-    ApiFailure.rateLimited => 'Too many tries. Please try again in a while.  ·  बहुत कोशिशें हो गईं, थोड़ी देर बाद फिर कोशिश करें',
-    ApiFailure.notFound => 'This server cannot save a location yet. Please try again later.  ·  अभी लोकेशन सेव नहीं हो सकती, बाद में कोशिश करें',
-    _ => failureText(failure, serverMessage: result.message, code: result.code).both,
+    ApiFailure.forbidden ||
+    ApiFailure.notApproved =>
+      'Your store account cannot save a location right now. Please call ${BrandConfig.name}.  ·  अभी लोकेशन सेव नहीं हो सकती, ${BrandConfig.name} को फ़ोन करें',
+    ApiFailure.rateLimited =>
+      'Too many tries. Please try again in a while.  ·  बहुत कोशिशें हो गईं, थोड़ी देर बाद फिर कोशिश करें',
+    ApiFailure.notFound =>
+      'This server cannot save a location yet. Please try again later.  ·  अभी लोकेशन सेव नहीं हो सकती, बाद में कोशिश करें',
+    _ => failureText(failure, serverMessage: result.message, code: result.code)
+        .both,
   };
 }
 
 class HttpVendorLocationApi implements VendorLocationApi {
-  HttpVendorLocationApi({http.Client? client, this.timeout = const Duration(seconds: 12)}) : _client = client;
+  HttpVendorLocationApi(
+      {http.Client? client, this.timeout = const Duration(seconds: 12)})
+      : _client = client;
 
   final http.Client? _client;
   final Duration timeout;
 
   @override
-  Future<ApiResult<SavedLocation>> save({required double lat, required double lng, double? accuracyM}) async {
+  Future<ApiResult<SavedLocation>> save(
+      {required double lat, required double lng, double? accuracyM}) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}/partner/vendor/location');
     final headers = await VendorApiService.getAuthHeaders();
     final body = jsonEncode({
       'lat': lat,
       'lng': lng,
-      if (accuracyM != null && accuracyM.isFinite) 'accuracyM': double.parse(accuracyM.toStringAsFixed(1)),
+      if (accuracyM != null && accuracyM.isFinite)
+        'accuracyM': double.parse(accuracyM.toStringAsFixed(1)),
     });
     final http.Response response;
     try {
       final client = _client;
-      final call = client != null ? client.put(uri, headers: headers, body: body) : http.put(uri, headers: headers, body: body);
+      final call = client != null
+          ? client.put(uri, headers: headers, body: body)
+          : http.put(uri, headers: headers, body: body);
       response = await call.timeout(timeout);
     } on TimeoutException {
       return const ApiResult.failure(ApiFailure.timeout);
@@ -81,20 +103,29 @@ class HttpVendorLocationApi implements VendorLocationApi {
       return ApiResult.success(SavedLocation(
         lat: dlat is num ? dlat.toDouble() : lat,
         lng: dlng is num ? dlng.toDouble() : lng,
-        source: data['locationSource'] is String ? data['locationSource'] as String : 'DEVICE',
-        setAt: data['locationSetAt'] is String ? DateTime.tryParse(data['locationSetAt'] as String) : null,
-        accuracyM: data['locationAccuracyM'] is num ? (data['locationAccuracyM'] as num).toDouble() : accuracyM,
+        source: data['locationSource'] is String
+            ? data['locationSource'] as String
+            : 'DEVICE',
+        setAt: data['locationSetAt'] is String
+            ? DateTime.tryParse(data['locationSetAt'] as String)
+            : null,
+        accuracyM: data['locationAccuracyM'] is num
+            ? (data['locationAccuracyM'] as num).toDouble()
+            : accuracyM,
       ));
     }
     final failure = switch (status) {
       400 || 422 => ApiFailure.invalid,
       401 => ApiFailure.unauthorized,
-      403 => code == 'PARTNER_NOT_APPROVED' ? ApiFailure.notApproved : ApiFailure.forbidden,
+      403 => code == 'PARTNER_NOT_APPROVED'
+          ? ApiFailure.notApproved
+          : ApiFailure.forbidden,
       404 => ApiFailure.notFound,
       409 || 423 => ApiFailure.conflict,
       429 => ApiFailure.rateLimited,
       _ => ApiFailure.server,
     };
-    return ApiResult.failure(failure, message: message, code: code, statusCode: status);
+    return ApiResult.failure(failure,
+        message: message, code: code, statusCode: status);
   }
 }

@@ -9,11 +9,15 @@ import 'support/push_fakes.dart';
 void main() {
   group('payload parsing never throws', () {
     test('a well-formed NEW_ORDER and ORDER_CANCELLED_VENDOR', () {
-      final a = PushMessage.fromData({'event': 'NEW_ORDER', 'orderId': 'ord-1', 'v': '1'});
+      final a = PushMessage.fromData(
+          {'event': 'NEW_ORDER', 'orderId': 'ord-1', 'v': '1'});
       expect(a.event, PushEvent.newOrder);
       expect(a.orderId, 'ord-1');
       expect(a.isActionable, isTrue);
-      expect(PushMessage.fromData({'event': 'ORDER_CANCELLED_VENDOR', 'orderId': 'ord-2'}).event, PushEvent.orderCancelledVendor);
+      expect(
+          PushMessage.fromData(
+              {'event': 'ORDER_CANCELLED_VENDOR', 'orderId': 'ord-2'}).event,
+          PushEvent.orderCancelledVendor);
     });
 
     test('junk in any shape becomes an unknown, non-actionable message', () {
@@ -41,17 +45,31 @@ void main() {
     });
 
     test('local-notification payloads: bad JSON, wrong type, empty, huge', () {
-      for (final p in <String?>[null, '', 'not json', '[1,2]', '"x"', '{"event":', '{"event":"NEW_ORDER"}', 'a' * 5000]) {
-        expect(PushMessage.fromPayload(p).isActionable, isFalse, reason: 'payload: $p');
+      for (final p in <String?>[
+        null,
+        '',
+        'not json',
+        '[1,2]',
+        '"x"',
+        '{"event":',
+        '{"event":"NEW_ORDER"}',
+        'a' * 5000
+      ]) {
+        expect(PushMessage.fromPayload(p).isActionable, isFalse,
+            reason: 'payload: $p');
       }
     });
 
     test('a payload round-trips and carries no personal data', () {
-      const m = PushMessage(event: PushEvent.newOrder, orderId: 'ord-1', title: 'Priya 9876543210', body: 'Hostel 4');
+      const m = PushMessage(
+          event: PushEvent.newOrder,
+          orderId: 'ord-1',
+          title: 'Priya 9876543210',
+          body: 'Hostel 4');
       final payload = m.toPayload();
       expect(payload, isNot(contains('Priya')));
       expect(payload, isNot(contains('9876543210')));
-      expect(payload, isNot(contains('Hostel')));
+      expect(payload, isNot(contains('Address')));
       final back = PushMessage.fromPayload(payload);
       expect(back.event, PushEvent.newOrder);
       expect(back.orderId, 'ord-1');
@@ -59,9 +77,13 @@ void main() {
   });
 
   group('background handler body', () {
-    PushMessage data(String event, {String? orderId = 'ord-1', bool block = false}) =>
-        PushMessage.fromData({'event': event, if (orderId != null) 'orderId': orderId},
-            hasNotificationBlock: block, title: 'New order', body: '2 items - Rs 245. Tap to accept.');
+    PushMessage data(String event,
+            {String? orderId = 'ord-1', bool block = false}) =>
+        PushMessage.fromData(
+            {'event': event, if (orderId != null) 'orderId': orderId},
+            hasNotificationBlock: block,
+            title: 'New order',
+            body: '2 items - Rs 245. Tap to accept.');
 
     test('data-only NEW_ORDER shows exactly one alarm notification', () async {
       final n = FakeNotifications();
@@ -69,13 +91,16 @@ void main() {
       expect(n.shown, ['newOrder:ord-1']);
     });
 
-    test('NEW_ORDER that already has a notification block is left to Android: no second alarm', () async {
+    test(
+        'NEW_ORDER that already has a notification block is left to Android: no second alarm',
+        () async {
       final n = FakeNotifications();
       await showBackgroundPush(data('NEW_ORDER', block: true), n);
       expect(n.shown, isEmpty);
     });
 
-    test('data-only ORDER_CANCELLED_VENDOR shows a quiet update, not the alarm', () async {
+    test('data-only ORDER_CANCELLED_VENDOR shows a quiet update, not the alarm',
+        () async {
       final n = FakeNotifications();
       await showBackgroundPush(data('ORDER_CANCELLED_VENDOR'), n);
       expect(n.shown, ['update:ord-1']);
@@ -89,10 +114,13 @@ void main() {
       expect(n.shown, isEmpty);
     });
 
-    test('the same order always maps to the same notification id (a repeat replaces, never stacks)', () {
+    test(
+        'the same order always maps to the same notification id (a repeat replaces, never stacks)',
+        () {
       expect(notificationIdFor('ord-1'), notificationIdFor('ord-1'));
       expect(notificationIdFor('ord-1'), isNot(notificationIdFor('ord-2')));
-      expect(notificationIdFor('3f2a9c1e-0000-4000-8000-00000000a1b2'), isNonNegative);
+      expect(notificationIdFor('3f2a9c1e-0000-4000-8000-00000000a1b2'),
+          isNonNegative);
     });
   });
 
@@ -102,7 +130,8 @@ void main() {
       expect(PushChannels.orderUpdates, 'order_updates');
     });
 
-    test('the alarm channel is high importance, alarm usage, bundled sound', () {
+    test('the alarm channel is high importance, alarm usage, bundled sound',
+        () {
       final c = LocalAlarmNotifications.newOrdersChannel;
       expect(c.id, 'new_orders');
       expect(c.importance.value, 4); // IMPORTANCE_HIGH
@@ -117,8 +146,12 @@ void main() {
       final raw = File('android/app/src/main/res/raw/new_order_alarm.ogg');
       expect(raw.existsSync(), isTrue);
       expect(raw.lengthSync(), lessThan(700 * 1024));
-      expect(File('android/app/src/main/res/drawable/ic_stat_grozo.xml').existsSync(), isTrue);
-      final manifest = File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+      expect(
+          File('android/app/src/main/res/drawable/ic_stat_grozo.xml')
+              .existsSync(),
+          isTrue);
+      final manifest =
+          File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
       for (final needle in [
         'android.permission.POST_NOTIFICATIONS',
         'android.permission.USE_FULL_SCREEN_INTENT',

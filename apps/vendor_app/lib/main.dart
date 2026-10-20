@@ -38,7 +38,16 @@ void main() {
 class KraveoVendorApp extends StatefulWidget {
   /// [auth] is the network layer for login / session checks; [backend], [socketFactory] and [alarm] drive the
   /// order screens. Tests pass fakes; the app uses the real Grozo API, Socket.io and the loud alarm.
-  const KraveoVendorApp({super.key, this.auth, this.backend, this.socketFactory, this.alarm, this.push, this.locationServices, this.locationApi, this.payoutApi});
+  const KraveoVendorApp(
+      {super.key,
+      this.auth,
+      this.backend,
+      this.socketFactory,
+      this.alarm,
+      this.push,
+      this.locationServices,
+      this.locationApi,
+      this.payoutApi});
 
   /// The phone's GPS + the maps link opener for "Detect my location" (tests pass fakes; null = the real ones).
   final LocationServices? locationServices;
@@ -63,8 +72,10 @@ class KraveoVendorApp extends StatefulWidget {
 }
 
 class _KraveoVendorAppState extends State<KraveoVendorApp> {
-  late final SessionController _session = SessionController(auth: widget.auth, locationApi: widget.locationApi);
-  late final LocationServices _location = widget.locationServices ?? LocationServices();
+  late final SessionController _session =
+      SessionController(auth: widget.auth, locationApi: widget.locationApi);
+  late final LocationServices _location =
+      widget.locationServices ?? LocationServices();
 
   @override
   void dispose() {
@@ -75,14 +86,18 @@ class _KraveoVendorAppState extends State<KraveoVendorApp> {
   @override
   Widget build(BuildContext context) {
     final app = MaterialApp(
-        title: BrandConfig.vendorName,
-        debugShowCheckedModeBanner: false,
-        theme: KraveoTheme.vendor(),
-        // The vendor theme already renders type ~12% larger; cap the system font scale so
-        // huge accessibility settings enlarge text without breaking the fixed 64px targets.
-        builder: (context, child) => MediaQuery.withClampedTextScaling(maxScaleFactor: 1.3, child: child ?? const SizedBox.shrink()),
-        home: AuthGate(session: _session, push: widget.push, backend: widget.backend, payoutApi: widget.payoutApi, socketFactory: widget.socketFactory, alarm: widget.alarm),
-      );
+      title: BrandConfig.vendorName,
+      debugShowCheckedModeBanner: false,
+      theme: KraveoTheme.vendor(),
+      // Respect the device text scale; shared controls grow with their labels.
+      home: AuthGate(
+          session: _session,
+          push: widget.push,
+          backend: widget.backend,
+          payoutApi: widget.payoutApi,
+          socketFactory: widget.socketFactory,
+          alarm: widget.alarm),
+    );
     final push = widget.push;
     return SessionScope(
       controller: _session,
@@ -97,7 +112,14 @@ class _KraveoVendorAppState extends State<KraveoVendorApp> {
 /// Decides between splash, login, the "can't reach Grozo" retry state and the app, and wires
 /// session expiry (HTTP 401 on any authenticated call) and sign-out to the rest of the app.
 class AuthGate extends StatefulWidget {
-  const AuthGate({super.key, required this.session, this.push, this.backend, this.payoutApi, this.socketFactory, this.alarm});
+  const AuthGate(
+      {super.key,
+      required this.session,
+      this.push,
+      this.backend,
+      this.payoutApi,
+      this.socketFactory,
+      this.alarm});
 
   final SessionController session;
   final PushController? push;
@@ -117,7 +139,9 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
   /// The order screens were showing (signed in AND approved) at the last session change.
   bool _wasWorking = false;
 
-  bool get _working => _session.status == SessionStatus.signedIn && (_session.session?.isApproved ?? false);
+  bool get _working =>
+      _session.status == SessionStatus.signedIn &&
+      (_session.session?.isApproved ?? false);
 
   @override
   void initState() {
@@ -141,9 +165,15 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
   void dispose() {
     _session.removeListener(_onSessionChanged);
     if (_session.onExpired == _showSessionExpired) _session.onExpired = null;
-    if (_session.beforeLogout == widget.push?.unregisterForLogout) _session.beforeLogout = null;
-    if (VendorApiService.onUnauthorized == _handleUnauthorized) VendorApiService.onUnauthorized = null;
-    if (VendorApiService.onNotApproved == _handleNotApproved) VendorApiService.onNotApproved = null;
+    if (_session.beforeLogout == widget.push?.unregisterForLogout) {
+      _session.beforeLogout = null;
+    }
+    if (VendorApiService.onUnauthorized == _handleUnauthorized) {
+      VendorApiService.onUnauthorized = null;
+    }
+    if (VendorApiService.onNotApproved == _handleNotApproved) {
+      VendorApiService.onNotApproved = null;
+    }
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -154,7 +184,8 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
     _syncPush();
     final was = _lastStatus;
     _lastStatus = _session.status;
-    if (was != SessionStatus.signedOut && _session.status == SessionStatus.signedOut) {
+    if (was != SessionStatus.signedOut &&
+        _session.status == SessionStatus.signedOut) {
       OrderQueueService.clearQueue();
     }
     // The order screens are going away (session ended, logout, suspended): close every pop-up and page that sits
@@ -208,7 +239,8 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _session.status == SessionStatus.signedIn) {
+    if (state == AppLifecycleState.resumed &&
+        _session.status == SessionStatus.signedIn) {
       _session.refreshApproval();
       unawaited(widget.push?.onResumed());
     }
@@ -233,7 +265,9 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
           content: Row(children: [
             Icon(LucideIcons.logIn, size: 22, color: Colors.white),
             SizedBox(width: 10),
-            Expanded(child: Text('${VendorApiService.sessionExpiredMessage}  ·  सेशन खत्म हो गया, फिर से लॉग इन करें')),
+            Expanded(
+                child: Text(
+                    '${VendorApiService.sessionExpiredMessage}  ·  सेशन खत्म हो गया, फिर से लॉग इन करें')),
           ]),
         ),
       );
@@ -250,7 +284,8 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
           case SessionStatus.unreachable:
             return _SessionUnreachable(onRetry: _session.retryRestore);
           case SessionStatus.signedOut:
-            return LoginScreen(onSubmit: _session.login, onCreateAccount: _openSignup);
+            return LoginScreen(
+                onSubmit: _session.login, onCreateAccount: _openSignup);
           case SessionStatus.signedIn:
             final me = _session.session;
             // Only an approved restaurant reaches the order screens; everyone else sees where they stand.
@@ -289,7 +324,10 @@ class _SplashScreen extends StatelessWidget {
           child: const Column(mainAxisSize: MainAxisSize.min, children: [
             KBrandMark(height: 72),
             SizedBox(height: 28),
-            SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 3)),
+            SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(strokeWidth: 3)),
           ]),
         ),
       ),
@@ -331,16 +369,30 @@ class _SessionUnreachableState extends State<_SessionUnreachable> {
                 Container(
                   width: 68,
                   height: 68,
-                  decoration: BoxDecoration(color: k.brandSoft, shape: BoxShape.circle),
+                  decoration:
+                      BoxDecoration(color: k.brandSoft, shape: BoxShape.circle),
                   child: Icon(LucideIcons.wifiOff, size: 32, color: k.brand),
                 ),
                 const SizedBox(height: 16),
-                Text('Can\'t reach ${BrandConfig.name}', textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
-                Text('${BrandConfig.name} से कनेक्ट नहीं हो पा रहा', textAlign: TextAlign.center, style: KraveoType.titleMd.copyWith(color: k.inkMuted)),
+                Text('Can\'t reach ${BrandConfig.name}',
+                    textAlign: TextAlign.center,
+                    style: KraveoType.headline.copyWith(color: k.ink)),
+                Text('${BrandConfig.name} से कनेक्ट नहीं हो पा रहा',
+                    textAlign: TextAlign.center,
+                    style: KraveoType.titleMd.copyWith(color: k.inkMuted)),
                 const SizedBox(height: 8),
-                Text('Check your internet. You are still logged in.', textAlign: TextAlign.center, style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
+                Text('Check your internet. You are still logged in.',
+                    textAlign: TextAlign.center,
+                    style: KraveoType.body
+                        .copyWith(color: k.inkMuted, fontSize: 16)),
                 const SizedBox(height: 20),
-                KButton(label: 'Retry', sublabel: 'फिर कोशिश करें', icon: LucideIcons.rotateCcw, large: true, loading: _busy, onPressed: _retry),
+                KButton(
+                    label: 'Retry',
+                    sublabel: 'फिर कोशिश करें',
+                    icon: LucideIcons.rotateCcw,
+                    large: true,
+                    loading: _busy,
+                    onPressed: _retry),
               ]),
             ),
           ),

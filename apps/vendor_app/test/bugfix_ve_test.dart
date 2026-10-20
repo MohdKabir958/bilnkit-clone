@@ -32,7 +32,14 @@ import 'support/push_fakes.dart';
 
 /// Pre-demo bug-hunt fixes for the restaurant app (VE-01 ... VE-20). Each group names the finding it guards.
 
-PartnerSession _profile({PartnerApproval approval = PartnerApproval.pending, String? address, String? category, String? fssai, String name = 'Ramesh Kumar', String? reason}) => PartnerSession(
+PartnerSession _profile(
+        {PartnerApproval approval = PartnerApproval.pending,
+        String? address,
+        String? category,
+        String? fssai,
+        String name = 'Ramesh Kumar',
+        String? reason}) =>
+    PartnerSession(
       userId: 'u9',
       name: name,
       phone: '+91 9811100001',
@@ -51,12 +58,15 @@ class _Auth implements PartnerAuthService {
   _Auth(this.profile);
 
   ProfileResult profile;
-  SignupResult Function(PartnerSignupForm f) onResubmit = (_) => const SignupResult.success();
+  SignupResult Function(PartnerSignupForm f) onResubmit =
+      (_) => const SignupResult.success();
   final resubmits = <PartnerSignupForm>[];
   int profileCalls = 0;
 
   @override
-  Future<LoginResult> login({required String phone, required String password}) async => const LoginResult.failure(LoginFailure.server);
+  Future<LoginResult> login(
+          {required String phone, required String password}) async =>
+      const LoginResult.failure(LoginFailure.server);
 
   @override
   Future<ProfileResult> fetchProfile(String token) async {
@@ -65,7 +75,8 @@ class _Auth implements PartnerAuthService {
   }
 
   @override
-  Future<SignupResult> signUp(PartnerSignupForm form) async => const SignupResult.failure(SignupFailure.server);
+  Future<SignupResult> signUp(PartnerSignupForm form) async =>
+      const SignupResult.failure(SignupFailure.server);
 
   @override
   Future<SignupResult> resubmit(String token, PartnerSignupForm form) async {
@@ -94,8 +105,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
-    for (final ch in const ['xyz.luan/audioplayers.global', 'xyz.luan/audioplayers']) {
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(MethodChannel(ch), (call) async => null);
+    for (final ch in const [
+      'xyz.luan/audioplayers.global',
+      'xyz.luan/audioplayers'
+    ]) {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(MethodChannel(ch), (call) async => null);
     }
   });
 
@@ -111,7 +126,8 @@ void main() {
       edited: {'address'},
     );
 
-    Future<(SignupResult, http.Request)> put(http.Response Function() answer) async {
+    Future<(SignupResult, http.Request)> put(
+        http.Response Function() answer) async {
       late http.Request seen;
       final r = await http.runWithClient(
         () => ApiPartnerAuthService().resubmit('tok', form),
@@ -123,23 +139,47 @@ void main() {
       return (r, seen);
     }
 
-    test('a 200 WITHOUT a user in the body is a success (the old server shape)', () async {
-      final (r, req) = await put(() => http.Response(jsonEncode({'success': true, 'approvalStatus': 'PENDING', 'rejectionReason': null, 'vendor': {'id': 'v9', 'name': 'Shiv Shakti Dhaba'}}), 200));
+    test('a 200 WITHOUT a user in the body is a success (the old server shape)',
+        () async {
+      final (r, req) = await put(() => http.Response(
+          jsonEncode({
+            'success': true,
+            'approvalStatus': 'PENDING',
+            'rejectionReason': null,
+            'vendor': {'id': 'v9', 'name': 'Shiv Shakti Dhaba'}
+          }),
+          200));
       expect(r.ok, isTrue);
       expect(r.failure, isNull);
-      expect(r.session, isNull, reason: 'nothing readable: the caller re-reads /partner/me');
+      expect(r.session, isNull,
+          reason: 'nothing readable: the caller re-reads /partner/me');
       expect(req.method, 'PUT');
       expect(req.url.path, endsWith('/partner/application'));
     });
 
-    test('a 200 WITH a user (the new server shape) is a success and carries the session', () async {
+    test(
+        'a 200 WITH a user (the new server shape) is a success and carries the session',
+        () async {
       final (r, _) = await put(() => http.Response(
             jsonEncode({
               'success': true,
-              'user': {'id': 'u9', 'name': 'Ramesh Kumar', 'phone': '+91 9811100001', 'role': 'VENDOR', 'avatarId': null},
+              'user': {
+                'id': 'u9',
+                'name': 'Ramesh Kumar',
+                'phone': '+91 9811100001',
+                'role': 'VENDOR',
+                'avatarId': null
+              },
               'approvalStatus': 'PENDING',
               'rejectionReason': null,
-              'vendor': {'id': 'v9', 'name': 'Shiv Shakti Dhaba', 'address': 'Gate 2 food court', 'category': 'North Indian', 'fssaiNumber': '12345678901234', 'isAcceptingOrders': false},
+              'vendor': {
+                'id': 'v9',
+                'name': 'Shiv Shakti Dhaba',
+                'address': 'Gate 2 food court',
+                'category': 'North Indian',
+                'fssaiNumber': '12345678901234',
+                'isAcceptingOrders': false
+              },
             }),
             200,
           ));
@@ -148,62 +188,106 @@ void main() {
       expect(r.session!.address, 'Gate 2 food court');
     });
 
-    test('real failures are still failures (401, 400, 5xx, even an empty 200 body counts as accepted)', () async {
-      expect((await put(() => http.Response('{}', 401))).$1.failure, SignupFailure.unauthorized);
-      expect((await put(() => http.Response(jsonEncode({'field': 'address', 'message': 'Too short'}), 400))).$1.failure, SignupFailure.invalid);
-      expect((await put(() => http.Response('oops', 502))).$1.failure, SignupFailure.server);
+    test(
+        'real failures are still failures (401, 400, 5xx, even an empty 200 body counts as accepted)',
+        () async {
+      expect((await put(() => http.Response('{}', 401))).$1.failure,
+          SignupFailure.unauthorized);
+      expect(
+          (await put(() => http.Response(
+                  jsonEncode({'field': 'address', 'message': 'Too short'}),
+                  400)))
+              .$1
+              .failure,
+          SignupFailure.invalid);
+      expect((await put(() => http.Response('oops', 502))).$1.failure,
+          SignupFailure.server);
       expect((await put(() => http.Response('', 200))).$1.ok, isTrue);
     });
 
     test('sign-up (new account) still needs a token and a user', () async {
       final r = await http.runWithClient(
-        () => ApiPartnerAuthService().signUp(const PartnerSignupForm(ownerName: 'R', phone: '9811100001', password: 'Passw0rd!x', restaurantName: 'Shiv', address: 'Gate 2')),
-        () => MockClient((_) async => http.Response(jsonEncode({'success': true, 'approvalStatus': 'PENDING'}), 201)),
+        () => ApiPartnerAuthService().signUp(const PartnerSignupForm(
+            ownerName: 'R',
+            phone: '9811100001',
+            password: 'Passw0rd!x',
+            restaurantName: 'Shiv',
+            address: 'Gate 2')),
+        () => MockClient((_) async => http.Response(
+            jsonEncode({'success': true, 'approvalStatus': 'PENDING'}), 201)),
       );
       expect(r.failure, SignupFailure.server);
     });
   });
 
   group('VE-01 session after a re-send', () {
-    setUp(() => SharedPreferences.setMockInitialValues({'kraveo_vendor_jwt_token': 'stored-jwt'}));
+    setUp(() => SharedPreferences.setMockInitialValues(
+        {'kraveo_vendor_jwt_token': 'stored-jwt'}));
 
-    test('a 200 without a user keeps the owner signed in, marks the application pending and re-reads the profile', () async {
-      final auth = _Auth(ProfileResult(ProfileOutcome.valid, _profile(approval: PartnerApproval.rejected, reason: 'FSSAI does not match')));
+    test(
+        'a 200 without a user keeps the owner signed in, marks the application pending and re-reads the profile',
+        () async {
+      final auth = _Auth(ProfileResult(
+          ProfileOutcome.valid,
+          _profile(
+              approval: PartnerApproval.rejected,
+              reason: 'FSSAI does not match')));
       final controller = SessionController(auth: auth);
       await controller.restore();
       expect(controller.session!.approval, PartnerApproval.rejected);
 
       // The server accepted it; the fresh profile now says PENDING with the new address.
-      auth.profile = ProfileResult(ProfileOutcome.valid, _profile(address: 'Gate 2 food court', category: 'North Indian'));
+      auth.profile = ProfileResult(ProfileOutcome.valid,
+          _profile(address: 'Gate 2 food court', category: 'North Indian'));
       final before = auth.profileCalls;
-      final result = await controller.resubmit(const PartnerSignupForm(ownerName: 'Ramesh Kumar', phone: '', password: '', restaurantName: 'Shiv Shakti Dhaba', address: 'Gate 2 food court'));
+      final result = await controller.resubmit(const PartnerSignupForm(
+          ownerName: 'Ramesh Kumar',
+          phone: '',
+          password: '',
+          restaurantName: 'Shiv Shakti Dhaba',
+          address: 'Gate 2 food court'));
       expect(result.ok, isTrue);
       expect(controller.status, SessionStatus.signedIn);
       expect(controller.session!.approval, PartnerApproval.pending);
       expect(controller.session!.rejectionReason, isNull);
       expect(controller.session!.address, 'Gate 2 food court');
-      expect(auth.profileCalls, before + 1, reason: 'the real profile is loaded after the re-send');
+      expect(auth.profileCalls, before + 1,
+          reason: 'the real profile is loaded after the re-send');
       controller.dispose();
     });
 
-    test('even when the profile re-read fails (offline), the owner is shown as pending, not as an error', () async {
-      final auth = _Auth(ProfileResult(ProfileOutcome.valid, _profile(approval: PartnerApproval.rejected, reason: 'x')));
+    test(
+        'even when the profile re-read fails (offline), the owner is shown as pending, not as an error',
+        () async {
+      final auth = _Auth(ProfileResult(ProfileOutcome.valid,
+          _profile(approval: PartnerApproval.rejected, reason: 'x')));
       final controller = SessionController(auth: auth);
       await controller.restore();
       auth.profile = const ProfileResult(ProfileOutcome.unreachable);
-      final result = await controller.resubmit(const PartnerSignupForm(ownerName: 'R', phone: '', password: '', restaurantName: 'S', address: 'A'));
+      final result = await controller.resubmit(const PartnerSignupForm(
+          ownerName: 'R',
+          phone: '',
+          password: '',
+          restaurantName: 'S',
+          address: 'A'));
       expect(result.ok, isTrue);
       expect(controller.session!.approval, PartnerApproval.pending);
       controller.dispose();
     });
 
-    testWidgets('the form closes with no "Grozo is having trouble" box when the answer has no user', (tester) async {
+    testWidgets(
+        'the form closes with no "Grozo is having trouble" box when the answer has no user',
+        (tester) async {
       _tallPhone(tester);
       var submitted = 0;
       await tester.pumpWidget(MaterialApp(
         theme: KraveoTheme.vendor(),
         home: SignupScreen(
-          existing: _profile(approval: PartnerApproval.rejected, address: 'Old', category: 'North Indian', fssai: '12345678901234'),
+          existing: _profile(
+              approval: PartnerApproval.rejected,
+              address: 'Old',
+              category: 'North Indian',
+              fssai: '12345678901234'),
           onSubmit: (form) async {
             submitted++;
             return const SignupResult.success();
@@ -212,7 +296,8 @@ void main() {
       ));
       await tester.pump(const Duration(seconds: 3));
       await tester.pump(const Duration(seconds: 3));
-      await tester.enterText(find.byKey(const ValueKey('address-field')), 'Gate 2 food court');
+      await tester.enterText(
+          find.byKey(const ValueKey('address-field')), 'Gate 2 food court');
       await tester.ensureVisible(find.byKey(const ValueKey('signup-button')));
       await tester.pump(const Duration(seconds: 1));
       await tester.tap(find.byKey(const ValueKey('signup-button')));
@@ -224,30 +309,70 @@ void main() {
     });
   });
 
-  group('VE-02 only edited fields are sent; the profile is loaded after login', () {
-    test('toUpdateJson sends only the edited fields and never an empty category / FSSAI number', () {
-      const onlyAddress = PartnerSignupForm(ownerName: 'R', phone: '', password: '', restaurantName: 'S', address: 'New address', category: '', fssaiNumber: '', edited: {'address'});
+  group('VE-02 only edited fields are sent; the profile is loaded after login',
+      () {
+    test(
+        'toUpdateJson sends only the edited fields and never an empty category / FSSAI number',
+        () {
+      const onlyAddress = PartnerSignupForm(
+          ownerName: 'R',
+          phone: '',
+          password: '',
+          restaurantName: 'S',
+          address: 'New address',
+          category: '',
+          fssaiNumber: '',
+          edited: {'address'});
       expect(onlyAddress.toUpdateJson(), {'address': 'New address'});
 
-      const fssaiFixed = PartnerSignupForm(ownerName: 'R', phone: '', password: '', restaurantName: 'S', address: 'A', fssaiNumber: '12345678901234', edited: {'fssaiNumber'});
+      const fssaiFixed = PartnerSignupForm(
+          ownerName: 'R',
+          phone: '',
+          password: '',
+          restaurantName: 'S',
+          address: 'A',
+          fssaiNumber: '12345678901234',
+          edited: {'fssaiNumber'});
       expect(fssaiFixed.toUpdateJson(), {'fssaiNumber': '12345678901234'});
 
       // Edited but emptied: still never sent (it would wipe what Grozo has on file).
-      const cleared = PartnerSignupForm(ownerName: 'R', phone: '', password: '', restaurantName: 'S', address: 'A', category: '', fssaiNumber: '', edited: {'category', 'fssaiNumber', 'name'});
+      const cleared = PartnerSignupForm(
+          ownerName: 'R',
+          phone: '',
+          password: '',
+          restaurantName: 'S',
+          address: 'A',
+          category: '',
+          fssaiNumber: '',
+          edited: {'category', 'fssaiNumber', 'name'});
       expect(cleared.toUpdateJson(), {'name': 'R'});
 
       // Unknown edits (older callers): everything that has a value.
-      const unknown = PartnerSignupForm(ownerName: 'R', phone: '', password: '', restaurantName: 'S', address: 'A', category: '', fssaiNumber: '');
-      expect(unknown.toUpdateJson(), {'name': 'R', 'restaurantName': 'S', 'address': 'A'});
+      const unknown = PartnerSignupForm(
+          ownerName: 'R',
+          phone: '',
+          password: '',
+          restaurantName: 'S',
+          address: 'A',
+          category: '',
+          fssaiNumber: '');
+      expect(unknown.toUpdateJson(),
+          {'name': 'R', 'restaurantName': 'S', 'address': 'A'});
     });
 
-    testWidgets('the edit form posts only what the owner changed (the PUT body)', (tester) async {
+    testWidgets(
+        'the edit form posts only what the owner changed (the PUT body)',
+        (tester) async {
       _tallPhone(tester);
       PartnerSignupForm? sent;
       await tester.pumpWidget(MaterialApp(
         theme: KraveoTheme.vendor(),
         home: SignupScreen(
-          existing: _profile(approval: PartnerApproval.rejected, address: 'Ashta road', category: 'North Indian', fssai: '12345678901234'),
+          existing: _profile(
+              approval: PartnerApproval.rejected,
+              address: 'Ashta road',
+              category: 'North Indian',
+              fssai: '12345678901234'),
           onSubmit: (form) async {
             sent = form;
             return const SignupResult.success();
@@ -256,7 +381,8 @@ void main() {
       ));
       await tester.pump(const Duration(seconds: 3));
       await tester.pump(const Duration(seconds: 3));
-      await tester.enterText(find.byKey(const ValueKey('address-field')), 'Gate 2 food court');
+      await tester.enterText(
+          find.byKey(const ValueKey('address-field')), 'Gate 2 food court');
       await tester.ensureVisible(find.byKey(const ValueKey('signup-button')));
       await tester.pump(const Duration(seconds: 1));
       await tester.tap(find.byKey(const ValueKey('signup-button')));
@@ -266,7 +392,9 @@ void main() {
       expect(sent!.toUpdateJson(), {'address': 'Gate 2 food court'});
     });
 
-    testWidgets('the edit form with unknown stored details (a login answer without them) sends no empty category / FSSAI', (tester) async {
+    testWidgets(
+        'the edit form with unknown stored details (a login answer without them) sends no empty category / FSSAI',
+        (tester) async {
       _tallPhone(tester);
       PartnerSignupForm? sent;
       await tester.pumpWidget(MaterialApp(
@@ -281,7 +409,8 @@ void main() {
       ));
       await tester.pump(const Duration(seconds: 3));
       await tester.pump(const Duration(seconds: 3));
-      await tester.enterText(find.byKey(const ValueKey('address-field')), 'Gate 2 food court');
+      await tester.enterText(
+          find.byKey(const ValueKey('address-field')), 'Gate 2 food court');
       await tester.ensureVisible(find.byKey(const ValueKey('signup-button')));
       await tester.pump(const Duration(seconds: 1));
       await tester.tap(find.byKey(const ValueKey('signup-button')));
@@ -293,34 +422,56 @@ void main() {
       expect(body['address'], 'Gate 2 food court');
     });
 
-    test('refreshApproval notifies when only the address / category / FSSAI / name changed', () async {
-      SharedPreferences.setMockInitialValues({'kraveo_vendor_jwt_token': 'stored-jwt'});
-      final auth = _Auth(ProfileResult(ProfileOutcome.valid, _profile())); // a login-shaped session: no details
+    test(
+        'refreshApproval notifies when only the address / category / FSSAI / name changed',
+        () async {
+      SharedPreferences.setMockInitialValues(
+          {'kraveo_vendor_jwt_token': 'stored-jwt'});
+      final auth = _Auth(ProfileResult(ProfileOutcome.valid,
+          _profile())); // a login-shaped session: no details
       final controller = SessionController(auth: auth);
       await controller.restore();
       expect(controller.session!.address, isNull);
       var notified = 0;
       controller.addListener(() => notified++);
 
-      auth.profile = ProfileResult(ProfileOutcome.valid, _profile(address: 'Ashta road', category: 'North Indian', fssai: '12345678901234'));
+      auth.profile = ProfileResult(
+          ProfileOutcome.valid,
+          _profile(
+              address: 'Ashta road',
+              category: 'North Indian',
+              fssai: '12345678901234'));
       expect(await controller.refreshApproval(), isTrue);
       expect(notified, 1);
       expect(controller.session!.address, 'Ashta road');
       expect(controller.session!.category, 'North Indian');
       expect(controller.session!.fssaiNumber, '12345678901234');
 
-      expect(await controller.refreshApproval(), isFalse, reason: 'nothing changed');
-      auth.profile = ProfileResult(ProfileOutcome.valid, _profile(address: 'Ashta road', category: 'North Indian', fssai: '12345678901234', name: 'Ramesh K'));
+      expect(await controller.refreshApproval(), isFalse,
+          reason: 'nothing changed');
+      auth.profile = ProfileResult(
+          ProfileOutcome.valid,
+          _profile(
+              address: 'Ashta road',
+              category: 'North Indian',
+              fssai: '12345678901234',
+              name: 'Ramesh K'));
       expect(await controller.refreshApproval(), isTrue);
       expect(notified, 2);
       controller.dispose();
     });
 
-    testWidgets('the status screen loads the full profile once when the login answer had no address', (tester) async {
+    testWidgets(
+        'the status screen loads the full profile once when the login answer had no address',
+        (tester) async {
       var refreshes = 0;
       await tester.pumpWidget(MaterialApp(
         theme: KraveoTheme.vendor(),
-        home: ApplicationStatusScreen(session: _profile(approval: PartnerApproval.rejected), onRefresh: () async => ++refreshes > 0, onEdit: () {}, onLogout: () async {}),
+        home: ApplicationStatusScreen(
+            session: _profile(approval: PartnerApproval.rejected),
+            onRefresh: () async => ++refreshes > 0,
+            onEdit: () {},
+            onLogout: () async {}),
       ));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
@@ -337,10 +488,17 @@ void main() {
     late List<FakeSocket> sockets;
     late _Auth auth;
 
-    PartnerSession approved() => const PartnerSession(userId: 'u1', name: 'Test Owner', vendorId: 'v1', vendorName: 'Test Dhaba', approval: PartnerApproval.approved, isAcceptingOrders: true);
+    PartnerSession approved() => const PartnerSession(
+        userId: 'u1',
+        name: 'Test Owner',
+        vendorId: 'v1',
+        vendorName: 'Test Dhaba',
+        approval: PartnerApproval.approved,
+        isAcceptingOrders: true);
 
     setUp(() {
-      SharedPreferences.setMockInitialValues({'kraveo_vendor_jwt_token': 'test-jwt'});
+      SharedPreferences.setMockInitialValues(
+          {'kraveo_vendor_jwt_token': 'test-jwt'});
       OrderQueueService.clearQueue();
       backend = FakeBackend();
       alarm = FakeAlarm();
@@ -348,7 +506,8 @@ void main() {
       auth = _Auth(ProfileResult(ProfileOutcome.valid, approved()));
     });
 
-    Future<void> launch(WidgetTester tester, {PushController? push, Size size = const Size(412, 915)}) async {
+    Future<void> launch(WidgetTester tester,
+        {PushController? push, Size size = const Size(412, 915)}) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
@@ -382,14 +541,23 @@ void main() {
 
     // -------------------------------------------------------------------------------------------- VE-03
 
-    testWidgets('VE-03 the session ending while the takeover is open closes it and shows the login screen', (tester) async {
+    testWidgets(
+        'VE-03 the session ending while the takeover is open closes it and shows the login screen',
+        (tester) async {
       backend.put(order(id: 'ord-1'));
       await launch(tester);
       expect(find.byType(IncomingOrderDialog), findsOneWidget);
 
       // The admin suspended / reset the account: the next profile check answers 401.
       auth.profile = const ProfileResult(ProfileOutcome.unauthorized);
-      for (final s in const [AppLifecycleState.inactive, AppLifecycleState.hidden, AppLifecycleState.paused, AppLifecycleState.hidden, AppLifecycleState.inactive, AppLifecycleState.resumed]) {
+      for (final s in const [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+        AppLifecycleState.paused,
+        AppLifecycleState.hidden,
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed
+      ]) {
         tester.binding.handleAppLifecycleStateChanged(s);
       }
       // Well under the dialog's own 1-second tick: it is the session change that closes the pop-up.
@@ -398,21 +566,30 @@ void main() {
         await tester.pump(const Duration(milliseconds: 80));
       }
 
-      expect(find.byType(IncomingOrderDialog), findsNothing, reason: 'no dead full-screen over the login');
+      expect(find.byType(IncomingOrderDialog), findsNothing,
+          reason: 'no dead full-screen over the login');
       expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.textContaining('Session expired'), findsOneWidget, reason: 'the existing message is kept');
+      expect(find.textContaining('Session expired'), findsOneWidget,
+          reason: 'the existing message is kept');
       expect(OrderQueueService.isShowingDialog, isFalse);
       await unmount(tester);
     });
 
-    testWidgets('VE-03 a takeover whose controller was disposed closes itself (no dead screen)', (tester) async {
+    testWidgets(
+        'VE-03 a takeover whose controller was disposed closes itself (no dead screen)',
+        (tester) async {
       backend.put(order(id: 'ord-1'));
       final c = await startController(backend, alarm: alarm);
       await tester.pumpWidget(MaterialApp(
         theme: KraveoTheme.vendor(),
         home: Builder(
           builder: (context) => Scaffold(
-            body: TextButton(onPressed: () => showDialog<void>(context: context, builder: (_) => IncomingOrderDialog(orderId: 'ord-1', controller: c)), child: const Text('open')),
+            body: TextButton(
+                onPressed: () => showDialog<void>(
+                    context: context,
+                    builder: (_) =>
+                        IncomingOrderDialog(orderId: 'ord-1', controller: c)),
+                child: const Text('open')),
           ),
         ),
       ));
@@ -428,7 +605,9 @@ void main() {
 
     // -------------------------------------------------------------------------------------------- VE-04
 
-    testWidgets('VE-04 Grozo cancels an order in the kitchen: a notice tells the cook to stop, and the tray notification is removed', (tester) async {
+    testWidgets(
+        'VE-04 Grozo cancels an order in the kitchen: a notice tells the cook to stop, and the tray notification is removed',
+        (tester) async {
       final log = PushLog();
       final notifications = FakeNotifications();
       final push = PushController(
@@ -445,54 +624,84 @@ void main() {
 
       sockets.single.emit(
         'order_updated',
-        orderJson(id: 'ord-abc123', status: 'CANCELLED', paymentStatus: 'REFUNDED', cancelledBy: 'ADMIN', cancelReason: 'Kitchen fire', updatedAt: DateTime.now().add(const Duration(minutes: 1))),
+        orderJson(
+            id: 'ord-abc123',
+            status: 'CANCELLED',
+            paymentStatus: 'REFUNDED',
+            cancelledBy: 'ADMIN',
+            cancelReason: 'Kitchen fire',
+            updatedAt: DateTime.now().add(const Duration(minutes: 1))),
       );
       await _settle(tester);
 
-      expect(find.textContaining('was cancelled by Grozo. Stop cooking.'), findsOneWidget);
+      expect(find.textContaining('was cancelled by Grozo. Stop packing.'),
+          findsOneWidget);
       expect(find.textContaining('#ABC123'), findsWidgets);
       expect(notifications.shown, contains('cancel:ord-abc123'));
       expect(alarm.starts, 1, reason: 'one short sound');
 
       await tester.tap(find.byKey(const ValueKey('cancelled-notice-ok')));
       await _settle(tester);
-      expect(find.textContaining('Stop cooking'), findsNothing);
+      expect(find.textContaining('Stop packing'), findsNothing);
       await unmount(tester);
       push.dispose();
     });
 
-    testWidgets('VE-04 no alert when the restaurant itself declined, or for an order that was never in the kitchen', (tester) async {
+    testWidgets(
+        'VE-04 no alert when the restaurant itself declined, or for an order that was never in the kitchen',
+        (tester) async {
       backend.put(order(id: 'ord-new'));
       await launch(tester);
       expect(find.byType(IncomingOrderDialog), findsOneWidget);
-      sockets.single.emit('order_updated', orderJson(id: 'ord-new', status: 'CANCELLED', paymentStatus: 'REFUNDED', cancelledBy: 'VENDOR', updatedAt: DateTime.now().add(const Duration(minutes: 1))));
+      sockets.single.emit(
+          'order_updated',
+          orderJson(
+              id: 'ord-new',
+              status: 'CANCELLED',
+              paymentStatus: 'REFUNDED',
+              cancelledBy: 'VENDOR',
+              updatedAt: DateTime.now().add(const Duration(minutes: 1))));
       await _settle(tester);
-      expect(find.textContaining('Stop cooking'), findsNothing);
+      expect(find.textContaining('Stop packing'), findsNothing);
       await unmount(tester);
     });
 
     // -------------------------------------------------------------------------------------------- VE-06
 
-    testWidgets('VE-06 a new restaurant (closed, empty menu) sees "1. Add a dish  2. Tap OPEN" on the Orders tab', (tester) async {
+    testWidgets(
+        'VE-06 a new restaurant (closed, empty menu) sees "1. Add a dish  2. Tap OPEN" on the Orders tab',
+        (tester) async {
       backend
         ..storeOpen = false
         ..menu = [];
-      auth.profile = const ProfileResult(ProfileOutcome.valid, PartnerSession(userId: 'u1', name: 'O', vendorId: 'v1', vendorName: 'Test Dhaba', isAcceptingOrders: false));
+      auth.profile = const ProfileResult(
+          ProfileOutcome.valid,
+          PartnerSession(
+              userId: 'u1',
+              name: 'O',
+              vendorId: 'v1',
+              vendorName: 'Test Dhaba',
+              isAcceptingOrders: false));
       await launch(tester);
       expect(find.byKey(const ValueKey('first-run-card')), findsOneWidget);
-      expect(find.textContaining('Add a dish'), findsWidgets);
+      expect(find.textContaining('Add a product'), findsWidgets);
       expect(find.textContaining('Tap OPEN'), findsOneWidget);
       await unmount(tester);
     });
 
-    testWidgets('VE-06 opening a store with zero dishes asks first; "Open anyway" opens it', (tester) async {
+    testWidgets(
+        'VE-06 opening a store with zero dishes asks first; "Open anyway" opens it',
+        (tester) async {
       backend
         ..storeOpen = false
         ..menu = [];
       await launch(tester);
       await tester.tap(find.text('CLOSED'));
       await _settle(tester);
-      expect(find.textContaining('You have no dishes yet - customers will see an empty menu. Open anyway?'), findsOneWidget);
+      expect(
+          find.textContaining(
+              'You have no products yet - customers will see an empty catalog. Open anyway?'),
+          findsOneWidget);
       expect(backend.calls.where((c) => c.startsWith('store:set')), isEmpty);
 
       await tapButton(tester, 'Open anyway');
@@ -501,34 +710,42 @@ void main() {
       await unmount(tester);
     });
 
-    testWidgets('VE-06 "Add a dish first" does not open the store and goes to the Menu tab', (tester) async {
+    testWidgets(
+        'VE-06 "Add a dish first" does not open the store and goes to the Menu tab',
+        (tester) async {
       backend
         ..storeOpen = false
         ..menu = [];
       await launch(tester);
       await tester.tap(find.text('CLOSED'));
       await _settle(tester);
-      await tapButton(tester, 'Add a dish first');
+      await tapButton(tester, 'Add a product first');
       await _settle(tester);
       expect(backend.calls.where((c) => c.startsWith('store:set')), isEmpty);
-      expect(find.text('Your menu is empty'), findsOneWidget);
+      expect(find.text('Products and inventory'), findsOneWidget);
       await unmount(tester);
     });
 
-    testWidgets('VE-06 with at least one dish, opening needs no extra question and the card is gone once open', (tester) async {
+    testWidgets(
+        'VE-06 with at least one dish, opening needs no extra question and the card is gone once open',
+        (tester) async {
       backend
         ..storeOpen = false
-        ..menu = [DishModel(id: 'm1', name: 'Dal', category: 'Main Course', price: 90)];
+        ..menu = [
+          DishModel(id: 'm1', name: 'Dal', category: 'Main Course', price: 90)
+        ];
       await launch(tester);
       await tester.tap(find.text('CLOSED'));
       await _settle(tester);
-      expect(find.textContaining('You have no dishes yet'), findsNothing);
+      expect(find.textContaining('You have no products yet'), findsNothing);
       expect(backend.calls.where((c) => c.startsWith('store:set')), isNotEmpty);
       expect(find.byKey(const ValueKey('first-run-card')), findsNothing);
       await unmount(tester);
     });
 
-    testWidgets('VE-04/06/08/09 small phone (360x640, text x1.3): first-run card, cancel notice, takeover money lines and help sheet do not overflow', (tester) async {
+    testWidgets(
+        'VE-04/06/08/09 small phone (360x640, text x1.3): first-run card, cancel notice, takeover money lines and help sheet do not overflow',
+        (tester) async {
       tester.platformDispatcher.textScaleFactorTestValue = 1.3;
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       backend
@@ -538,9 +755,18 @@ void main() {
       await launch(tester, size: const Size(360, 640));
       expect(tester.takeException(), isNull);
 
-      sockets.single.emit('order_updated', orderJson(id: 'ord-abc123', status: 'CANCELLED', paymentStatus: 'REFUNDED', cancelledBy: 'ADMIN', cancelReason: 'Kitchen closed for the day because of a long reason', updatedAt: DateTime.now().add(const Duration(minutes: 1))));
+      sockets.single.emit(
+          'order_updated',
+          orderJson(
+              id: 'ord-abc123',
+              status: 'CANCELLED',
+              paymentStatus: 'REFUNDED',
+              cancelledBy: 'ADMIN',
+              cancelReason:
+                  'Kitchen closed for the day because of a long reason',
+              updatedAt: DateTime.now().add(const Duration(minutes: 1))));
       await _settle(tester);
-      expect(find.textContaining('Stop cooking'), findsOneWidget);
+      expect(find.textContaining('Stop packing'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.tap(find.byKey(const ValueKey('cancelled-notice-ok')));
       await _settle(tester);
@@ -549,8 +775,10 @@ void main() {
       expect(find.byKey(const ValueKey('first-run-card')), findsOneWidget);
       expect(tester.takeException(), isNull);
 
-      backend.put(OrderModel.fromJson(orderJson(id: 'ord-new1', total: 1234.5))!);
-      sockets.single.emit('new_order_alert', orderJson(id: 'ord-new1', total: 1234.5));
+      backend
+          .put(OrderModel.fromJson(orderJson(id: 'ord-new1', total: 1234.5))!);
+      sockets.single
+          .emit('new_order_alert', orderJson(id: 'ord-new1', total: 1234.5));
       await _settle(tester);
       expect(find.byType(IncomingOrderDialog), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -559,46 +787,66 @@ void main() {
 
     // -------------------------------------------------------------------------------------------- VE-08
 
-    testWidgets('VE-08 help opens the persisted support request screen', (tester) async {
-      await launch(tester);await tester.tap(find.bySemanticsLabel('Help and support'));await _settle(tester);
-      expect(find.text('Call helpline'),findsNothing);await tapButton(tester,'Help and requests');await _settle(tester);
-      expect(find.byType(SupportCenter),findsOneWidget);expect(find.text('Send request'),findsOneWidget);await unmount(tester);
+    testWidgets('VE-08 help opens the persisted support request screen',
+        (tester) async {
+      await launch(tester);
+      await tester.tap(find.bySemanticsLabel('Help and support'));
+      await _settle(tester);
+      expect(find.text('Call helpline'), findsNothing);
+      await tapButton(tester, 'Help and requests');
+      await _settle(tester);
+      expect(find.byType(SupportCenter), findsOneWidget);
+      expect(find.text('Send request'), findsOneWidget);
+      await unmount(tester);
     });
 
     // -------------------------------------------------------------------------------------------- VE-09
 
-    testWidgets('VE-09 the takeover and the Orders card show only "You earn" (no customer total, fees or food split)', (tester) async {
+    testWidgets(
+        'VE-09 the takeover and the Orders card show only "You earn" (no customer total, fees or food split)',
+        (tester) async {
       backend.put(order(id: 'ord-1234'));
       await launch(tester);
       expect(find.byType(IncomingOrderDialog), findsOneWidget);
       expect(find.byKey(const ValueKey('earn-help')), findsOneWidget);
       expect(find.byKey(const ValueKey('you-earn')), findsOneWidget);
-      expect(tester.widget<Text>(find.byKey(const ValueKey('you-earn'))).data, '₹205');
+      expect(tester.widget<Text>(find.byKey(const ValueKey('you-earn'))).data,
+          '₹205');
       expect(find.textContaining('You earn'), findsWidgets);
       expect(find.textContaining('Customer pays'), findsNothing);
       expect(find.textContaining('delivery'), findsNothing);
-      expect(find.text('₹245'), findsNothing, reason: 'the customer total must not be shown');
+      expect(find.text('₹245'), findsNothing,
+          reason: 'the customer total must not be shown');
       await unmount(tester);
     });
 
-    testWidgets('VE-09 the order card says "You earn" with paise when present', (tester) async {
-      backend.put(OrderModel.fromJson({...orderJson(id: 'ord-1', status: 'ACCEPTED', total: 245.5), 'subtotal': 205.5})!);
+    testWidgets('VE-09 the order card says "You earn" with paise when present',
+        (tester) async {
+      backend.put(OrderModel.fromJson({
+        ...orderJson(id: 'ord-1', status: 'ACCEPTED', total: 245.5),
+        'subtotal': 205.5
+      })!);
       await launch(tester);
       expect(find.textContaining('You earn ₹205.50'), findsOneWidget);
       expect(find.textContaining('Customer pays'), findsNothing);
-      expect(find.textContaining('Food ₹'), findsNothing);
+      expect(find.textContaining('Groceries ₹'), findsNothing);
       await unmount(tester);
     });
 
     // -------------------------------------------------------------------------------------------- VE-10
 
-    testWidgets('VE-10 Back on the home screen asks to press again; a second press within 2 seconds exits', (tester) async {
+    testWidgets(
+        'VE-10 Back on the home screen asks to press again; a second press within 2 seconds exits',
+        (tester) async {
       var exited = 0;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
         if (call.method == 'SystemNavigator.pop') exited++;
         return null;
       });
-      addTearDown(() => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+      addTearDown(() => TestDefaultBinaryMessengerBinding
+          .instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null));
       await launch(tester);
 
       await tester.binding.handlePopRoute();
@@ -613,17 +861,23 @@ void main() {
       await unmount(tester);
     });
 
-    testWidgets('VE-10 after the 2-second window a single Back only shows the hint again', (tester) async {
+    testWidgets(
+        'VE-10 after the 2-second window a single Back only shows the hint again',
+        (tester) async {
       var exited = 0;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
         if (call.method == 'SystemNavigator.pop') exited++;
         return null;
       });
-      addTearDown(() => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+      addTearDown(() => TestDefaultBinaryMessengerBinding
+          .instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null));
       await launch(tester);
       await tester.binding.handlePopRoute();
       await tester.pump();
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 2100)));
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 2100)));
       await tester.binding.handlePopRoute();
       await tester.pump();
       expect(exited, 0);
@@ -632,7 +886,9 @@ void main() {
 
     // -------------------------------------------------------------------------------------------- VE-11
 
-    testWidgets('VE-11 an order arriving while the app is "inactive" (shade down, permission dialog) still rings; paused does not', (tester) async {
+    testWidgets(
+        'VE-11 an order arriving while the app is "inactive" (shade down, permission dialog) still rings; paused does not',
+        (tester) async {
       await launch(tester);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       backend.put(order(id: 'ord-1'));
@@ -642,16 +898,26 @@ void main() {
       await unmount(tester);
     });
 
-    testWidgets('VE-11 hidden / paused is background: the in-app alarm stays silent (the system notification rings)', (tester) async {
+    testWidgets(
+        'VE-11 hidden / paused is background: the in-app alarm stays silent (the system notification rings)',
+        (tester) async {
       await launch(tester);
-      for (final s in const [AppLifecycleState.inactive, AppLifecycleState.hidden, AppLifecycleState.paused]) {
+      for (final s in const [
+        AppLifecycleState.inactive,
+        AppLifecycleState.hidden,
+        AppLifecycleState.paused
+      ]) {
         tester.binding.handleAppLifecycleStateChanged(s);
       }
       backend.put(order(id: 'ord-1'));
       sockets.single.emit('new_order_alert', orderJson(id: 'ord-1'));
       await _settle(tester);
       expect(alarm.ringing, isFalse);
-      for (final s in const [AppLifecycleState.hidden, AppLifecycleState.inactive, AppLifecycleState.resumed]) {
+      for (final s in const [
+        AppLifecycleState.hidden,
+        AppLifecycleState.inactive,
+        AppLifecycleState.resumed
+      ]) {
         tester.binding.handleAppLifecycleStateChanged(s);
       }
       await _settle(tester);
@@ -661,27 +927,37 @@ void main() {
 
     // -------------------------------------------------------------------------------------------- VE-15
 
-    testWidgets('VE-15 the wake lock is released when the home screen goes away', (tester) async {
+    testWidgets(
+        'VE-15 the wake lock is released when the home screen goes away',
+        (tester) async {
       final messages = <String>[];
-      const channel = BasicMessageChannel<Object?>('dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle', StandardMessageCodec());
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(channel.name, (ByteData? message) async {
+      const channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle',
+          StandardMessageCodec());
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMessageHandler(channel.name, (ByteData? message) async {
         messages.add('call');
         return null;
       });
-      addTearDown(() => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMessageHandler(channel.name, null));
+      addTearDown(() => TestDefaultBinaryMessengerBinding
+          .instance.defaultBinaryMessenger
+          .setMockMessageHandler(channel.name, null));
       await launch(tester);
       final afterStart = messages.length;
       expect(afterStart, greaterThanOrEqualTo(1), reason: 'enabled on start');
       await unmount(tester);
-      expect(messages.length, greaterThan(afterStart), reason: 'a second (disable) call was made on dispose');
+      expect(messages.length, greaterThan(afterStart),
+          reason: 'a second (disable) call was made on dispose');
     });
   });
 
   // ------------------------------------------------------------------------------------------------ VE-04 controller
 
   group('VE-04 controller', () {
-    Future<(OrderQueueController, FakeBackend, FakeAlarm)> started({Duration chime = const Duration(milliseconds: 40)}) async {
-      final backend = FakeBackend()..put(order(id: 'ord-k1', status: 'PREPARING'));
+    Future<(OrderQueueController, FakeBackend, FakeAlarm)> started(
+        {Duration chime = const Duration(milliseconds: 40)}) async {
+      final backend = FakeBackend()
+        ..put(order(id: 'ord-k1', status: 'PREPARING'));
       final alarm = FakeAlarm();
       final c = OrderQueueController(
         backend: backend,
@@ -696,12 +972,15 @@ void main() {
       return (c, backend, alarm);
     }
 
-    test('an order in the kitchen cancelled by Grozo is reported once, with one short sound that then stops', () async {
+    test(
+        'an order in the kitchen cancelled by Grozo is reported once, with one short sound that then stops',
+        () async {
       SharedPreferences.setMockInitialValues({});
       final (c, backend, alarm) = await started();
       expect(c.takeKitchenCancellations(), isEmpty);
 
-      backend.serverChange('ord-k1', OrderStatus.cancelled, by: CancelledBy.admin, reason: 'Support cancel');
+      backend.serverChange('ord-k1', OrderStatus.cancelled,
+          by: CancelledBy.admin, reason: 'Support cancel');
       await c.refresh();
       final got = c.takeKitchenCancellations();
       expect(got.map((o) => o.id), ['ord-k1']);
@@ -721,22 +1000,27 @@ void main() {
     test('cancelled by the restaurant itself is not an alert', () async {
       SharedPreferences.setMockInitialValues({});
       final (c, backend, alarm) = await started();
-      backend.serverChange('ord-k1', OrderStatus.cancelled, by: CancelledBy.vendor, reason: 'x');
+      backend.serverChange('ord-k1', OrderStatus.cancelled,
+          by: CancelledBy.vendor, reason: 'x');
       await c.refresh();
       expect(c.takeKitchenCancellations(), isEmpty);
       expect(alarm.starts, 0);
       c.dispose();
     });
 
-    test('the sound is skipped while the loud new-order alarm already rings, and in the background', () async {
+    test(
+        'the sound is skipped while the loud new-order alarm already rings, and in the background',
+        () async {
       SharedPreferences.setMockInitialValues({});
       final (c, backend, alarm) = await started();
       backend.put(order(id: 'ord-new')); // a paid order waiting -> loud alarm
       await c.refresh();
       expect(alarm.starts, 1);
-      backend.serverChange('ord-k1', OrderStatus.cancelled, by: CancelledBy.admin);
+      backend.serverChange('ord-k1', OrderStatus.cancelled,
+          by: CancelledBy.admin);
       await c.refresh();
-      expect(c.takeKitchenCancellations(), hasLength(1), reason: 'still reported');
+      expect(c.takeKitchenCancellations(), hasLength(1),
+          reason: 'still reported');
       expect(alarm.starts, 1, reason: 'no extra sound on top of the alarm');
       expect(alarm.ringing, isTrue, reason: 'the real alarm keeps ringing');
       c.dispose();
@@ -746,13 +1030,16 @@ void main() {
   // ------------------------------------------------------------------------------------------------ VE-05
 
   group('VE-05 veg / non-veg', () {
-    testWidgets('the Add-dish form defaults to Veg, can switch to Non-veg, and sends it', (tester) async {
+    testWidgets(
+        'the Add-dish form defaults to Veg, can switch to Non-veg, and sends it',
+        (tester) async {
       _tallPhone(tester);
       final sent = <bool>[];
       await tester.pumpWidget(MaterialApp(
         theme: KraveoTheme.vendor(),
         home: Scaffold(
-          body: AddDishModal(onSubmit: (name, category, price, inStock, {bool isVeg = true}) async {
+          body: AddDishModal(onSubmit: (name, category, price, inStock,
+              {bool isVeg = true}) async {
             sent.add(isVeg);
             return null;
           }),
@@ -767,9 +1054,9 @@ void main() {
       await tester.enterText(fields.at(1), '180');
       await tester.tap(find.byKey(const ValueKey('dish-nonveg')));
       await tester.pump();
-      await tester.ensureVisible(find.text('Add to menu'));
+      await tester.ensureVisible(find.text('Add to catalog'));
       await tester.pump();
-      await tester.tap(find.text('Add to menu'));
+      await tester.tap(find.text('Add to catalog'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(sent, [false]);
@@ -781,7 +1068,8 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         theme: KraveoTheme.vendor(),
         home: Scaffold(
-          body: AddDishModal(onSubmit: (name, category, price, inStock, {bool isVeg = true}) async {
+          body: AddDishModal(onSubmit: (name, category, price, inStock,
+              {bool isVeg = true}) async {
             sent.add(isVeg);
             return null;
           }),
@@ -790,9 +1078,9 @@ void main() {
       final fields = find.byType(TextFormField);
       await tester.enterText(fields.at(0), 'Dal Tadka');
       await tester.enterText(fields.at(1), '120');
-      await tester.ensureVisible(find.text('Add to menu'));
+      await tester.ensureVisible(find.text('Add to catalog'));
       await tester.pump();
-      await tester.tap(find.text('Add to menu'));
+      await tester.tap(find.text('Add to catalog'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
       expect(sent, [true]);
@@ -801,18 +1089,27 @@ void main() {
     test('POST /vendors/:id/items carries isVeg', () async {
       late http.Request seen;
       await http.runWithClient(
-        () => const HttpVendorBackend().addDish('ven-42', name: 'Chicken Biryani', category: 'Main Course', price: 180, isVeg: false),
+        () => const HttpVendorBackend().addDish('ven-42',
+            name: 'Chicken Biryani',
+            category: 'Main Course',
+            price: 180,
+            isVeg: false),
         () => MockClient((req) async {
           seen = req;
-          return http.Response('{"data":{"id":"m2","name":"Chicken Biryani","price":180,"isAvailable":true}}', 201);
+          return http.Response(
+              '{"data":{"id":"m2","name":"Chicken Biryani","price":180,"isAvailable":true}}',
+              201);
         }),
       );
       expect(jsonDecode(seen.body)['isVeg'], false);
       await http.runWithClient(
-        () => const HttpVendorBackend().addDish('ven-42', name: 'Dal', category: 'Main Course', price: 90),
+        () => const HttpVendorBackend()
+            .addDish('ven-42', name: 'Dal', category: 'Main Course', price: 90),
         () => MockClient((req) async {
           seen = req;
-          return http.Response('{"data":{"id":"m3","name":"Dal","price":90,"isAvailable":true}}', 201);
+          return http.Response(
+              '{"data":{"id":"m3","name":"Dal","price":90,"isAvailable":true}}',
+              201);
         }),
       );
       expect(jsonDecode(seen.body)['isVeg'], true);
@@ -822,11 +1119,16 @@ void main() {
   // ------------------------------------------------------------------------------------------------ VE-07 / VE-08 text
 
   group('VE-07 / VE-08 wording', () {
-    testWidgets('VE-07 a phone already used elsewhere says "another Grozo app or account"', (tester) async {
+    testWidgets(
+        'VE-07 a phone already used elsewhere says "another Grozo app or account"',
+        (tester) async {
       _tallPhone(tester);
       await tester.pumpWidget(MaterialApp(
         theme: KraveoTheme.vendor(),
-        home: SignupScreen(onSubmit: (_) async => const SignupResult.failure(SignupFailure.phoneTaken, field: 'phone')),
+        home: SignupScreen(
+            onSubmit: (_) async => const SignupResult.failure(
+                SignupFailure.phoneTaken,
+                field: 'phone')),
       ));
       await tester.pump(const Duration(seconds: 3));
       await tester.pump(const Duration(seconds: 3));
@@ -848,20 +1150,32 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('signup-button')));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(find.textContaining('already registered in another Grozo app or account'), findsOneWidget);
+      expect(
+          find.textContaining(
+              'already registered in another Grozo app or account'),
+          findsOneWidget);
       expect(find.textContaining('different number'), findsOneWidget);
     });
 
-    testWidgets('VE-08 the login screen shows the support email, not a phone number', (tester) async {
-      await tester.pumpWidget(MaterialApp(theme: KraveoTheme.vendor(), home: LoginScreen(onSubmit: (p, w) async => const LoginResult.failure(LoginFailure.server))));
+    testWidgets(
+        'VE-08 the login screen shows the support email, not a phone number',
+        (tester) async {
+      await tester.pumpWidget(MaterialApp(
+          theme: KraveoTheme.vendor(),
+          home: LoginScreen(
+              onSubmit: (p, w) async =>
+                  const LoginResult.failure(LoginFailure.server))));
       await tester.pump(const Duration(seconds: 3));
       await tester.pump(const Duration(seconds: 3));
-      await tester.ensureVisible(find.byKey(const ValueKey('login-support-email')));
+      await tester
+          .ensureVisible(find.byKey(const ValueKey('login-support-email')));
       expect(find.text('Account recovery help'), findsOneWidget);
       expect(find.textContaining('98765 43214'), findsNothing);
     });
 
-    test('VE-08 "an accepted order cannot be declined" points to the email, not a call', () {
+    test(
+        'VE-08 "an accepted order cannot be declined" points to the email, not a call',
+        () {
       final t = failureText(ApiFailure.conflict, code: 'CANNOT_REJECT');
       expect(t.english, contains(kSupportEmail));
       expect(t.english.toLowerCase(), isNot(contains('call')));
@@ -870,14 +1184,19 @@ void main() {
     test('VE-08 the mailto link is addressed to Grozo support', () {
       final uri = SupportContact.mailtoUri();
       expect(uri.scheme, 'mailto');
-      expect(uri.path,isEmpty);
+      expect(uri.path, isEmpty);
       expect(uri.toString(), contains('subject='));
     });
 
     test('VE-08 no placeholder helpline is left in the app source', () {
-      for (final f in Directory('lib').listSync(recursive: true).whereType<File>().where((f) => f.path.endsWith('.dart'))) {
-        expect(f.readAsStringSync(), isNot(contains('98765 43214')), reason: f.path);
-        expect(f.readAsStringSync(), isNot(contains('Call helpline')), reason: f.path);
+      for (final f in Directory('lib')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart'))) {
+        expect(f.readAsStringSync(), isNot(contains('98765 43214')),
+            reason: f.path);
+        expect(f.readAsStringSync(), isNot(contains('Call helpline')),
+            reason: f.path);
       }
     });
   });
@@ -898,24 +1217,48 @@ void main() {
       expect(formatRupees(0.004), '₹0');
     });
 
-    testWidgets('Earnings count only orders that were accepted or later (a PLACED order still waiting is not money yet)', (tester) async {
+    testWidgets(
+        'Earnings count only orders that were accepted or later (a PLACED order still waiting is not money yet)',
+        (tester) async {
       final now = DateTime.now();
       final orders = [
-        OrderModel.fromJson(orderJson(id: 'a', status: 'PLACED', createdAt: now.subtract(const Duration(minutes: 3))))!,
-        OrderModel.fromJson(orderJson(id: 'b', status: 'ACCEPTED', createdAt: now.subtract(const Duration(minutes: 5)), acceptedAt: now))!,
-        OrderModel.fromJson(orderJson(id: 'c', status: 'DELIVERED', createdAt: now.subtract(const Duration(minutes: 9))))!,
+        OrderModel.fromJson(orderJson(
+            id: 'a',
+            status: 'PLACED',
+            createdAt: now.subtract(const Duration(minutes: 3))))!,
+        OrderModel.fromJson(orderJson(
+            id: 'b',
+            status: 'ACCEPTED',
+            createdAt: now.subtract(const Duration(minutes: 5)),
+            acceptedAt: now))!,
+        OrderModel.fromJson(orderJson(
+            id: 'c',
+            status: 'DELIVERED',
+            createdAt: now.subtract(const Duration(minutes: 9))))!,
       ];
-      await tester.pumpWidget(MaterialApp(theme: KraveoTheme.vendor(), home: Scaffold(body: SalesAnalyticsScreen(orders: orders, now: now))));
+      await tester.pumpWidget(MaterialApp(
+          theme: KraveoTheme.vendor(),
+          home:
+              Scaffold(body: SalesAnalyticsScreen(orders: orders, now: now))));
       await tester.pump(const Duration(seconds: 2));
-      expect(find.text('₹410'), findsOneWidget, reason: 'two counted orders x food 205, not three');
+      expect(find.text('₹410'), findsOneWidget,
+          reason: 'two counted orders x food 205, not three');
       expect(find.text('₹615'), findsNothing);
       await tester.pumpWidget(const SizedBox());
     });
 
     testWidgets('a PLACED-only day shows no earnings yet', (tester) async {
       final now = DateTime.now();
-      final orders = [OrderModel.fromJson(orderJson(id: 'a', status: 'PLACED', createdAt: now.subtract(const Duration(minutes: 3))))!];
-      await tester.pumpWidget(MaterialApp(theme: KraveoTheme.vendor(), home: Scaffold(body: SalesAnalyticsScreen(orders: orders, now: now))));
+      final orders = [
+        OrderModel.fromJson(orderJson(
+            id: 'a',
+            status: 'PLACED',
+            createdAt: now.subtract(const Duration(minutes: 3))))!
+      ];
+      await tester.pumpWidget(MaterialApp(
+          theme: KraveoTheme.vendor(),
+          home:
+              Scaffold(body: SalesAnalyticsScreen(orders: orders, now: now))));
       await tester.pump(const Duration(seconds: 1));
       expect(find.text('No orders yet'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
@@ -925,7 +1268,9 @@ void main() {
   // ------------------------------------------------------------------------------------------------ VE-12
 
   group('VE-12 price sheet', () {
-    test('parseDishPrice accepts normal, decimal and Devanagari input and refuses junk', () {
+    test(
+        'parseDishPrice accepts normal, decimal and Devanagari input and refuses junk',
+        () {
       expect(parseDishPrice('49.50'), 49.5);
       expect(parseDishPrice(' 120 '), 120);
       expect(parseDishPrice('₹ 99'), 99);
@@ -949,25 +1294,46 @@ void main() {
       final saved = <double>[];
       await tester.pumpWidget(MaterialApp(
         theme: KraveoTheme.vendor(),
-        home: Scaffold(body: StockCard(dish: DishModel(id: 'd', name: 'Paneer', category: 'Main Course', price: price), onToggleStock: () {}, onUpdatePrice: saved.add)),
+        home: Scaffold(
+            body: StockCard(
+                dish: DishModel(
+                    id: 'd',
+                    name: 'Paneer',
+                    category: 'Main Course',
+                    price: price),
+                onToggleStock: () {},
+                onUpdatePrice: saved.add)),
       ));
-      await tester.tap(find.byIcon(Icons.edit).evaluate().isNotEmpty ? find.byIcon(Icons.edit) : find.textContaining('₹').first);
+      await tester.tap(find.byIcon(Icons.edit).evaluate().isNotEmpty
+          ? find.byIcon(Icons.edit)
+          : find.textContaining('₹').first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       return saved;
     }
 
-    testWidgets('a price with paise is prefilled exactly and "Save price" without a change does not alter it', (tester) async {
+    testWidgets(
+        'a price with paise is prefilled exactly and "Save price" without a change does not alter it',
+        (tester) async {
       final saved = await openSheet(tester, 49.5);
-      expect(tester.widget<TextField>(find.byKey(const ValueKey('price-field'))).controller!.text, '49.50');
+      expect(
+          tester
+              .widget<TextField>(find.byKey(const ValueKey('price-field')))
+              .controller!
+              .text,
+          '49.50');
       await tester.tap(find.text('Save price'));
       await tester.pump(const Duration(milliseconds: 400));
       await tester.pump(const Duration(milliseconds: 400));
-      expect(saved, isEmpty, reason: 'unchanged price is not re-sent (and certainly not rounded to 50)');
-      expect(find.byKey(const ValueKey('price-field')), findsNothing, reason: 'sheet closed');
+      expect(saved, isEmpty,
+          reason:
+              'unchanged price is not re-sent (and certainly not rounded to 50)');
+      expect(find.byKey(const ValueKey('price-field')), findsNothing,
+          reason: 'sheet closed');
     });
 
-    testWidgets('bad input shows a message and keeps the sheet open', (tester) async {
+    testWidgets('bad input shows a message and keeps the sheet open',
+        (tester) async {
       final saved = await openSheet(tester, 180);
       await tester.enterText(find.byKey(const ValueKey('price-field')), 'abc');
       await tester.tap(find.text('Save price'));
@@ -976,7 +1342,8 @@ void main() {
       expect(find.byKey(const ValueKey('price-field')), findsOneWidget);
       expect(saved, isEmpty);
 
-      await tester.enterText(find.byKey(const ValueKey('price-field')), '20000');
+      await tester.enterText(
+          find.byKey(const ValueKey('price-field')), '20000');
       await tester.tap(find.text('Save price'));
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.textContaining('Enter a price from'), findsOneWidget);
@@ -1004,24 +1371,36 @@ void main() {
 
   group('release files', () {
     test('VE-16 the manifest opts out of backups', () {
-      final manifest = File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+      final manifest =
+          File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
       expect(manifest, contains('android:allowBackup="false"'));
-      expect(manifest, contains('android:dataExtractionRules="@xml/data_extraction_rules"'));
-      final rules = File('android/app/src/main/res/xml/data_extraction_rules.xml').readAsStringSync();
+      expect(manifest,
+          contains('android:dataExtractionRules="@xml/data_extraction_rules"'));
+      final rules =
+          File('android/app/src/main/res/xml/data_extraction_rules.xml')
+              .readAsStringSync();
       expect(rules, contains('<exclude domain="sharedpref"/>'));
     });
 
-    test('VE-20 USE_FULL_SCREEN_INTENT stays because the new-order notification really uses a full-screen intent', () {
-      final manifest = File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
-      final code = File('lib/services/push/local_alarm_notifications.dart').readAsStringSync();
+    test(
+        'VE-20 USE_FULL_SCREEN_INTENT stays because the new-order notification really uses a full-screen intent',
+        () {
+      final manifest =
+          File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+      final code = File('lib/services/push/local_alarm_notifications.dart')
+          .readAsStringSync();
       expect(code, contains('fullScreenIntent: true'));
       expect(manifest, contains('android.permission.USE_FULL_SCREEN_INTENT'));
     });
 
-    test('VE-19 the kitchen says "Preparing" like the other apps, and fixtures use real hostel names', () {
+    test(
+        'VE-19 the kitchen says "Preparing" like the other apps, and fixtures use real hostel names',
+        () {
       expect(order(id: 'ord-1', status: 'PREPARING').studentLocation, 'BH1');
-      expect(File('lib/widgets/order_card.dart').readAsStringSync(), isNot(contains("'Cooking'")));
-      expect(File('lib/screens/kitchen_queue.dart').readAsStringSync(), isNot(contains("english: 'Cooking'")));
+      expect(File('lib/widgets/order_card.dart').readAsStringSync(),
+          isNot(contains("'Cooking'")));
+      expect(File('lib/screens/kitchen_queue.dart').readAsStringSync(),
+          isNot(contains("english: 'Cooking'")));
     });
   });
 }
