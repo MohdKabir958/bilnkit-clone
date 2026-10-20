@@ -1,0 +1,91 @@
+name: Android phone previews
+on:
+  push:
+    branches: [feature/india-grocery-platform]
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'branding/**'
+      - 'scripts/build_android_preview.sh'
+      - '.github/workflows/android-preview.yml'
+  workflow_dispatch:
+    inputs:
+      backend_origin:
+        description: Deployed backend HTTPS origin (without /api)
+        required: true
+        type: string
+      google_web_client_id:
+        description: Owned Google web OAuth client ID (required for customer login)
+        required: false
+        type: string
+      firebase_enabled:
+        description: Use the three owned GROZO_FIREBASE_*_JSON repository secrets
+        default: false
+        type: boolean
+      architecture:
+        description: arm64 is suitable for most current Android phones
+        type: choice
+        default: android-arm64
+        options: [android-arm64, android-arm]
+permissions:
+  contents: read
+jobs:
+  preview:
+    if: github.event_name == 'workflow_dispatch' || vars.GROZO_BACKEND_ORIGIN != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - role: customer
+            firebase_secret: GROZO_FIREBASE_CUSTOMER_JSON
+          - role: vendor
+            firebase_secret: GROZO_FIREBASE_VENDOR_JSON
+          - role: driver
+            firebase_secret: GROZO_FIREBASE_DRIVER_JSON
+    env:
+      GROZO_BACKEND_ORIGIN: ${{ inputs.backend_origin || vars.GROZO_BACKEND_ORIGIN }}
+      GOOGLE_SERVER_CLIENT_ID: ${{ inputs.google_web_client_id || vars.GOOGLE_SERVER_CLIENT_ID }}
+      ANDROID_PREVIEW_TARGET: ${{ inputs.architecture || 'android-arm64' }}
+      ANDROID_PREVIEW_DISABLE_FIREBASE: ${{ !(inputs.firebase_enabled || vars.GROZO_PREVIEW_FIREBASE_ENABLED == 'true') }}
+      DASH__SUPPRESS_ANALYTICS: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.9'
+          channel: stable
+          cache: true
+      - name: Supply owned Firebase client configuration
+        if: inputs.firebase_enabled || vars.GROZO_PREVIEW_FIREBASE_ENABLED == 'true'
+        env:
+          FIREBASE_CLIENT_JSON: ${{ secrets[matrix.firebase_secret] }}
+          APP_ROLE: ${{ matrix.role }}
+        run: |
+          python3 - <<'PY'
+          import json,os,pathlib,sys
+          role=os.environ['APP_ROLE']
+          raw=os.environ.get('FIREBASE_CLIENT_JSON','')
+          try: data=json.loads(raw)
+          except ValueError: sys.exit('Supply valid owned Firebase client JSON in the role-specific repository secret.')
+          expected='in.grozo.'+role
+          packages=[c.get('client_info',{}).get('android_client_info',{}).get('package_name') for c in data.get('client',[])]
+          if expected not in packages: sys.exit('Firebase client package does not match the Grozo application ID.')
+          dest=pathlib.Path(f'apps/{role}_app/android/app/google-services.json')
+          dest.write_text(raw)
+          dest.chmod(0o600)
+          PY
+      - name: Build a phone-ready preview with the deployed API address
+        run: bash scripts/build_android_preview.sh "${{ matrix.role }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Grozo-${{ matrix.role }}-${{ inputs.architecture || 'android-arm64' }}-preview
+          path: build/device-preview/${{ matrix.role }}/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0

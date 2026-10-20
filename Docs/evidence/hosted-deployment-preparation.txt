@@ -1,0 +1,28 @@
+Hosted deployment preparation and access verification
+
+Git remote: https://github.com/MohdKabir958/bilnkit-clone.git
+Initial push: rejected with HTTP 403 for connected identity Kabir191.
+After user granted collaborator access: feature/india-grocery-platform pushed successfully.
+GitHub API: direct gh API user request returned Forbidden; no release/Actions API operations claimed.
+Hosting: active tool registry exposes no Render/Neon/Vercel tools; no corresponding API credentials were present.
+Secure optional API token requirements saved to cloud draft: RENDER_API_KEY -> api.render.com; NEON_API_KEY -> console.neon.tech; VERCEL_TOKEN -> api.vercel.com. Draft save requires review/save/publication; it does not deploy resources or activate secrets.
+No hosted Neon database, Render API service or Vercel admin project was provisioned in this session.
+
+Local checks completed:
+- Render Blueprint and Android preview workflow YAML parsed and structural checks passed.
+- Node migration/startup/admin configurator syntax checks passed.
+- Phone preview shell syntax passed.
+- Hosted migration wrapper used MIGRATION_DATABASE_URL while DATABASE_URL deliberately pointed to an unreachable host.
+- New isolated UTF-8 database: safe bootstrap/21 migrations passed; repeated migration passed with none pending; isolated database removed.
+- Render startup wrapper: actual API health, database-backed readiness and 401 unauthenticated admin rejection passed in local development mode; test server stopped.
+- Admin TypeScript/Vite build passed.
+- Vercel configurator rejected missing/HTTP/credential-bearing/path/query origins without modifying configuration; valid HTTPS input produced exact HTTPS/WSS CSP origins with no inherited API rewrite; temporary example configuration restored.
+- Phone build script rejected missing/insecure/credential-bearing/example backend origins before compilation.
+- Shared Grozo brand generator check and Git whitespace check passed.
+
+Remaining external validation:
+- Render plan/pricing and provider-side Blueprint validation; persistent upload disk and real restart behavior.
+- Owned Neon TLS/pool/direct access and hosted migration/readiness checks.
+- Exact Render/Vercel origins, CORS/WSS/CSP/browser checks and API-based admin functionality.
+- Real Razorpay TEST credentials/webhook, owned Google OAuth and matching Firebase clients.
+- Personal-device networking/authentication/notifications/location acceptance with APKs rebuilt against the actual deployed origin.

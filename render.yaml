@@ -1,0 +1,50 @@
+# API Blueprint; provision PostgreSQL separately in Neon.
+# Starter and the persistent disk are paid: review pricing before applying.
+# This file alone creates no cloud resources.
+services:
+  - type: web
+    name: grozo-api
+    runtime: node
+    branch: feature/india-grocery-platform
+    rootDir: backend
+    region: singapore
+    plan: starter
+    numInstances: 1
+    autoDeploy: false
+    buildCommand: npm ci --include=dev && npx prisma generate && npm run build
+    preDeployCommand: node scripts/migrate-hosted.mjs
+    startCommand: node scripts/start-render.mjs
+    healthCheckPath: /ready
+    disk:
+      name: grozo-product-images
+      mountPath: /var/data/grozo
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: MIGRATION_DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_PASSCODE
+        generateValue: true
+      - key: PAYOUT_ENC_KEY
+        sync: false
+      - key: ADMIN_URL
+        sync: false
+      - key: UPLOAD_DIR
+        value: /var/data/grozo/uploads
+      - key: PAYMENT_PROVIDER
+        value: razorpay
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: GOOGLE_WEB_CLIENT_ID
+        sync: false
