@@ -9,3 +9,4 @@ Tests:       301 passed, 301 total
 Runtime smoke: PASSED database-backed geography/cities/catalog and admin login/authorization.
 Focused late-capture case: 1 passed; verifies ORDER_CANCELLED response, persisted CANCELLED/REFUNDED state and exactly one refund across replay.
 Final customer analysis: no issues. Backend/admin builds passed. Repeat migration: no pending migrations.
+Subsequent Android toolchain validation: customer Android debug APK built successfully (Flutter 3.44.9, full local JDK21, SDK/NDK). Project-specific Firebase configuration disabled with the guarded debug flag; this verifies Android compilation, not FCM, Google sign-in, payments, device behavior or release signing.

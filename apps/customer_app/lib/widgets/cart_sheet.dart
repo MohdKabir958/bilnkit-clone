@@ -193,7 +193,7 @@ class _CartLine extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(cartItem.item.name, style: KraveoType.titleMd.copyWith(color: k.ink)),
+            Text(cartItem.item.displayName, style: KraveoType.titleMd.copyWith(color: k.ink)),
             if (cartItem.selectedOptions.isNotEmpty) ...[
               const SizedBox(height: 2),
               Text(cartItem.customizationSummary, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
@@ -216,7 +216,7 @@ class _CartLine extends StatelessWidget {
           width: 112,
           child: KAddButton(
             quantity: cartItem.quantity,
-            itemName: cartItem.item.name,
+            itemName: cartItem.item.displayName,
             onAdd: () {
               if (!cart.incrementItem(cartItem.cartItemId)) showKSnack(context, CartProvider.maxQuantityMessage, icon: LucideIcons.info);
             },

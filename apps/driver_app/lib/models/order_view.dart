@@ -466,7 +466,7 @@ class OrderView {
       paymentStatus: raw['paymentStatus']?.toString().toUpperCase(),
       totalAmount: _num(raw['totalAmount']),
       deliveryFee: _num(raw['deliveryFee']),
-      dropoffHostel: _str(raw['dropoffHostel']),
+      dropoffHostel: _str(raw['deliveryAddress'] is Map ? raw['deliveryAddress']['formatted'] : null) ?? _str(raw['dropoffHostel']),
       dropoffNotes: _str(raw['dropoffNotes']),
       dropoff: _dropoff(raw['dropoff']),
       createdAt: _date(raw['createdAt']),
@@ -514,7 +514,7 @@ class OrderView {
       if (e is! Map) continue;
       final name = _str(e['name']) ?? _str(e['menuItem'] is Map ? (e['menuItem'] as Map)['name'] : null) ?? 'Item';
       final q = e['quantity'];
-      out.add(OrderItemView(name: name, quantity: q is num ? q.toInt() : int.tryParse('$q') ?? 1, price: _num(e['price'])));
+      out.add(OrderItemView(name: '$name${e['productSnapshot'] is Map && e['productSnapshot']['sku'] != null ? ' · ${e['productSnapshot']['packSize']} ${e['productSnapshot']['unit']}' : ''}', quantity: q is num ? q.toInt() : int.tryParse('$q') ?? 1, price: _num(e['price'])));
     }
     return out;
   }

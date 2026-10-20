@@ -569,7 +569,7 @@ describe('Payments adversarial audit', () => {
     const PRICES = [0.1, 0.2, 0.3, 0.7, 1.15, 7.07, 19.99, 33.33, 49.95, 99.99, 149.95, 12.5, 0.01, 8.2, 16.4, 10.1];
     beforeAll(async () => {
       for (let i = 0; i < PRICES.length; i++) {
-        await prisma.menuItem.create({ data: { id: `adv-p-${i}`, vendorId: 'ven-1', name: `adv-price-${i}`, price: PRICES[i], vendorPrice: PRICES[i], category: 'adv', description: '', imageUrl: '' } });
+        await prisma.menuItem.create({ data: { id: `adv-p-${i}`, stockQty: 10000, vendorId: 'ven-1', name: `adv-price-${i}`, price: PRICES[i], vendorPrice: PRICES[i], category: 'adv', description: '', imageUrl: '' } });
       }
     });
 

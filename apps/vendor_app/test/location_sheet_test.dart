@@ -239,12 +239,12 @@ void main() {
     });
   });
 
-  testWidgets('outside the campus: says so, shows the spot, does NOT offer to save, nothing is saved', (tester) async {
-    await open(tester, FakeCapture([fixOf(8, lat: 23.2599, lng: 77.4126), fixOf(8)]), withSave: true);
+  testWidgets('outside India: says so, shows the spot, does NOT offer to save, nothing is saved', (tester) async {
+    await open(tester, FakeCapture([fixOf(8, lat: 51.5072, lng: -0.1276), fixOf(8)]), withSave: true);
     await tapKey(tester, kLocationDetectKey);
     expect(find.byKey(kLocationOutsideKey), findsOneWidget);
-    expect(find.text('This is not near the campus'), findsOneWidget);
-    expect(find.textContaining('km from the campus'), findsOneWidget);
+    expect(find.text('Choose a location in India'), findsOneWidget);
+    expect(find.textContaining('outside India’s supported coordinate range'), findsOneWidget);
     expect(find.byKey(kLocationAcceptKey), findsNothing);
     expect(find.byKey(kLocationAcceptWeakKey), findsNothing);
     expect(saved, isEmpty);
@@ -333,8 +333,8 @@ void main() {
       });
     }
 
-    testWidgets('outside the campus', (tester) async {
-      await check(tester, FakeCapture([fixOf(8, lat: 23.2599, lng: 77.4126)]));
+    testWidgets('outside India', (tester) async {
+      await check(tester, FakeCapture([fixOf(8, lat: 51.5072, lng: -0.1276)]));
       expect(find.byKey(kLocationOutsideKey), findsOneWidget);
     });
 

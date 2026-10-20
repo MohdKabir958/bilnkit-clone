@@ -30,4 +30,7 @@ assert(Array.isArray(geo.cities) && Array.isArray(geo.zones) && Array.isArray(ge
 const cities = await fetch(`${base}/api/v1/cities`);
 assert.equal(cities.status, 200);
 assert(Array.isArray((await cities.json()).data));
-console.log('PASS: health, admin rejection/login, authenticated partner/geography queries, public vendor/enabled-city queries.');
+const inventory = await fetch(`${base}/api/v1/admin/products?limit=1`, { headers: { Authorization: `Bearer ${session.token}` } });
+assert.equal(inventory.status, 200);
+assert(Array.isArray((await inventory.json()).data));
+console.log('PASS: health, admin rejection/login, authenticated partner/geography/inventory queries, public vendor/enabled-city queries.');

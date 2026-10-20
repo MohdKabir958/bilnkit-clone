@@ -1,3 +1,4 @@
+import { productSnapshot } from '../services/inventory';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../db';
 import { OrderItem } from '../types';
@@ -5,7 +6,7 @@ import { getSettings } from '../services/settings';
 import { computeFees, FeeBreakdown, splitGroupMoney, toPaise, fromPaise } from '../services/pricing';
 
 /** What the restaurant earns and Kraveo keeps for one line, copied from the dish at order time (Docs/21 section 2). */
-export type PricedItem = OrderItem & { vendorUnitPrice: number; commissionUnit: number };
+export type PricedItem = OrderItem & { vendorUnitPrice: number; commissionUnit: number; productSnapshot: Prisma.InputJsonValue };
 
 export interface OrderValidationResult {
   isValid: boolean;
@@ -36,11 +37,13 @@ export interface OrderValidationResult {
 //             redemption is one use; the code is refused when the customer has no unused redemption.
 //   KRAVEO50  Rs 50 off, cart >= Rs 150, once per customer.
 // ----------------------------------------------------------------------------
-export const COUPONS: Record<string, { minSubtotal: number; discount: (subtotal: number) => number }> = {
-  WELCOME20: { minSubtotal: 100, discount: (sub) => Math.min(sub * 0.2, 50) },
-  KRAVEO20: { minSubtotal: 80, discount: () => 20 },
-  KRAVEO50: { minSubtotal: 150, discount: () => 50 },
+const COUPON_RULES: Record<string,{minPaise:number;discountPaise:(subtotalPaise:number)=>number}> = {
+  WELCOME20: {minPaise:10000,discountPaise:(sub)=>Math.min(Math.floor((sub*20+50)/100),5000)},
+  KRAVEO20: {minPaise:8000,discountPaise:()=>2000},
+  KRAVEO50: {minPaise:15000,discountPaise:()=>5000},
 };
+// Compatibility export for the inherited rule previews; checkout evaluates only paise.
+export const COUPONS = Object.fromEntries(Object.entries(COUPON_RULES).map(([code,r])=>[code,{minSubtotal:fromPaise(r.minPaise),discount:(subtotal:number)=>fromPaise(r.discountPaise(toPaise(subtotal)))}]));
 
 /** '', undefined, null and whitespace mean "no coupon". Otherwise upper-case and trimmed. */
 export const normaliseCoupon = (raw: unknown): string | null => {
@@ -72,8 +75,6 @@ export const couponEligibilityProblem = async (tx: Prisma.TransactionClient, cus
 export const MAX_ITEM_QUANTITY = 20;
 export const MAX_CART_LINES = 30;
 
-const round2 = (n: number) => Math.round(n * 100) / 100;
-
 /** One restaurant's cart, validated against the database: what the customer pays for the food and what the restaurant earns. */
 export type VendorCartResult =
   | { ok: true; verifiedItems: PricedItem[]; subtotal: number; vendorSubtotal: number; commissionTotal: number }
@@ -84,13 +85,13 @@ export type VendorCartResult =
  * Only dishes a customer may see count: approved and not deleted. A pending, rejected or deleted dish answers exactly like a dish
  * that does not exist (no hint that it is there).
  */
-export const priceVendorCart = async (vendorId: string, items: { itemId: string; quantity: number }[]): Promise<VendorCartResult> => {
+export const priceVendorCart = async (vendorId: string, items: { itemId: string; quantity: number }[], db: Prisma.TransactionClient | typeof prisma = prisma): Promise<VendorCartResult> => {
   if (!items || !Array.isArray(items) || items.length === 0 || items.length > MAX_CART_LINES) {
     return { ok: false, errorMessage: 'Cart items must be a non-empty array.' };
   }
 
   const itemIds = items.map((i) => (i && typeof i === 'object' && typeof i.itemId === 'string' ? i.itemId : '')).filter(Boolean);
-  const dbMenuItems = await prisma.menuItem.findMany({
+  const dbMenuItems = await db.menuItem.findMany({
     where: { id: { in: itemIds }, vendorId, approvalStatus: 'APPROVED', deletedAt: null }
   });
 
@@ -115,36 +116,38 @@ export const priceVendorCart = async (vendorId: string, items: { itemId: string;
       return { ok: false, errorMessage: `Item '${menuItem.name}' is currently SOLD OUT.` };
     }
 
-    const itemTotal = menuItem.price * rawItem.quantity;
-    subtotal += itemTotal;
-    vendorSubtotal += menuItem.vendorPrice * rawItem.quantity;
+    const customerPaise = toPaise(menuItem.price), vendorPaise = toPaise(menuItem.vendorPrice);
+    if (menuItem.mrpPaise !== null && customerPaise > menuItem.mrpPaise) return { ok: false, errorMessage: 'An item price exceeds its MRP. Please refresh the catalog.' };
+    subtotal += customerPaise * rawItem.quantity;
+    vendorSubtotal += vendorPaise * rawItem.quantity;
 
     verifiedItems.push({
+      productSnapshot: productSnapshot(menuItem),
       itemId: menuItem.id,
       name: menuItem.name,
       quantity: rawItem.quantity,
       price: menuItem.price,
       vendorUnitPrice: menuItem.vendorPrice,
       // What Kraveo keeps per unit: the stored customer price minus the restaurant's price (commission and rounding).
-      commissionUnit: Math.round((menuItem.price - menuItem.vendorPrice) * 100) / 100,
+      commissionUnit: fromPaise(customerPaise - vendorPaise),
     });
   }
 
   // Rupee amounts with paise precision, so total = subtotal + fee - discount exactly in paise.
   // The subtotal is rounded BEFORE any threshold is compared (0.7 x 14 + 8.2 x 11 is 99.99999999999999 in floats, i.e. Rs 100.00).
-  subtotal = round2(subtotal);
-  vendorSubtotal = round2(vendorSubtotal);
-  return { ok: true, verifiedItems, subtotal, vendorSubtotal, commissionTotal: round2(subtotal - vendorSubtotal) };
+  subtotal = fromPaise(subtotal);
+  vendorSubtotal = fromPaise(vendorSubtotal);
+  return { ok: true, verifiedItems, subtotal, vendorSubtotal, commissionTotal: fromPaise(toPaise(subtotal) - toPaise(vendorSubtotal)) };
 };
 
 /** The coupon rule for a food subtotal (the combined subtotal for a group): the discount, or a message when the code gives nothing. */
 export const applyCouponRule = (couponCode: unknown, subtotal: number): { discount: number; appliedCoupon: string | null; couponProblem?: string } => {
   const code = normaliseCoupon(couponCode);
   if (!code) return { discount: 0, appliedCoupon: null };
-  const rule = COUPONS[code];
+  const rule = COUPON_RULES[code];
   if (!rule) return { discount: 0, appliedCoupon: null, couponProblem: `The coupon ${code.slice(0, 30)} is not valid.` };
-  if (subtotal < rule.minSubtotal) return { discount: 0, appliedCoupon: null, couponProblem: `${code} needs an order of at least ₹${rule.minSubtotal}.` };
-  return { discount: round2(rule.discount(subtotal)), appliedCoupon: code };
+  if (toPaise(subtotal) < rule.minPaise) return { discount: 0, appliedCoupon: null, couponProblem: `${code} needs an order of at least ₹${fromPaise(rule.minPaise)}.` };
+  return { discount: fromPaise(rule.discountPaise(toPaise(subtotal))), appliedCoupon: code };
 };
 
 // Recalculates total price on server side to prevent client pricing tampering
@@ -152,7 +155,8 @@ export const validateAndCalculateOrder = async (
   vendorId: string, 
   items: { itemId: string; quantity: number }[],
   couponCode?: string,
-  deliveryFeePaise?: number
+  deliveryFeePaise?: number,
+  db: Prisma.TransactionClient | typeof prisma = prisma
 ): Promise<OrderValidationResult> => {
   const settings = await getSettings();
   const invalid = {
@@ -165,7 +169,7 @@ export const validateAndCalculateOrder = async (
     calculatedDiscount: 0,
     calculatedTotalAmount: settings.fees.baseFee,
   };
-  const cart = await priceVendorCart(vendorId, items);
+  const cart = await priceVendorCart(vendorId, items, db);
   if (!cart.ok) {
     return { isValid: false, errorMessage: cart.errorMessage, verifiedItems: [], ...invalid };
   }
@@ -239,16 +243,16 @@ export interface GroupValidationResult {
  * in paise so that the children add up to the group total exactly (services/pricing.ts splitGroupMoney).
  * The caller has already checked the number of restaurants and that they are distinct.
  */
-export const validateAndCalculateGroup = async (restaurants: GroupRestaurantInput[], couponCode?: string, deliveryFeesPaise?: Map<string, number>): Promise<GroupValidationResult> => {
+export const validateAndCalculateGroup = async (restaurants: GroupRestaurantInput[], couponCode?: string, deliveryFeesPaise?: Map<string, number>, db: Prisma.TransactionClient | typeof prisma = prisma): Promise<GroupValidationResult> => {
   const settings = await getSettings();
   const empty: GroupValidationResult = { isValid: false, children: [], subtotal: 0, feeTotal: 0, discount: 0, totalAmount: 0, feeBreakdown: null, appliedCoupon: null };
   const carts: Extract<VendorCartResult, { ok: true }>[] = [];
   for (const r of restaurants) {
-    const cart = await priceVendorCart(r.vendorId, r.items);
+    const cart = await priceVendorCart(r.vendorId, r.items, db);
     if (!cart.ok) return { ...empty, errorMessage: cart.errorMessage, errorVendorId: r.vendorId };
     carts.push(cart);
   }
-  const combined = round2(carts.reduce((sum, c) => sum + c.subtotal, 0));
+  const combined = fromPaise(carts.reduce((sum, c) => sum + toPaise(c.subtotal), 0));
   const { discount, appliedCoupon, couponProblem } = applyCouponRule(couponCode, combined);
   const money = splitGroupMoney(settings.fees, carts.map((c) => c.subtotal), discount);
   if (deliveryFeesPaise) {
@@ -258,7 +262,7 @@ export const validateAndCalculateGroup = async (restaurants: GroupRestaurantInpu
     });
     money.feeTotal = fromPaise(money.children.reduce((s, c) => s + toPaise(c.fee), 0));
     money.total = fromPaise(toPaise(money.subtotal) + toPaise(money.feeTotal) - toPaise(money.discount));
-    money.breakdown = { version: 1, total: money.feeTotal, baseFee: money.feeTotal, baseWaived: false, smallOrderFee: 0, restaurants: restaurants.length, extraRestaurantFee: 0, extraRestaurants: 0, lines: [] };
+    money.breakdown = { version: 1, total: money.feeTotal, baseFee: money.children[0].fee, baseWaived: false, smallOrderFee: 0, restaurants: restaurants.length, extraRestaurantFee: fromPaise(money.children.slice(1).reduce((s,c)=>s+toPaise(c.fee),0)), extraRestaurants: restaurants.length-1, lines: [] };
   }
   const children = carts.map((c, i): GroupChildPricing => {
     const m = money.children[i];
@@ -275,7 +279,7 @@ export const validateAndCalculateGroup = async (restaurants: GroupRestaurantInpu
       // Records only: child 0 = the base-fee part (free-fee / small-order rules applied to the combined subtotal), the others = the flat extra fee.
       feeBreakdown: extra
         ? { version: 1, total: m.fee, baseFee: 0, baseWaived: false, smallOrderFee: 0, restaurants: 1, extraRestaurantFee: m.fee, extraRestaurants: 1, lines: [] }
-        : { ...money.breakdown, total: m.fee, restaurants: 1, extraRestaurantFee: 0, extraRestaurants: 0 },
+        : { ...money.breakdown, total: m.fee, baseFee: m.fee, restaurants: 1, extraRestaurantFee: 0, extraRestaurants: 0 },
     };
   });
   return {

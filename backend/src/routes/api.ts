@@ -1,3 +1,4 @@
+import { productsRouter } from './products';
 import { Router, Request, Response } from 'express';
 import { geographyRouter } from './geography';
 import { Role } from '@prisma/client';
@@ -37,6 +38,7 @@ export const apiRouter = Router();
 // Rate limits are mounted by path, before any handler (see middleware/rateLimit.ts for the numbers).
 apiRouter.use(rateLimitMiddleware);
 apiRouter.use(geographyRouter);
+apiRouter.use(productsRouter);
 // Partner sign-up, applications, approval and admin customer views live in ./partners.
 apiRouter.use(partnerRouter);
 // Orders, payments, rider pool, gate OTP and the admin order tools live in ./orders.

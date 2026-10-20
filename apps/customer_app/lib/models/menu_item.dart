@@ -10,6 +10,10 @@ class MenuItemModel {
   final String imageUrl;
   final bool isAvailable;
   final bool isVeg;
+  final String? sku, productKey;
+  final String unit, packSize;
+  final int? stockQty, mrpPaise;
+  final List<String> imageUrls;
   final List<CustomizationGroup> customizationGroups;
 
   const MenuItemModel({
@@ -21,14 +25,17 @@ class MenuItemModel {
     required this.description,
     required this.imageUrl,
     required this.isAvailable,
+    this.sku, this.productKey, this.unit = 'pcs', this.packSize = '1', this.stockQty, this.mrpPaise, this.imageUrls = const [],
     this.isVeg = true,
     this.customizationGroups = const [],
   });
 
+  String get displayName => sku == null ? name : '$name · $packSize $unit';
   bool get hasCustomizations => customizationGroups.isNotEmpty;
 
   factory MenuItemModel.fromJson(Map<String, dynamic> json) {
     return MenuItemModel(
+      sku: json['sku'], productKey: json['productKey'], unit: json['unit'] ?? 'pcs', packSize: json['packSize'] ?? '1', stockQty: json['stockQty'], mrpPaise: json['mrpPaise'], imageUrls: (json['imageUrls'] as List?)?.whereType<String>().toList() ?? [],
       id: json['id'] ?? '',
       vendorId: json['vendorId'] ?? '',
       name: json['name'] ?? '',

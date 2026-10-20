@@ -402,7 +402,7 @@ describe('Order groups: lifecycle', () => {
       const entry = pool.find((o: any) => o.id === ids[0]);
       expect(entry.group).toEqual({
         id: pg.g.id, index: 0, size: 3, primary: true,
-        stops: ids.map((id: string, i: number) => ({ orderId: id, index: i, status: 'ACCEPTED', vendor: { name: `Kitchen ${i + 1}`, address: `Gate ${i + 1}`, lat: 23.0768, lng: 76.8524 }, itemCount: 1 })),
+        stops: ids.map((id: string, i: number) => ({ orderId: id, index: i, status: 'ACCEPTED', vendor: { name: `Kitchen ${i + 1}`, address: `Gate ${i + 1}`, lat: 23.0745, lng: 76.859 }, itemCount: 1 })),
       });
       expect(entry).toMatchObject({ customer: null, dropoffNotes: null, driver: null, otpCode: null, status: 'ACCEPTED', paymentStatus: 'PAID' });
       expect(JSON.stringify(entry)).not.toContain('Cust1');
@@ -643,9 +643,9 @@ describe('Order groups: lifecycle', () => {
       const byRest = (await adm(`/api/admin/finance/by-restaurant?${q}&limit=200`)).body.data.filter((x: any) => x.vendorId.startsWith('gl-'));
       const row = (v: Vendor) => byRest.find((x: any) => x.vendorId === v.vendorId);
       expect(row(v1)).toMatchObject({ orders: 1, foodGross: 180, vendorAmount: 180, feesCollected: 25, discounts: 0 });
-      expect(row(v2)).toMatchObject({ orders: 1, foodGross: 180, vendorAmount: 180, feesCollected: 15 }); // the extra-restaurant fee sits on the second child
+      expect(row(v2)).toMatchObject({ orders: 1, foodGross: 180, vendorAmount: 180, feesCollected: 25 }); // the extra-restaurant fee sits on the second child
       expect(row(v3)).toMatchObject({ orders: 1, feesCollected: 25 });
-      expect(row(v1).feesCollected + row(v2).feesCollected).toBe(40); // feesCollected of the group = the group fee
+      expect(row(v1).feesCollected + row(v2).feesCollected).toBe(50); // feesCollected of the group = the group fee
       // settlement: one per restaurant, each its own child's vendorSubtotal
       for (const v of [v1, v2]) {
         const run = await api.raw('admin', 'post', '/api/admin/settlements/run', W.admin.token, { vendorId: v.vendorId });

@@ -2,6 +2,12 @@ import { Prisma } from '@prisma/client';
 import { dropoffView, vendorHasLocation } from '../config/campus';
 import { paymentWindowMin, vendorAcceptWindowMin } from '../config/orderFlow';
 
+const publicProductSnapshot = (snapshot: unknown) => {
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) return null;
+  const { vendorUnitPaise: _internal, ...publicFields } = snapshot as Record<string,unknown>;
+  return publicFields;
+};
+
 /**
  * The ONLY shape an order leaves the server in (REST and sockets): Docs/16_order_flow_contract.md 2.1.
  * Built per viewer. Returns null when this viewer must not see the order at all, so callers can 404
@@ -148,7 +154,7 @@ const buildView = (o: OrderWithRelations) => ({
   cancelledAt: iso(o.cancelledAt),
   cancelledBy: (o.cancelledBy ?? null) as string | null,
   cancelReason: (o.cancelReason ?? null) as string | null,
-  items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, name: i.name, quantity: i.quantity, price: i.price })),
+  items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, productSnapshot: publicProductSnapshot(i.productSnapshot), name: i.name, quantity: i.quantity, price: i.price })),
   vendorId: o.vendorId,
   vendor: { id: o.vendor.id, name: o.vendor.name, address: o.vendor.address, lat: o.vendor.lat, lng: o.vendor.lng, hasLocation: vendorHasLocation(o.vendor.lat, o.vendor.lng) },
   customer: null as null | { id: string; name: string | null; phone: string | null; hostelBlock: string | null },
@@ -185,7 +191,7 @@ export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string
         ...withGroup(groupFull(o)),
         ...(o.groupId ? { groupId: o.groupId } : {}),
         // Admin-only extras.
-        items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, name: i.name, quantity: i.quantity, price: i.price, vendorUnitPrice: vendorEarnUnit(i), commissionUnit: i.commissionUnit })),
+        items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, productSnapshot: i.productSnapshot, name: i.name, quantity: i.quantity, price: i.price, vendorUnitPrice: vendorEarnUnit(i), commissionUnit: i.commissionUnit })),
         vendorSubtotal: vendorEarnTotal(o),
         commissionTotal: o.commissionTotal,
         feeBreakdown: o.feeBreakdown ?? null,
@@ -236,7 +242,7 @@ export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string
         ...base,
         totalAmount: earn,
         subtotal: earn,
-        items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, name: i.name, quantity: i.quantity, price: vendorEarnUnit(i) })),
+        items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, productSnapshot: i.productSnapshot, name: i.name, quantity: i.quantity, price: vendorEarnUnit(i) })),
         customer: { id: o.customer.id, name: firstName(o.customer.name), phone: null, hostelBlock: null },
         driver: driverOf(o),
         acceptBy: acceptByOf(o),

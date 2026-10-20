@@ -159,8 +159,8 @@ void main() {
     expect(find.text('बिना लोकेशन के आगे बढ़ें'), findsOneWidget);
   });
 
-  testWidgets('a spot outside the campus is shown but not taken', (tester) async {
-    await pump(tester, FakeCapture.fix(accuracy: 8, lat: 23.2599, lng: 77.4126));
+  testWidgets('a spot outside India is shown but not taken', (tester) async {
+    await pump(tester, FakeCapture.fix(accuracy: 8, lat: 51.5072, lng: -0.1276));
     await tapKey(tester, button);
     await tapKey(tester, kLocationDetectKey);
     expect(find.byKey(kLocationOutsideKey), findsOneWidget);
@@ -171,7 +171,7 @@ void main() {
 
   testWidgets('the server refuses the location (400 field location): the chip is removed and the reason is shown; the account can be created without it', (tester) async {
     answer = (f) => f.hasLocation
-        ? const SignupResult.failure(SignupFailure.invalid, field: 'location', message: 'The location must be within 3 km of the campus.')
+        ? const SignupResult.failure(SignupFailure.invalid, field: 'location', message: 'Choose a valid store location in India.')
         : const SignupResult.success(token: 'jwt', session: PartnerSession(userId: 'u1', name: 'A', approval: PartnerApproval.pending));
     await pump(tester, FakeCapture.fix());
     await tapKey(tester, button);
@@ -180,7 +180,7 @@ void main() {
     await fill(tester);
     await tapKey(tester, const ValueKey('signup-button'));
     expect(find.byKey(const ValueKey('signup-problem')), findsOneWidget);
-    expect(find.textContaining('The location must be within 3 km of the campus.'), findsOneWidget);
+    expect(find.textContaining('Choose a valid store location in India.'), findsOneWidget);
     expect(find.byKey(chip), findsNothing);
     expect(find.byKey(button), findsOneWidget);
     await tapKey(tester, const ValueKey('signup-button'));

@@ -94,6 +94,8 @@ export const normalizedPath = (rawPath: string): string => (rawPath || '/').toLo
 
 const MIN = 60_000;
 const RULES: Rule[] = [
+  { name: 'PRODUCT_WRITE', scope: 'user', max: 200, windowMs: 10 * MIN, applies: (r, p) => r.method !== 'GET' && (/^\/products\//.test(p) || /^\/vendors\/[^/]+\/products$/.test(p)), message: 'Too many product or inventory changes. Please wait.' },
+  { name: 'GEOGRAPHY_WRITE', scope: 'user', max: 60, windowMs: 10 * MIN, applies: (r, p) => r.method !== 'GET' && /^\/admin\/(cities|zones|vendors\/[^/]+\/(location|coverage))/.test(p), message: 'Too many delivery configuration changes. Please wait.' },
   { name: 'MAPS_SEARCH', scope: 'user', max: 30, windowMs: MIN, applies: (r, p) => r.method === 'GET' && p === '/maps/search', message: 'Too many location searches. Please wait a minute.' },
   { name: 'ADDRESS_WRITE', scope: 'user', max: 30, windowMs: 10 * MIN, applies: (r, p) => ['POST', 'PUT', 'DELETE'].includes(r.method) && /^\/addresses(?:\/|$)/.test(p), message: 'Too many address changes. Please wait a few minutes.' },
   { name: 'ORDER_CREATE', scope: 'user', max: 8, windowMs: 10 * MIN, applies: (r, p) => r.method === 'POST' && p === '/orders', message: 'You are placing orders too fast. Please wait a few minutes.' },

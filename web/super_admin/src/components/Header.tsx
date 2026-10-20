@@ -17,6 +17,7 @@ interface HeaderProps {
 }
 
 const TITLES: Record<TabType, { title: string; subtitle: string; searchHint: string }> = {
+  inventory: { title: 'Products and inventory', subtitle: 'Grocery SKUs, stock adjustments and product moderation', searchHint: '' },
   coverage: { title: 'Delivery coverage', subtitle: 'Cities, service areas and store opening hours', searchHint: '' },
   map: { title: 'Live command center', subtitle: 'Dispatch, runners and the delivery pipeline', searchHint: 'Search orders, vendors, hostels, runners' },
   orders: { title: 'Orders', subtitle: 'Latest 100 orders, with payment and live status', searchHint: 'Search order, student, phone, restaurant, rider or payment id' },
@@ -43,7 +44,7 @@ const useNow = (intervalMs: number): number => {
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, isLiveConnected, isLoading, adminProfile, onRefresh, onLogout, onOpenMenu, query, onQueryChange }) => {
   const meta = TITLES[activeTab];
-  const searchEnabled = activeTab !== 'analytics' && activeTab !== 'settings' && activeTab !== 'finance' && activeTab !== 'coverage';
+  const searchEnabled = activeTab !== 'analytics' && activeTab !== 'settings' && activeTab !== 'finance' && activeTab !== 'coverage' && activeTab !== 'inventory';
   const now = useNow(10_000);
   const [lastSynced, setLastSynced] = useState<number | null>(null);
   const wasLoading = useRef(false);

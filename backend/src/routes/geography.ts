@@ -76,7 +76,7 @@ geographyRouter.get('/v1/vendors/nearby', requireAuth, requireRole('STUDENT'), s
   for (const vendor of candidates) {
     try {
       const eligibility = await deliveryEligibility(prisma, address, vendor.id);
-      stores.push({ ...publicVendorView(vendor), cityId: vendor.cityId, ...eligibility });
+      stores.push({ ...publicVendorView(vendor), cityId: vendor.cityId, hasMoreProducts: vendor.menuItems.length === 50, ...eligibility });
     } catch (e) { if (!(e instanceof AppError && ['STORE_UNAVAILABLE', 'AREA_UNSUPPORTED'].includes(e.code))) throw e; }
   }
   res.json({ success: true, data: stores, nextCursor: candidates.length === p.take ? candidates.at(-1)!.id : null });

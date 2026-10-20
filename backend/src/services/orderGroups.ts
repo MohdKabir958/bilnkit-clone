@@ -1,7 +1,9 @@
+import { fromPaise, toPaise } from './pricing';
+import { lockProducts, reserveStock, ensureStockAvailable } from './inventory';
 import { OrderGroup, Prisma } from '@prisma/client';
 import { prisma } from '../db';
 import { MAX_UNPAID_OPEN_ORDERS } from '../config/orderFlow';
-import { ownedAddress, addressLabel, addressSnapshot, deliveryEligibility, GeoDb, DeliveryAddress } from './geography';
+import { ownedAddress, addressSnapshot, deliveryEligibility, GeoDb, DeliveryAddress } from './geography';
 import { couponEligibilityProblem, normaliseCoupon, validateAndCalculateGroup, validateAndCalculateOrder, GroupRestaurantInput, GroupValidationResult } from '../utils/validation';
 import { getSettings } from './settings';
 import { ORDER_VIEW_INCLUDE, OrderWithRelations, orderView } from './orderView';
@@ -72,7 +74,6 @@ export const quoteOrder = async (customerId: string, input: { restaurants: Group
   const vendors = await loadOpenVendors(input.restaurants);
   const address = await ownedAddress(prisma, customerId, input.addressId);
   const deliveryFees = await zoneFees(prisma, address, input.restaurants);
-  const extraEach = settings.fees.extraRestaurantFee;
   const n = input.restaurants.length;
 
   let quote: Quote;
@@ -84,7 +85,7 @@ export const quoteOrder = async (customerId: string, input: { restaurants: Group
     quote = {
       restaurantCount: 1,
       subtotal: priced.calculatedSubtotal,
-      fees: { total: priced.calculatedDeliveryFee, base: priced.calculatedDeliveryFee, baseWaived: !!priced.feeBreakdown?.baseWaived, extraRestaurants: 0, extraRestaurantFee: extraEach, extraTotal: 0 },
+      fees: { total: priced.calculatedDeliveryFee, base: priced.calculatedDeliveryFee, baseWaived: !!priced.feeBreakdown?.baseWaived, extraRestaurants: 0, extraRestaurantFee: 0, extraTotal: 0 },
       discount: priced.calculatedDiscount,
       couponCode: priced.appliedCoupon ?? null,
       total: priced.calculatedTotalAmount,
@@ -102,8 +103,8 @@ export const quoteOrder = async (customerId: string, input: { restaurants: Group
         base: priced.children[0].deliveryFee,
         baseWaived: !!priced.feeBreakdown?.baseWaived,
         extraRestaurants: n - 1,
-        extraRestaurantFee: extraEach,
-        extraTotal: Math.round(extraEach * 100 * (n - 1)) / 100,
+        extraRestaurantFee: priced.children.slice(1).every((c) => c.deliveryFee === priced.children[1].deliveryFee) ? priced.children[1].deliveryFee : 0,
+        extraTotal: fromPaise(priced.children.slice(1).reduce((sum,c)=>sum+toPaise(c.deliveryFee),0)),
       },
       discount: priced.discount,
       couponCode: priced.appliedCoupon,
@@ -117,6 +118,7 @@ export const quoteOrder = async (customerId: string, input: { restaurants: Group
     const problem = await couponEligibilityProblem(prisma, customerId, quote.couponCode);
     if (problem) throw new OrderFlowError(400, 'COUPON_NOT_APPLICABLE', problem, { field: 'couponCode' });
   }
+  await ensureStockAvailable(input.restaurants.flatMap((r) => r.items));
   return quote;
 };
 
@@ -213,8 +215,6 @@ export const placeGroup = async (customerId: string, input: PlaceGroupInput): Pr
         }
 
         const address = await ownedAddress(tx, customerId, input.addressId, true);
-        priced = await validateAndCalculateGroup(input.restaurants, input.couponCode, await zoneFees(tx, address, input.restaurants, true));
-        assertGroupPriced(priced);
         // Replace this customer's own abandoned, never-paid checkouts at these restaurants (single orders and whole groups).
         const stale = await tx.order.findMany({
           where: { customerId, vendorId: { in: input.restaurants.map((r) => r.vendorId) }, status: 'PLACED', paymentStatus: { in: ['PENDING', 'FAILED'] }, paidAt: null },
@@ -222,12 +222,19 @@ export const placeGroup = async (customerId: string, input: PlaceGroupInput): Pr
           orderBy: { createdAt: 'asc' },
           take: 10,
         });
+        const staleLocks: Awaited<ReturnType<typeof lockOrderInTx>>[] = [];
         for (const { id } of stale) {
           const l = await lockOrderInTx(tx, id).catch((e) => (e instanceof OrderFlowError && e.status === 404 ? null : Promise.reject(e)));
-          if (!l || l.order.customerId !== customerId) continue;
+          if (l && l.order.customerId === customerId && !staleLocks.some((held) => (held.order.groupId ?? held.order.id) === (l.order.groupId ?? l.order.id))) staleLocks.push(l);
+        }
+        await lockProducts(tx, [...input.restaurants.flatMap((r) => r.items.map((i) => i.itemId)), ...staleLocks.flatMap((l) => (l.group ?? [l.order]).flatMap((o) => o.items.flatMap((i) => i.menuItemId ? [i.menuItemId] : [])))]);
+        for (const l of staleLocks) {
           const r = await cancelInTx(tx, l.order, { id: 'system', role: 'SYSTEM' }, 'SYSTEM', REPLACED_REASON, { guard: (o, g) => isAbandonedOrder(o, g) }, l.group);
           if (r.changed) replaced.push(r);
         }
+
+        priced = await validateAndCalculateGroup(input.restaurants, input.couponCode, await zoneFees(tx, address, input.restaurants, true), tx);
+        assertGroupPriced(priced);
 
         if (priced.appliedCoupon) {
           const problem = await couponEligibilityProblem(tx, customerId, priced.appliedCoupon);
@@ -255,7 +262,7 @@ export const placeGroup = async (customerId: string, input: PlaceGroupInput): Pr
         });
         for (let i = 0; i < priced.children.length; i++) {
           const c = priced.children[i];
-          await tx.order.create({
+          const child = await tx.order.create({
             data: {
               customerId,
               vendorId: c.vendorId,
@@ -277,9 +284,10 @@ export const placeGroup = async (customerId: string, input: PlaceGroupInput): Pr
               dropoffNotes: input.dropoffNotes,
               status: 'PLACED',
               paymentStatus: 'PENDING',
-              items: { create: c.verifiedItems.map((it) => ({ menuItemId: it.itemId, name: it.name, quantity: it.quantity, price: it.price, vendorUnitPrice: it.vendorUnitPrice, commissionUnit: it.commissionUnit })) },
+              items: { create: c.verifiedItems.map((it) => ({ menuItemId: it.itemId, name: it.name, quantity: it.quantity, price: it.price, vendorUnitPrice: it.vendorUnitPrice, commissionUnit: it.commissionUnit, productSnapshot: it.productSnapshot })) },
             },
           });
+          await reserveStock(tx, child.id, c.verifiedItems);
         }
         const orders = await loadGroupChildren(tx, group.id);
         return { group, orders, replay: false };

@@ -1,3 +1,4 @@
+import { InventoryPanel } from './components/InventoryPanel';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { GeographyPanel } from './components/GeographyPanel';
 import { io } from 'socket.io-client';
@@ -692,6 +693,7 @@ export const App: React.FC = () => {
             {activeTab === 'catalog' && <CatalogPanel vendors={vendors} query={searchQuery} onClearQuery={clearQuery} onAuthError={handleSessionError} pendingCounts={pendingDishes} onPendingChanged={refreshPendingDishes} />}
             {activeTab === 'finance' && <FinancePanel vendors={vendors} driverPartners={driverPartners} pendingSettlements={pendingSettlements} onSettlementsChanged={refreshPendingSettlements} onAuthError={handleSessionError} />}
             {activeTab === 'settings' && <SettingsPanel onAuthError={handleSessionError} />}
+            {activeTab === 'inventory' && <InventoryPanel vendors={vendors} onAuthError={handleSessionError} />}
             {activeTab === 'coverage' && <GeographyPanel vendors={vendors} onChanged={fetchBackendData} onSessionError={handleSessionError} />}
             {activeTab === 'analytics' && <AnalyticsPanel />}
           </div>

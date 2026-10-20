@@ -151,3 +151,17 @@ describe('configured delivery coverage HTTP routes', () => {
     expect(JSON.parse(calls[4].init.body as string)).toEqual({ baseFeePaise: 2575 });
   });
 });
+
+describe('grocery API requests',()=>{
+  it('keeps product reads and stock writes on the owned versioned API',async()=>{
+    const calls:{url:string;init:RequestInit}[]=[];
+    vi.stubGlobal('fetch',vi.fn(async(url:string,init:RequestInit)=>{calls.push({url,init});return jsonResponse({success:true,data:[],nextCursor:null});}));
+    setAuthToken('grocery-owner-token');
+    await apiService.inventoryPage({q:'milk & rice',vendorId:'store',cityId:'blr',lowStock:true,after:'pack-a'});
+    await apiService.productMovements('pack-a');await apiService.adjustProductStock('pack-a',{delta:5,expectedVersion:7,reason:'Receipt',clientRequestId:'request-a'});await apiService.saveGroceryProduct('pack-a',{pricePaise:6545});
+    expect(new URL(calls[0].url).pathname).toBe('/api/v1/admin/products');expect(new URL(calls[0].url).searchParams.get('q')).toBe('milk & rice');
+    expect(calls.slice(1).map((c)=>new URL(c.url).pathname)).toEqual(['/api/v1/products/pack-a/stock-movements','/api/v1/products/pack-a/stock','/api/v1/products/pack-a']);
+    expect(JSON.parse(calls[2].init.body as string).expectedVersion).toBe(7);expect(JSON.parse(calls[3].init.body as string).pricePaise).toBe(6545);
+    expect(calls.every((c)=>(c.init.headers as Record<string,string>).Authorization==='Bearer grocery-owner-token')).toBe(true);
+  });
+});

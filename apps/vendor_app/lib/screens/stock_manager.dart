@@ -1,3 +1,4 @@
+import 'product_inventory_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:kraveo_ui/kraveo_ui.dart';
@@ -74,7 +75,10 @@ class _StockManagerScreenState extends State<StockManagerScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(listenable: _c, builder: (context, _) => _build(context));
+  Widget build(BuildContext context) => Column(children: [
+    Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4), child: FilledButton.icon(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProductInventoryScreen(vendorId: _c.vendorId))), icon: const Icon(Icons.inventory_2_outlined), label: const Text('Products and inventory'))),
+    Expanded(child: ListenableBuilder(listenable: _c, builder: (context, _) => _build(context))),
+  ]);
 
   Widget _build(BuildContext context) {
     final k = context.k;

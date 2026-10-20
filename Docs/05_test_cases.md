@@ -36,3 +36,17 @@ Tests delete records. `DATABASE_URL` must identify a disposable database with a 
 - Customer: full suite 434 tests passed; profile/address/catalog/checkout flows and retries retained; obsolete campus-only expectations replaced with structured-address requirements. Analysis passed without issues. Vendor India-coordinate validation analysis passed.
 - API runtime smoke passed health, authorization, real admin login and database-backed partner/geography/enabled-city/catalog reads.
 - Android debug APK attempts exposed and fixed a Kotlin branding import, then required a full JDK rather than the installed JRE. APK compilation continues separately; no APK/device or release-signing success is claimed here. No iOS runner exists in the inherited checkout.
+
+## Phase 3 verification
+
+- Core backend: 12 suites, 316 tests passed before final focused fee/MRP checks. Includes full single-order lifecycle, authentication, hardening, payment adversaries, two-city geography and the initial 14 grocery cases.
+- Additional split-checkout regression: 5 suites, 91 tests passed after updating old campus/flat-fee expectations to saved addresses and per-store zone fees. Coverage includes group creation, idempotency, payment/refund, rider claims, per-stop pickup, atomic OTP delivery and finance counting. The run exposed and fixed quote extra-fee display values that disagreed with zone charges.
+- Integer-payment follow-up: all 9 amount-integrity tests passed, including 600 randomized carts and the complete paise-sensitive payment/refund case, after removing floating point subtotal/coupon calculations.
+- Admin: 47 files, 804 tests passed; new UI cases verify stock request versions/idempotency, exact selling-price/MRP/tax conversion and moderation.
+- Flutter analyses: all three clean. Full suites: customer 436, vendor 517, rider 394 passed. Vendor retry testing exposed and fixed a dialog controller disposed during its closing animation. Historical outside-campus cases now enforce India bounds instead.
+- Android debug APKs built for all three roles using the explicit debug Firebase bypass. These are unsigned-for-distribution debug artifacts; FCM, Google sign-in, gateway, device and release-signing behavior remain unverified.
+- Fresh database bootstrap applied all baseline and new migrations successfully; Prisma schema drift comparison reported no difference. Runtime API smoke also passed authenticated inventory reads.
+
+The grocery acceptance suite creates two vendors through admin APIs, signs each in through the real partner endpoint, and creates 50/30 products through their own authenticated SKU APIs. It verifies persistence/pagination, store isolation, server totals, stock reservations, exact replay, duplicate-line aggregation, last-pack concurrency, versioned adjustments, expiry/cancellation release, split rollback, delivered stock consumption, pickup loss, MRP bounds and immutable snapshots. Test payment providers remain explicitly simulated.
+
+Final focused grocery suite: **16 passed**, including different zone-price quote/charge consistency and the database MRP constraint through both admin HTTP and a direct database write.

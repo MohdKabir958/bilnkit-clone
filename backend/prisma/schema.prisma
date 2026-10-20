@@ -55,27 +55,27 @@ enum DutyStatus {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  phone        String?  @unique
-  email        String?  @unique
-  googleSub    String?  @unique
-  passwordHash String?
-  avatarId     Int?
-  isStudent    Boolean?
-  name         String
-  role         Role     @default(STUDENT)
-  hostelBlock  String?
-  kraveoCoins  Int      @default(0)
-  upiId        String?
-  fcmToken     String?
+  id               String    @id @default(uuid())
+  phone            String?   @unique
+  email            String?   @unique
+  googleSub        String?   @unique
+  passwordHash     String?
+  avatarId         Int?
+  isStudent        Boolean?
+  name             String
+  role             Role      @default(STUDENT)
+  hostelBlock      String?
+  kraveoCoins      Int       @default(0)
+  upiId            String?
+  fcmToken         String?
   // Bumped on password reset, suspension and account deletion: JWTs carry `tv` and are refused when it differs.
-  tokenVersion Int      @default(0)
+  tokenVersion     Int       @default(0)
   // Set when the student deletes the account (row is anonymised, kept for order/payment FKs).
-  deletedAt    DateTime?
+  deletedAt        DateTime?
   // How many times 50 coins were exchanged for the KRAVEO20 coupon (each redemption = one use of the code).
-  kraveo20Redeemed Int  @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  kraveo20Redeemed Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   ordersPlaced    Order[]        @relation("CustomerOrders")
   groupsPlaced    OrderGroup[]   @relation("CustomerGroups")
@@ -90,18 +90,18 @@ model User {
 }
 
 model Vendor {
-  id                String   @id @default(uuid())
+  id                String         @id @default(uuid())
   userId            String?
   name              String
   category          String
-  rating            Float    @default(4.5)
-  totalRatingsCount Int      @default(50)
-  eta               String   @default("20-25 min")
+  rating            Float          @default(4.5)
+  totalRatingsCount Int            @default(50)
+  eta               String         @default("20-25 min")
   bannerImage       String
   address           String
-  isAcceptingOrders Boolean  @default(true)
-  lat               Float    @default(0)
-  lng               Float    @default(0)
+  isAcceptingOrders Boolean        @default(true)
+  lat               Float          @default(0)
+  lng               Float          @default(0)
   cityId            String?
   pinCode           String?
   locality          String?
@@ -119,18 +119,18 @@ model Vendor {
   // Docs/21: this restaurant's default commission (PERCENT | FLAT). Both null = inherit the global default.
   commissionType    String?
   commissionValue   Float?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
-  user      User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-  menuItems MenuItem[]
-  orders    Order[]
-  reviews   ReviewRecord[]
+  user        User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  menuItems   MenuItem[]
+  orders      Order[]
+  reviews     ReviewRecord[]
   settlements Settlement[]
   // Docs/23: the managed categories (cuisines) of this restaurant, ordered by `position` (first = main). `category` above is DERIVED from them.
-  cuisines  VendorCategory[]
-  city      City? @relation(fields: [cityId], references: [id], onDelete: Restrict)
-  coverage  VendorCoverage[]
+  cuisines    VendorCategory[]
+  city        City?            @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  coverage    VendorCoverage[]
 
   @@index([approvalStatus])
   @@index([cityId, approvalStatus, isAcceptingOrders, lat, lng])
@@ -172,10 +172,29 @@ model MenuItem {
   createdBy          String             @default("VENDOR") // VENDOR | ADMIN
   updatedAt          DateTime           @default(now()) @updatedAt
 
+  // Each menu row is one sellable SKU/pack; productKey groups variants inside this store.
+  imageUrls         String[] @default([])
+  sku                   String?
+  productKey            String?
+  unit                  String                 @default("pcs")
+  packSize              String                 @default("1")
+  mrpPaise              Int?
+  barcode               String?
+  hsnCode               String?
+  taxRateBps            Int                    @default(0)
+  stockQty              Int                    @default(0)
+  stockVersion          Int                    @default(0)
+  lowStockThreshold     Int                    @default(5)
+  inventoryReservations InventoryReservation[]
+  stockMovements        StockMovement[]
+
   vendor      Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   categoryRef Category?   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   orderItems  OrderItem[]
 
+  @@unique([vendorId, sku])
+  @@index([vendorId, productKey])
+  @@index([vendorId, stockQty])
   @@index([vendorId, approvalStatus, deletedAt])
   @@index([approvalStatus, deletedAt])
   @@index([categoryId])
@@ -217,23 +236,23 @@ model VendorCategory {
 }
 
 model Order {
-  id            String        @id @default(uuid())
-  customerId    String
-  vendorId      String
-  driverId      String?
-  totalAmount   Float
-  deliveryFee   Float         @default(30.0)
-  dropoffHostel String
-  dropoffNotes  String?
-  addressId     String?
+  id              String        @id @default(uuid())
+  customerId      String
+  vendorId        String
+  driverId        String?
+  totalAmount     Float
+  deliveryFee     Float         @default(30.0)
+  dropoffHostel   String
+  dropoffNotes    String?
+  addressId       String?
   addressSnapshot Json?
-  deliveryAddress Address? @relation(fields: [addressId], references: [id], onDelete: SetNull)
-  status        OrderStatus   @default(PLACED)
-  paymentStatus PaymentStatus @default(PENDING)
-  otpCode       String?
-  isReviewed    Boolean       @default(false)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  deliveryAddress Address?      @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  status          OrderStatus   @default(PLACED)
+  paymentStatus   PaymentStatus @default(PENDING)
+  otpCode         String?
+  isReviewed      Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   // Order flow v1 (Docs/16_order_flow_contract.md). Price parts are stored so history never changes.
   subtotal         Float     @default(0)
@@ -265,26 +284,27 @@ model Order {
 
   // Docs/21 section 2. `deliveryFee` now holds the ONE all-in fee and `taxAndPackaging` stays 0 for new orders.
   // vendorSubtotal = sum(vendorUnitPrice x qty) (what the restaurant earns), commissionTotal = subtotal - vendorSubtotal.
-  vendorSubtotal   Float     @default(0)
-  commissionTotal  Float     @default(0)
-  feeBreakdown     Json?
+  vendorSubtotal  Float   @default(0)
+  commissionTotal Float   @default(0)
+  feeBreakdown    Json?
   // Docs/21 phase 2: the daily settlement batch this order was paid out in (null = not settled yet). An order belongs to at most
   // one settlement (set by a conditional update); deleting a settlement row frees its orders (ON DELETE SET NULL).
-  settlementId     String?
+  settlementId    String?
 
   // Docs/22 multi-restaurant orders: every child of an OrderGroup is an ordinary order. groupIndex 0 = the PRIMARY child: it carries the
   // one Payment (amount = the group total), the base fee and the coupon code. groupId is immutable once set; groups are never deleted.
-  groupId          String?
-  groupIndex       Int?
+  groupId    String?
+  groupIndex Int?
 
-  customer User          @relation("CustomerOrders", fields: [customerId], references: [id])
-  vendor   Vendor        @relation(fields: [vendorId], references: [id])
-  driver   User?         @relation("DriverOrders", fields: [driverId], references: [id])
-  settlement Settlement? @relation(fields: [settlementId], references: [id], onDelete: SetNull)
-  group    OrderGroup?   @relation(fields: [groupId], references: [id], onDelete: Restrict)
-  items    OrderItem[]
-  payments Payment[]
-  review   ReviewRecord?
+  customer              User                   @relation("CustomerOrders", fields: [customerId], references: [id])
+  vendor                Vendor                 @relation(fields: [vendorId], references: [id])
+  driver                User?                  @relation("DriverOrders", fields: [driverId], references: [id])
+  settlement            Settlement?            @relation(fields: [settlementId], references: [id], onDelete: SetNull)
+  group                 OrderGroup?            @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  inventoryReservations InventoryReservation[]
+  items                 OrderItem[]
+  payments              Payment[]
+  review                ReviewRecord?
 
   @@unique([customerId, clientRequestId])
   @@unique([groupId, groupIndex])
@@ -327,16 +347,17 @@ model OrderGroup {
 }
 
 model OrderItem {
-  id         String  @id @default(uuid())
-  orderId    String
-  menuItemId String?
-  name       String
-  quantity   Int
+  id              String  @id @default(uuid())
+  orderId         String
+  menuItemId      String?
+  name            String
+  quantity        Int
   // The CUSTOMER unit price at order time.
-  price      Float
+  price           Float
   // Snapshots from the dish at order time (Docs/21): what the restaurant earns per unit and what Kraveo keeps per unit.
-  vendorUnitPrice Float @default(0)
-  commissionUnit  Float @default(0)
+  vendorUnitPrice Float   @default(0)
+  commissionUnit  Float   @default(0)
+  productSnapshot Json?
 
   order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuItem MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
@@ -345,13 +366,13 @@ model OrderItem {
 }
 
 model Payment {
-  id                String        @id @default(uuid())
-  orderId           String
-  razorpayOrderId   String        @unique
-  razorpayPaymentId String?
-  amount            Float
-  status            PaymentStatus @default(PENDING)
-  createdAt         DateTime      @default(now())
+  id                  String        @id @default(uuid())
+  orderId             String
+  razorpayOrderId     String        @unique
+  razorpayPaymentId   String?
+  amount              Float
+  status              PaymentStatus @default(PENDING)
+  createdAt           DateTime      @default(now())
   // What Razorpay says was captured (paise), the refund that returned it, and when.
   capturedAmountPaise Int?
   razorpayRefundId    String?
@@ -363,30 +384,30 @@ model Payment {
 }
 
 model DriverPartner {
-  id                       String     @id @default(uuid())
-  userId                   String?    @unique
+  id                       String         @id @default(uuid())
+  userId                   String?        @unique
   name                     String
   phone                    String
   studentRegNo             String?
-  runnerCode               String     @unique
+  runnerCode               String         @unique
   avatarUrl                String?
   vehicleType              String
   vehicleRegNo             String?
   emergencyPhone           String?
-  dutyStatus               DutyStatus @default(OFFLINE)
-  ordersToday              Int        @default(0)
-  totalEarningsToday       Float      @default(0.0)
-  avgCompletionTimeMinutes Float      @default(0.0)
-  onTimeRatePercent        Float      @default(100.0)
-  rating                   Float      @default(5.0)
+  dutyStatus               DutyStatus     @default(OFFLINE)
+  ordersToday              Int            @default(0)
+  totalEarningsToday       Float          @default(0.0)
+  avgCompletionTimeMinutes Float          @default(0.0)
+  onTimeRatePercent        Float          @default(100.0)
+  rating                   Float          @default(5.0)
   upiId                    String?
   cityId                   String?
   approvalStatus           ApprovalStatus @default(APPROVED)
   rejectionReason          String?
   appliedAt                DateTime?
   reviewedAt               DateTime?
-  createdAt                DateTime   @default(now())
-  updatedAt                DateTime   @updatedAt
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
   city City? @relation(fields: [cityId], references: [id], onDelete: Restrict)
@@ -396,66 +417,69 @@ model DriverPartner {
 
 // India-wide serviceability. Existing stores are deliberately not auto-enabled in a city.
 model City {
-  id String @id @default(uuid())
-  code String @unique
-  name String
-  state String
-  country String @default("IN")
-  active Boolean @default(false)
-  createdAt DateTime @default(now())
-  zones DeliveryZone[]
-  vendors Vendor[]
+  id        String          @id @default(uuid())
+  code      String          @unique
+  name      String
+  state     String
+  country   String          @default("IN")
+  active    Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  zones     DeliveryZone[]
+  vendors   Vendor[]
   addresses Address[]
-  drivers DriverPartner[]
+  drivers   DriverPartner[]
 }
 
 model DeliveryZone {
-  id String @id @default(uuid())
-  cityId String
-  name String
-  centerLat Float
-  centerLng Float
-  radiusKm Float
-  baseFeePaise Int @default(0)
-  perKmFeePaise Int @default(0)
-  active Boolean @default(false)
-  createdAt DateTime @default(now())
-  city City @relation(fields: [cityId], references: [id], onDelete: Restrict)
-  vendors VendorCoverage[]
+  id            String           @id @default(uuid())
+  cityId        String
+  name          String
+  centerLat     Float
+  centerLng     Float
+  radiusKm      Float
+  baseFeePaise  Int              @default(0)
+  perKmFeePaise Int              @default(0)
+  active        Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+  city          City             @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  vendors       VendorCoverage[]
+
   @@index([cityId, active])
 }
 
 model VendorCoverage {
   vendorId String
-  zoneId String
-  active Boolean @default(true)
+  zoneId   String
+  active   Boolean      @default(true)
   radiusKm Float?
-  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  zone DeliveryZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  vendor   Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  zone     DeliveryZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
   @@id([vendorId, zoneId])
   @@index([zoneId, active])
 }
 
 model Address {
-  id String @id @default(uuid())
-  customerId String
-  cityId String
-  label String
-  country String @default("IN")
-  pinCode String
-  locality String
-  houseNumber String
-  street String
-  landmark String?
+  id           String   @id @default(uuid())
+  customerId   String
+  cityId       String
+  label        String
+  country      String   @default("IN")
+  pinCode      String
+  locality     String
+  houseNumber  String
+  street       String
+  landmark     String?
   instructions String?
-  lat Float
-  lng Float
-  isDefault Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  customer User @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  city City @relation(fields: [cityId], references: [id], onDelete: Restrict)
-  orders Order[]
+  lat          Float
+  lng          Float
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  customer     User     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  city         City     @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  orders       Order[]
+
   @@index([customerId, createdAt, id])
   @@index([cityId, lat, lng])
 }
@@ -652,4 +676,34 @@ model RiderPayout {
   @@unique([driverUserId, reference])
   @@index([driverUserId, createdAt])
   @@index([createdAt])
+}
+
+/// Available units are decremented at checkout. Reservation state determines eligible release.
+model InventoryReservation {
+  id         String   @id @default(uuid())
+  orderId    String
+  menuItemId String
+  quantity   Int
+  state      String   @default("HELD")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  item       MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, menuItemId])
+  @@index([orderId, state])
+}
+
+model StockMovement {
+  id         String   @id @default(uuid())
+  menuItemId String
+  delta      Int
+  kind       String
+  reason     String
+  actorId    String?
+  reference  String   @unique
+  createdAt  DateTime @default(now())
+  item       MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@index([menuItemId, createdAt])
 }

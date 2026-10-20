@@ -92,11 +92,12 @@ export const seedTestDatabase = async () => {
   // 3. Seed Menu Items
   const menuItem1 = await prisma.menuItem.upsert({
     where: { id: 'item-1' },
-    update: { vendorId: vendor.id, name: 'Special Shahi Paneer Thali', price: 180.0, vendorPrice: 180.0, isAvailable: true },
+    update: { vendorId: vendor.id, name: 'Special Shahi Paneer Thali', price: 180.0, vendorPrice: 180.0, stockQty: 10000, isAvailable: true },
     create: {
       id: 'item-1',
       vendorId: vendor.id,
       name: 'Special Shahi Paneer Thali',
+      stockQty: 10000,
       price: 180.0,
       vendorPrice: 180.0,
       category: 'Thalis',
@@ -109,11 +110,12 @@ export const seedTestDatabase = async () => {
 
   const menuItem2 = await prisma.menuItem.upsert({
     where: { id: 'item-2' },
-    update: { vendorId: vendor.id, name: 'Aloo Pyaz Paratha (2 pcs)', price: 90.0, vendorPrice: 90.0, isAvailable: true },
+    update: { vendorId: vendor.id, name: 'Aloo Pyaz Paratha (2 pcs)', price: 90.0, vendorPrice: 90.0, stockQty: 10000, isAvailable: true },
     create: {
       id: 'item-2',
       vendorId: vendor.id,
       name: 'Aloo Pyaz Paratha (2 pcs)',
+      stockQty: 10000,
       price: 90.0,
       vendorPrice: 90.0,
       category: 'Parathas',

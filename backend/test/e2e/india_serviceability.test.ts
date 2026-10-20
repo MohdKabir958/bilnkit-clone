@@ -41,7 +41,7 @@ describe('India-wide addresses, discovery and checkout', () => {
       expect(login.status).toBe(200); ownerTokens.push(login.body.token);
       expect((await request.put(`/api/v1/admin/vendors/${vendors[i]}/location`).set(auth(admin)).send({ cityId: cities[i], pinCode: d.pin, locality: 'Central market', address: 'Main Road store', lat: d.lat, lng: d.lng })).status).toBe(200);
       expect((await request.put(`/api/v1/admin/vendors/${vendors[i]}/coverage/${zones[i]}`).set(auth(admin)).send({ active: true })).status).toBe(200);
-      const item = await prisma.menuItem.create({ data: { vendorId: vendors[i], name: 'Milk 1 litre', category: 'Dairy', price: 65, vendorPrice: 60, description: 'Fresh milk', imageUrl: '', isAvailable: true, approvalStatus: 'APPROVED' } });
+      const item = await prisma.menuItem.create({ data: { vendorId: vendors[i], stockQty: 1000, name: 'Milk 1 litre', category: 'Dairy', price: 65, vendorPrice: 60, description: 'Fresh milk', imageUrl: '', isAvailable: true, approvalStatus: 'APPROVED' } });
       items.push(item.id);
       const a = await request.post('/api/v1/addresses').set(auth(customer)).send(address(cities[i], d.lat + 0.001, d.lng, d.pin, { isDefault: i === 0 }));
       expect(a.status).toBe(201);

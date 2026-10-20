@@ -19,3 +19,13 @@ Before production: back up existing installations, compare actual schema with th
 Additive migration `20261019_india_serviceability` adds City, DeliveryZone, VendorCoverage and owned Address records; city/approval/location discovery index; store hours and immutable Order.addressSnapshot. Database constraints enforce Indian coordinate bounds, six-digit PINs, positive circle radii and nonnegative integer delivery charges. A partial unique index permits only one default address per account; account-row locks serialize default changes. Empty-database bootstrap still uses the original baseline and then applies new migrations.
 
 Checkout locks the owned address, enabled city, store, zone and coverage while repricing. PIN matching is not a delivery rule: configured circles and store radius determine eligibility. Historical delivery labels remain readable but cannot authorize new checkout.
+
+## Phase 3 grocery inventory
+
+Migration `20261020_grocery_inventory` extends each MenuItem into one sellable SKU/pack, with store-scoped SKU uniqueness, a productKey grouping related variants, measurement unit/pack quantity, optional MRP/barcode/HSN, tax metadata, image URLs, available stock, stock version and low-stock threshold. Existing items start at **zero** available stock; operators must count inventory before sale. Category remains a managed database relation. Existing Float rupee columns remain compatible with finance/history; all new input, arithmetic and product snapshots use integer paise, with conversion only at these legacy persistence/API boundaries.
+
+InventoryReservation is unique per order/SKU. Checkout locks all relevant old/new SKU rows in sorted order, reprices within its transaction, decrements available stock with a conditional update and writes HELD reservations plus stock movements. A failed child of a split checkout rolls the entire transaction back. Order item snapshots preserve SKU, pack/unit, MRP, inclusive-tax metadata and unit paise. Public views omit internal vendor unit proceeds.
+
+Eligible cancellation/expiry releases HELD inventory once; delivery marks it CONSUMED. Cancellation after pickup records LOSS without returning physical goods to available stock. Stock movements contain immutable reasons, actor IDs and unique operation references. Count adjustments require a matching stockVersion and a stable request ID; stale edits return conflict, retries of the same request do not apply twice.
+
+The follow-up `20261020_grocery_price_guard` database check prevents every writer, including inherited imports/repricing, from setting a selling price above configured MRP. Named constraint failures return a stable field error without SQL details.

@@ -236,6 +236,10 @@ const orderOrNull = (raw: any): Order | null => {
 };
 
 export const apiService = {
+  inventoryPage: (opts: {q:string;vendorId:string;cityId:string;lowStock:boolean;after:string}) => requestFull<any>(`/api/v1/admin/products?${new URLSearchParams(Object.fromEntries(Object.entries({...opts,limit:'50'}).filter(([,v]) => v !== '' && v !== false).map(([k,v])=>[k,String(v)])))}`),
+  productMovements: (id:string) => requestFull<any>(`/api/v1/products/${encodeURIComponent(id)}/stock-movements?limit=100`),
+  adjustProductStock: (id:string, data:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/stock`, {method:'POST',body:JSON.stringify(data)}),
+  saveGroceryProduct: (id:string, data:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}`, {method:'PUT',body:JSON.stringify(data)}),
   fetchGeography: () => request<import('../components/GeographyPanel').Geography>('/api/v1/admin/geography'),
   createDeliveryCity: (data: { code: string; name: string; state: string; active: boolean }) => request('/api/v1/admin/cities', { method: 'POST', body: JSON.stringify(data) }),
   setCityActive: (id: string, active: boolean) => request(`/api/v1/admin/cities/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ active }) }),

@@ -3,7 +3,7 @@ import { prisma } from '../db';
 import { AppError } from '../utils/appError';
 import { writeAudit } from './audit';
 import { getSettings } from './settings';
-import { checkCommissionRule, CommissionRule, DishPrice, priceDish, ruleFromColumns, toPaise } from './pricing';
+import { checkCommissionRule, CommissionRule, DishPrice, priceDish, ruleFromColumns, toPaise, fromPaise } from './pricing';
 import { dishStatus, DishStatus, priceProblem, text } from '../utils/catalog';
 import { SettingsMap } from './pricing';
 import { resolveDishCategory, resolveDishCategoryForEdit } from './categories';
@@ -359,6 +359,13 @@ export const approveDish = async (itemId: string, b: Record<string, unknown>, ac
     const newOverride = override === undefined ? ruleFromColumns(item.commissionType, item.commissionValue) : override;
     const priced = priceFor(newVendorPrice, { dish: newOverride, vendor: ruleFromColumns(item.vendor.commissionType, item.vendor.commissionValue) }, settings);
 
+    // Grocery writes specify the selling price in paise. Plain moderation approves
+    // that quoted price; an explicit admin price/commission change may reprice it.
+    if (item.sku && explicitVendorPrice === undefined && item.pendingVendorPrice === null && override === undefined) {
+      priced.price = item.price;
+      priced.effectiveCommission = fromPaise(toPaise(item.price) - toPaise(newVendorPrice));
+    }
+    if (item.mrpPaise !== null && toPaise(priced.price) > item.mrpPaise) throw new AppError(400, 'PRICE_EXCEEDS_MRP', 'Selling price cannot exceed MRP.');
     const wasLive = item.approvalStatus === 'APPROVED';
     const data: Prisma.MenuItemUpdateInput = {
       approvalStatus: 'APPROVED',

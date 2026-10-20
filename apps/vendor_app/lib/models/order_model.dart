@@ -140,7 +140,7 @@ class OrderItem {
     return OrderItem(
       id: raw['id']?.toString(),
       menuItemId: raw['menuItemId']?.toString(),
-      name: name,
+      name: '$name${raw['productSnapshot'] is Map && raw['productSnapshot']['sku'] != null ? ' · ${raw['productSnapshot']['packSize']} ${raw['productSnapshot']['unit']}' : ''}',
       quantity: qty,
       unitPrice: _double(raw['price']) ?? 0,
     );

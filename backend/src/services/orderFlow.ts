@@ -1,9 +1,10 @@
+import { lockProducts, reserveStock, settleStock } from './inventory';
 import { errSummary } from '../utils/log';
 import { Prisma } from '@prisma/client';
 import { createHmac, randomInt, timingSafeEqual } from 'crypto';
 import { prisma } from '../db';
 import { MAX_ACTIVE_ORDERS_PER_RIDER, MAX_UNPAID_OPEN_ORDERS, OTP_MAX_ATTEMPTS, RECONCILE_MIN_AGE_MS, paymentWindowMin } from '../config/orderFlow';
-import { ownedAddress, addressLabel, addressSnapshot, deliveryEligibility } from './geography';
+import { ownedAddress, addressSnapshot, deliveryEligibility } from './geography';
 import { ORDER_VIEW_INCLUDE, OrderWithRelations, ACTIVE_RIDER_STATUSES, isPoolEligible, isVendorVisible, payableAmount, groupAllAccepted } from './orderView';
 import { lockGroupRows } from './groupLock';
 import { publishOrderChange, getIo } from '../realtime';
@@ -322,8 +323,7 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
 
         const address = await ownedAddress(tx, customerId, input.addressId, true);
         const eligible = await deliveryEligibility(tx, address, input.vendorId, true);
-        priced = await validateAndCalculateOrder(input.vendorId, input.items, input.couponCode, eligible.feePaise);
-        if (!priced.isValid || priced.couponProblem) throw new OrderFlowError(409, 'CART_CHANGED', priced.errorMessage || priced.couponProblem || 'The cart changed. Refresh the quote.');
+
 
         // A new checkout replaces this customer's own abandoned, never-paid orders at the same restaurant, so their coupon and
         // the unpaid-orders limit are free again (they used to stay locked until the 15-minute expiry). Only this customer's orders
@@ -334,13 +334,21 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
           orderBy: { createdAt: 'asc' },
           take: 10,
         });
+        const staleLocks: LockedOrder[] = [];
         for (const { id } of stale) {
-          // Same locks as every other change (a child of a combined order locks its whole group first; it is replaced as a whole).
-          const locked = await lockOrderInTx(tx, id).catch((e) => (e instanceof OrderFlowError && e.status === 404 ? null : Promise.reject(e)));
-          if (!locked || locked.order.customerId !== customerId) continue;
-          const r = await cancelInTx(tx, locked.order, { id: 'system', role: 'SYSTEM' }, 'SYSTEM', REPLACED_REASON, { guard: (o, g) => isAbandonedOrder(o, g) }, locked.group);
+          const l = await lockOrderInTx(tx, id).catch((e) => (e instanceof OrderFlowError && e.status === 404 ? null : Promise.reject(e)));
+          if (l && l.order.customerId === customerId && !staleLocks.some((held) => (held.order.groupId ?? held.order.id) === (l.order.groupId ?? l.order.id))) staleLocks.push(l);
+        }
+        // Lock all old/new SKUs together before releasing any old reservation. Two
+        // customers replacing carts with opposite SKUs must acquire one common order.
+        await lockProducts(tx, [...input.items.map((i) => i.itemId), ...staleLocks.flatMap((l) => (l.group ?? [l.order]).flatMap((o) => o.items.flatMap((i) => i.menuItemId ? [i.menuItemId] : [])))]);
+        for (const l of staleLocks) {
+          const r = await cancelInTx(tx, l.order, { id: 'system', role: 'SYSTEM' }, 'SYSTEM', REPLACED_REASON, { guard: (o, g) => isAbandonedOrder(o, g) }, l.group);
           if (r.changed) replaced.push(r);
         }
+
+        priced = await validateAndCalculateOrder(input.vendorId, input.items, input.couponCode, eligible.feePaise, tx);
+        if (!priced.isValid || priced.couponProblem) throw new OrderFlowError(409, 'CART_CHANGED', priced.errorMessage || priced.couponProblem || 'The cart changed. Refresh the quote.');
 
         if (priced.appliedCoupon) {
           const problem = await couponEligibilityProblem(tx, customerId, priced.appliedCoupon);
@@ -371,10 +379,11 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
             dropoffNotes: input.dropoffNotes,
             status: 'PLACED',
             paymentStatus: 'PENDING',
-            items: { create: priced.verifiedItems.map((i) => ({ menuItemId: i.itemId, name: i.name, quantity: i.quantity, price: i.price, vendorUnitPrice: i.vendorUnitPrice, commissionUnit: i.commissionUnit })) },
+            items: { create: priced.verifiedItems.map((i) => ({ menuItemId: i.itemId, name: i.name, quantity: i.quantity, price: i.price, vendorUnitPrice: i.vendorUnitPrice, commissionUnit: i.commissionUnit, productSnapshot: i.productSnapshot })) },
           },
           include: ORDER_VIEW_INCLUDE,
         });
+        await reserveStock(tx, created.id, input.items);
         return { order: created, replay: false };
       },
       { maxWait: 15_000, timeout: 30_000 },
@@ -688,6 +697,8 @@ export const cancelInTx = async (
     }
   }
 
+  await settleStock(tx, group ?? [order], 'CANCEL');
+
   if (group) {
     const primary = group[0];
     const paid = primary.paymentStatus === 'PAID';
@@ -993,6 +1004,7 @@ export const verifyGateOtp = async (orderId: string, actor: Actor, rawOtp: unkno
       // Committed (the attempt counts even though the caller gets an error).
       return { order: await reload(tx, order.id), before: order, changed: locked, kind: 'WRONG', attempts, locked };
     }
+    await settleStock(tx, group ?? [order], 'DELIVER');
     if (group) {
       const deliveredAt = new Date(); // one instant for the whole delivery (finance counts a delivery on one day)
       for (const c of group) await tx.order.update({ where: { id: c.id }, data: { status: 'DELIVERED', deliveredAt, otpCode: 'USED', otpProof: otpProof(c.id, otp) } });

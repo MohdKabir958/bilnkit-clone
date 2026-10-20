@@ -1,0 +1,25 @@
+backend-phase3-gate
+Test Suites: 12 passed, 12 total
+Tests:       316 passed, 316 total
+p3-groups-regression2
+Test Suites: 5 passed, 5 total
+Tests:       91 passed, 91 total
+p3-integer-payment-tests
+Test Suites: 1 passed, 1 total
+Tests:       78 skipped, 9 passed, 87 total
+grocery-final-16-tests2
+Test Suites: 1 passed, 1 total
+Tests:       16 passed, 16 total
+admin-phase3-gate
+ Test Files  47 passed (47)
+      Tests  804 passed (804)
+customer-phase3-gate2
+01:33 +436: All tests passed!
+vendor-phase3-gate2
+01:47 +517: All tests passed!
+driver-phase3-gate
+00:57 +394: All tests passed!
+customer Android debug APK: PASSED
+vendor Android debug APK: PASSED
+driver Android debug APK: PASSED
+Fresh bootstrap and schema drift: passed. Runtime inventory smoke: passed. External services/devices: not verified.

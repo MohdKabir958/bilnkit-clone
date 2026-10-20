@@ -127,7 +127,7 @@ class OrderLine {
   factory OrderLine.fromJson(Map<String, dynamic> json) => OrderLine(
         id: _str(json['id']) ?? '',
         menuItemId: _str(json['menuItemId'] ?? json['itemId']) ?? '',
-        name: _str(json['name']) ?? 'Item',
+        name: '${_str(json['name']) ?? 'Item'}${json['productSnapshot'] is Map && json['productSnapshot']['sku'] != null ? ' · ${json['productSnapshot']['packSize']} ${json['productSnapshot']['unit']}' : ''}',
         quantity: (json['quantity'] is num) ? (json['quantity'] as num).toInt() : int.tryParse('${json['quantity']}') ?? 1,
         price: _num(json['price']),
       );
@@ -409,7 +409,7 @@ class OrderModel {
       taxAndPackaging: _num(json['taxAndPackaging']),
       discount: _num(json['discount']),
       totalAmount: _num(json['totalAmount']),
-      dropoffHostel: _str(json['dropoffHostel']) ?? '',
+      dropoffHostel: _str(_map(json['deliveryAddress'])?['formatted']) ?? _str(json['dropoffHostel']) ?? '',
       dropoffNotes: _str(json['dropoffNotes']) ?? '',
       createdAt: created,
       updatedAt: _date(json['updatedAt']) ?? created,

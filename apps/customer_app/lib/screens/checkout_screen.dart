@@ -716,7 +716,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         const SizedBox(width: 10),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('${item.quantity} × ${item.item.name}', maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.body.copyWith(color: k.ink, fontWeight: FontWeight.w600, fontSize: 14)),
+            Text('${item.quantity} × ${item.item.displayName}', maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.body.copyWith(color: k.ink, fontWeight: FontWeight.w600, fontSize: 14)),
             if (item.selectedOptions.isNotEmpty)
               Text(item.customizationSummary, maxLines: 2, overflow: TextOverflow.ellipsis, style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
           ]),

@@ -1,13 +1,19 @@
+import 'package:flutter/foundation.dart';
+
 class ApiConfig {
-  static const bool isProduction = true;
+  static const bool isProduction = kReleaseMode;
+  static const String _configuredApi = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://10.0.2.2:5000/api');
+  static const String _configuredSocket = String.fromEnvironment('SOCKET_URL');
+  static String get baseUrl {
+    final uri = Uri.parse(_configuredApi);
+    if (!uri.hasAuthority || uri.userInfo.isNotEmpty || (kReleaseMode && uri.scheme != 'https')) throw StateError('Configure an owned HTTPS API_BASE_URL for release.');
+    return _configuredApi.replaceFirst(RegExp(r'/+$'), '');
+  }
+  static String get socketUrl {
+    final url = _configuredSocket.isEmpty ? baseUrl.replaceFirst(RegExp(r'/api$'), '') : _configuredSocket;
+    final uri = Uri.parse(url);
+    if (!uri.hasAuthority || uri.userInfo.isNotEmpty || (kReleaseMode && uri.scheme != 'https')) throw StateError('Configure an owned HTTPS SOCKET_URL for release.');
+    return url;
+  }
 
-  static const String _localBaseUrl = 'http://10.0.2.2:5000/api';
-  static const String _productionBaseUrl = 'https://api.kraveo.site/api';
-
-  static String get baseUrl => isProduction ? _productionBaseUrl : _localBaseUrl;
-
-  static const String _localSocketUrl = 'http://10.0.2.2:5000';
-  static const String _productionSocketUrl = 'https://api.kraveo.site';
-
-  static String get socketUrl => isProduction ? _productionSocketUrl : _localSocketUrl;
 }

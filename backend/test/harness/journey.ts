@@ -84,6 +84,7 @@ export const createWorld = async (prefix: string, digit: string, size: { custome
     world.riders.push({ ...r, profileId });
   }
   await ensureFixtureGeography(prefix, world.customers.map((c) => c.id), world.vendors.map((v) => v.vendorId));
+  await prisma.menuItem.updateMany({ where: { vendorId: { in: world.vendors.map((v) => v.vendorId) } }, data: { stockQty: 10000 } });
   return world;
 };
 
@@ -101,7 +102,8 @@ export const resetWorldState = async (w: World) => {
   await prisma.orderGroup.deleteMany({ where: { customerId: { startsWith: p } } });
   await prisma.vendor.updateMany({ where: { id: { startsWith: p } }, data: { approvalStatus: 'APPROVED', isAcceptingOrders: true } });
   await prisma.driverPartner.updateMany({ where: { id: { startsWith: p } }, data: { approvalStatus: 'APPROVED', dutyStatus: 'ONLINE' } });
-  await prisma.menuItem.updateMany({ where: { vendorId: { startsWith: p } }, data: { isAvailable: true } });
+  await prisma.stockMovement.deleteMany({ where: { item: { vendorId: { startsWith: p } } } });
+  await prisma.menuItem.updateMany({ where: { vendorId: { startsWith: p } }, data: { isAvailable: true, stockQty: 10000, stockVersion: 0 } });
   // Suspending a partner / resetting a password revokes their tokens (tokenVersion); the world's tokens carry tv 0.
   await prisma.user.updateMany({ where: { id: { startsWith: p } }, data: { tokenVersion: 0 } });
 };

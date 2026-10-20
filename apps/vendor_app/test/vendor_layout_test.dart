@@ -182,8 +182,11 @@ void main() {
         final menu = MenuStockController(backend: backend, vendorId: 'ven-42');
         await tester.pumpWidget(host(StockManagerScreen(controller: menu)));
         await tester.pump(const Duration(seconds: 1));
+        await tester.scrollUntilVisible(find.text('SOLD OUT'),100,scrollable:find.byType(Scrollable).first);
         expect(find.text('SOLD OUT'), findsOneWidget);
 
+        await tester.ensureVisible(find.bySemanticsLabel('Add a new dish'));
+        await tester.pump();
         await tester.tap(find.bySemanticsLabel('Add a new dish'));
         await tester.pump();
         await tester.pump(const Duration(seconds: 1));

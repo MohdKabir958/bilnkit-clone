@@ -222,6 +222,20 @@ class CustomerApiService {
       vendors.addAll((body['data'] as List).whereType<Map>().map((v) => Map<String, dynamic>.from(v)));
       after = body['nextCursor'] as String?;
     } while (after != null);
+    for (final vendor in vendors) {
+      if (vendor['hasMoreProducts'] != true) continue;
+      final items = (vendor['menuItems'] as List).map((r) => Map<String, dynamic>.from(r as Map)).toList();
+      String? cursor = items.isEmpty ? null : items.last['id'] as String;
+      do {
+        final query = Uri(queryParameters: {'limit': '50', if (addressId != null) 'addressId': addressId, if (cursor != null) 'after': cursor}).query;
+        final response = await authorizedRequest('GET', '/v1/vendors/${Uri.encodeComponent(vendor['id'] as String)}/products?$query');
+        final body = jsonDecode(response.body);
+        if (response.statusCode != 200 || body is! Map || body['data'] is! List) throw Exception('Unable to load this store’s products. Retry before ordering.');
+        items.addAll((body['data'] as List).whereType<Map>().map((r) => Map<String, dynamic>.from(r)));
+        cursor = body['nextCursor'] as String?;
+      } while (cursor != null);
+      vendor['menuItems'] = items;
+    }
     return vendors;
   }
 

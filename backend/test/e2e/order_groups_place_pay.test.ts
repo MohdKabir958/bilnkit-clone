@@ -157,7 +157,7 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
         success: true,
         data: {
           restaurantCount: 1, subtotal: 180,
-          fees: { total: 25, base: 25, baseWaived: false, extraRestaurants: 0, extraRestaurantFee: 15, extraTotal: 0 },
+          fees: { total: 25, base: 25, baseWaived: false, extraRestaurants: 0, extraRestaurantFee: 0, extraTotal: 0 },
           discount: 0, couponCode: null, total: 205,
           perRestaurant: [{ vendorId: v1.vendorId, vendorName: 'Kitchen 1', subtotal: 180, fee: 25 }],
           maxRestaurants: 3,
@@ -166,35 +166,35 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       const three = await api.quote(c, [cartOf(v1, [[0, 1]]), cartOf(v2, [[1, 2]]), cartOf(v3, [[1, 1]])]);
       expect(three.body.data).toEqual({
         restaurantCount: 3, subtotal: 450,
-        fees: { total: 55, base: 25, baseWaived: false, extraRestaurants: 2, extraRestaurantFee: 15, extraTotal: 30 },
-        discount: 0, couponCode: null, total: 505,
+        fees: { total: 75, base: 25, baseWaived: false, extraRestaurants: 2, extraRestaurantFee: 25, extraTotal: 50 },
+        discount: 0, couponCode: null, total: 525,
         perRestaurant: [
           { vendorId: v1.vendorId, vendorName: 'Kitchen 1', subtotal: 180, fee: 25 },
-          { vendorId: v2.vendorId, vendorName: 'Kitchen 2', subtotal: 180, fee: 15 },
-          { vendorId: v3.vendorId, vendorName: 'Kitchen 3', subtotal: 90, fee: 15 },
+          { vendorId: v2.vendorId, vendorName: 'Kitchen 2', subtotal: 180, fee: 25 },
+          { vendorId: v3.vendorId, vendorName: 'Kitchen 3', subtotal: 90, fee: 25 },
         ],
         maxRestaurants: 3,
       });
       expect([await prisma.order.count(), await prisma.orderGroup.count(), await prisma.payment.count()]).toEqual(before);
     });
 
-    test('free-fee and small-order rules use the COMBINED subtotal; the coupon minimum too', async () => {
+    test('zone fees govern serviceable deliveries; coupon thresholds still use combined subtotals', async () => {
       const c = W.customers[0];
       const [v1, v2] = W.vendors;
       await setFees({ freeFeeAbove: 300 });
-      // 90 + 90 = 180 < 300 -> fee; 180 + 180 = 360 >= 300 -> base waived although no single restaurant reaches 300
-      expect((await api.quote(c, [cartOf(v1, [[1, 1]]), cartOf(v2, [[1, 1]])])).body.data.fees).toMatchObject({ total: 40, base: 25, baseWaived: false });
+      // Enabled-zone charges are authoritative, independent of legacy global free/small-order fee settings.
+      expect((await api.quote(c, [cartOf(v1, [[1, 1]]), cartOf(v2, [[1, 1]])])).body.data.fees).toMatchObject({ total: 50, base: 25, baseWaived: false });
       const free = (await api.quote(c, [cartOf(v1), cartOf(v2)])).body.data;
-      expect(free.fees).toMatchObject({ total: 15, base: 0, baseWaived: true, extraRestaurants: 1 });
-      expect(free).toMatchObject({ total: 375, perRestaurant: [{ fee: 0 }, { fee: 15 }] });
+      expect(free.fees).toMatchObject({ total: 50, base: 25, baseWaived: false, extraRestaurants: 1 });
+      expect(free).toMatchObject({ total: 410, perRestaurant: [{ fee: 25 }, { fee: 25 }] });
       await setFees({ smallOrderBelow: 200, smallOrderFee: 10 });
-      expect((await api.quote(c, [cartOf(v1, [[1, 1]]), cartOf(v2, [[1, 1]])])).body.data).toMatchObject({ fees: { total: 50, base: 35 }, total: 230 });
+      expect((await api.quote(c, [cartOf(v1, [[1, 1]]), cartOf(v2, [[1, 1]])])).body.data).toMatchObject({ fees: { total: 50, base: 25 }, total: 230 });
       await setFees({});
       // KRAVEO50 needs 150: neither 90 alone reaches it, 180 combined does
       const lone = await api.quote(c, [cartOf(v1, [[1, 1]])], 'KRAVEO50');
       expect([lone.status, lone.body.code]).toEqual([400, 'COUPON_NOT_APPLICABLE']);
       const both = await api.quote(c, [cartOf(v1, [[1, 1]]), cartOf(v2, [[1, 1]])], 'kraveo50');
-      expect(both.body.data).toMatchObject({ discount: 50, couponCode: 'KRAVEO50', total: 180 + 40 - 50 });
+      expect(both.body.data).toMatchObject({ discount: 50, couponCode: 'KRAVEO50', total: 180 + 50 - 50 });
     });
 
     test('same validation as placing: closed or unapproved restaurant, bad items, bad coupon, duplicates, shape errors; students only', async () => {
@@ -295,16 +295,16 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       const g = r.body.data;
       expect(r.body).toMatchObject({ success: true, idempotentReplay: false });
       expect(g).toMatchObject({
-        status: 'AWAITING_RESTAURANTS', paymentStatus: 'PENDING', subtotal: 630, feeTotal: 55, discount: 50, total: 635, couponCode: 'KRAVEO50',
+        status: 'AWAITING_RESTAURANTS', paymentStatus: 'PENDING', subtotal: 630, feeTotal: 75, discount: 50, total: 655, couponCode: 'KRAVEO50',
         restaurantCount: 3, dropoffHostel: 'BH2', dropoffNotes: 'near the gate',
       });
       expect(g.payOrderId).toBe(g.orders[0].id);
       expect(g.orders.map((o: any) => o.vendor.id)).toEqual([v1.vendorId, v2.vendorId, v3.vendorId]); // groupIndex order = request order
-      expect(g.orders.map((o: any) => o.deliveryFee)).toEqual([25, 15, 15]);
+      expect(g.orders.map((o: any) => o.deliveryFee)).toEqual([25, 25, 25]);
       expect(g.orders.map((o: any) => o.subtotal)).toEqual([180, 180, 270]);
       expect(g.orders.map((o: any) => o.discount)).toEqual([14.29, 14.28, 21.43]); // 50.00 over 630: 14.2857 / 14.2857 / 21.4286 -> floors 14.28 / 14.28 / 21.42, the 2 leftover paise go to the largest remainders (third, then first)
-      expect(g.orders.map((o: any) => o.totalAmount)).toEqual([190.71, 180.72, 263.57]);
-      expect(sum(g.orders.map((o: any) => o.totalAmount))).toBe(paise(635));
+      expect(g.orders.map((o: any) => o.totalAmount)).toEqual([190.71, 190.72, 273.57]);
+      expect(sum(g.orders.map((o: any) => o.totalAmount))).toBe(paise(655));
       for (const o of g.orders) expect(o).toMatchObject({ status: 'PLACED', paymentStatus: 'PENDING', taxAndPackaging: 0, dropoffHostel: 'BH2', otpCode: null });
       // customer sees the group on every child
       g.orders.forEach((o: any, i: number) => {
@@ -316,7 +316,7 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       });
       // database
       const group = await prisma.orderGroup.findUniqueOrThrow({ where: { id: g.id } });
-      expect(group).toMatchObject({ customerId: c.id, restaurantCount: 3, couponCode: 'KRAVEO50', subtotal: 630, feeTotal: 55, discount: 50, totalAmount: 635 });
+      expect(group).toMatchObject({ customerId: c.id, restaurantCount: 3, couponCode: 'KRAVEO50', subtotal: 630, feeTotal: 75, discount: 50, totalAmount: 655 });
       const kids = await children(g.id);
       expect(kids.map((o) => o.groupIndex)).toEqual([0, 1, 2]);
       expect(kids.map((o) => o.clientRequestId)).toEqual([0, 1, 2].map((i) => `g:${group.clientRequestId}:${i}`));
@@ -343,7 +343,7 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       const p = (restaurants: unknown, extra: Record<string, unknown> = {}) => api.placeGroup(c, restaurants, extra).then((r) => [r.status, r.body.code ?? null, r.body.field ?? null]);
       expect(await p([cartOf(v1)])).toEqual([400, 'USE_SINGLE_ORDER', 'restaurants']);
       expect(await p([cartOf(v1), cartOf(v1)])).toEqual([400, 'DUPLICATE_RESTAURANT', 'restaurants']);
-      expect(await p([cartOf(v1), cartOf(v2)], { dropoffHostel: 'Moon Base' })).toEqual([400, 'BAD_REQUEST', 'dropoffHostel']);
+      expect(await p([cartOf(v1), cartOf(v2)], { addressId: '?invalid' })).toEqual([400, 'BAD_REQUEST', 'addressId']);
       expect(await p([cartOf(v1), cartOf(v2)], { dropoffNotes: 'x'.repeat(301) })).toEqual([400, 'BAD_REQUEST', 'dropoffNotes']);
       expect(await p([cartOf(v1), cartOf(v2)], { couponCode: 'N'.repeat(31) })).toEqual([400, 'BAD_REQUEST', 'couponCode']);
       expect(await p([cartOf(v1), cartOf(v2)], { couponCode: 'NOPE' })).toEqual([400, 'COUPON_NOT_APPLICABLE', 'couponCode']);
@@ -363,8 +363,8 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       expect((await api.raw('d', 'post', '/api/order-groups', W.riders[0].token, {})).status).toBe(403);
       expect((await api.raw('anon', 'post', '/api/order-groups', null, {})).status).toBe(401);
       await prisma.vendor.update({ where: { id: v2.vendorId }, data: { approvalStatus: 'APPROVED' } });
-      // legacy spellings of a drop point are canonicalised like for single orders
-      expect((await api.placeGroup(c, [cartOf(v1), cartOf(v2)], { dropoffHostel: 'boys hostel block 3' })).body.data.dropoffHostel).toBe('BH3');
+      // Deprecated client labels never replace the selected saved address.
+      expect((await api.placeGroup(c, [cartOf(v1), cartOf(v2)], { dropoffHostel: 'boys hostel block 3' })).body.data.dropoffHostel).toBe('BH2');
     });
 
     test('idempotent by clientRequestId: same cart = 200 replay (same ids), different content = 409 CLIENT_REQUEST_MISMATCH, concurrent duplicates make one group', async () => {
@@ -377,12 +377,14 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       expect([again.status, again.body.idempotentReplay]).toEqual([200, true]);
       expect(again.body.data.id).toBe(first.body.data.id);
       expect(again.body.data.orders.map((o: any) => o.id).sort()).toEqual(first.body.data.orders.map((o: any) => o.id).sort());
+      const originalAddress = await prisma.address.findFirstOrThrow({where:{customerId:c.id,isDefault:true}});
+      const otherAddress = await prisma.address.create({data:{...originalAddress,id:randomUUID(),label:'Work',isDefault:false}});
       const mismatches: [unknown[], Record<string, unknown>][] = [
         [[cartOf(v1), cartOf(v2, [[1, 3]])], {}], // quantity
         [[cartOf(v1), cartOf(v3, [[1, 2]])], {}], // other restaurant
         [[cartOf(v1), cartOf(v2, [[0, 2]])], {}], // other dish
         [[cartOf(v1), cartOf(v2, [[1, 2]]), cartOf(v3)], {}], // extra restaurant
-        [[cartOf(v1), cartOf(v2, [[1, 2]])], { dropoffHostel: 'BH5' }],
+        [[cartOf(v1), cartOf(v2, [[1, 2]])], { addressId: otherAddress.id }],
         [[cartOf(v1), cartOf(v2, [[1, 2]])], { dropoffNotes: 'other' }],
         [[cartOf(v1), cartOf(v2, [[1, 2]])], { couponCode: 'KRAVEO50' }],
       ];
@@ -510,17 +512,17 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
     test('create-order on the PRIMARY charges the group total, is reused on retry; a sibling answers 409 PAY_VIA_GROUP with payOrderId', async () => {
       const c = W.customers[0];
       const [v1, v2] = W.vendors;
-      const g = await placeG(c, [cartOf(v1), cartOf(v2, [[1, 1]])]); // 180 + 90 + 25 + 15 = 310
-      expect(g.total).toBe(310);
+      const g = await placeG(c, [cartOf(v1), cartOf(v2, [[1, 1]])]); // 180 + 90 + 25 + 25 = 320
+      expect(g.total).toBe(320);
       const cp = await api.createPayment(c, g.payOrderId);
       expect(cp.status).toBe(200);
-      expect(cp.body).toMatchObject({ amountInPaise: 31000, amount: 31000, currency: 'INR' });
+      expect(cp.body).toMatchObject({ amountInPaise: 32000, amount: 32000, currency: 'INR' });
       const again = await api.createPayment(c, g.payOrderId);
       expect(again.body.razorpayOrderId).toBe(cp.body.razorpayOrderId); // reused
       expect(ledger.calls.createOrder).toBe(1);
       const pays = await prisma.payment.findMany({ where: { orderId: { in: g.orders.map((o: any) => o.id) } } });
       expect(pays).toHaveLength(1);
-      expect(pays[0]).toMatchObject({ orderId: g.payOrderId, amount: 310, status: 'PENDING' });
+      expect(pays[0]).toMatchObject({ orderId: g.payOrderId, amount: 320, status: 'PENDING' });
       const sib = await api.createPayment(c, g.orders[1].id);
       expect([sib.status, sib.body.code, sib.body.payOrderId]).toEqual([409, 'PAY_VIA_GROUP', g.payOrderId]);
       expect(await prisma.payment.count({ where: { orderId: g.orders[1].id } })).toBe(0);

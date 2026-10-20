@@ -1,3 +1,4 @@
+import '../widgets/product_details.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -66,6 +67,9 @@ class _DhabaMenuScreenState extends State<DhabaMenuScreen> {
   /// and routing customisable dishes through the customisation sheet.
   Future<void> _addItem(CartProvider cart, MenuItemModel item) async {
     final dhaba = _dhaba;
+    if (item.stockQty != null && cart.getItemQuantityInCart(item.id) >= item.stockQty!) {
+      showKSnack(context, 'No more packs are available. Refresh this store to check stock.', error: true); return;
+    }
     if (!dhaba.isAcceptingOrders) {
       showKSnack(context, '${dhaba.name} is not taking orders right now.', error: true, icon: LucideIcons.moon);
       return;
@@ -235,9 +239,9 @@ class _DhabaMenuScreenState extends State<DhabaMenuScreen> {
               SliverToBoxAdapter(
                 child: KEmptyState(
                   icon: allItems.isEmpty ? LucideIcons.chefHat : LucideIcons.searchX,
-                  title: allItems.isEmpty ? 'Menu coming soon' : 'No dishes found',
+                  title: allItems.isEmpty ? 'Products coming soon' : 'No products found',
                   message: allItems.isEmpty
-                      ? 'This kitchen has not published its menu yet. Try another kitchen for now.'
+                      ? 'This store has not published its products yet. Try another store for now.'
                       : 'Nothing matches that search here. Try another category or clear the search.',
                   action: allItems.isEmpty
                       ? null
@@ -271,6 +275,15 @@ class _DhabaMenuScreenState extends State<DhabaMenuScreen> {
                           kitchenOpen: open,
                           onAdd: () => _addItem(cart, item),
                           onRemove: () => _removeOne(cart, item),
+                          onDetails: () async {
+                            final picked = await showProductDetails(context, item, allItems);
+                            if (picked == null || !mounted) return;
+                            for (var n = 0; n < picked.$2; n++) {
+                              final before = cart.getItemQuantityInCart(picked.$1.id);
+                              await _addItem(cart, picked.$1);
+                              if (cart.getItemQuantityInCart(picked.$1.id) == before || !mounted) break;
+                            }
+                          },
                         ),
                       );
                     },
@@ -415,6 +428,7 @@ class _MenuRow extends StatelessWidget {
     required this.kitchenOpen,
     required this.onAdd,
     required this.onRemove,
+    required this.onDetails,
   });
 
   final MenuItemModel item;
@@ -422,6 +436,7 @@ class _MenuRow extends StatelessWidget {
   final bool kitchenOpen;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
+  final VoidCallback onDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -454,6 +469,11 @@ class _MenuRow extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(item.name, style: KraveoType.titleMd.copyWith(color: k.ink)),
                 const SizedBox(height: 4),
+                if (item.sku != null) ...[
+                  Text('${item.packSize} ${item.unit}${item.stockQty == null ? '' : ' · ${item.stockQty} available'}'),
+                  if (item.mrpPaise != null) Text('MRP ${rupee(item.mrpPaise! / 100)}', style: const TextStyle(decoration: TextDecoration.lineThrough)),
+                  TextButton(onPressed: onDetails, child: const Text('Details / packs')),
+                ],
                 Text(rupee(item.price), style: KraveoType.numericSm.copyWith(color: soldOut ? k.inkFaint : k.ink, fontSize: 20)),
                 if (item.description.isNotEmpty) ...[
                   const SizedBox(height: 6),

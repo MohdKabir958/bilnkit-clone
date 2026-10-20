@@ -227,11 +227,11 @@ void main() {
     });
 
     testWidgets('the server refuses (400 with a message): the message is shown, nothing changes, the banner stays', (tester) async {
-      api.answers.add(const ApiResult.failure(ApiFailure.invalid, message: 'The location must be within 3 km of the campus.', statusCode: 400));
+      api.answers.add(const ApiResult.failure(ApiFailure.invalid, message: 'Choose a valid store location in India.', statusCode: 400));
       await launch(tester);
       await tapKey(tester, kLocationDetectKey);
       await tapKey(tester, kLocationAcceptKey);
-      expect(find.textContaining('The location must be within 3 km of the campus.'), findsOneWidget);
+      expect(find.textContaining('Choose a valid store location in India.'), findsOneWidget);
       expect(find.byKey(kLocationSaveErrorKey), findsOneWidget, reason: 'the sheet stays so the owner can retry');
       await tapKey(tester, kLocationSkipKey);
       expect(find.byKey(kLocationBannerKey), findsOneWidget);
@@ -253,8 +253,8 @@ void main() {
       await unmount(tester);
     });
 
-    testWidgets('a spot outside the campus is never sent to the server', (tester) async {
-      capture = FakeCapture.fix(accuracy: 8, lat: 23.2599, lng: 77.4126);
+    testWidgets('a spot outside India is never sent to the server', (tester) async {
+      capture = FakeCapture.fix(accuracy: 8, lat: 51.5072, lng: -0.1276);
       await launch(tester);
       await tapKey(tester, kLocationDetectKey);
       expect(find.byKey(kLocationOutsideKey), findsOneWidget);
@@ -495,9 +495,9 @@ void main() {
     });
 
     test('400 carries the server message; the wording shown is that message', () async {
-      final r = await save((_) async => http.Response(jsonEncode({'success': false, 'message': 'The location must be within 3 km of the campus.', 'field': 'location'}), 400));
+      final r = await save((_) async => http.Response(jsonEncode({'success': false, 'message': 'Choose a valid store location in India.', 'field': 'location'}), 400));
       expect(r.failure, ApiFailure.invalid);
-      expect(locationSaveFailureText(r), 'The location must be within 3 km of the campus.');
+      expect(locationSaveFailureText(r), 'Choose a valid store location in India.');
     });
 
     test('403 (not allowed), 429 (rate limit), 404 (old server), 500 and no network all give plain wording', () async {

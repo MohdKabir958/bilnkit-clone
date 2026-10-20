@@ -12,6 +12,8 @@ export const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
  * status/code/message. `what` names the operation in the log line.
  */
 export const fail = (res: Response, err: unknown, what: string) => {
+  const databaseError = err as { name?: string; code?: string; meta?: unknown; message?: string };
+  if ((databaseError?.code === 'P2004' && JSON.stringify(databaseError.meta ?? {}).includes('MenuItem_price_mrp')) || (databaseError?.name === 'PrismaClientUnknownRequestError' && String(databaseError.message).includes('23514') && String(databaseError.message).includes('MenuItem_price_mrp'))) return res.status(400).json({ success: false, code: 'PRICE_EXCEEDS_MRP', field: 'price', message: 'Selling price cannot exceed the product MRP.' });
   if (err instanceof OrderFlowError) return res.status(err.status).json({ success: false, code: err.code, message: err.message, ...err.extra });
   if (err instanceof AppError) return res.status(err.status).json({ success: false, code: err.code, message: err.message, ...(err.field ? { field: err.field } : {}), ...err.extra });
   console.error(`${what} failed:`, errSummary(err));

@@ -212,10 +212,12 @@ void main() {
   });
 
   group('campus check and helpers', () {
-    test('the kitchen test point is on campus, a far city is not, bad numbers are not', () {
+    test('Indian cities are valid store pins; outside India and invalid numbers are rejected', () {
       expect(isNearCampus(kKitchenLat, kKitchenLng), isTrue);
       expect(isNearCampus(23.0768, 76.8524), isTrue);
-      expect(isNearCampus(23.2599, 77.4126), isFalse); // Bhopal, about 70 km
+      expect(isNearCampus(23.2599, 77.4126), isTrue); // Bhopal; enabled delivery coverage is validated by the server.
+      expect(isNearCampus(12.9716,77.5946), isTrue);
+      expect(isNearCampus(51.5072,-0.1276), isFalse);
       expect(isNearCampus(double.nan, 76.8), isFalse);
       expect(isNearCampus(95, 76.8), isFalse);
       expect(distanceToCampusKm(23.2599, 77.4126), greaterThan(50));
