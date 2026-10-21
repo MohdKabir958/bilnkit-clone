@@ -1,0 +1,6 @@
+{
+  "environment": "development-staging",
+  "publishableKey": "pk_test_Y2FwYWJsZS1tdXR0LTYuY2xlcmsuYWNjb3VudHMuZGV2JA==",
+  "backendOrigin": "https://grozo-backend-3wdf.onrender.com",
+  "note": "Public client settings for the current Clerk instance observed in the deployed admin. Backend keys/issuer must match this instance. Hosted login/device behavior is unverified."
+}

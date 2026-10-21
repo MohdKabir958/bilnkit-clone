@@ -20,7 +20,10 @@ def main():
     parser.add_argument('--app',required=True,choices=['customer','vendor','driver'])
     parser.add_argument('--backend-origin',default='')
     parser.add_argument('--public-config',type=Path,default=ROOT/'Docs/clerk/android-preview-public.json')
+    parser.add_argument('--build-name',default='1.10.0')
+    parser.add_argument('--build-number',type=int,default=16)
     args=parser.parse_args()
+    if args.build_number < 1:raise ValueError('Build number must be positive.')
     config=json.loads(args.public_config.read_text())
     key=config['publishableKey']
     if not key.startswith('pk_test_'):raise ValueError('Only a Clerk development publishable key is allowed.')
@@ -38,7 +41,7 @@ def main():
         env.pop(name,None)
     output=ROOT/'build/clerk-test-apks';output.mkdir(parents=True,exist_ok=True)
     command=['flutter','build','apk','--profile','--split-per-abi','--target-platform','android-arm64','--no-pub',
-             '--build-name=1.10.0','--build-number=16','--dart-define=AUTH_MODE=clerk-test',
+             f'--build-name={args.build_name}',f'--build-number={args.build_number}','--dart-define=AUTH_MODE=clerk-test',
              f'--dart-define=AUTH_PREVIEW={str(preview).lower()}',f'--dart-define=API_BASE_URL={origin}/api',f'--dart-define=SOCKET_URL={origin}']
     app=ROOT/f'apps/{args.app}_app'
     build_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
@@ -57,6 +60,7 @@ def main():
     (output/f'{args.app}-build.json').write_text(json.dumps({'filename':target.name,'command':command,'workingDirectory':str(app.relative_to(ROOT)),
         'exitCode':0,'buildCommit':build_commit,'appSourceDirty':source_dirty,'authMode':'clerk-test','authenticationPreview':preview,
         'apiOrigin':origin,'socketOrigin':origin,'clerkFrontendOrigin':'https://'+host[:-1],'publishableKey':key,
+        'versionName':args.build_name,'flutterBuildNumber':args.build_number,
         'firebaseConfigured':False,'signing':'Android development signing; not a Play Store release','abi':'arm64-v8a'},indent=2)+'\n')
     print(json.dumps({'app':args.app,'filename':target.name,'bytes':target.stat().st_size,'preview':preview,'exitCode':0}))
     return 0
