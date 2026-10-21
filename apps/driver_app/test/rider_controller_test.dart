@@ -65,7 +65,7 @@ void main() {
     });
 
     test(
-        'going on duty waits for the server, then loads offers without idle GPS',
+        'going on duty waits for the server, then publishes availability and loads offers',
         () async {
       f.api.available = ApiResult.ok([offer()]);
       await boot();
@@ -73,8 +73,8 @@ void main() {
       await flush();
       expect(c.onDuty, isTrue);
       expect(f.api.calls, contains('duty:true'));
-      expect(f.api.locations, isEmpty);
-      expect(c.location, LocationState.off);
+      expect(f.api.locations, isNotEmpty);
+      expect(c.location, LocationState.ok);
       expect(c.offers.map((o) => o.id), ['pool-1']);
       expect(f.socket.connected, isTrue);
       expect(
@@ -623,19 +623,20 @@ void main() {
       expect(f.api.locations, isEmpty);
     });
 
-    test('GPS polling begins on assignment and stops when that assignment ends',
+    test('GPS polling starts on duty, survives assignment completion and stops off duty',
         () async {
       f = FakeRider(gps: const Duration(milliseconds: 20));
       await boot();
       await c.setDuty(true);
       await Future<void>.delayed(const Duration(milliseconds: 70));
-      expect(f.api.locations, isEmpty);
+      expect(f.api.locations, isNotEmpty);
       f.api.active = ApiResult.ok([order(status: 'PICKED_UP')]);
       await c.pollNow();
       await Future<void>.delayed(const Duration(milliseconds: 70));
       expect(f.api.locations.length, greaterThanOrEqualTo(2));
       f.api.active = const ApiResult.ok([]);
       await c.pollNow();
+      await c.setDuty(false);
       final n = f.api.locations.length;
       await Future<void>.delayed(const Duration(milliseconds: 70));
       expect(f.api.locations.length, n);
@@ -891,7 +892,7 @@ void main() {
       expect(f.api.calls, isNot(contains('duty:true')),
           reason: 'mirroring needs no second call');
       expect(c.offers.map((o) => o.id), ['pool-1']);
-      expect(f.api.locations, isEmpty);
+      expect(f.api.locations, isNotEmpty);
       expect(
           (await SharedPreferences.getInstance())
               .getBool(RiderController.dutyPrefKey),

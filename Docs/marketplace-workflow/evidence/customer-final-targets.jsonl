@@ -1,0 +1,29 @@
+{"protocolVersion":"0.1.1","runnerVersion":null,"pid":383278,"type":"start","time":0}
+{"suite":{"id":0,"platform":"vm","path":"/workspace/bilnkit-clone/apps/customer_app/test/marketplace_workflow_test.dart"},"type":"suite","time":0}
+{"test":{"id":1,"name":"loading /workspace/bilnkit-clone/apps/customer_app/test/marketplace_workflow_test.dart","suiteID":0,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":1}
+{"suite":{"id":2,"platform":"vm","path":"/workspace/bilnkit-clone/apps/customer_app/test/addresses_test.dart"},"type":"suite","time":8}
+{"test":{"id":3,"name":"loading /workspace/bilnkit-clone/apps/customer_app/test/addresses_test.dart","suiteID":2,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":8}
+{"count":2,"time":9,"type":"allSuites"}
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":8798}
+{"group":{"id":4,"suiteID":0,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":5,"line":null,"column":null,"url":null},"type":"group","time":8800}
+{"test":{"id":5,"name":"new storefront category chips describe stores, independently of product categories","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":16,"column":2,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/marketplace_workflow_test.dart"},"type":"testStart","time":8800}
+{"testID":5,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":8840}
+{"test":{"id":6,"name":"cash order is not offered an online payment retry","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":17,"column":2,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/marketplace_workflow_test.dart"},"type":"testStart","time":8841}
+{"testID":6,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":8856}
+{"test":{"id":7,"name":"new cart remains one store even when an older quote advertises a higher limit","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":18,"column":2,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/marketplace_workflow_test.dart"},"type":"testStart","time":8856}
+{"testID":7,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":8866}
+{"test":{"id":8,"name":"cash checkout sends server-priced items and the selected address to v2","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":19,"column":2,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/marketplace_workflow_test.dart"},"type":"testStart","time":8867}
+{"testID":8,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":8903}
+{"test":{"id":9,"name":"quote exposes only the backend-enabled payment methods","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":24,"column":2,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/marketplace_workflow_test.dart"},"type":"testStart","time":8904}
+{"testID":9,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":8909}
+{"testID":3,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":9225}
+{"group":{"id":10,"suiteID":2,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":4,"line":null,"column":null,"url":null},"type":"group","time":9226}
+{"test":{"id":11,"name":"address lists follow cursors and keep separate saved addresses","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":43,"column":3,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/addresses_test.dart"},"type":"testStart","time":9226}
+{"testID":11,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":9296}
+{"test":{"id":12,"name":"selecting an address writes real JSON through PUT, without double encoding","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":56,"column":3,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/addresses_test.dart"},"type":"testStart","time":9297}
+{"testID":12,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":9304}
+{"test":{"id":13,"name":"a quote includes the selected address and preserves the server’s unsupported-area error","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":73,"column":3,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/addresses_test.dart"},"type":"testStart","time":9305}
+{"testID":13,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":9315}
+{"test":{"id":14,"name":"the saved-address picker selects the server’s address and shows its complete label","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":94,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/addresses_test.dart"},"type":"testStart","time":9315}
+{"testID":14,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":10553}
+{"success":true,"type":"done","time":10576}

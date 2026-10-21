@@ -1,3 +1,4 @@
+import { fulfillmentWhere, fulfillmentAuthorized } from '../services/marketplace';
 import { runDispatchMaintenance } from '../services/dispatch';
 import { Router, Request, Response, NextFunction } from 'express';
 import { Prisma } from '@prisma/client';
@@ -53,10 +54,13 @@ const requiredReason = (raw: unknown): string | null => {
   return typeof s === 'string' && s.length >= 3 ? s : null;
 };
 
+// Old clients can still read, pay and complete existing orders. New checkout is v2.
+const legacyCheckout=(req:Request,res:Response,next:NextFunction)=>process.env.LEGACY_CHECKOUT_ENABLED==='true'?next():res.status(410).json({success:false,code:'APP_UPDATE_REQUIRED',message:'Update Grozo to use the single-store marketplace checkout.'});
+
 // ----------------------------------------------------------------------------
 // Customer: place an order
 // ----------------------------------------------------------------------------
-orderRouter.post('/orders', requireAuth, requireRole('STUDENT'), async (req: AuthenticatedRequest, res: Response) => {
+orderRouter.post('/orders', requireAuth, requireRole('STUDENT'), legacyCheckout, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const b = req.body && typeof req.body === 'object' ? req.body : {};
     if (typeof b.vendorId !== 'string' || !ID_RE.test(b.vendorId)) return bad(res, 'vendorId is required.', 'vendorId');
@@ -115,7 +119,7 @@ const parseCoupon = (raw: unknown): { ok: true; couponCode: string | undefined }
   raw !== undefined && raw !== null && (typeof raw !== 'string' || raw.length > 30) ? { ok: false } : { ok: true, couponCode: (raw as string | null | undefined) ?? undefined };
 
 // Prices a cart without writing anything: the same code that places the order, so what is quoted is what is charged.
-orderRouter.post('/orders/quote', requireAuth, requireRole('STUDENT'), async (req: AuthenticatedRequest, res: Response) => {
+orderRouter.post('/orders/quote', requireAuth, requireRole('STUDENT'), legacyCheckout, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const b = req.body && typeof req.body === 'object' ? req.body : {};
     const parsed = parseRestaurants(b.restaurants);
@@ -129,7 +133,7 @@ orderRouter.post('/orders/quote', requireAuth, requireRole('STUDENT'), async (re
   }
 });
 
-orderRouter.post('/order-groups', requireAuth, requireRole('STUDENT'), async (req: AuthenticatedRequest, res: Response) => {
+orderRouter.post('/order-groups', requireAuth, requireRole('STUDENT'), legacyCheckout, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const b = req.body && typeof req.body === 'object' ? req.body : {};
     const parsed = parseRestaurants(b.restaurants);
@@ -210,7 +214,7 @@ orderRouter.get('/order-groups/:id', requireAuth, validId, async (req: Authentic
 // ----------------------------------------------------------------------------
 // Lists and detail (all roles)
 // ----------------------------------------------------------------------------
-const vendorVisibleWhere: Prisma.OrderWhereInput = { OR: [{ paidAt: { not: null } }, { paymentStatus: 'PAID', status: { not: 'CANCELLED' } }] };
+const vendorVisibleWhere: Prisma.OrderWhereInput = { OR: [{workflowVersion:2,paymentMethod:'COD'}, { paidAt: { not: null } }, { paymentStatus: 'PAID', status: { not: 'CANCELLED' } }] };
 
 orderRouter.get('/orders', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -282,7 +286,7 @@ orderRouter.get('/orders/available', requireAuth, requireRole('DRIVER'), require
     const POOL = ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP'] as const;
     const orders = await prisma.order.findMany({
       where: {
-        id:{in:offers.map((o)=>o.orderId)}, paymentStatus: 'PAID', driverId: null, status: { in: [...POOL] },
+        id:{in:offers.map((o)=>o.orderId)}, AND:[fulfillmentWhere], driverId: null, status: { in: [...POOL] },
         OR: wantsGroups
           ? [{ groupId: null }, { groupIndex: 0, group: { is: { orders: { none: { OR: [{ paymentStatus: { not: 'PAID' } }, { driverId: { not: null } }, { status: { notIn: [...POOL] } }] } } } } }]
           : [{ groupId: null }],
@@ -370,7 +374,7 @@ orderRouter.patch('/orders/:id/status', requireAuth, requireApprovedPartner, val
     if (status === 'DELIVERED') {
       if (role !== 'DRIVER' && role !== 'ADMIN') return res.status(403).json({ success: false, code: 'ROLE_NOT_ALLOWED', message: 'Only the rider can complete a delivery.' });
       // Exactly the same checks as POST /orders/:id/verify-gate-otp.
-      return deliverResponse(req, res, await verifyGateOtp(req.params.id, actorOf(req), req.body?.otpCode ?? req.body?.otp));
+      return deliverResponse(req, res, await verifyGateOtp(req.params.id, actorOf(req), req.body?.otpCode ?? req.body?.otp, req.body?.cashCollected === true));
     }
     if (role === 'STUDENT') return res.status(403).json({ success: false, code: 'ROLE_NOT_ALLOWED', message: 'Customers can only cancel orders.' });
 
@@ -383,7 +387,7 @@ orderRouter.patch('/orders/:id/status', requireAuth, requireApprovedPartner, val
 
 orderRouter.post('/orders/:id/verify-gate-otp', requireAuth, requireRole('DRIVER', 'ADMIN'), requireApprovedPartner, validId, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    return deliverResponse(req, res, await verifyGateOtp(req.params.id, actorOf(req), req.body?.otpCode ?? req.body?.otp));
+    return deliverResponse(req, res, await verifyGateOtp(req.params.id, actorOf(req), req.body?.otpCode ?? req.body?.otp, req.body?.cashCollected === true));
   } catch (err) {
     return fail(res, err, 'verify delivery code');
   }
@@ -468,6 +472,8 @@ orderRouter.post('/admin/orders/:id/retry-refund', requireAuth, requireRole('ADM
     const reset = await prisma.order.updateMany({ where: { id: req.params.id, refundStatus: 'FAILED' }, data: { refundAttempts: 0, refundLeaseUntil: null } });
     if (reset.count === 0) return res.status(409).json({ success: false, code: 'NO_FAILED_REFUND', message: 'This order has no failed refund.' });
     await writeAudit('REFUND_RETRY_REQUESTED', 'ORDER', req.params.id, 'Admin asked to retry the refund.');
+    const refundOrder=await loadOrder(req.params.id);
+    if(refundOrder?.paymentMethod==='COD') return res.status(409).json({success:false,code:'MANUAL_CASH_REFUND',message:'Record a completed manual cash refund in Finance → Cash collections. No Razorpay payment exists for cash.'});
     await executeRefund(req.params.id);
     const order = await loadOrder(req.params.id);
     return res.json({ success: true, data: viewFor(req, order!) });
@@ -618,7 +624,7 @@ orderRouter.get('/admin/orders/needs-attention', requireAuth, requireRole('ADMIN
         if (o.driverId && t(o.updatedAt) < ago(RIDER_PICKUP_ALERT_MIN).getTime()) add('RIDER_NOT_PICKED_UP', `Ready, rider ${o.driver?.name ?? o.driverId} has not picked it up.`, o.updatedAt);
         if (!o.driverId && t(o.updatedAt) < ago(READY_NO_RIDER_ALERT_MIN).getTime()) add('NO_RIDER', 'Ready and no rider has taken it.', o.updatedAt);
       }
-      if (!['PLACED', 'DELIVERED', 'CANCELLED'].includes(o.status) && o.paymentStatus !== 'PAID') add('UNPAID_IN_PROGRESS', `Status ${o.status} with payment ${o.paymentStatus}.`, o.updatedAt);
+      if (!['PLACED', 'DELIVERED', 'CANCELLED'].includes(o.status) && !fulfillmentAuthorized(o)) add('UNPAID_IN_PROGRESS', `Status ${o.status} with payment ${o.paymentStatus}.`, o.updatedAt);
       if (o.status === 'PLACED' && o.paymentStatus === 'FAILED') add('PAYMENT_FAILED', 'The last payment attempt failed.', o.updatedAt);
 
       const problems = PROBLEM_ORDER.filter((p) => found.has(p));

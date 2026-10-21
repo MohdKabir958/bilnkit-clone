@@ -75,7 +75,7 @@ void main() {
       () async {
     CustomerApiService.selectedAddressId = 'address-a';
     CustomerApiService.httpClientOverride = MockClient((r) async {
-      expect(r.url.path, endsWith('/v1/orders/quote'));
+      expect(r.url.path, endsWith('/v2/checkout/quote'));
       expect((jsonDecode(r.body) as Map)['addressId'], 'address-a');
       return json({
         'success': false,

@@ -7,8 +7,8 @@ import { TONE_CLASS } from '../../lib/orderProblems';
 const base = 'inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-bold';
 
 /** Payment state in the same pill language as StatusPill: Paid / Unpaid / Payment failed / Refunded. */
-export const PaymentPill: React.FC<{ status: string; className?: string }> = ({ status, className = '' }) => {
-  const meta = paymentMeta(status);
+export const PaymentPill: React.FC<{ status: string; method?:string; className?: string }> = ({ status, method, className = '' }) => {
+  const meta = method==='COD'?{...paymentMeta(status),label:status==='PAID'?'Cash collected':status==='REFUNDED'?'Cash refunded':'Cash on delivery'}:paymentMeta(status);
   return <span className={`${base} ${meta.cls} ${className}`} title={`Payment: ${meta.label}`}>{meta.label}</span>;
 };
 

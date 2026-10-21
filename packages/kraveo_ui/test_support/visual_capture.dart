@@ -37,6 +37,9 @@ Future<void> loadVisualFonts() async {
 
 Future<void> prepareVisual(WidgetTester tester,
     {double width = 390, double height = 844, double scale = 1}) async {
+  // Rendering-only native bridge fixture. It cannot authenticate and is never imported by production.
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('in.grozo/clerk/events'),(_)async=>null);
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('in.grozo/clerk'),(call)async=>call.method=='initialize'?{'ready':true,'signedIn':false}:null);
   tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1;
   tester.platformDispatcher.textScaleFactorTestValue = scale;

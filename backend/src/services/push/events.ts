@@ -1,3 +1,4 @@
+import { isCashOrder, fulfillmentAuthorized } from '../marketplace';
 import { prisma } from '../../db';
 import { ACTIVE_RIDER_STATUSES, OrderWithRelations, isPoolEligible, isVendorVisible, vendorEarnTotal, payableAmount, groupAllAccepted } from '../orderView';
 import { PushApp, PushEvent, PushOptions } from './types';
@@ -92,7 +93,7 @@ export const buildCopy = (event: PushEvent, o: OrderWithRelations): { title: str
         return { title: 'Order cancelled', body: `Order ${orderRef(o.id)} was cancelled: another store could not take this combined order.` };
       }
       return { title: 'Order cancelled', body: `Order ${orderRef(o.id)} was cancelled.` };
-    case 'ORDER_PLACED': return {title:'Order created',body:'Complete payment in the app to send your order to the store.'};
+    case 'ORDER_PLACED': return {title:'Order created',body:isCashOrder(o)?'Your order has been sent to the store. Pay the assigned rider in cash at delivery.':'Complete payment in the app to send your order to the store.'};
     case 'ORDER_PREPARING': return {title:'Preparing your order',body:'The store is packing your items.'};
     case 'RIDER_ASSIGNED_CUSTOMER': return {title:'Delivery partner assigned',body:'Your order has a delivery partner. Open the app for updates.'};
     case 'RIDER_ASSIGNED_VENDOR': return {title:'Delivery partner assigned',body:'A delivery partner will collect this order.'};
@@ -171,7 +172,7 @@ export const stillUseful = (event: PushEvent, o: OrderWithRelations): boolean =>
   if(event==='ORDER_PLACED') return o.status==='PLACED'&&['PENDING','FAILED'].includes(o.paymentStatus);
   if(event==='ORDER_PREPARING') return o.status==='PREPARING';
   if(event==='RIDER_ASSIGNED_CUSTOMER'||event==='RIDER_ASSIGNED_VENDOR') return !!o.driverId&&(ACTIVE_RIDER_STATUSES as readonly string[]).includes(o.status);
-  if (event === 'NEW_ORDER' || event === 'NEW_ORDER_REMINDER') return o.status === 'PLACED' && o.paymentStatus === 'PAID';
+  if (event === 'NEW_ORDER' || event === 'NEW_ORDER_REMINDER') return o.status === 'PLACED' && fulfillmentAuthorized(o);
   if (event === 'NEW_DELIVERY') return isPoolEligible(o);
   if (event === 'GROUP_READY_TO_COOK') return o.status === 'ACCEPTED';
   // A late retry must not announce a step the order has already moved past ("accepted" after "delivered").

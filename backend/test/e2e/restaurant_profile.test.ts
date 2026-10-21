@@ -330,7 +330,7 @@ describe('Restaurant categories and profile edit', () => {
       const dish = await request.post('/api/admin/catalog').set(H(tAdmin)).send({ vendorId: `${R}-1`, name: 'RP Dish', vendorPrice: 100, commissionType: 'PERCENT', commissionValue: 10 });
       expect(dish.status).toBe(201);
 
-      const OLD_PUBLIC = ['id', 'name', 'category', 'rating', 'totalRatingsCount', 'eta', 'bannerImage', 'address', 'isAcceptingOrders', 'lat', 'lng', 'menuItems'];
+      const OLD_PUBLIC = ['description','operatingHours','primaryCategoryId','publicPhone','id', 'name', 'category', 'rating', 'totalRatingsCount', 'eta', 'bannerImage', 'address', 'isAcceptingOrders', 'lat', 'lng', 'menuItems'];
       for (const t of [undefined, tStudent]) {
         const list = await (t ? request.get('/api/vendors').set(H(t)) : request.get('/api/vendors'));
         const mine = list.body.data.find((v: any) => v.id === `${R}-1`);

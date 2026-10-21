@@ -1,3 +1,4 @@
+import '../widgets/store_selector.dart';
 import 'store_profile_screen.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -551,7 +552,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen>
                     onPressed: () async {
                       Navigator.of(sheetContext).pop();
                       await Navigator.of(context).push(MaterialPageRoute<void>(
-                          builder: (_) => const StoreProfileScreen()));
+                          builder: (_) => StoreProfileScreen(vendorId:_vendorId)));
                       if (mounted) {
                         await SessionScope.maybeOf(context)?.refreshApproval();
                       }
@@ -668,6 +669,7 @@ class _VendorHomeScreenState extends State<VendorHomeScreen>
                           Icon(LucideIcons.store, color: k.onBrand, size: 24),
                     ),
                     const SizedBox(width: 12),
+                    const StoreSelector(),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

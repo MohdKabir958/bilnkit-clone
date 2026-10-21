@@ -35,6 +35,15 @@ export const EditRestaurantDrawer: React.FC<Props> = ({ vendor, onClose, onSaved
   const [serverErrors, setServerErrors] = useState<Partial<Record<ProfileField, string>>>({});
   const busy = useRef(false);
   const cats = useCategories();
+  const [primaryCategoryId,setPrimaryCategoryId]=useState(vendor.primaryCategoryId??'');
+  const [publicPhone,setPublicPhone]=useState(vendor.publicPhone??'');
+  const [description,setDescription]=useState(vendor.description??'');
+  const [ownerEmail,setOwnerEmail]=useState('');
+  const [marketplaceNotice,setMarketplaceNotice]=useState('');
+  const saveMarketplace=async()=>{
+    setSaving(true);setMarketplaceNotice('');
+    try{const updated=await apiService.configureMarketplaceStore(vendor.id,{primaryCategoryId:primaryCategoryId||undefined,publicPhone,description,ownerEmail:ownerEmail.trim()||undefined});onSaved({...vendor,...updated});setOwnerEmail('');setMarketplaceNotice('Marketplace setup saved. Confirm location and coverage before opening.');}catch(e){onAuthError?.(e);setMarketplaceNotice(errorText(e));}finally{setSaving(false);}
+  };
 
   const set = <K extends keyof ProfileForm>(key: K, value: ProfileForm[K]) => { setForm((c) => ({ ...c, [key]: value })); setServerErrors({}); setBanner(''); };
 
@@ -94,6 +103,14 @@ export const EditRestaurantDrawer: React.FC<Props> = ({ vendor, onClose, onSaved
       )}
     >
       <div className="space-y-5" onKeyDown={(event) => { if (event.key === 'Enter' && (event.target as HTMLInputElement).tagName === 'INPUT' && (event.target as HTMLInputElement).type === 'text' && !(event.target as HTMLInputElement).closest('[role="group"]')) { event.preventDefault(); void save(); } }}>
+        <section className="rounded-k-md border border-kraveo-line p-4 space-y-4">
+          <h3 className="font-bold">Marketplace setup</h3><p className="text-sm text-kraveo-ink2">Choose one store category and assign an approved owner. The public phone is shown to customers; the login phone stays private.</p>
+          <label className="block text-sm">Primary store category<select className="k-input mt-1 w-full" value={primaryCategoryId} onChange={e=>setPrimaryCategoryId(e.target.value)}><option value="">Choose category</option>{cats.categories.filter(c=>c.isActive&&c.forRestaurants).map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+          <label className="block text-sm">Public business phone<input className="k-input mt-1 w-full" value={publicPhone} onChange={e=>setPublicPhone(e.target.value)} maxLength={16}/></label>
+          <label className="block text-sm">Store description<textarea className="k-input mt-1 w-full" value={description} onChange={e=>setDescription(e.target.value)} maxLength={600}/></label>
+          <label className="block text-sm">Assign or change owner by verified email<input type="email" className="k-input mt-1 w-full" value={ownerEmail} onChange={e=>setOwnerEmail(e.target.value)} placeholder="Leave blank to keep current owner"/></label>
+          <button type="button" className="k-btn-primary" disabled={saving} onClick={()=>void saveMarketplace()}>Save marketplace setup</button>{marketplaceNotice&&<p role="status" className="text-sm">{marketplaceNotice}</p>}
+        </section>
         <Field label="Store name" htmlFor="er-name" required error={shown('name')}>
           <input id="er-name" className="k-input" value={form.name} maxLength={80} autoComplete="off" disabled={disabled} onChange={(e) => set('name', e.target.value)} aria-invalid={Boolean(shown('name'))} aria-describedby={shown('name') ? 'er-name-msg' : undefined} />
         </Field>
@@ -109,7 +126,7 @@ export const EditRestaurantDrawer: React.FC<Props> = ({ vendor, onClose, onSaved
         ) : (
           <CategoryMultiSelect
             id="er-cuisines"
-            label="Categories"
+            label="Additional store tags"
             hint={`Shown to customers as: ${vendor.category}. Pick up to ${MAX_RESTAURANT_CATEGORIES}; the first is the main one.`}
             value={form.cuisineIds}
             onChange={(ids) => set('cuisineIds', ids)}

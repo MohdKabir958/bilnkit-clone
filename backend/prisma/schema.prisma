@@ -143,6 +143,10 @@ model Vendor {
   id                String         @id @default(uuid())
   userId            String?
   name              String
+  primaryCategoryId String?
+  publicPhone       String?
+  description       String?
+  primaryCategory   Category? @relation("PrimaryStoreCategory", fields: [primaryCategoryId], references: [id], onDelete: Restrict)
   category          String
   rating            Float          @default(0.0)
   totalRatingsCount Int            @default(0)
@@ -182,6 +186,7 @@ model Vendor {
   city        City?            @relation(fields: [cityId], references: [id], onDelete: Restrict)
   coverage    VendorCoverage[]
 
+  @@index([primaryCategoryId])
   @@index([approvalStatus])
   @@index([cityId, approvalStatus, isAcceptingOrders, lat, lng])
 }
@@ -268,6 +273,7 @@ model Category {
 
   menuItems MenuItem[]
   vendors   VendorCategory[]
+  primaryVendors Vendor[] @relation("PrimaryStoreCategory")
 
   @@index([isActive, sortOrder])
 }
@@ -286,6 +292,9 @@ model VendorCategory {
 }
 
 model Order {
+  workflowVersion Int @default(1)
+  paymentMethod String @default("ONLINE")
+  cashCollection CashCollection?
   id              String        @id @default(uuid())
   customerId      String
   vendorId        String
@@ -474,6 +483,9 @@ model DriverPartner {
 
   serviceZoneId String?
   serviceZone   DeliveryZone?   @relation(fields: [serviceZoneId], references: [id], onDelete: SetNull)
+  availabilityLat Float?
+  availabilityLng Float?
+  availabilityAt DateTime?
   lastOfferedAt DateTime?
   offers        DispatchOffer[]
 
@@ -488,6 +500,7 @@ model City {
   name      String
   state     String
   country   String          @default("IN")
+  codEnabled Boolean        @default(false)
   active    Boolean         @default(false)
   createdAt DateTime        @default(now())
   zones     DeliveryZone[]
@@ -838,4 +851,21 @@ model NotificationIntent {
   order      Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([state, leaseUntil, createdAt])
+}
+
+// Cash never creates a Razorpay Payment row. Order UUID and server price are immutable.
+model CashCollection {
+  id String @id @default(uuid())
+  orderId String @unique
+  driverUserId String
+  amountPaise Int
+  collectedAt DateTime @default(now())
+  remittedAt DateTime?
+  remittanceReference String?
+  remittedById String?
+  refundedAt DateTime?
+  refundReference String?
+  refundedById String?
+  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  @@index([driverUserId, collectedAt])
 }

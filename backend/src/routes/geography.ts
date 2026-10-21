@@ -66,8 +66,12 @@ geographyRouter.delete('/v1/addresses/:id', requireAuth, requireRole('STUDENT'),
 geographyRouter.get('/v1/vendors/nearby', requireAuth, requireRole('STUDENT'), safe(async (req, res) => {
   const address = await ownedAddress(prisma, req.user!.id, req.query.addressId);
   const p = page(req);
+  const q=text(req.query.q,'search',100,false), categoryId=text(req.query.categoryId,'categoryId',64,false);
   // The city/approval/open/location index bounds candidates; the exact configured circles are authoritative.
-  const candidates = await prisma.vendor.findMany({ ...p, orderBy: { id: 'asc' }, include: { menuItems: { where: { approvalStatus: 'APPROVED', deletedAt: null }, orderBy: { id: 'asc' }, take: 50 } }, where: {
+  const candidates = await prisma.vendor.findMany({ ...p, orderBy: { id: 'asc' }, include: { primaryCategory:true, menuItems: { where: { approvalStatus: 'APPROVED', deletedAt: null }, orderBy: { id: 'asc' }, take: 50 } }, where: {
+    ...(req.query.marketplace==='1'?{user:{is:{role:'VENDOR' as const,deletedAt:null}},primaryCategory:{is:{isActive:true,forRestaurants:true}}}:{}),
+    ...(categoryId?{primaryCategoryId:categoryId}:{}),
+    ...(q?{OR:[{name:{contains:q,mode:'insensitive' as const}},{primaryCategory:{name:{contains:q,mode:'insensitive' as const}}},{menuItems:{some:{approvalStatus:'APPROVED' as const,deletedAt:null,name:{contains:q,mode:'insensitive' as const}}}}]}:{}),
     cityId: address.cityId, approvalStatus: 'APPROVED', isAcceptingOrders: true,
     lat: { gte: address.lat - 0.46, lte: address.lat + 0.46 },
     lng: { gte: address.lng - 0.65, lte: address.lng + 0.65 },
@@ -95,13 +99,13 @@ geographyRouter.get('/v1/admin/geography', safe(async (_req, res) => {
 geographyRouter.post('/v1/admin/cities', safe(async (req, res) => {
   const b = req.body ?? {}, code = text(b.code, 'code', 40).toLowerCase();
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(code)) throw geoError('code', 'Use a lower-case city code, for example bengaluru-ka.');
-  const data = { code, name: text(b.name, 'name', 80), state: text(b.state, 'state', 80), active: b.active === undefined ? false : bool(b.active) };
+  const data = { code, name: text(b.name, 'name', 80), state: text(b.state, 'state', 80), active: b.active === undefined ? false : bool(b.active), codEnabled:b.codEnabled===undefined?false:bool(b.codEnabled,'codEnabled') };
   const city = await prisma.$transaction(async (tx) => { const c = await tx.city.create({ data }); await audit(tx, req, 'CITY_CREATED', 'CITY', c.id); return c; });
   ok(res, city, 201);
 }));
 geographyRouter.patch('/v1/admin/cities/:id', validParams('id'), safe(async (req, res) => {
-  const active = bool(req.body?.active);
-  ok(res, await prisma.$transaction(async (tx) => { const c = await tx.city.update({ where: { id: req.params.id }, data: { active } }); await audit(tx, req, 'CITY_AVAILABILITY_CHANGED', 'CITY', c.id); return c; }));
+  const data={...(req.body?.active===undefined?{}:{active:bool(req.body.active)}),...(req.body?.codEnabled===undefined?{}:{codEnabled:bool(req.body.codEnabled,'codEnabled')})};
+  ok(res, await prisma.$transaction(async (tx) => { const c = await tx.city.update({ where: { id: req.params.id }, data }); await audit(tx, req, 'CITY_AVAILABILITY_CHANGED', 'CITY', c.id); return c; }));
 }));
 geographyRouter.post('/v1/admin/zones', safe(async (req, res) => {
   const b = req.body ?? {};

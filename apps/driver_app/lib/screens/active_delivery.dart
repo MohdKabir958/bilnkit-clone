@@ -144,7 +144,33 @@ class _DeliveryViewState extends State<_DeliveryView> {
             customerName: customer,
             gateName: gate,
             initiallyLocked: locked,
-            onSubmit: c.verifyOtp,
+            onSubmit: (code) async {
+              final current = c.active;
+              if (current?.isCashOnDelivery == true) {
+                final confirmed = await showDialog<bool>(
+                    context: ctx,
+                    builder: (cashContext) => AlertDialog(
+                            title: const Text('Confirm cash collected'),
+                            content: Text(
+                                'Have you collected ₹${(current!.totalAmount ?? 0).toStringAsFixed(2)} in cash from the customer? Confirm only after receiving the full amount.'),
+                            actions: [
+                              TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(cashContext, false),
+                                  child: const Text('Not yet')),
+                              FilledButton(
+                                  onPressed: () =>
+                                      Navigator.pop(cashContext, true),
+                                  child: const Text('Full cash received'))
+                            ]));
+                if (confirmed != true) {
+                  return const OtpOutcome(OtpOutcomeKind.error,
+                      message: 'Collect cash before completing this delivery.');
+                }
+                return c.verifyOtp(code, cashCollected: true);
+              }
+              return c.verifyOtp(code);
+            },
           );
         },
       );
@@ -307,8 +333,10 @@ class _DeliveryViewState extends State<_DeliveryView> {
       OrderStatus.pickedUp => _Banner(
           icon: LucideIcons.wallet,
           color: KStatus.pickedUp.color,
-          title: 'Prepaid order',
-          message: 'The customer already paid online. Do not collect cash.',
+          title: o.isCashOnDelivery ? 'Cash on delivery' : 'Prepaid order',
+          message: o.isCashOnDelivery
+              ? 'Collect ₹${(o.totalAmount ?? 0).toStringAsFixed(2)} in cash before verifying delivery.'
+              : 'The customer already paid online. Do not collect cash.',
         ),
       OrderStatus.arrivedAtGate => _Banner(
           icon: LucideIcons.hash,
@@ -1024,7 +1052,7 @@ class _OrderDetails extends StatelessWidget {
                           icon: LucideIcons.receipt,
                           label: 'Order total',
                           value:
-                              '${OfferCard.rupees(o.totalAmount)} (prepaid)'),
+                              '${OfferCard.rupees(o.totalAmount)} (${o.isCashOnDelivery ? 'cash to collect' : 'prepaid'})'),
                     ]),
                   )
                 : const SizedBox(width: double.infinity),

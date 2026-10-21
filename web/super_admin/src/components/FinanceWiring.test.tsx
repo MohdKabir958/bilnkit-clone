@@ -13,6 +13,7 @@ import { byText, click, flush, mount, type, unmount } from '../test/dom';
 const vendor = (over: Record<string, unknown> = {}) => ({ id: 'v1', userId: 'u-owner1', name: 'Sharma Dhaba', category: 'North Indian', rating: 4.5, isAcceptingOrders: true, address: 'Ashta road', approvalStatus: 'APPROVED', ...over }) as any;
 
 beforeEach(() => {
+  vi.spyOn(apiService,'fetchCash').mockResolvedValue({success:true,data:[],nextCursor:null});
   vi.spyOn(apiService, 'fetchFinanceSummary').mockResolvedValue(parseFinanceSummary({ data: rawSummary() })!);
   vi.spyOn(apiService, 'fetchFinanceByDay').mockResolvedValue(parseByDay(rawByDay())!);
   vi.spyOn(apiService, 'fetchFinanceByRestaurant').mockResolvedValue(parseByRestaurant(rawByRestaurant())!);
@@ -34,7 +35,7 @@ describe('Finance shell', () => {
   it('has Overview, Settlements and Riders tabs; Overview first; Settlements carries the pending count', async () => {
     const { host } = await render();
     const tabs = Array.from(host.querySelectorAll('[role="tab"]'));
-    expect(tabs.map((t) => t.textContent!.replace(/\d+$/, ''))).toEqual(['Overview', 'Settlements', 'Riders']);
+    expect(tabs.map((t) => t.textContent!.replace(/\d+$/, ''))).toEqual(['Overview', 'Settlements', 'Riders', 'Cash collections']);
     expect(tabs[0].getAttribute('aria-selected')).toBe('true');
     expect(tabs[1].textContent).toContain('4');
     expect(host.querySelector('[role="tabpanel"]')!.textContent).toContain('Platform revenue');
@@ -51,9 +52,9 @@ describe('Finance shell', () => {
     expect(host.textContent).toContain('Record a payout');
     const riders = host.querySelector('#finance-tab-riders') as HTMLElement;
     await act(async () => { riders.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); });
-    expect(host.querySelector('[role="tab"][aria-selected="true"]')!.textContent).toBe('Overview'); // wraps around
+    expect(host.querySelector('[role="tab"][aria-selected="true"]')!.textContent).toBe('Cash collections'); // new accounting section
     await act(async () => { (host.querySelector('#finance-tab-overview') as HTMLElement).dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true })); });
-    expect(host.querySelector('[role="tab"][aria-selected="true"]')!.textContent).toBe('Riders');
+    expect(host.querySelector('[role="tab"][aria-selected="true"]')!.textContent).toBe('Cash collections');
   });
 
   it('no pending settlements: no number on the tab', async () => {

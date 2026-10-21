@@ -1,3 +1,4 @@
+import { fulfillmentAuthorized, fulfillmentWhere } from './marketplace';
 import { drainNotificationIntents } from './push/intents';
 import { Prisma, DriverPartner, DeliveryZone, City, DispatchOffer } from '@prisma/client';
 import { prisma } from '../db';
@@ -32,7 +33,7 @@ async function lockedOrders(tx:Tx,id:string) {
   await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "id"=${id} FOR UPDATE`;
   const o=await tx.order.findUnique({where:{id},include:ORDER_VIEW_INCLUDE});return o?[o]:[];
 }
-const claimable=(orders:OrderWithRelations[])=>orders.length>0 && orders.every((o)=>o.paymentStatus==='PAID'&&!o.driverId&&(POOL as readonly string[]).includes(o.status));
+const claimable=(orders:OrderWithRelations[])=>orders.length>0 && orders.every((o)=>fulfillmentAuthorized(o)&&!o.driverId&&(POOL as readonly string[]).includes(o.status));
 async function expire(tx:Tx,id:string,now:Date) {await tx.dispatchOffer.updateMany({where:{orderId:id,state:'PENDING',expiresAt:{lte:now}},data:{state:'EXPIRED',reason:'Offer timed out'}});}
 async function markAttention(id:string,now:Date,reason:string) {
   await prisma.$transaction(async(tx)=>{
@@ -45,7 +46,7 @@ async function markAttention(id:string,now:Date,reason:string) {
 
 /** Driver -> group -> orders everywhere, matching claim/reassignment. No location is
  * collected from idle riders: operator-confirmed service circles supply dispatch geography. */
-export async function ensureDispatchOffer(orderId:string,now=new Date()):Promise<DispatchOffer|undefined> {
+async function ensureLegacyDispatchOffer(orderId:string,now=new Date()):Promise<DispatchOffer|undefined> {
   const first=await prisma.order.findUnique({where:{id:orderId},include:ORDER_VIEW_INCLUDE});
   if(!first || !isPoolEligible(first)) return;
   const orderIdPrimary=first.groupId ? first.group!.orders.find((c)=>c.groupIndex===0)!.id : first.id;
@@ -82,7 +83,7 @@ export async function ensureDispatchOffer(orderId:string,now=new Date()):Promise
   await markAttention(first.id,now,'NO_ELIGIBLE_RIDER');
 }
 export async function runDispatchMaintenance(now=new Date(),cityId?:string,wakeUnserved=false) {
-  const ids=await prisma.order.findMany({where:{driverId:null,paymentStatus:'PAID',status:{in:[...POOL]},...(cityId?{vendor:{cityId}}:{}),AND:[{OR:[{groupId:null},{groupIndex:0}]},{OR:[{dispatchNextAttemptAt:null},{dispatchNextAttemptAt:{lte:now}},...(wakeUnserved?[{dispatchOffers:{none:{state:'PENDING',expiresAt:{gt:now}}}}]:[])]},{OR:[{dispatchEscalatedAt:null},{dispatchNote:'NO_ELIGIBLE_RIDER',...(wakeUnserved?{}:{dispatchNextAttemptAt:{lte:now}})}]}]},select:{id:true},orderBy:{createdAt:'asc'},take:100});
+  const ids=await prisma.order.findMany({where:{driverId:null,status:{in:[...POOL]},...(cityId?{vendor:{cityId}}:{}),AND:[fulfillmentWhere,{OR:[{groupId:null},{groupIndex:0}]},{OR:[{dispatchNextAttemptAt:null},{dispatchNextAttemptAt:{lte:now}},...(wakeUnserved?[{dispatchOffers:{none:{state:'PENDING',expiresAt:{gt:now}}}}]:[])]},{OR:[{dispatchEscalatedAt:null},{dispatchNote:'NO_ELIGIBLE_RIDER',...(wakeUnserved?{}:{dispatchNextAttemptAt:{lte:now}})}]}]},select:{id:true},orderBy:{createdAt:'asc'},take:100});
   for(const o of ids) await ensureDispatchOffer(o.id,now);
   return ids.length;
 }
@@ -90,6 +91,7 @@ export async function acceptDispatchOffer(tx:Tx,orders:OrderWithRelations[],ride
   const rider=await tx.driverPartner.findUnique({where:{userId:riderUserId},include:{serviceZone:{include:{city:true}}}});
   if(!rider||!riderServesOrders(rider,orders)) throw new AppError(409,'SERVICE_AREA_REQUIRED','This delivery is outside your configured service area. Ask operations to check your area.');
   const primary=orders[0];
+  if(primary.workflowVersion===2 && (!rider.availabilityAt || now.getTime()-rider.availabilityAt.getTime()>120000 || rider.availabilityLat==null || rider.availabilityLng==null || kmBetween({lat:rider.availabilityLat,lng:rider.availabilityLng},primary.vendor)>(primary.dispatchRound%3===0?3:5))) throw new AppError(409,'LOCATION_STALE','Refresh your on-duty location before accepting this delivery.');
   const offer=await tx.dispatchOffer.findUnique({where:{orderId_driverId_round:{orderId:primary.id,driverId:rider.id,round:primary.dispatchRound}}});
   if(!offer || offer.state!=='PENDING' || offer.expiresAt<=now) throw new AppError(409,'OFFER_EXPIRED','This delivery offer is no longer available. Refresh your offers.');
   await tx.dispatchOffer.update({where:{id:offer.id},data:{state:'ACCEPTED'}});
@@ -106,8 +108,60 @@ export async function declineDispatchOffer(offerId:string,userId:string,reason:s
     const orders=await lockedOrders(tx,offer.orderId);const current=await tx.dispatchOffer.findUniqueOrThrow({where:{id:offerId}});
     if(!claimable(orders)||current.state!=='PENDING'||current.expiresAt<=now) throw new AppError(409,'OFFER_EXPIRED','This offer is already closed.');
     await tx.dispatchOffer.update({where:{id:offerId},data:{state:'DECLINED',reason}});
-    await tx.order.update({where:{id:orders[0].id},data:{dispatchNextAttemptAt:now}});
+    await tx.order.update({where:{id:orders[0].id},data:orders[0].workflowVersion===2?{}:{dispatchNextAttemptAt:now}});
     await tx.adminAuditLog.create({data:{action:'DELIVERY_OFFER_DECLINED',targetType:'ORDER',targetId:offer.orderId,summary:`Rider ${rider.id}: ${reason}`}});
   });
   await ensureDispatchOffer(offer.orderId,now);
+}
+
+/** New single-shop marketplace: broadcast to ALL fresh nearby, approved, idle riders.
+ * Driver -> order lock order is identical to claimOrder. Never locks two drivers together.
+ * Three 45-second rounds: 3 km, 5 km, 5 km. Exhaustion is visible to operations.
+ */
+export async function ensureDispatchOffer(orderId:string, now=new Date()):Promise<DispatchOffer|undefined> {
+  const first=await prisma.order.findUnique({where:{id:orderId},include:ORDER_VIEW_INCLUDE});
+  if (!first || !isPoolEligible(first)) return;
+  if (first.workflowVersion !== 2) return ensureLegacyDispatchOffer(orderId,now);
+  const prepared=await prisma.$transaction(async tx=>{
+    const rows=await lockedOrders(tx,orderId);const o=rows[0];
+    if(!o || !claimable(rows) || o.dispatchEscalatedAt) return null;
+    await expire(tx,o.id,now);
+    if(o.dispatchNextAttemptAt && o.dispatchNextAttemptAt>now) return null;
+    let round=o.dispatchRound;
+    if(o.dispatchNextAttemptAt) {
+      if(round%3===2) {
+        await tx.order.update({where:{id:o.id},data:{dispatchEscalatedAt:now,dispatchNote:'OFFERS_EXHAUSTED',dispatchNextAttemptAt:null}});
+        await tx.adminAuditLog.create({data:{action:'DISPATCH_EXHAUSTED',targetType:'ORDER',targetId:o.id,summary:'No rider accepted after three nearby broadcast rounds. Operator action required.'}});
+        return null;
+      }
+      round++;
+    }
+    const expiresAt=new Date(now.getTime()+45000);
+    await tx.order.update({where:{id:o.id},data:{dispatchRound:round,dispatchNextAttemptAt:expiresAt,dispatchNote:'WAITING_FOR_NEARBY_RIDER'}});
+    return {round,expiresAt};
+  });
+  if(!prepared) return;
+  const radiusKm=prepared.round%3===0?3:5;
+  const candidates=await prisma.driverPartner.findMany({where:{approvalStatus:'APPROVED',dutyStatus:'ONLINE',cityId:first.vendor.cityId,user:{is:{role:'DRIVER',deletedAt:null}},availabilityAt:{gte:new Date(now.getTime()-120000)},serviceZone:{is:{active:true,city:{active:true}}}},include:{serviceZone:{include:{city:true}}},orderBy:{id:'asc'}});
+  let offered:DispatchOffer|undefined;
+  for(const candidate of candidates) {
+    if(candidate.availabilityLat==null||candidate.availabilityLng==null||kmBetween({lat:candidate.availabilityLat,lng:candidate.availabilityLng},first.vendor)>radiusKm||!riderServesOrders(candidate,[first])) continue;
+    const created=await prisma.$transaction(async tx=>{
+      const locked=await tx.$queryRaw<{id:string}[]>`SELECT "id" FROM "DriverPartner" WHERE "id"=${candidate.id} FOR UPDATE SKIP LOCKED`;
+      if(!locked.length) return null;
+      const r=await tx.driverPartner.findUniqueOrThrow({where:{id:candidate.id},include:{serviceZone:{include:{city:true}},user:true}});
+      if(!r.userId||r.user?.deletedAt||r.user?.role!=='DRIVER'||r.approvalStatus!=='APPROVED'||r.dutyStatus!=='ONLINE'||!r.availabilityAt||r.availabilityAt.getTime()<now.getTime()-120000||r.availabilityLat==null||r.availabilityLng==null||kmBetween({lat:r.availabilityLat,lng:r.availabilityLng},first.vendor)>radiusKm) return null;
+      if(await tx.order.count({where:{driverId:r.userId,status:{in:[...ACTIVE_RIDER_STATUSES]}}})) return null;
+      const orders=await lockedOrders(tx,orderId),o=orders[0];
+      if(!o||!claimable(orders)||o.dispatchRound!==prepared.round||o.dispatchEscalatedAt||!riderServesOrders(r,orders)) return null;
+      if(await tx.dispatchOffer.findUnique({where:{orderId_driverId_round:{orderId:o.id,driverId:r.id,round:prepared.round}}})) return null;
+      const offer=await tx.dispatchOffer.create({data:{orderId:o.id,driverId:r.id,round:prepared.round,expiresAt:prepared.expiresAt}});
+      await tx.driverPartner.update({where:{id:r.id},data:{lastOfferedAt:now}});
+      await tx.notificationIntent.create({data:{orderId:o.id,event:'NEW_DELIVERY',options:{userId:r.userId,bucket:prepared.round}}});
+      return {o,userId:r.userId,offer};
+    },{maxWait:15000,timeout:30000});
+    if(created) {offered=created.offer;await publisher(created.o,created.userId,created.offer).catch(()=>console.error('Broadcast socket delivery failed.'));}
+  }
+  drainNotificationIntents();
+  return offered;
 }

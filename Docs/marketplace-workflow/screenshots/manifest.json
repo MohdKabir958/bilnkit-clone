@@ -1,0 +1,95 @@
+{
+  "capturedAt": "2026-10-21T19:44:50.474Z",
+  "renderer": "Chromium; actual implemented React components",
+  "api": "explicit synthetic in-memory fixtures; no hosted identity",
+  "login": "Actual Clerk SDK cannot reach provider from this workspace; screenshot is implemented recovery state, not hosted sign-in verification.",
+  "screens": [
+    {
+      "name": "01-overview",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "02-vendors",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "03-add-vendor",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "04-cities",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "05-delivery-zones",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "06-team-access",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "07-add-admin-email",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "08-products-stock",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "09-add-product",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "12-store-owner-category",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "13-cash-collections",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "14-cash-handover-confirmation",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "10-mobile-overview",
+      "width": 390,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "11-login-recovery",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    }
+  ],
+  "uncaughtErrors": [
+    "Uncaught (in promise): _a2: Clerk: Failed to load Clerk JS, failed to load script: https://capable-mutt-6.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js\n\n(code=\"failed_to_load_clerk_js\")\n\n\n    at rejectWith (http://127.0.0.1:5197/node_modules/.vite/deps/@clerk_react.js?v=78819402:7533:33)\n    at http://127.0.0.1:5197/node_modules/.vite/deps/@clerk_react.js?v=78819402:7558:11"
+  ]
+}

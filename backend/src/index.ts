@@ -1,3 +1,4 @@
+import { runDispatchMaintenance } from './services/dispatch';
 import { usesClerk } from './config/authMode';
 import { retryClerkDeletions } from './services/clerkIdentity';
 import express from 'express';
@@ -142,5 +143,9 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`📡 WebSockets listening for real-time driver tracking & order alerts`);
   // Order housekeeping every 60 s: expire unpaid orders, auto-cancel unaccepted paid orders, retry refunds.
   // Started only once the port is really ours.
-  if (process.env.NODE_ENV !== 'test') startOrderMaintenance();
+  if (process.env.NODE_ENV !== 'test') {
+    startOrderMaintenance();
+    let dispatchBusy=false;
+    const timer=setInterval(async()=>{if(dispatchBusy)return;dispatchBusy=true;try{await runDispatchMaintenance();}catch{console.error('Dispatch scan will retry.');}finally{dispatchBusy=false;}},15000);timer.unref();
+  }
 });

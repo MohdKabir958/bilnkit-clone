@@ -1,3 +1,4 @@
+import {CashLedgerPanel} from './CashLedgerPanel';
 import React, { memo, useState } from 'react';
 import { Vendor, DriverPartner } from '../types';
 import { FinanceOverview } from './FinanceOverview';
@@ -18,6 +19,7 @@ const TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'settlements', label: 'Settlements' },
   { id: 'riders', label: 'Riders' },
+  { id:'cash',label:'Cash collections' },
 ] as const;
 type TabId = (typeof TABS)[number]['id'];
 
@@ -54,6 +56,7 @@ const FinancePanelBase: React.FC<Props> = ({ vendors, driverPartners, pendingSet
         ))}
       </div>
       <div role="tabpanel" id={`finance-panel-${tab}`} aria-labelledby={`finance-tab-${tab}`}>
+        {tab === 'cash' && <CashLedgerPanel onAuthError={onAuthError}/>}
         {tab === 'overview' && <FinanceOverview vendors={vendors} onAuthError={onAuthError} />}
         {tab === 'settlements' && <SettlementsPanel vendors={vendors} onChanged={onSettlementsChanged} onAuthError={onAuthError} />}
         {tab === 'riders' && <RidersPanel driverPartners={driverPartners} onAuthError={onAuthError} />}

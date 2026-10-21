@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 
-export type DeliveryCity = { id: string; code: string; name: string; state: string; active: boolean };
+export type DeliveryCity = { id: string; code: string; name: string; state: string; active: boolean; codEnabled?:boolean };
 export type DeliveryZone = { id: string; cityId: string; name: string; centerLat: number; centerLng: number; radiusKm: number; baseFeePaise: number; perKmFeePaise: number; active: boolean };
 export type Coverage = { vendorId: string; zoneId: string; active: boolean; radiusKm: number | null };
 export type Geography = { cities: DeliveryCity[]; zones: DeliveryZone[]; coverage: Coverage[] };
@@ -50,7 +50,7 @@ export function GeographyPanel({ vendors, drivers = [], onChanged, onSessionErro
         <h2 className="text-lg font-bold">Add a city</h2>
         {(['code', 'name', 'state'] as const).map((key) => <Field key={key} label={key === 'code' ? 'City code (e.g. bengaluru-ka)' : key === 'name' ? 'City name' : 'State / Union territory'}><input className={inputClass} required value={city[key]} onChange={(e) => setCity({ ...city, [key]: e.target.value })} /></Field>)}
         <button className="k-btn-primary" type="submit">Add and enable city</button>
-        <ul>{data.cities.map((c) => <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-2"><span>{c.name}, {c.state} · {c.active ? 'Enabled' : 'Disabled'}</span><button type="button" onClick={() => void run(() => apiService.setCityActive(c.id, !c.active))}>{c.active ? 'Disable' : 'Enable'}</button></li>)}</ul>
+        <ul>{data.cities.map((c) => <li key={c.id} className="flex flex-wrap items-center justify-between gap-2 py-2"><span>{c.name}, {c.state} · {c.active ? 'Enabled' : 'Disabled'}</span><button type="button" onClick={() => void run(() => apiService.setCityActive(c.id, !c.active))}>{c.active ? 'Disable' : 'Enable'}</button><button type="button" onClick={()=>void run(()=>apiService.setCityCash(c.id,!c.codEnabled))}>{c.codEnabled?'Disable cash on delivery':'Enable cash on delivery'}</button></li>)}</ul>
       </form>
       <form hidden={step!=='zones'} onSubmit={(e) => submit(e, () => (editingZone ? apiService.updateDeliveryZone(editingZone, { radiusKm: Number(zone.radiusKm), baseFeePaise: money(zone.base), perKmFeePaise: money(zone.perKm) }) : apiService.createDeliveryZone({ cityId: zone.cityId, name: zone.name, centerLat: Number(zone.centerLat), centerLng: Number(zone.centerLng), radiusKm: Number(zone.radiusKm), baseFeePaise: money(zone.base), perKmFeePaise: money(zone.perKm), active: true })))} className="k-panel space-y-4 [&_li]:rounded-k-sm [&_li]:bg-kraveo-surface2 [&_li]:px-3 [&_ul]:space-y-2 [&_button[type=button]]:text-sm [&_button[type=button]]:font-semibold">
         <h2 className="text-lg font-bold">{editingZone ? 'Edit delivery zone fees and radius' : 'Add a delivery zone'}</h2>

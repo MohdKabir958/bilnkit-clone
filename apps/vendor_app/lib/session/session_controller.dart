@@ -1,3 +1,5 @@
+import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 import 'package:kraveo_ui/kraveo_ui.dart' show GrozoAuthConfig, ClerkSessions;
 import 'dart:async';
 import 'dart:convert';
@@ -27,11 +29,20 @@ class SessionController extends ChangeNotifier {
   SessionController({PartnerAuthService? auth, VendorLocationApi? locationApi})
       : auth = auth ?? ApiPartnerAuthService(),
         locationApi = locationApi ?? HttpVendorLocationApi() {
-    if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = (_) {if (_session != null) unawaited(expire());};
+    if (GrozoAuthConfig.usesClerk) {
+      ClerkSessions.instance.onIdentityChanged = (_) {
+        if (_session != null) unawaited(expire());
+      };
+    }
   }
 
   @override
-  void dispose() { if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = null; super.dispose(); }
+  void dispose() {
+    if (GrozoAuthConfig.usesClerk) {
+      ClerkSessions.instance.onIdentityChanged = null;
+    }
+    super.dispose();
+  }
 
   static const String sessionPrefKey = 'kraveo_vendor_session';
 
@@ -93,8 +104,13 @@ class SessionController extends ChangeNotifier {
 
   /// `GET /partner/me` carries the account, the restaurant and the approval state. If a response ever lacks the
   /// restaurant, keep the details we already stored and take only the fresh account + approval fields.
-  static PartnerSession _mergeFresh(PartnerSession? stored, PartnerSession fresh) {
-    if (stored == null || stored.userId != fresh.userId || fresh.vendorId != null) return fresh;
+  static PartnerSession _mergeFresh(
+      PartnerSession? stored, PartnerSession fresh) {
+    if (stored == null ||
+        stored.userId != fresh.userId ||
+        fresh.vendorId != null) {
+      return fresh;
+    }
     return stored.withUserFrom(fresh).copyWith(
           approval: fresh.approval,
           rejectionReason: fresh.rejectionReason,
@@ -105,7 +121,12 @@ class SessionController extends ChangeNotifier {
   /// App start: validate the stored token, or fall through to the login screen.
   Future<void> restore() async {
     String? token;
-    try { token = await VendorApiService.getSavedToken(); } catch (_) { _set(SessionStatus.unreachable); return; }
+    try {
+      token = await VendorApiService.getSavedToken();
+    } catch (_) {
+      _set(SessionStatus.unreachable);
+      return;
+    }
     if (token == null || token.isEmpty) {
       _set(SessionStatus.signedOut);
       return;
@@ -162,14 +183,18 @@ class SessionController extends ChangeNotifier {
   /// Fixes and re-sends an application that is pending or was rejected.
   Future<SignupResult> resubmit(PartnerSignupForm form) async {
     final token = await VendorApiService.getSavedToken();
-    if (token == null || token.isEmpty) return const SignupResult.failure(SignupFailure.unauthorized);
+    if (token == null || token.isEmpty) {
+      return const SignupResult.failure(SignupFailure.unauthorized);
+    }
     final result = await auth.resubmit(token, form);
     if (result.ok) {
       final answered = result.session;
       final now = _session;
       // The server accepted it and reset the application to pending. If its answer has no readable account, keep what
       // we know and mark it pending, then re-read the real profile from /partner/me.
-      final next = answered != null ? _mergeFresh(now, answered) : now?.copyWith(approval: PartnerApproval.pending, clearReason: true);
+      final next = answered != null
+          ? _mergeFresh(now, answered)
+          : now?.copyWith(approval: PartnerApproval.pending, clearReason: true);
       if (next != null) {
         await _persist(next);
         _set(SessionStatus.signedIn, next);
@@ -195,7 +220,24 @@ class SessionController extends ChangeNotifier {
     switch (result.outcome) {
       case ProfileOutcome.valid:
         final before = _session;
-        final fresh = _mergeFresh(before, result.session!);
+        var fresh = _mergeFresh(before, result.session!);
+        if (before?.vendorId != null && fresh.vendorId != before!.vendorId) {
+          try {
+            final response = await http
+                .get(
+                    Uri.parse(
+                        '${ApiConfig.baseUrl}/v1/partner/stores/${Uri.encodeComponent(before.vendorId!)}'),
+                    headers: await VendorApiService.getAuthHeaders())
+                .timeout(const Duration(seconds: 12));
+            if (response.statusCode == 200) {
+              fresh = PartnerSession.fromLoginJson(Map<String, dynamic>.from(
+                      jsonDecode(response.body) as Map)) ??
+                  fresh;
+            }
+          } catch (_) {
+            return false;
+          }
+        }
         final changed = before == null ||
             before.approval != fresh.approval ||
             before.rejectionReason != fresh.rejectionReason ||
@@ -219,18 +261,45 @@ class SessionController extends ChangeNotifier {
     }
   }
 
+  Future<void> selectStore(String id) async {
+    final response = await http
+        .get(
+            Uri.parse(
+                '${ApiConfig.baseUrl}/v1/partner/stores/${Uri.encodeComponent(id)}'),
+            headers: await VendorApiService.getAuthHeaders())
+        .timeout(const Duration(seconds: 12));
+    if (response.statusCode != 200) {
+      throw Exception('Store access could not be verified.');
+    }
+    final fresh = PartnerSession.fromLoginJson(
+        Map<String, dynamic>.from(jsonDecode(response.body) as Map));
+    if (fresh == null || fresh.userId != _session?.userId || !fresh.isApproved) {
+      throw Exception('Store access is unavailable.');
+    }
+    await _persist(fresh);
+    _session = fresh;
+    notifyListeners();
+  }
+
   /// Saves the restaurant's own pin (`PUT /partner/vendor/location`). On success the local profile shows the pin at
   /// once and the profile is re-read from Grozo; on failure nothing local changes (the banner stays) and the result
   /// carries the server's message.
-  Future<ApiResult<SavedLocation>> saveRestaurantLocation(LocationFix fix) async {
-    final result = await locationApi.save(lat: fix.lat, lng: fix.lng, accuracyM: fix.accuracyM);
+  Future<ApiResult<SavedLocation>> saveRestaurantLocation(
+      LocationFix fix) async {
+    final result = await locationApi.save(
+        lat: fix.lat, lng: fix.lng, accuracyM: fix.accuracyM, vendorId:_session?.vendorId);
     final saved = result.data;
     if (!result.ok || saved == null) {
       return result.ok ? const ApiResult.failure(ApiFailure.server) : result;
     }
     final now = _session;
     if (_status == SessionStatus.signedIn && now != null) {
-      final updated = now.withLocation(lat: saved.lat, lng: saved.lng, source: saved.source, setAt: saved.setAt, accuracyM: saved.accuracyM);
+      final updated = now.withLocation(
+          lat: saved.lat,
+          lng: saved.lng,
+          source: saved.source,
+          setAt: saved.setAt,
+          accuracyM: saved.accuracyM);
       await _persist(updated);
       _session = updated;
       notifyListeners();
@@ -275,7 +344,9 @@ class SessionController extends ChangeNotifier {
 
 /// Makes the [SessionController] reachable from any screen, including pushed routes.
 class SessionScope extends InheritedNotifier<SessionController> {
-  const SessionScope({super.key, required SessionController controller, required super.child}) : super(notifier: controller);
+  const SessionScope(
+      {super.key, required SessionController controller, required super.child})
+      : super(notifier: controller);
 
   /// The controller, or null when there is no scope (screens pumped alone in tests).
   static SessionController? maybeOf(BuildContext context) =>

@@ -1,0 +1,44 @@
+{"protocolVersion":"0.1.1","runnerVersion":null,"pid":382157,"type":"start","time":0}
+{"suite":{"id":0,"platform":"vm","path":"/workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"suite","time":0}
+{"test":{"id":1,"name":"loading /workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart","suiteID":0,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":1}
+{"suite":{"id":2,"platform":"vm","path":"/workspace/bilnkit-clone/apps/driver_app/test/marketplace_workflow_test.dart"},"type":"suite","time":5}
+{"test":{"id":3,"name":"loading /workspace/bilnkit-clone/apps/driver_app/test/marketplace_workflow_test.dart","suiteID":2,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":5}
+{"count":2,"time":6,"type":"allSuites"}
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":3881}
+{"group":{"id":4,"suiteID":0,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":12,"line":null,"column":null,"url":null},"type":"group","time":3884}
+{"test":{"id":5,"name":"pool, active and history use the contract endpoints with the JWT","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":34,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":3884}
+{"testID":5,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":3957}
+{"test":{"id":6,"name":"claim, release, status and OTP send the right method and body","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":57,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":3958}
+{"testID":6,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":3974}
+{"test":{"id":7,"name":"an assigned delivery keeps GPS when off-duty availability is refused","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":78,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":3974}
+{"testID":7,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":3984}
+{"test":{"id":8,"name":"cash completion explicitly sends the rider collection confirmation","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":84,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":3985}
+{"testID":8,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":3991}
+{"test":{"id":9,"name":"error mapping: 409 ALREADY_TAKEN, 400 wrong code with tries left, 423 locked, 429, 5xx","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":90,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":3991}
+{"testID":9,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4001}
+{"test":{"id":10,"name":"401 and 403 PARTNER_NOT_APPROVED reach the session hooks","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":116,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":4001}
+{"testID":10,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4007}
+{"test":{"id":11,"name":"offline and timeout are told apart, and never hang","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":133,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":4007}
+{"testID":11,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4065}
+{"group":{"id":12,"suiteID":0,"parentID":4,"name":"real backend fixtures (Docs/fixtures/order_flow_samples.json)","metadata":{"skip":false,"skipReason":null},"testCount":5,"line":148,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"group","time":4066}
+{"test":{"id":13,"name":"real backend fixtures (Docs/fixtures/order_flow_samples.json) (setUpAll)","suiteID":0,"groupIDs":[4,12],"metadata":{"skip":false,"skipReason":null},"line":151,"column":5,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":4066}
+{"testID":13,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":4084}
+{"test":{"id":14,"name":"real backend fixtures (Docs/fixtures/order_flow_samples.json) every rider order sample parses and leaks nothing","suiteID":0,"groupIDs":[4,12],"metadata":{"skip":false,"skipReason":null},"line":180,"column":5,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":4085}
+{"testID":14,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4095}
+{"test":{"id":15,"name":"real backend fixtures (Docs/fixtures/order_flow_samples.json) pool view and order_available: no customer, no driver, no notes","suiteID":0,"groupIDs":[4,12],"metadata":{"skip":false,"skipReason":null},"line":195,"column":5,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":4095}
+{"testID":15,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4099}
+{"test":{"id":16,"name":"real backend fixtures (Docs/fixtures/order_flow_samples.json) assigned views carry this rider as driver and the customer phone; never the OTP","suiteID":0,"groupIDs":[4,12],"metadata":{"skip":false,"skipReason":null},"line":207,"column":5,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":4100}
+{"testID":16,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4104}
+{"test":{"id":17,"name":"real backend fixtures (Docs/fixtures/order_flow_samples.json) socket order_unavailable {id} parses","suiteID":0,"groupIDs":[4,12],"metadata":{"skip":false,"skipReason":null},"line":218,"column":5,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":4104}
+{"testID":17,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4107}
+{"test":{"id":18,"name":"real backend fixtures (Docs/fixtures/order_flow_samples.json) real error bodies map to the right failure and code","suiteID":0,"groupIDs":[4,12],"metadata":{"skip":false,"skipReason":null},"line":223,"column":5,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/rider_api_test.dart"},"type":"testStart","time":4107}
+{"testID":18,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4113}
+{"test":{"id":19,"name":"real backend fixtures (Docs/fixtures/order_flow_samples.json) (tearDownAll)","suiteID":0,"groupIDs":[4,12],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":4113}
+{"testID":19,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":4115}
+{"testID":3,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":4155}
+{"group":{"id":20,"suiteID":2,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":2,"line":null,"column":null,"url":null},"type":"group","time":4156}
+{"test":{"id":21,"name":"cash offer preserves collection amount while discarding any delivery code","suiteID":2,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":4,"column":2,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/marketplace_workflow_test.dart"},"type":"testStart","time":4156}
+{"testID":21,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4178}
+{"test":{"id":22,"name":"old prepaid offers remain compatible","suiteID":2,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":5,"column":2,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/marketplace_workflow_test.dart"},"type":"testStart","time":4178}
+{"testID":22,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":4182}
+{"success":true,"type":"done","time":4196}

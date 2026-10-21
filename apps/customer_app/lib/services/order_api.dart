@@ -136,8 +136,10 @@ class CreateOrderRequest {
     required this.dropoffNotes,
     required this.clientRequestId,
     this.couponCode,
+    this.paymentMethod = 'ONLINE',
   });
 
+  final String paymentMethod;
   final String vendorId;
 
   /// `{itemId, quantity}` pairs.
@@ -149,6 +151,7 @@ class CreateOrderRequest {
 
   Map<String, dynamic> toJson() => {
         'vendorId': vendorId,
+        'paymentMethod': paymentMethod,
         'items': [
           for (final i in items) {'itemId': i.itemId, 'quantity': i.quantity}
         ],
@@ -234,7 +237,7 @@ class HttpOrderApi implements OrderApi {
 
   @override
   Future<OrderResult<OrderModel>> createOrder(CreateOrderRequest request) =>
-      _call('POST', '/orders',
+      _call('POST', '/v2/checkout',
           body: request.toJson(), timeout: _write, parse: _orderFromBody);
 
   @override
@@ -256,8 +259,15 @@ class HttpOrderApi implements OrderApi {
 
   @override
   Future<OrderResult<OrderQuote>> quote(QuoteRequest request) =>
-      _call('POST', '/orders/quote',
-          body: request.toJson(),
+      _call('POST', '/v2/checkout/quote',
+          body: {
+            if (request.restaurants.length == 1)
+              ...request.restaurants.single.toJson(),
+            if (request.restaurants.length != 1)
+              'restaurants': request.toJson()['restaurants'],
+            'addressId': request.addressId,
+            'couponCode': request.couponCode
+          },
           timeout: _read,
           parse: (body) => OrderQuote.tryParse(body['data']));
 
@@ -371,7 +381,13 @@ class HttpOrderApi implements OrderApi {
     required Duration timeout,
     required Object? Function(Map<String, dynamic> body) parse,
   }) async {
-    if (['/orders', '/order-groups', '/orders/quote'].contains(path) &&
+    if ([
+          '/orders',
+          '/order-groups',
+          '/orders/quote',
+          '/v2/checkout',
+          '/v2/checkout/quote'
+        ].contains(path) &&
         method == 'POST' &&
         body is Map) {
       body = {
@@ -379,7 +395,7 @@ class HttpOrderApi implements OrderApi {
         if (CustomerApiService.selectedAddressId != null)
           'addressId': CustomerApiService.selectedAddressId
       };
-      path = '/v1$path';
+      if (!path.startsWith('/v2/')) path = '/v1$path';
     }
     http.Response response;
     try {

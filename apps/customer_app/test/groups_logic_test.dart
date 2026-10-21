@@ -142,7 +142,7 @@ void main() {
     });
 
     test(
-        'a quote without the essentials is rejected; a missing max falls back to 3',
+        'a quote without the essentials is rejected; a missing max falls back to one store',
         () {
       expect(OrderQuote.tryParse(null), isNull);
       expect(OrderQuote.tryParse({'subtotal': 1}), isNull);
@@ -153,7 +153,7 @@ void main() {
             'fees': {'base': 25}
           })!
               .maxRestaurants,
-          3);
+          1);
     });
 
     test(
@@ -335,7 +335,7 @@ void main() {
 
   group('CartProvider: several restaurants', () {
     late CartProvider cart;
-    setUp(() => cart = CartProvider());
+    setUp(() => cart = CartProvider(allowLegacyGroups: true));
 
     bool add(String id, String vendor, {double price = 90}) => cart.addItem(
         item: dish(id, price: price, vendor: vendor),

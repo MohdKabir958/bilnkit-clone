@@ -97,6 +97,17 @@ class DhabaProvider with ChangeNotifier {
   Future<void> _productBatch(List<Dhaba> stores, {bool reset = false}) async {
     final query = _searchQuery.trim();
     final searchGeneration = _searchGeneration;
+    if (query.isNotEmpty) {
+      try {
+        final matches = await CustomerApiService.fetchVendors(
+            hydrateProducts: false, searchQuery: query);
+        if (_disposed || searchGeneration != _searchGeneration) return;
+        final ids = matches.map((m) => m['id']).toSet();
+        stores = stores.where((s) => ids.contains(s.id)).toList();
+      } catch (_) {
+        /* Per-store server search remains retryable when discovery is unavailable. */
+      }
+    }
     for (var i = 0; i < stores.length; i += 3) {
       if (_disposed || searchGeneration != _searchGeneration) return;
       await Future.wait(stores.skip(i).take(3).map((store) => loadProductPage(
@@ -250,6 +261,10 @@ class DhabaProvider with ChangeNotifier {
       }
       return chips;
     }
+    if(_dhabas.any((d)=>d.primaryCategoryId!=null)) {
+      final labels=_dhabas.where((d)=>d.primaryCategoryId!=null&&d.category.trim().isNotEmpty).map((d)=>d.category.trim()).toSet().toList()..sort();
+      return [const CategoryChip(_all),for(final label in labels.take(8)) CategoryChip(label)];
+    }
     final counts = <String, int>{};
     final spelling = <String, String>{};
     for (final d in _dhabas) {
@@ -310,6 +325,9 @@ class DhabaProvider with ChangeNotifier {
 
   bool _matchesCategory(Dhaba d, String category) {
     final wanted = category.toLowerCase();
+    if (d.primaryCategoryId != null) {
+      return d.category.trim().toLowerCase() == wanted;
+    }
     if ((_menuItems[d.id] ?? const <MenuItemModel>[])
         .any((i) => i.category.trim().toLowerCase() == wanted)) {
       return true;
@@ -390,7 +408,7 @@ class DhabaProvider with ChangeNotifier {
       }
     }
 
-    final results = await Future.wait([fetch('home'), fetch('dishes')]);
+    final results = await Future.wait([fetch('restaurants'), fetch('dishes')]);
     if (_disposed) return;
     final home = results[0];
     final dishes = results[1];

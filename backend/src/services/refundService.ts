@@ -154,7 +154,7 @@ export type RefundResult = { outcome: RefundOutcome; transient: boolean };
 export const runRefund = async (orderId: string, now: Date = new Date()): Promise<RefundResult> => {
   try {
     const lease = await prisma.order.updateMany({
-      where: { id: orderId, refundStatus: { in: CLAIMABLE }, OR: [{ refundLeaseUntil: null }, { refundLeaseUntil: { lt: now } }] },
+      where: { id: orderId, paymentMethod:'ONLINE', refundStatus: { in: CLAIMABLE }, OR: [{ refundLeaseUntil: null }, { refundLeaseUntil: { lt: now } }] },
       data: { refundLeaseUntil: new Date(now.getTime() + REFUND_LEASE_MS), refundAttempts: { increment: 1 } },
     });
     if (lease.count === 0) return { outcome: 'SKIPPED', transient: false }; // nothing to do, or another worker holds it

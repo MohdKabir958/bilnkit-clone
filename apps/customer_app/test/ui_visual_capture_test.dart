@@ -31,7 +31,10 @@ import 'support/order_fakes.dart';
 final visualStore = Dhaba(
     id: '${demoScenario['namespace']}-store-1',
     name: demoScenario['stores'][0]['name'],
-    category: 'Daily essentials',
+    primaryCategoryId:'demo-store-category',
+    publicPhone:'+919000000001',
+    description:'Explicitly simulated grocery store. No real merchant affiliation.',
+    category: 'Grocery stores',
     rating: 0,
     eta: '',
     bannerUrl: '',
@@ -92,7 +95,7 @@ void main() {
     final cart = CartProvider();
     final api = FakeOrderApi();
     api.onQuote = (_) async =>
-        OrderResult.ok(OrderQuote.tryParse(quoteFixture['quote'])!);
+        OrderResult.ok(OrderQuote.tryParse({...Map<String,dynamic>.from(quoteFixture['quote'] as Map),'maxRestaurants':1,'paymentMethods':['ONLINE','COD']})!);
     final orders = fakeOrders(api);
     Widget host(Widget child) => captureRoot(MultiProvider(
             providers: [

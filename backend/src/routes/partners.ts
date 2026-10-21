@@ -387,7 +387,7 @@ partnerRouter.post('/drivers/duty-status', requireAuth, requireRole('DRIVER'), r
       const dutyStatus = !req.body.isOnline ? 'OFFLINE' : active>0 ? 'IN_TRANSIT' : 'ONLINE';
       if(dutyStatus==='OFFLINE') await tx.dispatchOffer.updateMany({where:{driverId:driver.id,state:'PENDING'},data:{state:'REVOKED',reason:'Rider went offline'}});
       if(!active) await tx.driverLocation.deleteMany({where:{driverId:req.user!.id}});
-      return tx.driverPartner.update({where:{id:driver.id},data:{dutyStatus}});
+      return tx.driverPartner.update({where:{id:driver.id},data:{dutyStatus,...(dutyStatus==='OFFLINE'?{availabilityAt:null,availabilityLat:null,availabilityLng:null}:{})}});
     });
     const dutyStatus=updated.dutyStatus;
     void (driver.cityId?runDispatchMaintenance(new Date(),driver.cityId,true):Promise.resolve()).catch(()=>console.error('Duty dispatch scan will retry during maintenance.'));
@@ -523,7 +523,7 @@ partnerRouter.post('/admin/partners/:kind/:id/status', requireAuth, requireRole(
     const data: any = { approvalStatus: next, reviewedAt: new Date(), rejectionReason: next === 'APPROVED' ? null : reason };
     if (next === 'SUSPENDED') {
       if (kind === 'VENDOR') data.isAcceptingOrders = false;
-      else data.dutyStatus = 'OFFLINE';
+      else Object.assign(data,{dutyStatus:'OFFLINE',availabilityAt:null,availabilityLat:null,availabilityLng:null});
     }
     const updated: any = kind === 'VENDOR'
       ? await prisma.vendor.update({ where: { id: row.id }, data, include: { user: { select: { id: true, name: true, phone: true } }, ...CUISINES_INCLUDE } }).catch(async (e) => { if (!/Inconsistent query result/i.test(String(e?.message))) throw e; return retryStaleRead(() => prisma.vendor.findUniqueOrThrow({ where: { id: row.id }, include: { user: { select: { id: true, name: true, phone: true } }, ...CUISINES_INCLUDE } })); })

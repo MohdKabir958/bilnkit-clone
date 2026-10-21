@@ -43,7 +43,7 @@ describe('EditRestaurantDrawer', () => {
     expect((byId('er-fssai') as HTMLInputElement).value).toBe('12345678901234');
     expect((byId('er-eta') as HTMLInputElement).value).toBe('15-20 min');
     expect(dialog.textContent).toContain('Nothing changed yet.');
-    expect(document.activeElement).toBe(byId('er-name')); // focus moves into the drawer
+    expect(document.activeElement).toBe(document.querySelector('[role="dialog"] select')); // focus moves into the drawer
   });
 
   it('loads the categories from the server (active ones) for the picker', async () => {

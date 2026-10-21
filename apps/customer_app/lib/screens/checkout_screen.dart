@@ -86,6 +86,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       'icon': LucideIcons.smartphone,
       'sub': 'UPI, cards and more',
     },
+    {
+      'name': 'Cash on delivery',
+      'icon': LucideIcons.banknote,
+      'sub': 'Pay the assigned rider at your doorstep'
+    },
   ];
 
   @override
@@ -130,7 +135,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   void _onQuoteChanged() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {
+        if (_quote.quote != null &&
+            !_quote.quote!.paymentMethods.contains('COD')) {
+          _selectedPaymentMethod = 'Pay online via Razorpay';
+        }
+      });
+    }
   }
 
   /// Asks for the server's price of the cart on screen (nothing once the order exists: the bill
@@ -258,7 +270,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     });
     final result = await orders.placeOrder(CheckoutDraft.fromCart(cart,
         dropoffHostel: dropoff,
-        dropoffNotes: _deliveryNoteController.text.trim()));
+        dropoffNotes: _deliveryNoteController.text.trim(),
+        paymentMethod:
+            _selectedPaymentMethod == 'Cash on delivery' ? 'COD' : 'ONLINE'));
     if (!mounted) return null;
     final order = result.value;
     if (order == null) {
@@ -295,6 +309,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _showError(
             'This order is no longer open. Tap the button to place it again.');
       } else {
+        if (order.isCashOnDelivery) cart.clearCart();
         _openTracking(order.id);
       }
       return null;
@@ -541,7 +556,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           KButton(
             label: _currentHostel == null
                 ? 'Choose address'
-                : 'Pay ${rupee(_shownTotal(cart))}',
+                : _selectedPaymentMethod == 'Cash on delivery'
+                    ? 'Place cash order · ${rupee(_shownTotal(cart))}'
+                    : 'Pay ${rupee(_shownTotal(cart))}',
             icon:
                 _currentHostel == null ? LucideIcons.mapPin : LucideIcons.lock,
             kind: _currentHostel == null
@@ -934,7 +951,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _buildPayment(BuildContext context, KraveoTokens k) {
     return Column(children: [
-      for (final opt in _paymentOptions)
+      for (final opt in _paymentOptions.where((o) =>
+          o['name'] != 'Cash on delivery' ||
+          (_quote.quote?.paymentMethods.contains('COD') ?? false)))
         Builder(builder: (context) {
           final isSelected = _selectedPaymentMethod == opt['name'];
           return KPressable(

@@ -63,7 +63,8 @@ void main() {
 
     // Docs/22: adding from another restaurant NO LONGER wipes the cart (it holds several restaurants).
     // With the combined-order feature off (maxRestaurants 1) the old behaviour is kept, see below.
-    test('Adding item from a different Dhaba keeps the cart and groups it by restaurant', () {
+    test('A historical combined cart remains readable with explicit compatibility enabled', () {
+      cart = CartProvider(allowLegacyGroups: true);
       cart.addItem(item: dummyItem1, dhabaId: 'ven-1', dhabaName: 'Sharma Dhaba');
       expect(cart.dhabaId, equals('ven-1'));
 

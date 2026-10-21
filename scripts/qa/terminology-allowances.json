@@ -653,5 +653,20 @@
     "file": "web/super_admin/src/components/CreateProductDrawer.tsx",
     "value": "dish",
     "reason": "Existing upload purpose API identifier for product photos; not user-facing terminology."
+  },
+  {
+    "file": "apps/customer_app/lib/services/order_api.dart",
+    "value": "restaurants",
+    "reason": "Historical multi-store request key retained for compatibility; never displayed as a category label."
+  },
+  {
+    "file": "apps/customer_app/lib/providers/dhaba_provider.dart",
+    "value": "restaurants",
+    "reason": "Stable managed store-category API selector; user-facing labels say store categories."
+  },
+  {
+    "file": "backend/src/routes/marketplace.ts",
+    "value": "STUDENT",
+    "reason": "Existing internal customer role enum; server authorization uses the unchanged database contract."
   }
 ]

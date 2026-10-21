@@ -188,7 +188,8 @@ class RiderController extends ChangeNotifier {
 
   /// Location is shared while the rider is on duty AND while a delivery is in hand, even after the rider
   /// switched the duty off: the customer's live map must not freeze mid-delivery.
-  bool get sharingLocation => _active != null && !_active!.status.isTerminal;
+  bool get sharingLocation =>
+      _onDuty || (_active != null && !_active!.status.isTerminal);
   DateTime? get lastFixAt => _lastFixAt;
   bool get lastLocationPostFailed => _lastLocationPostFailed;
 
@@ -385,7 +386,7 @@ class RiderController extends ChangeNotifier {
       _notify();
       if (!restoring) {
         _say(
-            'You are on duty. Location sharing starts when you accept a delivery.');
+            'You are on duty. Sharing your location to find nearby pickups.');
       }
       if (_active == null) await refreshOffers();
       return;
@@ -490,7 +491,7 @@ class RiderController extends ChangeNotifier {
 
   /// A delivery ended (finished or released) while the duty switch is off: location sharing stops now.
   void _stopSharingIfIdle() {
-    if (_active != null) return;
+    if (_active != null || _onDuty) return;
     if (_location == LocationState.off &&
         _trackSub == null &&
         _locTimer == null) {
@@ -1177,7 +1178,8 @@ class RiderController extends ChangeNotifier {
   }
 
   /// Checks the code the customer reads out. The app never knows the right code; only Grozo does.
-  Future<OtpOutcome> verifyOtp(String code) async {
+  Future<OtpOutcome> verifyOtp(String code,
+      {bool cashCollected = false}) async {
     final cur = _active;
     if (cur == null) {
       return const OtpOutcome(OtpOutcomeKind.error,
@@ -1187,7 +1189,8 @@ class RiderController extends ChangeNotifier {
       return const OtpOutcome(OtpOutcomeKind.error,
           message: 'Mark "Arrived at the drop point" first.');
     }
-    final r = await _api.verifyGateOtp(cur.id, code);
+    final r =
+        await _api.verifyGateOtp(cur.id, code, cashCollected: cashCollected);
     if (_disposed) return const OtpOutcome(OtpOutcomeKind.error);
     if (r.ok) {
       final o = r.value;

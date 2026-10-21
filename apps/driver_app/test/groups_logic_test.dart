@@ -325,7 +325,7 @@ void main() {
       expect(c.notice!.kind, NoticeKind.delivered);
       expect(c.notice!.order.isGroup, isTrue);
       expect(f.socket.watched, isEmpty);
-      expect(c.sharingLocation, isFalse, reason: 'idle until assignment');
+      expect(c.sharingLocation, isTrue, reason: 'on-duty availability remains active after delivery');
     });
 
     test('a double tap on "Picked up" sends ONE request', () async {

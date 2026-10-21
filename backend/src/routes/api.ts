@@ -1,3 +1,4 @@
+import { marketplaceRouter } from './marketplace';
 import { grozoClerkMiddleware } from '../middleware/clerk';
 import {anonymizeAdminAccess} from '../services/adminAccess';
 import { adminTeamRouter } from './adminTeam';
@@ -50,6 +51,7 @@ apiRouter.use(grozoClerkMiddleware);
 apiRouter.use(rateLimitMiddleware);
 apiRouter.use(adminTeamRouter);
 apiRouter.use(adminStoresRouter);
+apiRouter.use(marketplaceRouter);
 apiRouter.use(geographyRouter);
 apiRouter.use(productsRouter);
 apiRouter.use(operationsRouter);
@@ -448,7 +450,7 @@ apiRouter.post('/auth/logout', requireAuth, async (req: AuthenticatedRequest, re
       await prisma.user.update({ where: { id: req.user.id }, data: { fcmToken: null } });
       // A rider who logs out is off duty; otherwise the dashboard keeps counting them as online.
       if (req.user.role === Role.DRIVER) {
-        await prisma.driverPartner.updateMany({ where: { userId: req.user.id }, data: { dutyStatus: 'OFFLINE' } });
+        await prisma.driverPartner.updateMany({ where: { userId: req.user.id }, data: { dutyStatus: 'OFFLINE',availabilityAt:null,availabilityLat:null,availabilityLng:null } });
         await dropFromPartnerRooms(req.user.id, ['drivers']);
       }
     }

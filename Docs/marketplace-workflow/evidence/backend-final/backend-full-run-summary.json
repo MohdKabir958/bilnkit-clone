@@ -1,0 +1,19 @@
+{
+  "database": "grozo_final_1792611724697_test",
+  "databaseHost": "127.0.0.1",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "command": "node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/marketplace-workflow/evidence/backend-final/backend-full-run.json",
+  "invocations": 1,
+  "passed": 1129,
+  "failed": 0,
+  "skipped": 0,
+  "total": 1129,
+  "suites": 47,
+  "durationMs": 569258,
+  "exitCode": 0,
+  "startedAt": "2026-10-21T19:42:42.159Z",
+  "finishedAt": "2026-10-21T19:52:11.480Z"
+}

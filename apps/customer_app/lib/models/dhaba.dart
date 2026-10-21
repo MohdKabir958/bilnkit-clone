@@ -1,6 +1,10 @@
 import 'food_category.dart';
 
 class Dhaba {
+  final String? publicPhone;
+  final String? description;
+  final Object? operatingHours;
+  final String? primaryCategoryId;
   final String id;
   final String name;
   final String category;
@@ -19,6 +23,10 @@ class Dhaba {
   final List<Cuisine> cuisines;
 
   Dhaba({
+    this.publicPhone,
+    this.description,
+    this.operatingHours,
+    this.primaryCategoryId,
     required this.id,
     required this.name,
     required this.category,
@@ -39,6 +47,27 @@ class Dhaba {
   String get cuisineLabel =>
       cuisines.isEmpty ? category : cuisines.map((c) => c.name).join(' • ');
 
+  String get hoursLabel {
+    if (operatingHours is! List) return 'Opening hours: managed by the store';
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    String time(int m) =>
+        '${(m ~/ 60).toString().padLeft(2, '0')}:${(m % 60).toString().padLeft(2, '0')}';
+    final lines = <String>[];
+    for (final raw in operatingHours as List) {
+      if (raw is! Map ||
+          raw['day'] is! int ||
+          raw['opens'] is! int ||
+          raw['closes'] is! int) {
+        continue;
+      }
+      final day = raw['day'] as int;
+      if (day < 0 || day > 6) continue;
+      lines.add(
+          '${days[day]} ${time(raw['opens'] as int)}–${time(raw['closes'] as int)}');
+    }
+    return 'Opening hours (IST): ${lines.join(' · ')}';
+  }
+
   Dhaba copyWith({
     String? id,
     String? name,
@@ -56,6 +85,10 @@ class Dhaba {
     List<Cuisine>? cuisines,
   }) {
     return Dhaba(
+      publicPhone: publicPhone,
+      description: description,
+      operatingHours: operatingHours,
+      primaryCategoryId: primaryCategoryId,
       id: id ?? this.id,
       name: name ?? this.name,
       category: category ?? this.category,
@@ -75,6 +108,10 @@ class Dhaba {
 
   factory Dhaba.fromJson(Map<String, dynamic> json) {
     return Dhaba(
+      publicPhone: json['publicPhone'] as String?,
+      description: json['description'] as String?,
+      operatingHours: json['operatingHours'],
+      primaryCategoryId: json['primaryCategoryId'] as String?,
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       category: json['category'] ?? '',

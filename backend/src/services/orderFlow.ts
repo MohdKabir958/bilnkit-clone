@@ -1,3 +1,4 @@
+import { isCashOrder, fulfillmentAuthorized, fulfillmentWhere, requireMarketplaceStore, requireRiderAt } from './marketplace';
 import { stageNotificationIntents, drainNotificationIntents } from './push/intents';
 import { ensureDispatchOffer, acceptDispatchOffer, riderServesOrders } from './dispatch';
 import { lockProducts, reserveStock, settleStock } from './inventory';
@@ -221,6 +222,8 @@ export const refreshRiderDuty = async (riderUserId: string) => {
 // Customer: place an order
 // ----------------------------------------------------------------------------
 export type PlaceOrderInput = {
+  workflowVersion?: 2;
+  paymentMethod?: 'ONLINE' | 'COD';
   addressId?: string;
   vendorId: string;
   items: { itemId: string; quantity: number }[];
@@ -247,7 +250,7 @@ export const sameItems = (o: { items: { id: string; menuItemId: string | null; q
 
 /** Same checkout attempt = same request: vendor, items (by id and quantity), drop point, notes and coupon must all match. */
 const sameRequest = (o: OrderWithRelations, input: PlaceOrderInput): boolean => {
-  if (o.vendorId !== input.vendorId) return false;
+  if (o.vendorId !== input.vendorId || o.paymentMethod !== (input.paymentMethod ?? 'ONLINE') || o.workflowVersion !== (input.workflowVersion ?? 1)) return false;
   if (input.addressId) {
     if ((o.addressSnapshot as any)?.id !== input.addressId && o.addressId !== input.addressId) return false;
   } else if (input.dropoffHostel && o.dropoffHostel !== input.dropoffHostel) return false;
@@ -267,7 +270,7 @@ export const REPLACED_REASON = 'Replaced by a newer order';
  * failed (the customer may be in the UPI / card screen right now). A late capture on a superseded order is refunded by markOrderPaid.
  */
 const isAbandonedCheckout = (o: OrderWithRelations, now = Date.now()): boolean =>
-  o.status === 'PLACED' &&
+  !isCashOrder(o) && o.status === 'PLACED' &&
   (o.paymentStatus === 'PENDING' || o.paymentStatus === 'FAILED') &&
   !o.paidAt &&
   o.payments.every((p) => p.status !== 'PAID' && p.status !== 'REFUNDED' && p.capturedAmountPaise == null && !(p.status === 'PENDING' && now - p.createdAt.getTime() < RECONCILE_MIN_AGE_MS));
@@ -338,6 +341,10 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
 
         const address = await ownedAddress(tx, customerId, input.addressId, true);
         const eligible = await deliveryEligibility(tx, address, input.vendorId, true);
+        if (input.workflowVersion === 2) {
+          const store = await requireMarketplaceStore(tx, input.vendorId, true);
+          if (input.paymentMethod === 'COD' && !store.city?.codEnabled) throw new OrderFlowError(409,'COD_UNAVAILABLE','Cash on delivery is not enabled in this city. Choose online payment.');
+        } else if (input.paymentMethod === 'COD') throw new OrderFlowError(400,'INVALID_PAYMENT_METHOD','Use marketplace checkout for cash on delivery.');
 
 
         // A new checkout replaces this customer's own abandoned, never-paid orders at the same restaurant, so their coupon and
@@ -371,11 +378,13 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
         }
         const unpaid = await countUnpaidOpen(tx, customerId);
         if (unpaid >= MAX_UNPAID_OPEN_ORDERS) {
-          throw new OrderFlowError(429, 'TOO_MANY_UNPAID_ORDERS', `You already have ${unpaid} unpaid orders. Pay for one or cancel it before placing another.`);
+          throw new OrderFlowError(429, 'TOO_MANY_UNPAID_ORDERS', input.workflowVersion===2?'You have too many open orders. Wait for a delivery or cancel an unaccepted order.':`You already have ${unpaid} unpaid orders. Pay for one or cancel it before placing another.`);
         }
         const created = await tx.order.create({
           data: {
             customerId,
+            workflowVersion: input.workflowVersion ?? 1,
+            paymentMethod: input.paymentMethod ?? 'ONLINE',
             vendorId: input.vendorId,
             clientRequestId: input.clientRequestId,
             subtotal: priced.calculatedSubtotal,
@@ -400,6 +409,7 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
         });
         await reserveStock(tx, created.id, input.items);
         await tx.notificationIntent.create({data:{orderId:created.id,event:'ORDER_PLACED',options:{}}});
+        if (isCashOrder(created)) await tx.notificationIntent.create({data:{orderId:created.id,event:'NEW_ORDER',options:{}}});
         return { order: created, replay: false };
       },
       { maxWait: 15_000, timeout: 30_000 },
@@ -412,7 +422,7 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
     }
     // Unpaid: admins see it; the restaurant and riders do not (orderView filters them out anyway).
     drainNotificationIntents();
-    await publishOrderChange(outcome.order);
+    await publishOrderChange(outcome.order, {newOrderAlert: isCashOrder(outcome.order)});
     return outcome;
   } catch (err: any) {
     if (err?.code === 'P2002') {
@@ -440,6 +450,7 @@ export const createPaymentForOrder = async (orderId: string, actor: Actor) => {
     if (order.groupId && order.groupIndex !== 0) {
       throw new OrderFlowError(409, 'PAY_VIA_GROUP', 'This order is part of a combined order. Pay with the first order of the combined order.', { payOrderId: group?.[0]?.id ?? null });
     }
+    if (isCashOrder(order)) throw new OrderFlowError(409,'CASH_ORDER','This order is payable in cash to the assigned rider at delivery.');
     if (order.paymentStatus === 'PAID' || order.paymentStatus === 'REFUNDED') throw new OrderFlowError(409, 'ALREADY_PAID', 'This order is already paid.');
     if (order.status !== 'PLACED') throw new OrderFlowError(409, 'ORDER_CLOSED', order.status === 'CANCELLED' ? 'This order was cancelled.' : 'This order can no longer be paid.');
     if (Date.now() - order.createdAt.getTime() >= paymentWindowMin() * 60_000) {
@@ -619,7 +630,11 @@ export const advanceStatus = async (orderId: string, actor: Actor, target: strin
     if (NEXT_STATUS[order.status] !== target) {
       throw new OrderFlowError(409, 'INVALID_TRANSITION', `Invalid order state transition from '${order.status}' to '${target}'. Allowed next state: ${NEXT_STATUS[order.status]}.`);
     }
-    if (order.paymentStatus !== 'PAID') throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid yet.');
+    if (!fulfillmentAuthorized(order)) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid yet.');
+    if(actor.role==='DRIVER' && (target==='PICKED_UP'||target==='ARRIVED_AT_GATE')) {
+      const address=order.addressSnapshot as any;
+      await requireRiderAt(tx,order,target==='PICKED_UP'?order.vendor:(address&&typeof address.lat==='number'&&typeof address.lng==='number'?address:null));
+    }
     if (target === 'PICKED_UP' && !order.driverId) throw new OrderFlowError(409, 'NO_RIDER', 'Assign a rider before marking the order picked up.');
 
     if (group) {
@@ -702,7 +717,7 @@ export const cancelInTx = async (
     if (alreadyCancelled) return { order, before: order, changed: false };
     if (!repair) {
       if (order.status !== 'PLACED') throw new OrderFlowError(409, 'CANNOT_REJECT', 'An accepted order cannot be rejected. Ask Grozo support to cancel it.');
-      if (order.paymentStatus !== 'PAID') throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid yet.');
+      if (!fulfillmentAuthorized(order)) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid yet.');
     }
   } else if (by === 'ADMIN') {
     if (alreadyCancelled) return { order, before: order, changed: false };
@@ -829,7 +844,7 @@ export const claimOrder = async (orderId: string, riderUserId: string): Promise<
       if (!rider) throw new OrderFlowError(403, 'RIDER_PROFILE_MISSING', 'No rider profile is linked to this account.');
       if (rider.approvalStatus !== 'APPROVED') throw new OrderFlowError(403, 'PARTNER_NOT_APPROVED', 'Your account is not active.', { approvalStatus: rider.approvalStatus });
 
-      let current = await tx.order.findUnique({ where: { id: orderId }, select: { driverId: true, status: true, paymentStatus: true, groupId: true } });
+      let current = await tx.order.findUnique({ where: { id: orderId }, select: { driverId: true, status: true, paymentStatus: true, paymentMethod: true, workflowVersion: true, groupId: true } });
       if (!current) throw notFound();
 
       if (current.groupId) {
@@ -857,7 +872,7 @@ export const claimOrder = async (orderId: string, riderUserId: string): Promise<
       // Match maintenance lock order: rider -> order -> offer. Locking the offer
       // first deadlocked against expiry, which already held the order row.
       await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "id"=${orderId} FOR UPDATE`;
-      current = await tx.order.findUniqueOrThrow({where:{id:orderId},select:{driverId:true,status:true,paymentStatus:true,groupId:true}});
+      current = await tx.order.findUniqueOrThrow({where:{id:orderId},select:{driverId:true,status:true,paymentStatus:true,paymentMethod:true,workflowVersion:true,groupId:true}});
       // A cancelled / delivered order is not in the pool, whoever used to carry it (it keeps its driverId for the record).
       if (isTerminal(current.status)) throw new OrderFlowError(409, 'ORDER_NOT_AVAILABLE', 'This order is not available for pickup.');
       if (current.driverId === riderUserId) return { changed: false };
@@ -867,11 +882,11 @@ export const claimOrder = async (orderId: string, riderUserId: string): Promise<
       const active = await countActiveDeliveries(tx, riderUserId);
       if (active >= MAX_ACTIVE_ORDERS_PER_RIDER) throw new OrderFlowError(409, 'RIDER_BUSY', 'Finish your current delivery before accepting another order.');
 
-      if(current.paymentStatus!=='PAID'||!(POOL_STATUSES as readonly string[]).includes(current.status)) throw new OrderFlowError(409,'ORDER_NOT_AVAILABLE','This order is not available for pickup.');
+      if(!fulfillmentAuthorized(current)||!(POOL_STATUSES as readonly string[]).includes(current.status)) throw new OrderFlowError(409,'ORDER_NOT_AVAILABLE','This order is not available for pickup.');
       await acceptDispatchOffer(tx, [await tx.order.findUniqueOrThrow({where:{id:orderId},include:ORDER_VIEW_INCLUDE})], riderUserId);
       // The atomic claim: only succeeds while the order is still unassigned, paid and in a pool state.
       const claimed = await tx.order.updateMany({
-        where: { id: orderId, driverId: null, paymentStatus: 'PAID', status: { in: [...POOL_STATUSES] } },
+        where: { id: orderId, driverId: null, AND: [fulfillmentWhere], status: { in: [...POOL_STATUSES] } },
         data: { pickupArrivalAt:null, driverId: riderUserId },
       });
       if (claimed.count === 1) {const after=await tx.order.findUniqueOrThrow({where:{id:orderId},include:ORDER_VIEW_INCLUDE});await stageNotificationIntents(tx,{changed:true,before:{...after,driverId:null,driver:null},order:after});return {changed:true};}
@@ -908,7 +923,7 @@ export const releaseOrder = async (orderId: string, riderUserId: string) => {
       await tx.order.updateMany({ where: { groupId: order.groupId! }, data: { pickupArrivalAt:null, driverId: null } });
       return groupResult(tx, order, group, group.map((c) => c.id));
     }
-    await tx.order.update({ where: { id: order.id }, data: { pickupArrivalAt:null, driverId: null } });
+    await tx.order.update({ where: { id: order.id }, data: { pickupArrivalAt:null, driverId: null,...(order.workflowVersion===2?{dispatchRound:(Math.floor(order.dispatchRound/3)+1)*3,dispatchNextAttemptAt:null,dispatchEscalatedAt:null,dispatchNote:null}:{}) } });
     return { order: await reload(tx, order.id), before: order, changed: true };
   });
   await writeAudit('ORDER_RELEASED', 'ORDER', result.group ? result.group.after[0].id : orderId, `Rider ${result.before.driver?.name ?? riderUserId} gave the ${result.group ? `combined order (${result.group.after.length} stores)` : 'order'} back to the pool (${result.before.status}).`);
@@ -934,7 +949,7 @@ export const reassignOrder = async (orderId: string, driverIdOrProfileId: string
   const result = await withOrderLock(orderId, async (tx, order, group): Promise<ChangeResult> => {
     const all = group ?? [order];
     if (isTerminal(order.status)) throw new OrderFlowError(409, 'ORDER_CLOSED', 'Completed or cancelled orders cannot be reassigned.');
-    if (resolved && all.some((c) => c.paymentStatus !== 'PAID')) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'An unpaid order cannot be given to a rider.');
+    if (resolved && all.some((c) => !fulfillmentAuthorized(c))) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'An unpaid order cannot be given to a rider.');
     if (all.every((c) => c.driverId === resolved)) return { order, before: order, changed: false };
     if (!resolved && all.some((c) => c.status === 'PICKED_UP' || c.status === 'ARRIVED_AT_GATE')) {
       throw new OrderFlowError(409, 'CANNOT_UNASSIGN', 'The order is already with the rider. Assign another rider or cancel the order instead of removing the rider.');
@@ -961,7 +976,7 @@ export const reassignOrder = async (orderId: string, driverIdOrProfileId: string
       await tx.order.updateMany({ where: { groupId: order.groupId!, status: { notIn: ['DELIVERED', 'CANCELLED'] } }, data: { pickupArrivalAt:null, driverId: resolved } });
       return groupResult(tx, order, group, group.filter((c) => !isTerminal(c.status)).map((c) => c.id));
     }
-    await tx.order.update({ where: { id: order.id }, data: { pickupArrivalAt:null, driverId: resolved } });
+    await tx.order.update({ where: { id: order.id }, data: { pickupArrivalAt:null, driverId: resolved,...(!resolved&&order.workflowVersion===2?{dispatchRound:(Math.floor(order.dispatchRound/3)+1)*3,dispatchNextAttemptAt:null,dispatchEscalatedAt:null,dispatchNote:null}:{}) } });
     return { order: await reload(tx, order.id), before: order, changed: true };
   }, resolved ? { riderUserIdFirst: resolved, assignedByAdmin:true } : {assignedByAdmin:true});
   if (result.changed) {
@@ -1007,7 +1022,7 @@ const proofMatches = (orderId: string, otp: string, stored: string | null) => {
  * lock written on every child, so resetting the lock on any child resets the group). The retry of the same correct code after delivery
  * is an idempotent success on any child.
  */
-export const verifyGateOtp = async (orderId: string, actor: Actor, rawOtp: unknown): Promise<{ order: OrderWithRelations; alreadyDelivered: boolean }> => {
+export const verifyGateOtp = async (orderId: string, actor: Actor, rawOtp: unknown, cashCollected = false): Promise<{ order: OrderWithRelations; alreadyDelivered: boolean }> => {
   type Outcome = ChangeResult & { kind: 'DELIVERED' | 'ALREADY' | 'WRONG'; attempts?: number; locked?: boolean };
   if (actor.role === 'DRIVER') await preAuthorize(orderId, (o) => o.driverId === actor.id);
   else if (actor.role !== 'ADMIN') throw notFound();
@@ -1027,8 +1042,9 @@ export const verifyGateOtp = async (orderId: string, actor: Actor, rawOtp: unkno
     if (order.status !== 'ARRIVED_AT_GATE' || (group && !group.every((c) => c.status === 'ARRIVED_AT_GATE'))) {
       throw new OrderFlowError(409, 'NOT_AT_GATE', 'Delivery code can only be verified after the delivery partner arrives at the doorstep.');
     }
-    if (order.paymentStatus !== 'PAID' || (group && group.some((c) => c.paymentStatus !== 'PAID'))) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid.');
+    if (!fulfillmentAuthorized(order) || (group && group.some((c) => c.paymentStatus !== 'PAID'))) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid.');
 
+    if(actor.role==='DRIVER') {const address=order.addressSnapshot as any;await requireRiderAt(tx,order,address&&typeof address.lat==='number'&&typeof address.lng==='number'?address:null);}
     const otp = normaliseOtp(rawOtp);
     if (!otp) {
       // A missing or malformed code is a client mistake, not a guess: it does not count as an attempt.
@@ -1045,6 +1061,12 @@ export const verifyGateOtp = async (orderId: string, actor: Actor, rawOtp: unkno
       await tx.order.update({ where: { id: order.id }, data: { otpAttempts: attempts, otpLocked: locked } });
       // Committed (the attempt counts even though the caller gets an error).
       return { order: await reload(tx, order.id), before: order, changed: locked, kind: 'WRONG', attempts, locked };
+    }
+    if (isCashOrder(order)) {
+      if (actor.role !== 'DRIVER' || order.driverId !== actor.id || cashCollected !== true) throw new OrderFlowError(409,'CASH_CONFIRMATION_REQUIRED','Collect the exact order total in cash and confirm collection before completing delivery.');
+      await tx.cashCollection.create({data:{orderId:order.id,driverUserId:actor.id,amountPaise:Math.round(order.totalAmount*100)}});
+      await tx.order.update({where:{id:order.id},data:{paymentStatus:'PAID',paidAt:new Date()}});
+      await tx.adminAuditLog.create({data:{action:'CASH_COLLECTED',targetType:'ORDER',targetId:order.id,summary:`Assigned rider ${actor.id} confirmed cash collection with a valid delivery code.`}});
     }
     await settleStock(tx, group ?? [order], 'DELIVER');
     if (group) {

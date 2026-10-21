@@ -16,6 +16,10 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
     if (!/^[1-9]\d{5}$/.test(pinCode) || !indianPoint(b.lat,b.lng)) throw new AppError(400,'BAD_LOCATION','Enter a six-digit PIN and a confirmed location in India.');
     const city = await prisma.city.findUnique({where:{id:cityId}});
     if (!city?.active) throw new AppError(400,'CITY_REQUIRED','Choose an enabled city.','cityId');
+    const category=b.primaryCategoryId?await prisma.category.findUnique({where:{id:text(b.primaryCategoryId,'primaryCategoryId',64)}}):null;
+    if(b.primaryCategoryId&&(!category?.isActive||!category.forRestaurants)) throw new AppError(400,'CATEGORY_REQUIRED','Choose an active store category.');
+    const publicPhone=text(b.publicPhone,'publicPhone',16,false);
+    if(publicPhone&&!/^\+?[0-9 ()-]{10,16}$/.test(publicPhone)) throw new AppError(400,'BAD_PHONE','Enter a public business contact number.');
     let ownerSubject: string | undefined;
     if (b.ownerEmail) {
       if (!usesClerk()) throw new AppError(400,'CLERK_REQUIRED','Email-based owner assignment requires Clerk authentication.');
@@ -34,11 +38,38 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
       }
       const zone = b.zoneId ? await tx.deliveryZone.findUnique({where:{id:text(b.zoneId,'zoneId',64)}}) : null;
       if (b.zoneId && (!zone?.active || zone.cityId !== cityId || kmBetween({lat:b.lat,lng:b.lng},{lat:zone.centerLat,lng:zone.centerLng}) > zone.radiusKm)) throw new AppError(400,'ZONE_MISMATCH','Choose an enabled zone in this city that contains the store pickup location.','zoneId');
-      const store = await tx.vendor.create({data:{name,address,cityId,pinCode,locality,lat:b.lat,lng:b.lng,userId:ownerId,category:'Groceries',bannerImage:'',isAcceptingOrders:false,approvalStatus:'APPROVED',locationSource:'ADMIN',locationSetAt:new Date(),eta:''}});
+      const store = await tx.vendor.create({data:{name,address,cityId,pinCode,locality,lat:b.lat,lng:b.lng,userId:ownerId,category:category?.name??'Groceries',primaryCategoryId:category?.id,publicPhone:publicPhone||null,description:text(b.description,'description',600,false)||null,bannerImage:'',isAcceptingOrders:false,approvalStatus:'APPROVED',locationSource:'ADMIN',locationSetAt:new Date(),eta:''}});
       if (zone) await tx.vendorCoverage.create({data:{vendorId:store.id,zoneId:zone.id,active:true}});
       await tx.adminAuditLog.create({data:{action:'STORE_CREATED',targetType:'VENDOR',targetId:store.id,summary:`Operator ${req.user!.id} created a closed store with confirmed pickup${ownerId?' and a verified partner owner':''}.`}});
       return store;
     });
     res.status(201).json({success:true,data:row});
   } catch(e) { fail(res,e,'Store could not be created'); }
+});
+
+// Configure an existing draft without copying an identity/login phone into its public contact.
+adminStoresRouter.patch('/v1/admin/stores/:id',requireAuth,requireRole('ADMIN'),async(req:AuthenticatedRequest,res)=>{
+  try {
+    const b=req.body??{};
+    const category=b.primaryCategoryId?await prisma.category.findUnique({where:{id:text(b.primaryCategoryId,'primaryCategoryId',64)}}):null;
+    if(b.primaryCategoryId&&(!category?.isActive||!category.forRestaurants)) throw new AppError(400,'CATEGORY_REQUIRED','Choose an active store category.');
+    const publicPhone=b.publicPhone===undefined?undefined:text(b.publicPhone,'publicPhone',16,false);
+    if(publicPhone && !/^\+?[0-9 ()-]{10,16}$/.test(publicPhone)) throw new AppError(400,'BAD_PHONE','Enter a public business contact number.');
+    const ownerSubject=b.ownerEmail?(await verifiedPartnerIdentity(normalizeAdminEmail(b.ownerEmail))).id:undefined;
+    const row=await prisma.$transaction(async tx=>{
+      let userId:string|undefined;
+      if(ownerSubject) {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${ownerSubject},81971))`;
+        const user=await tx.user.findUnique({where:{clerkUserId:ownerSubject}}),state=await tx.clerkIdentityState.findUnique({where:{clerkUserId:ownerSubject}});
+        if(!user||user.deletedAt||!['STUDENT','VENDOR'].includes(user.role)||state?.deleted||state?.suspended||state?.deleteRequested||await tx.vendor.count({where:{userId:user.id,approvalStatus:'SUSPENDED'}})) throw new AppError(409,'OWNER_UNAVAILABLE','The owner must have an eligible verified Grozo account.');
+        await tx.user.update({where:{id:user.id},data:{role:'VENDOR'}});userId=user.id;
+      }
+      const store=await tx.vendor.findUnique({where:{id:req.params.id}});
+      if(!store) throw new AppError(404,'NOT_FOUND','Store not found.');
+      if(userId&&userId!==store.userId&&await tx.order.count({where:{vendorId:store.id,status:{notIn:['DELIVERED','CANCELLED']}}})) throw new AppError(409,'ACTIVE_ORDERS','Finish or cancel active store orders before changing its owner.');
+      const updated=await tx.vendor.update({where:{id:store.id},data:{...(category?{primaryCategoryId:category.id,category:category.name}:{}),...(userId?{userId}:{}),...(publicPhone!==undefined?{publicPhone:publicPhone||null}:{}),...(b.description===undefined?{}:{description:text(b.description,'description',600,false)||null})}});
+      await tx.adminAuditLog.create({data:{action:'STORE_MARKETPLACE_UPDATED',targetType:'VENDOR',targetId:store.id,summary:`Operator ${req.user!.id} updated category, public contact or verified ownership.`}});
+      return updated;
+    });res.json({success:true,data:row});
+  }catch(e){fail(res,e,'Store configuration could not be saved');}
 });

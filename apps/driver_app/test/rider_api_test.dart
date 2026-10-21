@@ -68,10 +68,23 @@ void main() {
       'POST /api/orders/o1/accept-driver ',
       'POST /api/orders/o1/release ',
       'PATCH /api/orders/o1/status {"status":"PICKED_UP"}',
-      'POST /api/orders/o1/verify-gate-otp {"otpCode":"4821"}',
+      'POST /api/orders/o1/verify-gate-otp {"otpCode":"4821","cashCollected":false}',
       'POST /api/drivers/duty-status {"isOnline":true}',
+      'POST /api/v1/drivers/availability-location {"lat":23.1,"lng":76.9}',
       'POST /api/drivers/location {"lat":23.1,"lng":76.9,"heading":90.0}',
     ]);
+  });
+
+  test('an assigned delivery keeps GPS when off-duty availability is refused',()async{
+    final api=HttpRiderOrdersApi(baseUrl:'https://x.test/api');
+    await withServer(()async{expect((await api.postLocation(23.1,76.9)).ok,isTrue);},(r)=>r.url.path.endsWith('availability-location')?json({'success':false,'code':'RIDER_OFFLINE'},409):json({'success':true}));
+    expect(seen.map((r)=>r.url.path),['/api/v1/drivers/availability-location','/api/drivers/location']);
+  });
+
+  test('cash completion explicitly sends the rider collection confirmation',()async{
+    final api=HttpRiderOrdersApi(baseUrl:'https://x.test/api');
+    await withServer(()async{expect((await api.verifyGateOtp('o1','4821',cashCollected:true)).ok,isTrue);},(r)=>json({'success':true,'data':orderJson(status:'DELIVERED')}));
+    expect(jsonDecode(seen.single.body),{'otpCode':'4821','cashCollected':true});
   });
 
   test('error mapping: 409 ALREADY_TAKEN, 400 wrong code with tries left, 423 locked, 429, 5xx', () async {

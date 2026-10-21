@@ -38,7 +38,9 @@ class ApiResult<T> {
         message = null,
         attemptsLeft = null;
 
-  const ApiResult.fail(this.failure, {this.statusCode, this.code, this.message, this.attemptsLeft}) : value = null;
+  const ApiResult.fail(this.failure,
+      {this.statusCode, this.code, this.message, this.attemptsLeft})
+      : value = null;
 
   final T? value;
   final ApiFailure? failure;
@@ -56,7 +58,8 @@ class ApiResult<T> {
   bool get ok => failure == null;
 
   /// Network trouble rather than a decision by the server.
-  bool get isNetwork => failure == ApiFailure.offline || failure == ApiFailure.timeout;
+  bool get isNetwork =>
+      failure == ApiFailure.offline || failure == ApiFailure.timeout;
 }
 
 class OrderPage {
@@ -90,28 +93,34 @@ abstract class RiderOrdersApi {
   Future<ApiResult<OrderView?>> updateStatus(String id, OrderStatus status);
 
   /// `POST /orders/:id/verify-gate-otp`.
-  Future<ApiResult<OrderView?>> verifyGateOtp(String id, String code);
+  Future<ApiResult<OrderView?>> verifyGateOtp(String id, String code,
+      {bool cashCollected = false});
 
   /// `POST /drivers/duty-status`. Value: the server's `dutyStatus` string.
   Future<ApiResult<String?>> setDuty(bool online);
 
   /// `POST /drivers/location`.
-  Future<ApiResult<void>> postLocation(double lat, double lng, {double heading = 0});
+  Future<ApiResult<void>> postLocation(double lat, double lng,
+      {double heading = 0});
 }
 
 /// The real HTTP implementation. Uses `package:http` top-level functions, so tests can swap the
 /// client with `http.runWithClient`. Every call is bounded by a timeout: no endless spinners.
 class HttpRiderOrdersApi implements RiderOrdersApi {
-  HttpRiderOrdersApi({String? baseUrl, this.timeout = const Duration(seconds: 10)}) : _base = baseUrl ?? ApiConfig.baseUrl;
+  HttpRiderOrdersApi(
+      {String? baseUrl, this.timeout = const Duration(seconds: 10)})
+      : _base = baseUrl ?? ApiConfig.baseUrl;
 
   final String _base;
   final Duration timeout;
 
-  Uri _u(String path, [Map<String, String>? query]) => Uri.parse('$_base$path').replace(queryParameters: query);
+  Uri _u(String path, [Map<String, String>? query]) =>
+      Uri.parse('$_base$path').replace(queryParameters: query);
 
   static String _id(String id) => Uri.encodeComponent(id.trim());
 
-  Future<ApiResult<Object?>> _send(String method, Uri url, {Object? body}) async {
+  Future<ApiResult<Object?>> _send(String method, Uri url,
+      {Object? body}) async {
     try {
       final headers = await DriverApiService.getAuthHeaders();
       final encoded = body == null ? null : jsonEncode(body);
@@ -128,7 +137,9 @@ class HttpRiderOrdersApi implements RiderOrdersApi {
       } catch (_) {
         json = null;
       }
-      if (res.statusCode >= 200 && res.statusCode < 300) return ApiResult.ok(json);
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        return ApiResult.ok(json);
+      }
       return _failure(res.statusCode, json);
     } on TimeoutException {
       return const ApiResult.fail(ApiFailure.timeout);
@@ -142,7 +153,9 @@ class HttpRiderOrdersApi implements RiderOrdersApi {
     final map = json is Map ? json : const {};
     final code = map['code']?.toString().toUpperCase();
     final message = map['message']?.toString();
-    final left = _int(map['attemptsLeft'] ?? map['attemptsRemaining'] ?? map['remainingAttempts']);
+    final left = _int(map['attemptsLeft'] ??
+        map['attemptsRemaining'] ??
+        map['remainingAttempts']);
     final ApiFailure kind;
     if (status == 401) {
       kind = ApiFailure.unauthorized;
@@ -163,13 +176,19 @@ class HttpRiderOrdersApi implements RiderOrdersApi {
     } else {
       kind = ApiFailure.server;
     }
-    return ApiResult.fail(kind, statusCode: status, code: code, message: message, attemptsLeft: left);
+    return ApiResult.fail(kind,
+        statusCode: status, code: code, message: message, attemptsLeft: left);
   }
 
-  static int? _int(Object? v) => v is num ? v.toInt() : int.tryParse('${v ?? ''}');
+  static int? _int(Object? v) =>
+      v is num ? v.toInt() : int.tryParse('${v ?? ''}');
 
   static ApiResult<T> _carry<T>(ApiResult<Object?> r) =>
-      ApiResult.fail(r.failure, statusCode: r.statusCode, code: r.code, message: r.message, attemptsLeft: r.attemptsLeft);
+      ApiResult.fail(r.failure,
+          statusCode: r.statusCode,
+          code: r.code,
+          message: r.message,
+          attemptsLeft: r.attemptsLeft);
 
   /// `{data: X}`, `{order: X}`, or X itself.
   static Object? _payload(Object? json) {
@@ -196,19 +215,30 @@ class HttpRiderOrdersApi implements RiderOrdersApi {
   }
 
   @override
-  Future<ApiResult<List<OrderView>>> fetchAvailable() async => _list(await _send('GET', _u('/orders/available', {'groups': '1'})));
+  Future<ApiResult<List<OrderView>>> fetchAvailable() async =>
+      _list(await _send('GET', _u('/orders/available', {'groups': '1'})));
 
   @override
-  Future<ApiResult<List<OrderView>>> fetchActive() async => _list(await _send('GET', _u('/orders', {'scope': 'active', 'limit': '20'})));
+  Future<ApiResult<List<OrderView>>> fetchActive() async => _list(
+      await _send('GET', _u('/orders', {'scope': 'active', 'limit': '20'})));
 
   @override
-  Future<ApiResult<OrderPage>> fetchHistory({String? cursor, int limit = 30}) async {
-    final r = await _send('GET', _u('/orders', {'scope': 'history', 'limit': '$limit', if (cursor != null) 'cursor': cursor}));
+  Future<ApiResult<OrderPage>> fetchHistory(
+      {String? cursor, int limit = 30}) async {
+    final r = await _send(
+        'GET',
+        _u('/orders', {
+          'scope': 'history',
+          'limit': '$limit',
+          if (cursor != null) 'cursor': cursor
+        }));
     if (!r.ok) return _carry(r);
     final p = _payload(r.value);
     if (p is! List) return const ApiResult.fail(ApiFailure.badResponse);
-    final next = r.value is Map ? (r.value as Map)['nextCursor']?.toString() : null;
-    return ApiResult.ok(OrderPage(OrderView.parseList(p), (next == null || next.isEmpty) ? null : next));
+    final next =
+        r.value is Map ? (r.value as Map)['nextCursor']?.toString() : null;
+    return ApiResult.ok(OrderPage(
+        OrderView.parseList(p), (next == null || next.isEmpty) ? null : next));
   }
 
   @override
@@ -216,34 +246,50 @@ class HttpRiderOrdersApi implements RiderOrdersApi {
     final r = await _send('GET', _u('/orders/${_id(id)}'));
     if (!r.ok) return _carry(r);
     final o = OrderView.tryParse(_payload(r.value));
-    return o == null ? const ApiResult.fail(ApiFailure.badResponse) : ApiResult.ok(o);
+    return o == null
+        ? const ApiResult.fail(ApiFailure.badResponse)
+        : ApiResult.ok(o);
   }
 
   @override
-  Future<ApiResult<OrderView?>> claim(String id) async => _maybeOrder(await _send('POST', _u('/orders/${_id(id)}/accept-driver')));
+  Future<ApiResult<OrderView?>> claim(String id) async =>
+      _maybeOrder(await _send('POST', _u('/orders/${_id(id)}/accept-driver')));
 
   @override
-  Future<ApiResult<OrderView?>> release(String id) async => _maybeOrder(await _send('POST', _u('/orders/${_id(id)}/release')));
+  Future<ApiResult<OrderView?>> release(String id) async =>
+      _maybeOrder(await _send('POST', _u('/orders/${_id(id)}/release')));
 
   @override
-  Future<ApiResult<OrderView?>> updateStatus(String id, OrderStatus status) async =>
-      _maybeOrder(await _send('PATCH', _u('/orders/${_id(id)}/status'), body: {'status': status.wire}));
+  Future<ApiResult<OrderView?>> updateStatus(
+          String id, OrderStatus status) async =>
+      _maybeOrder(await _send('PATCH', _u('/orders/${_id(id)}/status'),
+          body: {'status': status.wire}));
 
   @override
-  Future<ApiResult<OrderView?>> verifyGateOtp(String id, String code) async =>
-      _maybeOrder(await _send('POST', _u('/orders/${_id(id)}/verify-gate-otp'), body: {'otpCode': code.trim()}));
+  Future<ApiResult<OrderView?>> verifyGateOtp(String id, String code,
+          {bool cashCollected = false}) async =>
+      _maybeOrder(await _send('POST', _u('/orders/${_id(id)}/verify-gate-otp'),
+          body: {'otpCode': code.trim(), 'cashCollected': cashCollected}));
 
   @override
   Future<ApiResult<String?>> setDuty(bool online) async {
-    final r = await _send('POST', _u('/drivers/duty-status'), body: {'isOnline': online});
+    final r = await _send('POST', _u('/drivers/duty-status'),
+        body: {'isOnline': online});
     if (!r.ok) return _carry(r);
     final v = r.value;
     return ApiResult.ok(v is Map ? v['dutyStatus']?.toString() : null);
   }
 
   @override
-  Future<ApiResult<void>> postLocation(double lat, double lng, {double heading = 0}) async {
-    final r = await _send('POST', _u('/drivers/location'), body: {'lat': lat, 'lng': lng, 'heading': heading});
-    return r.ok ? const ApiResult.ok(null) : _carry(r);
+  Future<ApiResult<void>> postLocation(double lat, double lng,
+      {double heading = 0}) async {
+    final availability = await _send(
+        'POST', _u('/v1/drivers/availability-location'),
+        body: {'lat': lat, 'lng': lng});
+    final r = await _send('POST', _u('/drivers/location'),
+        body: {'lat': lat, 'lng': lng, 'heading': heading});
+    if(r.ok) return const ApiResult.ok(null);
+    if(r.code=='NO_ACTIVE_DELIVERY') return availability.ok?const ApiResult.ok(null):_carry(availability);
+    return _carry(r);
   }
 }

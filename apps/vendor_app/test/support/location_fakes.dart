@@ -61,7 +61,7 @@ class FakeLocationApi implements VendorLocationApi {
   Completer<void>? gate;
 
   @override
-  Future<ApiResult<SavedLocation>> save({required double lat, required double lng, double? accuracyM}) async {
+  Future<ApiResult<SavedLocation>> save({required double lat, required double lng, double? accuracyM, String? vendorId}) async {
     calls.add((lat: lat, lng: lng, accuracyM: accuracyM));
     if (gate != null) await gate!.future;
     if (answers.isNotEmpty) return answers.removeAt(0);

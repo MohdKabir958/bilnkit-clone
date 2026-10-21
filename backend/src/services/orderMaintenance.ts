@@ -1,3 +1,4 @@
+import { isCashOrder } from './marketplace';
 import { flushNotificationIntents } from './push/intents';
 import { pruneRiderLocations } from '../realtime';
 import { runDispatchMaintenance } from './dispatch';
@@ -39,7 +40,7 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
   };
 
   const unpaid = await prisma.order.findMany({
-    where: { status: 'PLACED', paymentStatus: { in: ['PENDING', 'FAILED'] }, createdAt: { lt: payCutoff } },
+    where: { status: 'PLACED', paymentMethod:'ONLINE', paymentStatus: { in: ['PENDING', 'FAILED'] }, createdAt: { lt: payCutoff } },
     select: { id: true },
     orderBy: { createdAt: 'asc' },
     take: BATCH,
@@ -47,7 +48,7 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
   for (const { id } of unpaid) {
     try {
       const r = await cancelOrder(id, SYSTEM, 'SYSTEM', 'Payment not completed', {
-        guard: (o) => o.status === 'PLACED' && (o.paymentStatus === 'PENDING' || o.paymentStatus === 'FAILED') && o.createdAt < payCutoff,
+        guard: (o) => !isCashOrder(o) && o.status === 'PLACED' && (o.paymentStatus === 'PENDING' || o.paymentStatus === 'FAILED') && o.createdAt < payCutoff,
       });
       if (r && !r.idempotent) summary.expired.push(id);
     } catch (err) {
@@ -57,7 +58,7 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
 
   // paidAt is only set by markOrderPaid, so legacy rows without it are never auto-refunded (they show in needs-attention).
   const unaccepted = await prisma.order.findMany({
-    where: { status: 'PLACED', paymentStatus: 'PAID', paidAt: { lt: acceptCutoff } },
+    where: { status: 'PLACED', OR:[{paymentStatus:'PAID',paidAt:{lt:acceptCutoff}},{workflowVersion:2,paymentMethod:'COD',paymentStatus:'PENDING',createdAt:{lt:acceptCutoff}}] },
     select: { id: true },
     orderBy: { paidAt: 'asc' },
     take: BATCH,
@@ -65,7 +66,7 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
   for (const { id } of unaccepted) {
     try {
       const r = await cancelOrder(id, SYSTEM, 'SYSTEM', 'Restaurant did not respond', {
-        guard: (o) => o.status === 'PLACED' && o.paymentStatus === 'PAID' && !!o.paidAt && o.paidAt < acceptCutoff,
+        guard: (o) => o.status === 'PLACED' && ((o.paymentStatus === 'PAID' && !!o.paidAt && o.paidAt < acceptCutoff) || (isCashOrder(o) && o.createdAt < acceptCutoff)),
         deferRefund: true, // the refund is run below, inside the bounded provider phase
       });
       if (r && !r.idempotent) {
@@ -78,6 +79,7 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
     }
   }
 
+  await prisma.driverPartner.updateMany({where:{availabilityAt:{lt:new Date(now.getTime()-120000)}},data:{availabilityAt:null,availabilityLat:null,availabilityLng:null}});
   await pruneRiderLocations(now).catch(()=>console.error('Location retention cleanup failed.'));
   await runDispatchMaintenance(now).catch(()=>console.error('Dispatch maintenance failed; retrying next tick.'));
 

@@ -4,9 +4,9 @@
   "scope": "Tracked source/config/test files only; no .env, provider secrets, uploads or account records read.",
   "limitations": "Source reference inventory is navigation aid, not proof of authorization. Middleware inside handlers and ownership queries require manual review. Historical migrations are preserved, not renamed.",
   "counts": {
-    "referencedFiles": 238,
-    "endpoints": 168,
-    "mounts": 25
+    "referencedFiles": 243,
+    "endpoints": 177,
+    "mounts": 26
   },
   "databaseModels": [
     {
@@ -90,6 +90,10 @@
         "id                String         @id @default(uuid())",
         "userId            String?",
         "name              String",
+        "primaryCategoryId String?",
+        "publicPhone       String?",
+        "description       String?",
+        "primaryCategory   Category? @relation(\"PrimaryStoreCategory\", fields: [primaryCategoryId], references: [id], onDelete: Restrict)",
         "category          String",
         "rating            Float          @default(0.0)",
         "totalRatingsCount Int            @default(0)",
@@ -156,6 +160,9 @@
         "city City? @relation(fields: [cityId], references: [id], onDelete: Restrict)",
         "serviceZoneId String?",
         "serviceZone   DeliveryZone?   @relation(fields: [serviceZoneId], references: [id], onDelete: SetNull)",
+        "availabilityLat Float?",
+        "availabilityLng Float?",
+        "availabilityAt DateTime?",
         "lastOfferedAt DateTime?",
         "offers        DispatchOffer[]"
       ]
@@ -180,7 +187,7 @@
   "routerMounts": [
     {
       "file": "backend/src/index.ts",
-      "line": 78,
+      "line": 79,
       "router": "app",
       "method": "USE",
       "path": "",
@@ -191,7 +198,7 @@
     },
     {
       "file": "backend/src/index.ts",
-      "line": 79,
+      "line": 80,
       "router": "app",
       "method": "USE",
       "path": "",
@@ -202,7 +209,7 @@
     },
     {
       "file": "backend/src/index.ts",
-      "line": 82,
+      "line": 83,
       "router": "app",
       "method": "USE",
       "path": "",
@@ -213,7 +220,7 @@
     },
     {
       "file": "backend/src/index.ts",
-      "line": 93,
+      "line": 94,
       "router": "app",
       "method": "USE",
       "path": "/api",
@@ -224,18 +231,18 @@
     },
     {
       "file": "backend/src/index.ts",
-      "line": 121,
+      "line": 122,
       "router": "app",
       "method": "USE",
       "path": "",
       "middleware": [],
       "inlineHandlerLines": [
-        121
+        122
       ]
     },
     {
       "file": "backend/src/index.ts",
-      "line": 129,
+      "line": 130,
       "router": "app",
       "method": "USE",
       "path": "",
@@ -261,7 +268,7 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 48,
+      "line": 49,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
@@ -272,7 +279,7 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 49,
+      "line": 50,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
@@ -283,7 +290,7 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 50,
+      "line": 51,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
@@ -294,7 +301,7 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 51,
+      "line": 52,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
@@ -305,7 +312,7 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 52,
+      "line": 53,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
@@ -316,23 +323,12 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 53,
-      "router": "apiRouter",
-      "method": "USE",
-      "path": "",
-      "middleware": [
-        "geographyRouter"
-      ],
-      "inlineHandlerLines": []
-    },
-    {
-      "file": "backend/src/routes/api.ts",
       "line": 54,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
       "middleware": [
-        "productsRouter"
+        "marketplaceRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -343,7 +339,18 @@
       "method": "USE",
       "path": "",
       "middleware": [
-        "operationsRouter"
+        "geographyRouter"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/api.ts",
+      "line": 56,
+      "router": "apiRouter",
+      "method": "USE",
+      "path": "",
+      "middleware": [
+        "productsRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -354,7 +361,7 @@
       "method": "USE",
       "path": "",
       "middleware": [
-        "partnerRouter"
+        "operationsRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -365,16 +372,16 @@
       "method": "USE",
       "path": "",
       "middleware": [
-        "orderRouter"
+        "partnerRouter"
       ],
       "inlineHandlerLines": []
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 60,
+      "line": 61,
       "router": "apiRouter",
       "method": "USE",
-      "path": "/v1",
+      "path": "",
       "middleware": [
         "orderRouter"
       ],
@@ -385,9 +392,9 @@
       "line": 62,
       "router": "apiRouter",
       "method": "USE",
-      "path": "",
+      "path": "/v1",
       "middleware": [
-        "deviceRouter"
+        "orderRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -398,7 +405,7 @@
       "method": "USE",
       "path": "",
       "middleware": [
-        "catalogRouter"
+        "deviceRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -409,7 +416,7 @@
       "method": "USE",
       "path": "",
       "middleware": [
-        "categoriesRouter"
+        "catalogRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -420,7 +427,7 @@
       "method": "USE",
       "path": "",
       "middleware": [
-        "uploadRouter"
+        "categoriesRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -431,13 +438,24 @@
       "method": "USE",
       "path": "",
       "middleware": [
+        "uploadRouter"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/api.ts",
+      "line": 72,
+      "router": "apiRouter",
+      "method": "USE",
+      "path": "",
+      "middleware": [
         "financeRouter"
       ],
       "inlineHandlerLines": []
     },
     {
       "file": "backend/src/routes/geography.ts",
-      "line": 90,
+      "line": 94,
       "router": "geographyRouter",
       "method": "USE",
       "path": "/v1/admin",
@@ -462,24 +480,24 @@
   "endpoints": [
     {
       "file": "backend/src/index.ts",
-      "line": 96,
+      "line": 97,
       "router": "app",
       "method": "GET",
       "path": "/health",
       "middleware": [],
       "inlineHandlerLines": [
-        96
+        97
       ]
     },
     {
       "file": "backend/src/index.ts",
-      "line": 106,
+      "line": 107,
       "router": "app",
       "method": "GET",
       "path": "/ready",
       "middleware": [],
       "inlineHandlerLines": [
-        106
+        107
       ]
     },
     {
@@ -494,6 +512,20 @@
       ],
       "inlineHandlerLines": [
         12
+      ]
+    },
+    {
+      "file": "backend/src/routes/adminStores.ts",
+      "line": 51,
+      "router": "adminStoresRouter",
+      "method": "PATCH",
+      "path": "/v1/admin/stores/:id",
+      "middleware": [
+        "requireAuth",
+        "requireRole('ADMIN')"
+      ],
+      "inlineHandlerLines": [
+        51
       ]
     },
     {
@@ -552,7 +584,7 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 99,
+      "line": 101,
       "router": "apiRouter",
       "method": "GET",
       "path": "/drivers",
@@ -561,12 +593,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        99
+        101
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 110,
+      "line": 112,
       "router": "apiRouter",
       "method": "GET",
       "path": "/drivers/locations",
@@ -575,12 +607,12 @@
         "requireRole('DRIVER','ADMIN')"
       ],
       "inlineHandlerLines": [
-        110
+        112
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 132,
+      "line": 134,
       "router": "apiRouter",
       "method": "GET",
       "path": "/campus",
@@ -588,12 +620,12 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        132
+        134
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 134,
+      "line": 136,
       "router": "apiRouter",
       "method": "GET",
       "path": "/drivers/:id",
@@ -603,12 +635,12 @@
         "validParams('id')"
       ],
       "inlineHandlerLines": [
-        134
+        136
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 185,
+      "line": 187,
       "router": "apiRouter",
       "method": "POST",
       "path": "/auth/google",
@@ -616,12 +648,12 @@
         "legacyAuthOnly"
       ],
       "inlineHandlerLines": [
-        185
+        187
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 244,
+      "line": 246,
       "router": "apiRouter",
       "method": "POST",
       "path": "/auth/partner-login",
@@ -629,12 +661,12 @@
         "legacyAuthOnly"
       ],
       "inlineHandlerLines": [
-        244
+        246
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 303,
+      "line": 305,
       "router": "apiRouter",
       "method": "POST",
       "path": "/auth/admin-login",
@@ -642,12 +674,12 @@
         "legacyAuthOnly"
       ],
       "inlineHandlerLines": [
-        303
+        305
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 376,
+      "line": 378,
       "router": "apiRouter",
       "method": "GET",
       "path": "/auth/profile",
@@ -655,12 +687,12 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        376
+        378
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 388,
+      "line": 390,
       "router": "apiRouter",
       "method": "PUT",
       "path": "/auth/profile",
@@ -668,12 +700,12 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        388
+        390
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 445,
+      "line": 447,
       "router": "apiRouter",
       "method": "POST",
       "path": "/auth/logout",
@@ -681,12 +713,12 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        445
+        447
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 467,
+      "line": 469,
       "router": "apiRouter",
       "method": "DELETE",
       "path": "/auth/account",
@@ -695,12 +727,12 @@
         "requireRole('STUDENT')"
       ],
       "inlineHandlerLines": [
-        467
+        469
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 511,
+      "line": 513,
       "router": "apiRouter",
       "method": "POST",
       "path": "/admin/partners",
@@ -710,12 +742,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        511
+        513
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 583,
+      "line": 585,
       "router": "apiRouter",
       "method": "GET",
       "path": "/admin/partners",
@@ -724,12 +756,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        583
+        585
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 598,
+      "line": 600,
       "router": "apiRouter",
       "method": "POST",
       "path": "/notifications/register-token",
@@ -737,23 +769,23 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        598
+        600
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 638,
+      "line": 640,
       "router": "apiRouter",
       "method": "GET",
       "path": "/vendors",
       "middleware": [],
       "inlineHandlerLines": [
-        638
+        640
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 649,
+      "line": 651,
       "router": "apiRouter",
       "method": "GET",
       "path": "/vendors/:id",
@@ -761,12 +793,12 @@
         "validParams('id')"
       ],
       "inlineHandlerLines": [
-        649
+        651
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 664,
+      "line": 666,
       "router": "apiRouter",
       "method": "POST",
       "path": "/vendors",
@@ -775,12 +807,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        664
+        666
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 711,
+      "line": 713,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/admin/vendors/:id/location",
@@ -790,12 +822,12 @@
         "validParams('id')"
       ],
       "inlineHandlerLines": [
-        711
+        713
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 727,
+      "line": 729,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/admin/vendors/:id/profile",
@@ -805,12 +837,12 @@
         "validParams('id')"
       ],
       "inlineHandlerLines": [
-        727
+        729
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 737,
+      "line": 739,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/vendors/:id/status",
@@ -821,12 +853,12 @@
         "requireApprovedPartner"
       ],
       "inlineHandlerLines": [
-        737
+        739
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 757,
+      "line": 759,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/vendors/:id/toggle",
@@ -837,12 +869,12 @@
         "requireApprovedPartner"
       ],
       "inlineHandlerLines": [
-        757
+        759
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 778,
+      "line": 780,
       "router": "apiRouter",
       "method": "POST",
       "path": "/vendors/:id/items",
@@ -853,12 +885,12 @@
         "validParams('id')"
       ],
       "inlineHandlerLines": [
-        778
+        780
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 811,
+      "line": 813,
       "router": "apiRouter",
       "method": "GET",
       "path": "/menus/:vendorId",
@@ -866,12 +898,12 @@
         "validParams('vendorId')"
       ],
       "inlineHandlerLines": [
-        811
+        813
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 828,
+      "line": 830,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/menus/:itemId/toggle",
@@ -882,12 +914,12 @@
         "validParams('itemId')"
       ],
       "inlineHandlerLines": [
-        828
+        830
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 838,
+      "line": 840,
       "router": "apiRouter",
       "method": "GET",
       "path": "/analytics",
@@ -896,12 +928,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        838
+        840
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 890,
+      "line": 892,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/vendors/items/:itemId",
@@ -912,12 +944,12 @@
         "validParams('itemId')"
       ],
       "inlineHandlerLines": [
-        890
+        892
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 936,
+      "line": 938,
       "router": "apiRouter",
       "method": "POST",
       "path": "/reviews",
@@ -926,12 +958,12 @@
         "requireRole('STUDENT')"
       ],
       "inlineHandlerLines": [
-        936
+        938
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 1071,
+      "line": 1073,
       "router": "apiRouter",
       "method": "POST",
       "path": "/coupons/redeem-coins",
@@ -940,12 +972,12 @@
         "requireRole('STUDENT')"
       ],
       "inlineHandlerLines": [
-        1071
+        1073
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 1126,
+      "line": 1128,
       "router": "apiRouter",
       "method": "GET",
       "path": "/reviews/vendor/:vendorId",
@@ -954,12 +986,12 @@
         "validParams('vendorId')"
       ],
       "inlineHandlerLines": [
-        1126
+        1128
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 1135,
+      "line": 1137,
       "router": "apiRouter",
       "method": "GET",
       "path": "/reviews/driver/:driverId",
@@ -968,7 +1000,7 @@
         "validParams('driverId')"
       ],
       "inlineHandlerLines": [
-        1135
+        1137
       ]
     },
     {
@@ -1803,13 +1835,13 @@
       "middleware": [
         "requireAuth",
         "requireRole('STUDENT')",
-        "safe(async (req, res) => {\n  const address = await ownedAddress(prisma, req.user!.id, req.query.addressId);\n  const p = page(req);\n  // The city/approval/open/location index bounds candidates; the exact configured circles are authoritative.\n  const candidates = await prisma.vendor.findMany({ ...p, orderBy: { id: 'asc' }, include: { menuItems: { where: { approvalStatus: 'APPROVED', deletedAt: null }, orderBy: { id: 'asc' }, take: 50 } }, where: {\n    cityId: address.cityId, approvalStatus: 'APPROVED', isAcceptingOrders: true,\n    lat: { gte: address.lat - 0.46, lte: address.lat + 0.46 },\n    lng: { gte: address.lng - 0.65, lte: address.lng + 0.65 },\n  } });\n  const stores = [];\n  for (const vendor of candidates) {\n    try {\n      const eligibility = await deliveryEligibility(prisma, address, vendor.id);\n      stores.push({ ...publicVendorView(vendor), cityId: vendor.cityId, hasMoreProducts: vendor.menuItems.length === 50, ...eligibility });\n    } catch (e) { if (!(e instanceof AppError && ['STORE_UNAVAILABLE', 'AREA_UNSUPPORTED'].includes(e.code))) throw e; }\n  }\n  res.json({ success: true, data: stores, nextCursor: candidates.length === p.take ? candidates.at(-1)!.id : null });\n})"
+        "safe(async (req, res) => {\n  const address = await ownedAddress(prisma, req.user!.id, req.query.addressId);\n  const p = page(req);\n  const q=text(req.query.q,'search',100,false), categoryId=text(req.query.categoryId,'categoryId',64,false);\n  // The city/approval/open/location index bounds candidates; the exact configured circles are authoritative.\n  const candidates = await prisma.vendor.findMany({ ...p, orderBy: { id: 'asc' }, include: { primaryCategory:true, menuItems: { where: { approvalStatus: 'APPROVED', deletedAt: null }, orderBy: { id: 'asc' }, take: 50 } }, where: {\n    ...(req.query.marketplace==='1'?{user:{is:{role:'VENDOR' as const,deletedAt:null}},primaryCategory:{is:{isActive:true,forRestaurants:true}}}:{}),\n    ...(categoryId?{primaryCategoryId:categoryId}:{}),\n    ...(q?{OR:[{name:{contains:q,mode:'insensitive' as const}},{primaryCategory:{name:{contains:q,mode:'insensitive' as const}}},{menuItems:{some:{approvalStatus:'APPROVED' as const,deletedAt:null,name:{contains:q,mode:'insensitive' as const}}}}]}:{}),\n    cityId: address.cityId, approvalStatus: 'APPROVED', isAcceptingOrders: true,\n    lat: { gte: address.lat - 0.46, lte: address.lat + 0.46 },\n    lng: { gte: address.lng - 0.65, lte: address.lng + 0.65 },\n  } });\n  const stores = [];\n  for (const vendor of candidates) {\n    try {\n      const eligibility = await deliveryEligibility(prisma, address, vendor.id);\n      stores.push({ ...publicVendorView(vendor), cityId: vendor.cityId, hasMoreProducts: vendor.menuItems.length === 50, ...eligibility });\n    } catch (e) { if (!(e instanceof AppError && ['STORE_UNAVAILABLE', 'AREA_UNSUPPORTED'].includes(e.code))) throw e; }\n  }\n  res.json({ success: true, data: stores, nextCursor: candidates.length === p.take ? candidates.at(-1)!.id : null });\n})"
       ],
       "inlineHandlerLines": []
     },
     {
       "file": "backend/src/routes/geography.ts",
-      "line": 84,
+      "line": 88,
       "router": "geographyRouter",
       "method": "POST",
       "path": "/v1/serviceability",
@@ -1822,7 +1854,7 @@
     },
     {
       "file": "backend/src/routes/geography.ts",
-      "line": 91,
+      "line": 95,
       "router": "geographyRouter",
       "method": "GET",
       "path": "/v1/admin/geography",
@@ -1833,30 +1865,30 @@
     },
     {
       "file": "backend/src/routes/geography.ts",
-      "line": 95,
+      "line": 99,
       "router": "geographyRouter",
       "method": "POST",
       "path": "/v1/admin/cities",
       "middleware": [
-        "safe(async (req, res) => {\n  const b = req.body ?? {}, code = text(b.code, 'code', 40).toLowerCase();\n  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(code)) throw geoError('code', 'Use a lower-case city code, for example bengaluru-ka.');\n  const data = { code, name: text(b.name, 'name', 80), state: text(b.state, 'state', 80), active: b.active === undefined ? false : bool(b.active) };\n  const city = await prisma.$transaction(async (tx) => { const c = await tx.city.create({ data }); await audit(tx, req, 'CITY_CREATED', 'CITY', c.id); return c; });\n  ok(res, city, 201);\n})"
-      ],
-      "inlineHandlerLines": []
-    },
-    {
-      "file": "backend/src/routes/geography.ts",
-      "line": 102,
-      "router": "geographyRouter",
-      "method": "PATCH",
-      "path": "/v1/admin/cities/:id",
-      "middleware": [
-        "validParams('id')",
-        "safe(async (req, res) => {\n  const active = bool(req.body?.active);\n  ok(res, await prisma.$transaction(async (tx) => { const c = await tx.city.update({ where: { id: req.params.id }, data: { active } }); await audit(tx, req, 'CITY_AVAILABILITY_CHANGED', 'CITY', c.id); return c; }));\n})"
+        "safe(async (req, res) => {\n  const b = req.body ?? {}, code = text(b.code, 'code', 40).toLowerCase();\n  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(code)) throw geoError('code', 'Use a lower-case city code, for example bengaluru-ka.');\n  const data = { code, name: text(b.name, 'name', 80), state: text(b.state, 'state', 80), active: b.active === undefined ? false : bool(b.active), codEnabled:b.codEnabled===undefined?false:bool(b.codEnabled,'codEnabled') };\n  const city = await prisma.$transaction(async (tx) => { const c = await tx.city.create({ data }); await audit(tx, req, 'CITY_CREATED', 'CITY', c.id); return c; });\n  ok(res, city, 201);\n})"
       ],
       "inlineHandlerLines": []
     },
     {
       "file": "backend/src/routes/geography.ts",
       "line": 106,
+      "router": "geographyRouter",
+      "method": "PATCH",
+      "path": "/v1/admin/cities/:id",
+      "middleware": [
+        "validParams('id')",
+        "safe(async (req, res) => {\n  const data={...(req.body?.active===undefined?{}:{active:bool(req.body.active)}),...(req.body?.codEnabled===undefined?{}:{codEnabled:bool(req.body.codEnabled,'codEnabled')})};\n  ok(res, await prisma.$transaction(async (tx) => { const c = await tx.city.update({ where: { id: req.params.id }, data }); await audit(tx, req, 'CITY_AVAILABILITY_CHANGED', 'CITY', c.id); return c; }));\n})"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/geography.ts",
+      "line": 110,
       "router": "geographyRouter",
       "method": "POST",
       "path": "/v1/admin/zones",
@@ -1867,7 +1899,7 @@
     },
     {
       "file": "backend/src/routes/geography.ts",
-      "line": 114,
+      "line": 118,
       "router": "geographyRouter",
       "method": "PATCH",
       "path": "/v1/admin/zones/:id",
@@ -1879,7 +1911,7 @@
     },
     {
       "file": "backend/src/routes/geography.ts",
-      "line": 120,
+      "line": 124,
       "router": "geographyRouter",
       "method": "PUT",
       "path": "/v1/admin/vendors/:id/location",
@@ -1891,7 +1923,7 @@
     },
     {
       "file": "backend/src/routes/geography.ts",
-      "line": 134,
+      "line": 138,
       "router": "geographyRouter",
       "method": "PUT",
       "path": "/v1/admin/vendors/:id/coverage/:zoneId",
@@ -1902,8 +1934,116 @@
       "inlineHandlerLines": []
     },
     {
+      "file": "backend/src/routes/marketplace.ts",
+      "line": 25,
+      "router": "marketplaceRouter",
+      "method": "POST",
+      "path": "/v2/checkout/quote",
+      "middleware": [
+        "...customer",
+        "wrap(async(r,s)=>{\n  const b=input(r.body??{}),store=await requireMarketplaceStore(prisma,b.vendorId);\n  const quote=await quoteOrder(r.user!.id,{restaurants:[{vendorId:b.vendorId,items:b.items}],addressId:b.addressId,couponCode:b.couponCode});\n  s.json({success:true,data:{...quote,maxRestaurants:1,paymentMethods:store.city?.codEnabled?['ONLINE','COD']:['ONLINE']}});\n})"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/marketplace.ts",
+      "line": 30,
+      "router": "marketplaceRouter",
+      "method": "POST",
+      "path": "/v2/checkout",
+      "middleware": [
+        "...customer",
+        "wrap(async(r,s)=>{\n  const b=input(r.body??{}),clientRequestId=text(r.body?.clientRequestId,'clientRequestId',64);\n  if(!/^[A-Za-z0-9_-]{8,64}$/.test(clientRequestId)) throw new AppError(400,'BAD_REQUEST','Use a unique checkout request identifier.');\n  const result=await placeOrder(r.user!.id,{...b,workflowVersion:2,clientRequestId,dropoffHostel:'',dropoffNotes:text(r.body?.dropoffNotes,'delivery notes',300,false)||null});\n  s.status(result.replay?200:201).json({success:true,idempotentReplay:result.replay,data:orderView(result.order,'STUDENT',r.user!.id)});\n})"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/marketplace.ts",
+      "line": 38,
+      "router": "marketplaceRouter",
+      "method": "POST",
+      "path": "/v1/drivers/availability-location",
+      "middleware": [
+        "requireAuth",
+        "requireRole('DRIVER')",
+        "requireApprovedPartner",
+        "wrap(async(r,s)=>{\n  if(!indianPoint(r.body?.lat,r.body?.lng)) throw new AppError(400,'BAD_LOCATION','Send a current location in India.');\n  const d=await prisma.driverPartner.updateMany({where:{userId:r.user!.id,approvalStatus:'APPROVED',dutyStatus:{in:['ONLINE','IN_TRANSIT']}},data:{availabilityLat:r.body.lat,availabilityLng:r.body.lng,availabilityAt:new Date()}});\n  if(!d.count) throw new AppError(409,'RIDER_OFFLINE','Go on duty before sharing your availability.');\n  s.json({success:true});\n})"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/marketplace.ts",
+      "line": 44,
+      "router": "marketplaceRouter",
+      "method": "GET",
+      "path": "/v1/partner/stores",
+      "middleware": [
+        "requireAuth",
+        "requireRole('VENDOR')",
+        "requireApprovedPartner",
+        "wrap(async(r,s)=>{\n  const rows=await prisma.vendor.findMany({where:{userId:r.user!.id,approvalStatus:'APPROVED'},select:{id:true,name:true,address:true,isAcceptingOrders:true,primaryCategoryId:true,publicPhone:true},orderBy:{name:'asc'}});\n  s.json({success:true,data:rows});\n})"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/marketplace.ts",
+      "line": 49,
+      "router": "marketplaceRouter",
+      "method": "GET",
+      "path": "/v1/partner/stores/:id",
+      "middleware": [
+        "requireAuth",
+        "requireRole('VENDOR')",
+        "requireApprovedPartner",
+        "validParams('id')",
+        "wrap(async(r,s)=>{\n const v=await prisma.vendor.findFirst({where:{id:r.params.id,userId:r.user!.id,approvalStatus:'APPROVED'}});\n if(!v)throw new AppError(404,'NOT_FOUND','Store not found.');\n const user=await prisma.user.findUniqueOrThrow({where:{id:r.user!.id},select:{id:true,name:true,phone:true,role:true,avatarId:true}});\n s.json({success:true,user,approvalStatus:v.approvalStatus,vendor:{...v,hasLocation:!!v.locationSource}});\n})"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/marketplace.ts",
+      "line": 56,
+      "router": "marketplaceRouter",
+      "method": "PUT",
+      "path": "/v1/partner/stores/:id/location",
+      "middleware": [
+        "requireAuth",
+        "requireRole('VENDOR')",
+        "requireApprovedPartner",
+        "validParams('id')",
+        "wrap(async(r,s)=>{\n if(!indianPoint(r.body?.lat,r.body?.lng))throw new AppError(400,'BAD_LOCATION','Choose a valid store pickup location in India.');\n const result=await prisma.$transaction(async tx=>{\n  const rows=await tx.$queryRaw<{id:string}[]>`SELECT \"id\" FROM \"Vendor\" WHERE \"id\"=${r.params.id} AND \"userId\"=${r.user!.id} AND \"approvalStatus\"='APPROVED' FOR UPDATE`;\n  if(!rows.length)throw new AppError(404,'NOT_FOUND','Store not found.');\n  const v=await tx.vendor.update({where:{id:rows[0].id},data:{lat:r.body.lat,lng:r.body.lng,locationSource:'DEVICE',locationSetAt:new Date()}});\n  await tx.vendorCoverage.updateMany({where:{vendorId:v.id},data:{active:false}});\n  await tx.adminAuditLog.create({data:{action:'VENDOR_LOCATION_SET',targetType:'VENDOR',targetId:v.id,summary:'Approved owner updated selected pickup pin; coverage paused for operator review.'}});\n  return {...v,hasLocation:true};\n });s.json({success:true,data:result,coverageNeedsReview:true});\n})"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/marketplace.ts",
+      "line": 68,
+      "router": "marketplaceRouter",
+      "method": "GET",
+      "path": "/v1/admin/cash",
+      "middleware": [
+        "...admin",
+        "wrap(async(r,s)=>{\n  const after=typeof r.query.after==='string'?r.query.after:undefined;\n  const rows=await prisma.cashCollection.findMany({where:r.query.cityId?{order:{vendor:{cityId:text(r.query.cityId,'cityId',64)}}}:{},take:51,...(after?{cursor:{id:after},skip:1}:{}),orderBy:{id:'asc'},include:{order:{select:{id:true,status:true,vendor:{select:{name:true,cityId:true}}}}}});\n  s.json({success:true,data:rows.slice(0,50),nextCursor:rows.length>50?rows[49].id:null});\n})"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/marketplace.ts",
+      "line": 74,
+      "router": "marketplaceRouter",
+      "method": "POST",
+      "path": "",
+      "middleware": [
+        "`/v1/admin/cash/:id/${action}`",
+        "...admin",
+        "validParams('id')",
+        "wrap(async(r,s)=>{\n  const reference=text(r.body?.reference,'reference',120);\n  if(reference.length<5) throw new AppError(400,'REFERENCE_REQUIRED','Enter a traceable receipt or refund reference.');\n  const result=await prisma.$transaction(async tx=>{\n    await tx.$queryRaw`SELECT \"id\" FROM \"CashCollection\" WHERE \"id\"=${r.params.id} FOR UPDATE`;\n    const cash=await tx.cashCollection.findUnique({where:{id:r.params.id}});\n    if(!cash) throw new AppError(404,'NOT_FOUND','Cash entry not found.');\n    const previous=action==='remit'?cash.remittanceReference:cash.refundReference;\n    if(previous) {if(previous!==reference) throw new AppError(409,'ALREADY_RECORDED','This cash event is already recorded with a different reference.');return cash;}\n    if(action==='refund'&&!cash.remittedAt) throw new AppError(409,'CASH_NOT_REMITTED','Record cash handover before recording a platform-funded cash refund.');\n    const updated=await tx.cashCollection.update({where:{id:cash.id},data:action==='remit'?{remittedAt:new Date(),remittedById:r.user!.id,remittanceReference:reference}:{refundedAt:new Date(),refundedById:r.user!.id,refundReference:reference}});\n    if(action==='refund') await tx.order.update({where:{id:cash.orderId},data:{paymentStatus:'REFUNDED',refundStatus:'MANUAL_CASH_REFUND'}});\n    await tx.adminAuditLog.create({data:{action:action==='remit'?'CASH_REMITTED':'CASH_REFUND_RECORDED',targetType:'ORDER',targetId:cash.orderId,summary:`Operator ${r.user!.id} recorded full cash ${action}; receipt ${reference}. No gateway transfer was performed.`}});\n    return updated;\n  });\n  s.json({success:true,data:result});\n})"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
       "file": "backend/src/routes/operations.ts",
-      "line": 22,
+      "line": 23,
       "router": "operationsRouter",
       "method": "PUT",
       "path": "/v1/admin/drivers/:id/service-area",
@@ -1916,7 +2056,7 @@
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 34,
+      "line": 35,
       "router": "operationsRouter",
       "method": "POST",
       "path": "/v1/dispatch-offers/:id/decline",
@@ -1931,20 +2071,20 @@
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 35,
+      "line": 36,
       "router": "operationsRouter",
       "method": "POST",
       "path": "/v1/admin/orders/:id/dispatch/retry",
       "middleware": [
         "...admin",
         "validParams('id')",
-        "wrap(async(r,s)=>{\n  const id=await withOrderLock(r.params.id,async(tx,o,g)=>{\n    const primary=g?.[0]??o;if(primary.driverId||!['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(primary.status)||primary.paymentStatus!=='PAID')throw new AppError(409,'ORDER_NOT_AVAILABLE','Only an eligible unassigned delivery can be offered again.');\n    await tx.dispatchOffer.updateMany({where:{orderId:primary.id,state:'PENDING'},data:{state:'REVOKED',reason:'Admin retry'}});\n    await tx.order.update({where:{id:primary.id},data:{dispatchRound:{increment:1},dispatchNote:null,dispatchEscalatedAt:null,dispatchNextAttemptAt:new Date()}});\n    await tx.adminAuditLog.create({data:{action:'DISPATCH_RETRIED',targetType:'ORDER',targetId:primary.id,summary:`Admin ${r.user!.id} requested a new offer round`}});return primary.id;\n  });await ensureDispatchOffer(id);ok(s,{retried:true});\n})"
+        "wrap(async(r,s)=>{\n  const id=await withOrderLock(r.params.id,async(tx,o,g)=>{\n    const primary=g?.[0]??o;if(primary.driverId||!['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(primary.status)||!fulfillmentAuthorized(primary))throw new AppError(409,'ORDER_NOT_AVAILABLE','Only an eligible unassigned delivery can be offered again.');\n    await tx.dispatchOffer.updateMany({where:{orderId:primary.id,state:'PENDING'},data:{state:'REVOKED',reason:'Admin retry'}});\n    await tx.order.update({where:{id:primary.id},data:{dispatchRound:primary.workflowVersion===2?(Math.floor(primary.dispatchRound/3)+1)*3:{increment:1},dispatchNote:null,dispatchEscalatedAt:null,dispatchNextAttemptAt:null}});\n    await tx.adminAuditLog.create({data:{action:'DISPATCH_RETRIED',targetType:'ORDER',targetId:primary.id,summary:`Admin ${r.user!.id} requested a new offer round`}});return primary.id;\n  });await ensureDispatchOffer(id);ok(s,{retried:true});\n})"
       ],
       "inlineHandlerLines": []
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 43,
+      "line": 44,
       "router": "operationsRouter",
       "method": "POST",
       "path": "/v1/orders/:id/arrive-pickup",
@@ -1953,25 +2093,25 @@
         "requireRole('DRIVER')",
         "requireApprovedPartner",
         "validParams('id')",
-        "wrap(async(r,s)=>{\n  await withOrderLock(r.params.id,async(tx,o)=>{\n    if(o.driverId!==r.user!.id)throw new AppError(404,'NOT_FOUND','Delivery not found.');\n    if(!['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(o.status))throw new AppError(409,'BAD_STATE','Pickup arrival can be confirmed before collection.');\n    if(o.pickupArrivalAt)return;\n    await tx.order.update({where:{id:o.id},data:{pickupArrivalAt:new Date()}});\n    await tx.notificationIntent.create({data:{orderId:o.id,event:'RIDER_AT_PICKUP',options:{bucket:o.updatedAt.getTime()}}});\n    await tx.adminAuditLog.create({data:{action:'RIDER_AT_PICKUP',targetType:'ORDER',targetId:o.id,summary:`Assigned rider ${r.user!.id} confirmed arrival at the store`}});\n  });drainNotificationIntents();ok(s,{arrived:true});\n})"
+        "wrap(async(r,s)=>{\n  await withOrderLock(r.params.id,async(tx,o)=>{\n    if(o.driverId!==r.user!.id)throw new AppError(404,'NOT_FOUND','Delivery not found.');\n    if(!['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(o.status))throw new AppError(409,'BAD_STATE','Pickup arrival can be confirmed before collection.');\n    if(o.pickupArrivalAt)return;\n    await requireRiderAt(tx,o,o.vendor);\n    await tx.order.update({where:{id:o.id},data:{pickupArrivalAt:new Date()}});\n    await tx.notificationIntent.create({data:{orderId:o.id,event:'RIDER_AT_PICKUP',options:{bucket:o.updatedAt.getTime()}}});\n    await tx.adminAuditLog.create({data:{action:'RIDER_AT_PICKUP',targetType:'ORDER',targetId:o.id,summary:`Assigned rider ${r.user!.id} confirmed arrival at the store`}});\n  });drainNotificationIntents();ok(s,{arrived:true});\n})"
       ],
       "inlineHandlerLines": []
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 53,
+      "line": 55,
       "router": "operationsRouter",
       "method": "GET",
       "path": "/v1/admin/dispatch",
       "middleware": [
         "...admin",
-        "wrap(async(r,s)=>{\n  const cityId=r.query.cityId===undefined?undefined:text(r.query.cityId,'cityId',64),p=page(r);\n  const rows=await prisma.order.findMany({...p,where:{paymentStatus:'PAID',status:{in:['ACCEPTED','PREPARING','READY_FOR_PICKUP']},driverId:null,OR:[{groupId:null},{groupIndex:0}],...(cityId?{vendor:{cityId}}:{})},orderBy:{id:'asc'},select:{id:true,status:true,createdAt:true,dispatchRound:true,dispatchNote:true,dispatchEscalatedAt:true,dispatchNextAttemptAt:true,vendor:{select:{id:true,name:true,cityId:true}},dispatchOffers:{orderBy:{createdAt:'desc'},take:10,select:{id:true,state:true,round:true,expiresAt:true,reason:true,driver:{select:{id:true,name:true}}}}}});\n  s.json({success:true,data:rows,nextCursor:rows.length===p.take?rows.at(-1)!.id:null});\n})"
+        "wrap(async(r,s)=>{\n  const cityId=r.query.cityId===undefined?undefined:text(r.query.cityId,'cityId',64),p=page(r);\n  const rows=await prisma.order.findMany({...p,where:{AND:[fulfillmentWhere],status:{in:['ACCEPTED','PREPARING','READY_FOR_PICKUP']},driverId:null,OR:[{groupId:null},{groupIndex:0}],...(cityId?{vendor:{cityId}}:{})},orderBy:{id:'asc'},select:{id:true,status:true,createdAt:true,dispatchRound:true,dispatchNote:true,dispatchEscalatedAt:true,dispatchNextAttemptAt:true,vendor:{select:{id:true,name:true,cityId:true}},dispatchOffers:{orderBy:{createdAt:'desc'},take:10,select:{id:true,state:true,round:true,expiresAt:true,reason:true,driver:{select:{id:true,name:true}}}}}});\n  s.json({success:true,data:rows,nextCursor:rows.length===p.take?rows.at(-1)!.id:null});\n})"
       ],
       "inlineHandlerLines": []
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 60,
+      "line": 62,
       "router": "operationsRouter",
       "method": "GET",
       "path": "/v1/partner/store",
@@ -1979,13 +2119,13 @@
         "requireAuth",
         "requireRole('VENDOR')",
         "requireApprovedPartner",
-        "wrap(async(r,s)=>{\n  const store=await prisma.vendor.findFirst({where:{userId:r.user!.id,approvalStatus:'APPROVED'},select:storeFields});\n  if(!store)throw new AppError(404,'NOT_FOUND','Store not found.');ok(s,store);\n})"
+        "wrap(async(r,s)=>{\n  const store=await prisma.vendor.findFirst({where:{userId:r.user!.id,approvalStatus:'APPROVED',...(r.query.vendorId?{id:text(r.query.vendorId,'vendorId',64)}:{})},select:storeFields});\n  if(!store)throw new AppError(404,'NOT_FOUND','Store not found.');ok(s,store);\n})"
       ],
       "inlineHandlerLines": []
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 64,
+      "line": 66,
       "router": "operationsRouter",
       "method": "PUT",
       "path": "/v1/partner/store",
@@ -1993,13 +2133,13 @@
         "requireAuth",
         "requireRole('VENDOR')",
         "requireApprovedPartner",
-        "wrap(async(r,s)=>{\n  const b=r.body??{},keys=Object.keys(b),allowed=['name','address','bannerImage'];\n  if(!keys.length||keys.some(k=>!allowed.includes(k)))throw new AppError(400,'BAD_REQUEST','Only store name, pickup address and banner image can be edited here.');\n  const data:Prisma.VendorUpdateInput={};\n  if(b.name!==undefined)data.name=checkVendorProfileText(b.name,'name','Store name',2,60);\n  if(b.address!==undefined)data.address=checkVendorProfileText(b.address,'address','Pickup address',3,140);\n  if(b.bannerImage!==undefined){const image=checkVendorBanner(b.bannerImage);if(image){const url=new URL(image);if(url.protocol!=='https:'||url.username||url.password)throw new AppError(400,'BAD_REQUEST','Use an HTTPS banner URL without credentials.','bannerImage');}data.bannerImage=image;}\n  const result=await prisma.$transaction(async(tx)=>{\n    const account=await tx.$queryRaw<{deletedAt:Date|null}[]>`SELECT \"deletedAt\" FROM \"User\" WHERE \"id\"=${r.user!.id} FOR SHARE`;\n    if(!account.length||account[0].deletedAt)throw new AppError(401,'ACCOUNT_UNAVAILABLE','Please sign in again.');\n    const ids=await tx.$queryRaw<{id:string}[]>`SELECT \"id\" FROM \"Vendor\" WHERE \"userId\"=${r.user!.id} AND \"approvalStatus\"='APPROVED' FOR UPDATE`;\n    if(!ids.length)throw new AppError(404,'NOT_FOUND','Store not found.');\n    const before=await tx.vendor.findUniqueOrThrow({where:{id:ids[0].id}});\n    const changed=keys.some(k=>(data as any)[k] !== (before as any)[k]);\n    if(data.name!==undefined&&data.name!==before.name){\n      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('vendor-name-unique'))`;\n      const taken=await tx.$queryRaw<{id:string}[]>`SELECT \"id\" FROM \"Vendor\" WHERE \"id\"<>${before.id} AND \"approvalStatus\"='APPROVED' AND lower(regexp_replace(btrim(\"name\"), '\\\\s+', ' ', 'g'))=lower(${data.name as string}) LIMIT 1`;\n      if(taken.length)throw new AppError(409,'NAME_TAKEN','Another store already uses this name.','name');\n    }\n    const coverageNeedsReview=data.address!==undefined&&data.address!==before.address;\n    if(changed){\n      await tx.vendor.update({where:{id:before.id},data});\n      if(coverageNeedsReview)await tx.vendorCoverage.updateMany({where:{vendorId:before.id},data:{active:false}});\n      await tx.adminAuditLog.create({data:{action:'STORE_PROFILE_UPDATED',targetType:'VENDOR',targetId:before.id,summary:`Store owner ${r.user!.id} updated ${keys.join(', ')}${coverageNeedsReview?'; coverage disabled pending location review':''}`}});\n    }\n    return {changed,coverageNeedsReview,store:await tx.vendor.findUniqueOrThrow({where:{id:before.id},select:storeFields})};\n  });s.json({success:true,data:result.store,changed:result.changed,coverageNeedsReview:result.coverageNeedsReview});\n})"
+        "wrap(async(r,s)=>{\n  const b=r.body??{},keys=Object.keys(b),allowed=['name','address','bannerImage'];\n  if(!keys.length||keys.some(k=>!allowed.includes(k)))throw new AppError(400,'BAD_REQUEST','Only store name, pickup address and banner image can be edited here.');\n  const data:Prisma.VendorUpdateInput={};\n  if(b.name!==undefined)data.name=checkVendorProfileText(b.name,'name','Store name',2,60);\n  if(b.address!==undefined)data.address=checkVendorProfileText(b.address,'address','Pickup address',3,140);\n  if(b.bannerImage!==undefined){const image=checkVendorBanner(b.bannerImage);if(image){const url=new URL(image);if(url.protocol!=='https:'||url.username||url.password)throw new AppError(400,'BAD_REQUEST','Use an HTTPS banner URL without credentials.','bannerImage');}data.bannerImage=image;}\n  const result=await prisma.$transaction(async(tx)=>{\n    const account=await tx.$queryRaw<{deletedAt:Date|null}[]>`SELECT \"deletedAt\" FROM \"User\" WHERE \"id\"=${r.user!.id} FOR SHARE`;\n    if(!account.length||account[0].deletedAt)throw new AppError(401,'ACCOUNT_UNAVAILABLE','Please sign in again.');\n    const selected=r.query.vendorId?text(r.query.vendorId,'vendorId',64):'';\n    const ids=await tx.$queryRaw<{id:string}[]>`SELECT \"id\" FROM \"Vendor\" WHERE \"userId\"=${r.user!.id} AND \"approvalStatus\"='APPROVED' AND (${selected}='' OR \"id\"=${selected}) ORDER BY \"id\" FOR UPDATE`;\n    if(!ids.length)throw new AppError(404,'NOT_FOUND','Store not found.');\n    const before=await tx.vendor.findUniqueOrThrow({where:{id:ids[0].id}});\n    const changed=keys.some(k=>(data as any)[k] !== (before as any)[k]);\n    if(data.name!==undefined&&data.name!==before.name){\n      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('vendor-name-unique'))`;\n      const taken=await tx.$queryRaw<{id:string}[]>`SELECT \"id\" FROM \"Vendor\" WHERE \"id\"<>${before.id} AND \"approvalStatus\"='APPROVED' AND lower(regexp_replace(btrim(\"name\"), '\\\\s+', ' ', 'g'))=lower(${data.name as string}) LIMIT 1`;\n      if(taken.length)throw new AppError(409,'NAME_TAKEN','Another store already uses this name.','name');\n    }\n    const coverageNeedsReview=data.address!==undefined&&data.address!==before.address;\n    if(changed){\n      await tx.vendor.update({where:{id:before.id},data});\n      if(coverageNeedsReview)await tx.vendorCoverage.updateMany({where:{vendorId:before.id},data:{active:false}});\n      await tx.adminAuditLog.create({data:{action:'STORE_PROFILE_UPDATED',targetType:'VENDOR',targetId:before.id,summary:`Store owner ${r.user!.id} updated ${keys.join(', ')}${coverageNeedsReview?'; coverage disabled pending location review':''}`}});\n    }\n    return {changed,coverageNeedsReview,store:await tx.vendor.findUniqueOrThrow({where:{id:before.id},select:storeFields})};\n  });s.json({success:true,data:result.store,changed:result.changed,coverageNeedsReview:result.coverageNeedsReview});\n})"
       ],
       "inlineHandlerLines": []
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 93,
+      "line": 96,
       "router": "operationsRouter",
       "method": "POST",
       "path": "/v1/support-cases",
@@ -2011,7 +2151,7 @@
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 98,
+      "line": 101,
       "router": "operationsRouter",
       "method": "GET",
       "path": "/v1/support-cases",
@@ -2023,7 +2163,7 @@
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 102,
+      "line": 105,
       "router": "operationsRouter",
       "method": "GET",
       "path": "/v1/support-cases/:id",
@@ -2036,7 +2176,7 @@
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 107,
+      "line": 110,
       "router": "operationsRouter",
       "method": "POST",
       "path": "/v1/support-cases/:id/replies",
@@ -2049,7 +2189,7 @@
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 117,
+      "line": 120,
       "router": "operationsRouter",
       "method": "GET",
       "path": "/v1/admin/support-cases",
@@ -2061,7 +2201,7 @@
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 123,
+      "line": 126,
       "router": "operationsRouter",
       "method": "POST",
       "path": "/v1/admin/support-cases/:id/notes",
@@ -2074,7 +2214,7 @@
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 133,
+      "line": 136,
       "router": "operationsRouter",
       "method": "GET",
       "path": "/v1/admin/audit",
@@ -2086,7 +2226,7 @@
     },
     {
       "file": "backend/src/routes/operations.ts",
-      "line": 136,
+      "line": 139,
       "router": "operationsRouter",
       "method": "GET",
       "path": "/v1/admin/operations",
@@ -2098,49 +2238,52 @@
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 59,
+      "line": 63,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders",
       "middleware": [
         "requireAuth",
-        "requireRole('STUDENT')"
+        "requireRole('STUDENT')",
+        "legacyCheckout"
       ],
       "inlineHandlerLines": [
-        59
+        63
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 118,
+      "line": 122,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders/quote",
       "middleware": [
         "requireAuth",
-        "requireRole('STUDENT')"
+        "requireRole('STUDENT')",
+        "legacyCheckout"
       ],
       "inlineHandlerLines": [
-        118
+        122
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 132,
+      "line": 136,
       "router": "orderRouter",
       "method": "POST",
       "path": "/order-groups",
       "middleware": [
         "requireAuth",
-        "requireRole('STUDENT')"
+        "requireRole('STUDENT')",
+        "legacyCheckout"
       ],
       "inlineHandlerLines": [
-        132
+        136
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 169,
+      "line": 173,
       "router": "orderRouter",
       "method": "GET",
       "path": "/order-groups",
@@ -2149,12 +2292,12 @@
         "requireRole('STUDENT')"
       ],
       "inlineHandlerLines": [
-        169
+        173
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 200,
+      "line": 204,
       "router": "orderRouter",
       "method": "GET",
       "path": "/order-groups/:id",
@@ -2163,12 +2306,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        200
+        204
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 215,
+      "line": 219,
       "router": "orderRouter",
       "method": "GET",
       "path": "/orders",
@@ -2176,12 +2319,12 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        215
+        219
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 274,
+      "line": 278,
       "router": "orderRouter",
       "method": "GET",
       "path": "/orders/available",
@@ -2191,12 +2334,12 @@
         "requireApprovedPartner"
       ],
       "inlineHandlerLines": [
-        274
+        278
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 302,
+      "line": 306,
       "router": "orderRouter",
       "method": "GET",
       "path": "/orders/:id",
@@ -2205,12 +2348,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        302
+        306
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 322,
+      "line": 326,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders/:id/cancel",
@@ -2220,12 +2363,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        322
+        326
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 333,
+      "line": 337,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders/:id/reject",
@@ -2236,12 +2379,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        333
+        337
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 351,
+      "line": 355,
       "router": "orderRouter",
       "method": "PATCH",
       "path": "/orders/:id/status",
@@ -2251,12 +2394,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        351
+        355
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 384,
+      "line": 388,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders/:id/verify-gate-otp",
@@ -2267,12 +2410,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        384
+        388
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 395,
+      "line": 399,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders/:id/accept-driver",
@@ -2283,12 +2426,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        395
+        399
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 404,
+      "line": 408,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders/:id/release",
@@ -2299,12 +2442,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        404
+        408
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 413,
+      "line": 417,
       "router": "orderRouter",
       "method": "POST",
       "path": "/drivers/location",
@@ -2314,12 +2457,12 @@
         "requireApprovedPartner"
       ],
       "inlineHandlerLines": [
-        413
+        417
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 428,
+      "line": 432,
       "router": "orderRouter",
       "method": "PATCH",
       "path": "/orders/:id/reassign",
@@ -2329,12 +2472,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        428
+        432
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 443,
+      "line": 447,
       "router": "orderRouter",
       "method": "POST",
       "path": "/admin/orders/:id/cancel",
@@ -2344,12 +2487,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        443
+        447
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 456,
+      "line": 460,
       "router": "orderRouter",
       "method": "POST",
       "path": "/admin/orders/:id/reset-otp-lock",
@@ -2359,12 +2502,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        456
+        460
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 466,
+      "line": 470,
       "router": "orderRouter",
       "method": "POST",
       "path": "/admin/orders/:id/retry-refund",
@@ -2374,12 +2517,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        466
+        470
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 484,
+      "line": 490,
       "router": "orderRouter",
       "method": "GET",
       "path": "/admin/payments/reconcile",
@@ -2388,12 +2531,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        484
+        490
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 548,
+      "line": 554,
       "router": "orderRouter",
       "method": "GET",
       "path": "/admin/orders/needs-attention",
@@ -2402,12 +2545,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        548
+        554
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 638,
+      "line": 644,
       "router": "orderRouter",
       "method": "POST",
       "path": "/payments/create-order",
@@ -2415,12 +2558,12 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        638
+        644
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 661,
+      "line": 667,
       "router": "orderRouter",
       "method": "POST",
       "path": "/payments/verify-signature",
@@ -2429,18 +2572,18 @@
         "requireRole('STUDENT')"
       ],
       "inlineHandlerLines": [
-        661
+        667
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 714,
+      "line": 720,
       "router": "orderRouter",
       "method": "POST",
       "path": "/payments/webhook",
       "middleware": [],
       "inlineHandlerLines": [
-        714
+        720
       ]
     },
     {
@@ -2876,12 +3019,12 @@
     },
     {
       "path": "apps/customer_app/lib/providers/order_provider.dart",
-      "sha256": "a98f662bb8eb92a688bedb7a53064e24ceb7fb455b2046ec16fc92003b761991",
+      "sha256": "510a45c1ed5c6ebaa5d1d177c0d9048e1cb31860b7ed5f80e553c111e4730a13",
       "references": [
         {
           "kind": "session",
           "symbol": "getSavedToken",
-          "line": 151
+          "line": 187
         }
       ]
     },
@@ -3109,38 +3252,38 @@
     },
     {
       "path": "apps/customer_app/lib/screens/checkout_screen.dart",
-      "sha256": "b46e9aa39497aee8d7260ce88d47badae1049e6047223b9ff6fbe685352e1300",
+      "sha256": "41c14d84795bc159aa525c48aa111c3c7dd803b7f628fb029a27d9dc9974969b",
       "references": [
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 97
+          "line": 102
         },
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 353
+          "line": 368
         },
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 776
+          "line": 793
         },
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 778
+          "line": 795
         },
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 782
+          "line": 799
         }
       ]
     },
     {
       "path": "apps/customer_app/lib/screens/home_screen.dart",
-      "sha256": "cbe627a1e341109c0b17a0a166dc243b38cf2c307237db4a11db36433e7534cc",
+      "sha256": "ea867f5a7f17aa9a7146efc90f37acfcdef1632e3797ca77e426b8ab68586719",
       "references": [
         {
           "kind": "session",
@@ -3166,7 +3309,7 @@
     },
     {
       "path": "apps/customer_app/lib/screens/live_tracking_screen.dart",
-      "sha256": "9f632b1bb126efb7b1e0fab951b8d7d5d31b41ca61faddad297f7cf0d57cd682",
+      "sha256": "3c9a89af427b687b14103cff30acd3a7c0c97808fb8f3b1f4284ec68f990db8a",
       "references": [
         {
           "kind": "session",
@@ -3176,7 +3319,7 @@
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 412
+          "line": 413
         }
       ]
     },
@@ -3274,7 +3417,7 @@
     },
     {
       "path": "apps/customer_app/lib/services/customer_api_service.dart",
-      "sha256": "388bfdf106c6d5feeaa821a18ce449fc1e7132bc07298d684b0601ffaf2176cd",
+      "sha256": "27888fa6b46e950978c0c329ede6124ab490d0a26eb1c2430f353d6c6e78d436",
       "references": [
         {
           "kind": "session",
@@ -3314,107 +3457,107 @@
         {
           "kind": "session",
           "symbol": "SecureSessionTokens",
-          "line": 106
+          "line": 108
         },
         {
           "kind": "session",
           "symbol": "SecureSessionTokens",
-          "line": 110
-        },
-        {
-          "kind": "session",
-          "symbol": "clearToken",
           "line": 115
         },
         {
           "kind": "session",
-          "symbol": "SecureSessionTokens",
+          "symbol": "clearToken",
           "line": 120
         },
         {
           "kind": "session",
-          "symbol": "getSavedToken",
-          "line": 130
+          "symbol": "SecureSessionTokens",
+          "line": 125
         },
         {
           "kind": "session",
           "symbol": "getSavedToken",
-          "line": 204
+          "line": 135
         },
         {
           "kind": "session",
           "symbol": "getSavedToken",
-          "line": 352
+          "line": 209
+        },
+        {
+          "kind": "session",
+          "symbol": "getSavedToken",
+          "line": 359
         },
         {
           "kind": "session",
           "symbol": "saveToken",
-          "line": 395
+          "line": 402
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 133
+          "line": 138
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 163
+          "line": 168
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 182
+          "line": 187
         },
         {
           "kind": "authentication",
           "symbol": "/auth/logout",
-          "line": 209
+          "line": 214
         },
         {
           "kind": "authentication",
           "symbol": "/auth/account",
-          "line": 228
+          "line": 233
         },
         {
           "kind": "authentication",
           "symbol": "/auth/google",
-          "line": 368
+          "line": 375
         },
         {
           "kind": "transports",
           "symbol": "Authorization",
-          "line": 206
+          "line": 211
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 206
+          "line": 211
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 206
+          "line": 211
         },
         {
           "kind": "transports",
           "symbol": "Authorization",
-          "line": 357
+          "line": 364
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 358
+          "line": 365
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 358
+          "line": 365
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 411
+          "line": 418
         }
       ]
     },
@@ -3538,7 +3681,7 @@
     },
     {
       "path": "apps/customer_app/test/account_flow_test.dart",
-      "sha256": "cb8a3b745c8dd6c760986ab5e4db78a530c1e0f3e44e10ee650588f31837c26a",
+      "sha256": "8a38e28346d193b8a1cc3c43c72397c72e1c1cb5d84d4acd7a478283ca1edf11",
       "references": [
         {
           "kind": "identity",
@@ -4304,7 +4447,7 @@
     },
     {
       "path": "apps/customer_app/test/addresses_test.dart",
-      "sha256": "8ffda2a0d4ddfc4bbf16b5509640b2bea07b7879ddb2c558fca7ec253f13fc15",
+      "sha256": "1d9434068ab4c106a2e6e56cb15ca3e57fec7ae21760f20c713f2ad4842c2f49",
       "references": [
         {
           "kind": "session",
@@ -4504,7 +4647,7 @@
     },
     {
       "path": "apps/customer_app/test/categories_test.dart",
-      "sha256": "32acbd5ec2a6456477dda3cf9ad515535bc5afdf17baa55a8e0ba103cdae91af",
+      "sha256": "5d0f4cd1e58478de104e1692d18dad8a3a5948acec4775cdbc0110c9808703f5",
       "references": [
         {
           "kind": "identity",
@@ -4659,7 +4802,7 @@
     },
     {
       "path": "apps/customer_app/test/groups_widgets_test.dart",
-      "sha256": "b34650a6ba9e906ee14553b50504d151539779401ca4a0e8f4fc37b3bdfbae55",
+      "sha256": "dc5dc7773dbd5ab9976ad1ddd1801dc619ad4c94d89c1d287ef5c033fcc25289",
       "references": [
         {
           "kind": "identity",
@@ -5048,22 +5191,22 @@
     },
     {
       "path": "apps/customer_app/test/ui_visual_capture_test.dart",
-      "sha256": "e1e5b299782dfe58ef4230a9a45c16bd2aee004f147ae3807d1d3c2e1b3704a7",
+      "sha256": "b21ab5f0e0320b3958d2403cee04aed8963fe7921c524490c1e3d14af407a69c",
       "references": [
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 81
+          "line": 84
         },
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 99
+          "line": 102
         },
         {
           "kind": "clientFlows",
           "symbol": "AuthScreen",
-          "line": 126
+          "line": 129
         }
       ]
     },
@@ -6636,12 +6779,12 @@
     },
     {
       "path": "apps/driver_app/test/rider_api_test.dart",
-      "sha256": "9180c5aaed4355e1c31b49286ec48d8e76705fa99c5ccd64116bc7f32e8eec5f",
+      "sha256": "edd60832d2a331e01a8c26bae518fa9c2b04720a8a025657b26086dfba7b4fce",
       "references": [
         {
           "kind": "identity",
           "symbol": "passwordHash",
-          "line": 148
+          "line": 161
         },
         {
           "kind": "session",
@@ -6661,7 +6804,7 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 113
+          "line": 126
         },
         {
           "kind": "transports",
@@ -7288,52 +7431,52 @@
     },
     {
       "path": "apps/vendor_app/lib/screens/vendor_home.dart",
-      "sha256": "fecd0e802dde204d703ff9be2de39354e93941ee20da324f90b1fcea86fbb3b1",
+      "sha256": "919378106d54709a2483f091addf3e18d8e4199cc4c26dcf50adc3e719e182a6",
       "references": [
         {
           "kind": "session",
           "symbol": "SessionScope",
-          "line": 119
+          "line": 120
         },
         {
           "kind": "session",
           "symbol": "SessionScope",
-          "line": 287
+          "line": 288
         },
         {
           "kind": "session",
           "symbol": "SessionScope",
-          "line": 292
+          "line": 293
         },
         {
           "kind": "session",
           "symbol": "SessionScope",
-          "line": 430
+          "line": 431
         },
         {
           "kind": "session",
           "symbol": "SessionScope",
-          "line": 468
+          "line": 469
         },
         {
           "kind": "session",
           "symbol": "SessionScope",
-          "line": 556
+          "line": 557
         },
         {
           "kind": "session",
           "symbol": "SessionScope",
-          "line": 643
+          "line": 644
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSession",
-          "line": 631
+          "line": 632
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSession",
-          "line": 864
+          "line": 866
         }
       ]
     },
@@ -7644,137 +7787,127 @@
     },
     {
       "path": "apps/vendor_app/lib/session/session_controller.dart",
-      "sha256": "0dccd30826b9e6db8c6e3a7dd38f2c143ea8f854f15232c4d106abe5b057f509",
+      "sha256": "8a228dce394a41d629c2fac794cd09023b958bb62b3ea338aff4b7d47570e59f",
       "references": [
         {
           "kind": "identity",
           "symbol": "PartnerAuthService",
-          "line": 27
+          "line": 29
         },
         {
           "kind": "identity",
           "symbol": "PartnerAuthService",
-          "line": 38
+          "line": 49
         },
         {
           "kind": "session",
           "symbol": "ClerkSessions",
-          "line": 1
+          "line": 3
         },
         {
           "kind": "session",
           "symbol": "SessionController",
-          "line": 26
+          "line": 28
         },
         {
           "kind": "session",
           "symbol": "SessionController",
-          "line": 27
+          "line": 29
         },
         {
           "kind": "session",
           "symbol": "ClerkSessions",
-          "line": 30
+          "line": 33
         },
         {
           "kind": "session",
           "symbol": "ClerkSessions",
-          "line": 34
+          "line": 42
         },
         {
           "kind": "session",
           "symbol": "clearToken",
-          "line": 87
+          "line": 98
         },
         {
           "kind": "session",
           "symbol": "getSavedToken",
-          "line": 108
+          "line": 125
         },
         {
           "kind": "session",
           "symbol": "saveToken",
-          "line": 139
+          "line": 160
         },
         {
           "kind": "session",
           "symbol": "saveToken",
-          "line": 152
+          "line": 173
         },
         {
           "kind": "session",
           "symbol": "getSavedToken",
-          "line": 164
+          "line": 185
         },
         {
           "kind": "session",
           "symbol": "getSavedToken",
-          "line": 192
+          "line": 217
         },
         {
           "kind": "session",
           "symbol": "getSavedToken",
-          "line": 261
+          "line": 330
         },
         {
           "kind": "session",
           "symbol": "ClerkSessions",
-          "line": 269
+          "line": 338
         },
         {
           "kind": "session",
           "symbol": "SessionController",
-          "line": 276
+          "line": 345
         },
         {
           "kind": "session",
           "symbol": "SessionScope",
-          "line": 277
+          "line": 346
         },
         {
           "kind": "session",
           "symbol": "SessionController",
-          "line": 277
+          "line": 346
         },
         {
           "kind": "session",
           "symbol": "SessionScope",
-          "line": 278
+          "line": 347
         },
         {
           "kind": "session",
           "symbol": "SessionController",
-          "line": 278
+          "line": 348
         },
         {
           "kind": "session",
           "symbol": "SessionController",
-          "line": 281
+          "line": 352
         },
         {
           "kind": "session",
           "symbol": "SessionScope",
-          "line": 282
+          "line": 353
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSession",
-          "line": 56
+          "line": 67
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSession",
-          "line": 60
-        },
-        {
-          "kind": "clientFlows",
-          "symbol": "PartnerSession",
-          "line": 62
-        },
-        {
-          "kind": "clientFlows",
-          "symbol": "PartnerSession",
-          "line": 68
+          "line": 71
         },
         {
           "kind": "clientFlows",
@@ -7789,27 +7922,47 @@
         {
           "kind": "clientFlows",
           "symbol": "PartnerSession",
-          "line": 96
+          "line": 84
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSession",
-          "line": 96
+          "line": 90
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSession",
-          "line": 96
+          "line": 107
+        },
+        {
+          "kind": "clientFlows",
+          "symbol": "PartnerSession",
+          "line": 108
+        },
+        {
+          "kind": "clientFlows",
+          "symbol": "PartnerSession",
+          "line": 108
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSignupForm",
-          "line": 149
+          "line": 170
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSignupForm",
-          "line": 163
+          "line": 184
+        },
+        {
+          "kind": "clientFlows",
+          "symbol": "PartnerSession",
+          "line": 233
+        },
+        {
+          "kind": "clientFlows",
+          "symbol": "PartnerSession",
+          "line": 274
         }
       ]
     },
@@ -7836,6 +7989,17 @@
           "kind": "session",
           "symbol": "SessionController",
           "line": 66
+        }
+      ]
+    },
+    {
+      "path": "apps/vendor_app/lib/widgets/store_selector.dart",
+      "sha256": "a2dacc4aa3ce99ac0ad11ea33475a04c2184d79986b55ebb66349929ffa20bde",
+      "references": [
+        {
+          "kind": "session",
+          "symbol": "SessionScope",
+          "line": 45
         }
       ]
     },
@@ -8956,7 +9120,7 @@
     },
     {
       "path": "apps/vendor_app/test/support/location_fakes.dart",
-      "sha256": "0c0f7fe23028d905dd160eb60338eb64fc1ffd72c0b707b1be12955acdc63a5e",
+      "sha256": "a39fa9e85ad46765896069e4b6e26a86dcc214915e8646faef9354ed00dd0e81",
       "references": [
         {
           "kind": "identity",
@@ -9132,7 +9296,7 @@
     },
     {
       "path": "backend/prisma/schema.prisma",
-      "sha256": "f93739a37fa1c4e87366d4149655c75508b2c45812bdf5b9619bf46f1ac2cfde",
+      "sha256": "4be0b68760b1d10224362ab8f2a2bc0382c7d4cfdd2abe932fc0436d0fc282c9",
       "references": [
         {
           "kind": "identity",
@@ -9172,47 +9336,47 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 164
+          "line": 168
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 185
+          "line": 190
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 186
+          "line": 191
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 213
+          "line": 218
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 248
+          "line": 253
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 249
+          "line": 254
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 465
+          "line": 474
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 480
+          "line": 492
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 481
+          "line": 493
         }
       ]
     },
@@ -9387,43 +9551,43 @@
     },
     {
       "path": "backend/src/demo/scenario.ts",
-      "sha256": "bd4b6a6906a2cf3128ba94fe88a3ad138b16041587702ba13316f0c73bb2971c",
+      "sha256": "94baca800c54d01f9952133274e0e0daa07a2b28609e4b3c079ac444757d4ea7",
       "references": [
         {
           "kind": "identity",
           "symbol": "passwordHash",
-          "line": 44
+          "line": 45
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 46
+          "line": 47
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 49
+          "line": 50
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 51
+          "line": 52
         }
       ]
     },
     {
       "path": "backend/src/index.ts",
-      "sha256": "6836f6e4f6c8a4da611ba1809f0c81abd17133c3d9e8581649fffc5e742e38e8",
+      "sha256": "aae3fd3d025f6590387256f180feff419129da6aae072dbccb736945766f9e81",
       "references": [
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 140
+          "line": 141
         },
         {
           "kind": "authentication",
           "symbol": "GOOGLE_WEB_CLIENT_ID",
-          "line": 26
+          "line": 27
         }
       ]
     },
@@ -9893,22 +10057,32 @@
     },
     {
       "path": "backend/src/routes/adminStores.ts",
-      "sha256": "ba614cd45c07049368357542b8a83df502cb85012a80c6b739d40dc307468bd4",
+      "sha256": "fab2bad1aa746e1379f9878c8dbb7df266bfc5cfffc8fb2b1be9a9acd7110443",
       "references": [
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 21
+          "line": 25
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 28
+          "line": 32
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 29
+          "line": 33
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 63
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 63
         },
         {
           "kind": "authentication",
@@ -9919,6 +10093,11 @@
           "kind": "authentication",
           "symbol": "requireAuth",
           "line": 12
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 51
         },
         {
           "kind": "authorization",
@@ -9943,12 +10122,27 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 31
+          "line": 35
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 37
+          "line": 41
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 51
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 51
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 64
         }
       ]
     },
@@ -10010,52 +10204,47 @@
     },
     {
       "path": "backend/src/routes/api.ts",
-      "sha256": "1988639757f35c3e401d45dc9da2b42e6816f181370d1169bf15c75ffcf02ae8",
+      "sha256": "2583c71360de77254700893f2af8f3bd6ea64f8224c65decaae99d8998199899",
       "references": [
         {
           "kind": "identity",
           "symbol": "generateToken",
-          "line": 14
+          "line": 15
         },
         {
           "kind": "identity",
           "symbol": "verifyTokenForAccount",
-          "line": 14
+          "line": 15
         },
         {
           "kind": "identity",
           "symbol": "verifyGoogleIdToken",
-          "line": 36
+          "line": 37
         },
         {
           "kind": "identity",
           "symbol": "verifyTokenForAccount",
-          "line": 87
+          "line": 89
         },
         {
           "kind": "identity",
           "symbol": "verifyGoogleIdToken",
-          "line": 194
+          "line": 196
         },
         {
           "kind": "identity",
           "symbol": "googleSub",
-          "line": 205
+          "line": 207
         },
         {
           "kind": "identity",
           "symbol": "googleSub",
-          "line": 210
+          "line": 212
         },
         {
           "kind": "identity",
           "symbol": "googleSub",
-          "line": 210
-        },
-        {
-          "kind": "identity",
-          "symbol": "googleSub",
-          "line": 220
+          "line": 212
         },
         {
           "kind": "identity",
@@ -10065,397 +10254,392 @@
         {
           "kind": "identity",
           "symbol": "googleSub",
-          "line": 230
-        },
-        {
-          "kind": "identity",
-          "symbol": "generateToken",
-          "line": 235
-        },
-        {
-          "kind": "identity",
-          "symbol": "passwordHash",
-          "line": 266
-        },
-        {
-          "kind": "identity",
-          "symbol": "passwordHash",
-          "line": 267
-        },
-        {
-          "kind": "identity",
-          "symbol": "generateToken",
-          "line": 286
-        },
-        {
-          "kind": "identity",
-          "symbol": "generateToken",
-          "line": 350
+          "line": 224
         },
         {
           "kind": "identity",
           "symbol": "googleSub",
-          "line": 483
+          "line": 232
+        },
+        {
+          "kind": "identity",
+          "symbol": "generateToken",
+          "line": 237
         },
         {
           "kind": "identity",
           "symbol": "passwordHash",
-          "line": 483
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 487
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 491
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 491
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 491
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 491
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 491
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 498
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 499
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 499
+          "line": 268
         },
         {
           "kind": "identity",
           "symbol": "passwordHash",
-          "line": 555
+          "line": 269
         },
         {
           "kind": "identity",
-          "symbol": "passwordHash",
-          "line": 558
+          "symbol": "generateToken",
+          "line": 288
         },
         {
-          "kind": "session",
-          "symbol": "invalidateAuthCache",
-          "line": 14
+          "kind": "identity",
+          "symbol": "generateToken",
+          "line": 352
         },
         {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 235
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 235
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 286
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 286
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 354
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 354
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
+          "kind": "identity",
+          "symbol": "googleSub",
           "line": 485
         },
         {
+          "kind": "identity",
+          "symbol": "passwordHash",
+          "line": 485
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 489
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 493
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 493
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 493
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 493
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 493
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 500
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 501
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 501
+        },
+        {
+          "kind": "identity",
+          "symbol": "passwordHash",
+          "line": 557
+        },
+        {
+          "kind": "identity",
+          "symbol": "passwordHash",
+          "line": 560
+        },
+        {
           "kind": "session",
           "symbol": "invalidateAuthCache",
-          "line": 497
+          "line": 15
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 237
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 237
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 288
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 288
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 356
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 356
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 487
+        },
+        {
+          "kind": "session",
+          "symbol": "invalidateAuthCache",
+          "line": 499
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 14
+          "line": 15
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 99
+          "line": 101
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 110
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 132
+          "line": 112
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
           "line": 134
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 136
         },
         {
           "kind": "authentication",
           "symbol": "/auth/google",
-          "line": 185
+          "line": 187
         },
         {
           "kind": "authentication",
           "symbol": "/auth/partner-login",
-          "line": 244
+          "line": 246
         },
         {
           "kind": "authentication",
           "symbol": "/auth/admin-login",
-          "line": 303
+          "line": 305
         },
         {
           "kind": "authentication",
           "symbol": "ADMIN_PASSCODE",
-          "line": 311
+          "line": 313
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 376
+          "line": 378
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 376
+          "line": 378
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 388
+          "line": 390
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 388
+          "line": 390
         },
         {
           "kind": "authentication",
           "symbol": "/auth/logout",
-          "line": 445
+          "line": 447
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 445
+          "line": 447
         },
         {
           "kind": "authentication",
           "symbol": "/auth/account",
-          "line": 467
+          "line": 469
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 467
+          "line": 469
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 511
+          "line": 513
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 583
+          "line": 585
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 598
+          "line": 600
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 664
+          "line": 666
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 711
+          "line": 713
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 727
+          "line": 729
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 737
+          "line": 739
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 757
+          "line": 759
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 778
+          "line": 780
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 828
+          "line": 830
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 838
+          "line": 840
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 890
+          "line": 892
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 936
+          "line": 938
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 1071
+          "line": 1073
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 1126
+          "line": 1128
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 1135
+          "line": 1137
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 14
+          "line": 15
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 14
+          "line": 15
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 43
+          "line": 44
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 75
+          "line": 77
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 78
+          "line": 80
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 79
+          "line": 81
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 93
+          "line": 95
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 94
+          "line": 96
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 99
+          "line": 101
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 99
+          "line": 101
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 110
+          "line": 112
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 110
+          "line": 112
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 117
+          "line": 119
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 120
+          "line": 122
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 123
+          "line": 125
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 123
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 132
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 134
+          "line": 125
         },
         {
           "kind": "authorization",
@@ -10464,23 +10648,28 @@
         },
         {
           "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 147
+          "symbol": "requireRole",
+          "line": 136
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 136
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 150
+          "line": 149
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 278
+          "line": 152
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 279
+          "line": 280
         },
         {
           "kind": "authorization",
@@ -10495,237 +10684,242 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 283
+          "line": 285
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 291
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 376
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 388
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 445
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 467
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 467
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 511
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 511
+          "line": 285
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 566
+          "line": 293
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 378
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 390
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 447
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 469
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 469
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 513
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 513
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 571
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 583
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 583
+          "line": 568
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 587
+          "line": 573
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 585
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 585
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 587
+          "line": 589
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 589
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 598
+          "line": 600
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 664
+          "line": 666
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 664
+          "line": 666
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 711
+          "line": 713
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 711
+          "line": 713
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 727
+          "line": 729
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 727
+          "line": 729
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 737
+          "line": 739
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 737
+          "line": 739
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 737
+          "line": 739
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 757
+          "line": 759
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 757
+          "line": 759
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 757
+          "line": 759
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 778
+          "line": 780
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 778
+          "line": 780
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 778
+          "line": 780
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 813
+          "line": 815
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 828
+          "line": 830
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 828
+          "line": 830
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 828
+          "line": 830
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 838
+          "line": 840
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 838
+          "line": 840
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 890
+          "line": 892
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 890
+          "line": 892
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 890
+          "line": 892
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 936
+          "line": 938
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 936
+          "line": 938
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 1071
+          "line": 1073
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 1071
+          "line": 1073
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 1126
+          "line": 1128
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 1135
+          "line": 1137
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 85
+          "line": 87
         }
       ]
     },
@@ -10948,7 +11142,7 @@
     },
     {
       "path": "backend/src/routes/clerk.ts",
-      "sha256": "66863537afcc5e02c6ec62562040037f676373a1334c7fc45dd8bcb1d8fa1fca",
+      "sha256": "70041180374c7ac48c8d5acd16a6bc4f4ee7d8fac81c8a4b9cdf49c21f09c412",
       "references": [
         {
           "kind": "identity",
@@ -11261,7 +11455,7 @@
     },
     {
       "path": "backend/src/routes/geography.ts",
-      "sha256": "3dc84e0c3debda6c85f26166bb668dccf80cb1b9adc901ab8d32d84072e9a909",
+      "sha256": "eba3db7fe2444fd6d0f900448f208507053e11047b4b6dc44a3f00876f48c92d",
       "references": [
         {
           "kind": "authentication",
@@ -11306,12 +11500,12 @@
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 84
+          "line": 88
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 90
+          "line": 94
         },
         {
           "kind": "authorization",
@@ -11371,148 +11565,7 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 70
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
           "line": 71
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 84
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 90
-        }
-      ]
-    },
-    {
-      "path": "backend/src/routes/operations.ts",
-      "sha256": "bf4f46fa1ceb1ff590b1b47957a50170493b8bdcec25b023972a701ff8dd42e5",
-      "references": [
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 5
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 18
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 19
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 34
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 43
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 60
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 64
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 5
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 5
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireApprovedPartner",
-          "line": 6
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 16
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 16
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 18
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 19
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 21
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 34
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireApprovedPartner",
-          "line": 34
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 43
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireApprovedPartner",
-          "line": 43
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 60
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireApprovedPartner",
-          "line": 60
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 61
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 64
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireApprovedPartner",
-          "line": 64
         },
         {
           "kind": "authorization",
@@ -11522,168 +11575,455 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 80
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 142
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 142
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 142
-        }
-      ]
-    },
-    {
-      "path": "backend/src/routes/orders.ts",
-      "sha256": "30523baa78bf8e14b9443ead510193d1febcf261e45734a41cb61bf6eac54bae",
-      "references": [
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 5
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 59
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 118
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 132
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 169
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 200
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 215
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 274
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 302
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 322
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 333
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 351
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 384
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 395
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 404
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 413
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 428
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 443
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 456
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 466
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 484
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 548
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 638
-        },
-        {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 661
+          "line": 75
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 5
+          "line": 88
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 94
+        }
+      ]
+    },
+    {
+      "path": "backend/src/routes/marketplace.ts",
+      "sha256": "4594c9d6ef428f9cd07e38c416ee057391c531573755c85e1e6c76d8a429a0af",
+      "references": [
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 3
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 15
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 16
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 38
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 44
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 49
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 56
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 3
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 5
+          "line": 3
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
+          "line": 4
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 14
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 14
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 15
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 16
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 38
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireApprovedPartner",
+          "line": 38
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 40
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 44
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireApprovedPartner",
+          "line": 44
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 45
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 49
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireApprovedPartner",
+          "line": 49
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 50
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 53
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 53
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 56
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireApprovedPartner",
+          "line": 56
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 59
+        }
+      ]
+    },
+    {
+      "path": "backend/src/routes/operations.ts",
+      "sha256": "85b39587b0675c57965a1c4b7319b951d09bbc0fd3df8bab251069f03de08408",
+      "references": [
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 6
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 19
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 20
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 35
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 44
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 62
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 66
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
           "line": 6
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 43
+          "line": 6
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireApprovedPartner",
+          "line": 7
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 17
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 17
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 19
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 20
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 22
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 35
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireApprovedPartner",
+          "line": 35
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 44
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireApprovedPartner",
+          "line": 44
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 62
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireApprovedPartner",
+          "line": 62
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 63
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 66
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireApprovedPartner",
+          "line": 66
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 77
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 83
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 145
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 145
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 145
+        }
+      ]
+    },
+    {
+      "path": "backend/src/routes/orders.ts",
+      "sha256": "0d5510c6c270ff80c959f758bfbb4ead142770f3cb24b153fa4d4fc1b1790c6d",
+      "references": [
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 6
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 63
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 122
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 136
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 173
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 204
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 219
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 278
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 306
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 326
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 337
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 355
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 388
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 399
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 408
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 417
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 432
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 447
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 460
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 470
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 490
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 554
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 644
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 667
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 6
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 6
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireApprovedPartner",
+          "line": 7
         },
         {
           "kind": "authorization",
@@ -11692,309 +12032,314 @@
         },
         {
           "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 59
-        },
-        {
-          "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 59
+          "line": 45
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 118
+          "line": 63
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 118
+          "line": 63
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 132
+          "line": 122
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 132
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 167
+          "line": 122
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 169
+          "line": 136
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 169
+          "line": 136
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 200
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 215
+          "line": 171
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 274
+          "line": 173
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 173
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 204
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 219
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 278
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 274
+          "line": 278
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 274
+          "line": 278
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 277
+          "line": 281
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 302
+          "line": 306
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 308
+          "line": 312
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 309
+          "line": 313
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 309
+          "line": 313
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 322
+          "line": 326
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 322
+          "line": 326
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 333
+          "line": 337
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 333
+          "line": 337
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 333
+          "line": 337
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 344
+          "line": 348
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 351
+          "line": 355
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 351
+          "line": 355
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 384
+          "line": 388
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 384
+          "line": 388
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 384
+          "line": 388
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 395
+          "line": 399
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 395
+          "line": 399
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 395
+          "line": 399
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 404
+          "line": 408
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 404
+          "line": 408
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 404
+          "line": 408
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 413
+          "line": 417
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 413
+          "line": 417
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 413
+          "line": 417
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 428
+          "line": 432
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 428
+          "line": 432
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 443
+          "line": 447
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 443
+          "line": 447
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 456
+          "line": 460
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 456
+          "line": 460
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 466
+          "line": 470
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 466
+          "line": 470
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 484
+          "line": 490
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 484
+          "line": 490
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 548
+          "line": 554
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 548
+          "line": 554
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 563
+          "line": 569
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 564
+          "line": 570
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 576
+          "line": 582
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 576
+          "line": 582
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 609
+          "line": 615
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 609
+          "line": 615
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 638
+          "line": 644
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 661
+          "line": 667
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 661
+          "line": 667
         }
       ]
     },
     {
       "path": "backend/src/routes/partners.ts",
-      "sha256": "36c1ee9e9c6db7fffa855f11027fb0abbb778089a7e4506962f87f6fce667731",
+      "sha256": "11bf1d1f4f7dfbbb390eec998632a1c4ee9b5ef97bd5eaa74cfeca16acae807e",
       "references": [
         {
           "kind": "identity",
@@ -13047,17 +13392,27 @@
     },
     {
       "path": "backend/src/services/dispatch.ts",
-      "sha256": "a04000e163992359d232a5841c7b1f75253f79e56ef413be349ac732fe233268",
+      "sha256": "dfebd6c4a80681ba8c24174dbaf6461ecad9b4dce3969c62f197ca1494d788fd",
       "references": [
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 58
+          "line": 59
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 64
+          "line": 65
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 145
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 153
         }
       ]
     },
@@ -13116,68 +13471,99 @@
       ]
     },
     {
-      "path": "backend/src/services/orderFlow.ts",
-      "sha256": "bbb1c8a1cca211b82a6113c99ffec9067cde574a0f0f90be243a0138096fe19d",
+      "path": "backend/src/services/marketplace.ts",
+      "sha256": "d5c3e19b2d7519851b9dbfc1c3d8402e1ee8fae0ff1bdbb2409e4a6aadd79bf4",
       "references": [
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 992
+          "line": 10
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 19
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 19
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 19
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "path": "backend/src/services/orderFlow.ts",
+      "sha256": "3fb402387449239495ce6867a6fcbd0ea3247f63e7eb487c7583331aab445ddd",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 1007
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 993
+          "line": 1008
         },
         {
           "kind": "authentication",
           "symbol": "JWT_SECRET",
-          "line": 994
+          "line": 1009
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 311
+          "line": 314
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 826
+          "line": 841
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 827
+          "line": 842
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 827
+          "line": 842
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 830
+          "line": 845
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 830
+          "line": 845
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 830
+          "line": 845
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 931
+          "line": 946
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 944
+          "line": 959
         }
       ]
     },
@@ -13194,17 +13580,12 @@
     },
     {
       "path": "backend/src/services/push/events.ts",
-      "sha256": "9a67a01d7f3cb32fb7beb121c4ccdb02bc99fb0182a542d7323e2759caeaa190",
+      "sha256": "6af7d6ace3934c7f15cd0ffdb325cb5031cf60a8eb63d25fdd6316f809e43110",
       "references": [
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 132
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 143
+          "line": 133
         },
         {
           "kind": "authorization",
@@ -13214,12 +13595,17 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 155
+          "line": 145
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 157
+          "line": 156
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 158
         }
       ]
     },
@@ -13236,7 +13622,7 @@
     },
     {
       "path": "backend/src/utils/catalog.ts",
-      "sha256": "bac4c718a7dac2a2e6e91d387b86c18e3df1a393a96d5bc7e2bbf2fafae4793a",
+      "sha256": "0c1bc19cd7348f8af3e075a63dfea2bbcbdab06b43f9f20dec7830f32c5bd8c2",
       "references": [
         {
           "kind": "authorization",
@@ -13251,17 +13637,17 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 81
+          "line": 85
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 82
+          "line": 86
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 83
+          "line": 87
         }
       ]
     },
@@ -14345,7 +14731,7 @@
     },
     {
       "path": "backend/test/e2e/hardening.test.ts",
-      "sha256": "a8e8a6d4dc29aae6f6de0e883951ea405d1d2d8350d39ac9d80a0889016c48ab",
+      "sha256": "0f34dda944d7500ff2613f360b393bd9f4cac596482e86e4ed6012f446d43cee",
       "references": [
         {
           "kind": "identity",
@@ -15499,7 +15885,7 @@
     },
     {
       "path": "backend/test/e2e/restaurant_profile.test.ts",
-      "sha256": "cb51b935c4449a5a02e1a9730cb9382f57602bafbd2e807dd75e14524cd2300e",
+      "sha256": "1208ebdb3cac3306d48c2f1bb519e079b2e0498c41a8f08401de8a0aae46ff9d",
       "references": [
         {
           "kind": "authentication",
@@ -15963,17 +16349,17 @@
     },
     {
       "path": "backend/test/setup-env.cjs",
-      "sha256": "097a304d3f1c4ed0ca27f21050f2fdd9496bc3be29ed9942dbecb8eaa636f33c",
+      "sha256": "5d9e006f120274f227d63772e99619ebbfd5a9e756b0c14c2cb15e618336f9e6",
       "references": [
         {
           "kind": "authentication",
           "symbol": "JWT_SECRET",
-          "line": 8
+          "line": 10
         },
         {
           "kind": "authentication",
           "symbol": "jwt",
-          "line": 8
+          "line": 10
         }
       ]
     },
@@ -16460,7 +16846,7 @@
     },
     {
       "path": "scripts/qa/run_full_backend.mjs",
-      "sha256": "19d886dda2edc51361c3d27c318bf033f258904d993649ea20b029c8c815eed7",
+      "sha256": "b63700f1ee6505ad993e160849134176b4967a5bdc13c5813bf07168e03d437f",
       "references": [
         {
           "kind": "authentication",
@@ -16621,6 +17007,48 @@
           "kind": "authentication",
           "symbol": "ADMIN_PASSCODE",
           "line": 33
+        }
+      ]
+    },
+    {
+      "path": "scripts/ui_ux/marketplace/capture.mjs",
+      "sha256": "f43a3039af1998a885c7333cbca8e6db03c5f7051ba74087835295f15a105b36",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "path": "scripts/ui_ux/marketplace/entry.tsx",
+      "sha256": "76edb4533732d1fe73371822c9f622161c180a2285caa9b20aa34aa2a9f61d06",
+      "references": [
+        {
+          "kind": "session",
+          "symbol": "installClerkTokenGetter",
+          "line": 10
+        },
+        {
+          "kind": "session",
+          "symbol": "installClerkTokenGetter",
+          "line": 23
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 12
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 12
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 21
         }
       ]
     },
@@ -17007,12 +17435,12 @@
     },
     {
       "path": "web/super_admin/src/components/CreateStoreDrawer.tsx",
-      "sha256": "b15e70a116001b24f2d9cdcbceb462a492465af90f359d97a00c96469aaba566",
+      "sha256": "f23cc2ab01d8791abb6056f2a6e2b87a63657cb85f8e8c115df6be69c99f0e74",
       "references": [
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 29
+          "line": 31
         }
       ]
     },
@@ -17090,7 +17518,7 @@
     },
     {
       "path": "web/super_admin/src/components/FinanceWiring.test.tsx",
-      "sha256": "f6dfe86ffa2c99076b2ed142451890683d1b293156599e2dfe0c88637d10b6d6",
+      "sha256": "3e06336d0dc6949acdf5454996f4c910703174c134524b43aad825ce6797f429",
       "references": [
         {
           "kind": "authorization",
@@ -17100,7 +17528,7 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 113
+          "line": 114
         }
       ]
     },
@@ -17326,17 +17754,17 @@
     },
     {
       "path": "web/super_admin/src/lib/orders.ts",
-      "sha256": "850884a1bcc8fb1f6277431a25f9c6e5beeedbf7d1e1fd27a97cbf1e7ce74bcd",
+      "sha256": "5f49f3dd1bb011cc837cfc985badd3591162c707588f560489448ecad19e4a31",
       "references": [
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 252
+          "line": 254
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 252
+          "line": 254
         }
       ]
     },
@@ -17663,7 +18091,7 @@
     },
     {
       "path": "web/super_admin/src/services/api.ts",
-      "sha256": "61c735fe70cf50896eb594c849564436c9039e0d399d672a2389e16aaf4b325b",
+      "sha256": "1bd75be864f6224b22fde706300d0dee052c273d36c55cfc446b57fb13173af0",
       "references": [
         {
           "kind": "identity",
@@ -17743,17 +18171,17 @@
         {
           "kind": "session",
           "symbol": "setAuthToken",
-          "line": 291
+          "line": 295
         },
         {
           "kind": "authentication",
           "symbol": "/auth/admin-login",
-          "line": 285
+          "line": 289
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 296
+          "line": 300
         },
         {
           "kind": "transports",
@@ -17954,57 +18382,57 @@
     },
     {
       "path": "web/super_admin/src/types.ts",
-      "sha256": "46af12135a5ddef01563899f3c064a9d2c7212dfde60924eb0d3c5efaed2655e",
+      "sha256": "725ad660506b85dc895691433183ef88f47be551470816a658846d5ef3c17c52",
       "references": [
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 132
+          "line": 136
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 174
+          "line": 178
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 197
+          "line": 201
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 197
+          "line": 201
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 197
+          "line": 201
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 222
+          "line": 226
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 432
+          "line": 437
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 432
+          "line": 437
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 465
+          "line": 470
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 465
+          "line": 470
         }
       ]
     }

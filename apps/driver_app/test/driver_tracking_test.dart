@@ -51,9 +51,9 @@ void main() {
       expect(f.api.locations, isEmpty);
     });
 
-    test('ONLINE while idle does not ask for GPS or start a foreground service', () async {
+    test('ONLINE while idle obtains a real availability fix and starts the visible foreground service', () async {
       await boot(active:false);await c.setDuty(true);await flush();
-      expect(c.onDuty,isTrue);expect(c.sharingLocation,isFalse);expect(f.location.trackStarts,0);expect(f.api.locations,isEmpty);
+      expect(c.onDuty,isTrue);expect(c.sharingLocation,isTrue);expect(f.location.trackStarts,1);expect(f.api.locations,isNotEmpty);
     });
     test('going ON: first reading is posted at once, then the stream starts (service on)', () async {
       await boot();

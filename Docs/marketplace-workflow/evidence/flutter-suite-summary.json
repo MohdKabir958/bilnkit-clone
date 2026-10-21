@@ -1,0 +1,32 @@
+{
+  "customer": {
+    "passed": 462,
+    "failed": 0,
+    "skipped": 2,
+    "runner": {
+      "success": true,
+      "type": "done",
+      "time": 262209
+    }
+  },
+  "vendor": {
+    "passed": 530,
+    "failed": 0,
+    "skipped": 1,
+    "runner": {
+      "success": true,
+      "type": "done",
+      "time": 279817
+    }
+  },
+  "driver": {
+    "passed": 411,
+    "failed": 0,
+    "skipped": 1,
+    "runner": {
+      "success": true,
+      "type": "done",
+      "time": 247921
+    }
+  }
+}

@@ -20,19 +20,29 @@ class CheckoutDraft {
     required this.dropoffHostel,
     required this.dropoffNotes,
     this.couponCode,
+    this.paymentMethod = 'ONLINE',
     List<RestaurantCart> extraRestaurants = const [],
   })  : items = _aggregate(items),
-        extraRestaurants = [for (final r in extraRestaurants) RestaurantCart(vendorId: r.vendorId, items: _aggregate(r.items))];
+        extraRestaurants = [
+          for (final r in extraRestaurants)
+            RestaurantCart(vendorId: r.vendorId, items: _aggregate(r.items))
+        ];
 
   /// Builds the draft from the cart. Quantities of the same dish are summed: the server prices
   /// and stores dishes, not the app's local option variants. The first restaurant is the
   /// primary one (it carries the base fee, the coupon and the payment of a combined order).
-  factory CheckoutDraft.fromCart(CartProvider cart, {required String dropoffHostel, required String dropoffNotes}) {
+  factory CheckoutDraft.fromCart(CartProvider cart,
+      {required String dropoffHostel,
+      required String dropoffNotes,
+      String paymentMethod = 'ONLINE'}) {
     final all = cart.restaurants;
     if (all.length <= 1) {
       return CheckoutDraft(
+        paymentMethod: paymentMethod,
         vendorId: cart.dhabaId ?? '',
-        items: [for (final i in cart.items) (itemId: i.item.id, quantity: i.quantity)],
+        items: [
+          for (final i in cart.items) (itemId: i.item.id, quantity: i.quantity)
+        ],
         dropoffHostel: dropoffHostel,
         dropoffNotes: dropoffNotes,
         couponCode: cart.appliedCouponCode,
@@ -40,16 +50,23 @@ class CheckoutDraft {
     }
     return CheckoutDraft(
       vendorId: all.first.id,
-      items: [for (final i in all.first.items) (itemId: i.item.id, quantity: i.quantity)],
+      items: [
+        for (final i in all.first.items)
+          (itemId: i.item.id, quantity: i.quantity)
+      ],
       dropoffHostel: dropoffHostel,
       dropoffNotes: dropoffNotes,
       couponCode: cart.appliedCouponCode,
       extraRestaurants: [
-        for (final r in all.skip(1)) RestaurantCart(vendorId: r.id, items: [for (final i in r.items) (itemId: i.item.id, quantity: i.quantity)]),
+        for (final r in all.skip(1))
+          RestaurantCart(vendorId: r.id, items: [
+            for (final i in r.items) (itemId: i.item.id, quantity: i.quantity)
+          ]),
       ],
     );
   }
 
+  final String paymentMethod;
   final String vendorId;
   final List<({String itemId, int quantity})> items;
   final String dropoffHostel;
@@ -63,12 +80,17 @@ class CheckoutDraft {
   bool get isGroup => extraRestaurants.isNotEmpty;
 
   /// Every restaurant of the order, primary first.
-  List<RestaurantCart> get restaurants => [RestaurantCart(vendorId: vendorId, items: items), ...extraRestaurants];
+  List<RestaurantCart> get restaurants =>
+      [RestaurantCart(vendorId: vendorId, items: items), ...extraRestaurants];
 
   /// The same cart as a price-quote request (`POST /orders/quote`).
-  QuoteRequest get quoteRequest => QuoteRequest(restaurants: restaurants, couponCode: couponCode, addressId: CustomerApiService.selectedAddressId);
+  QuoteRequest get quoteRequest => QuoteRequest(
+      restaurants: restaurants,
+      couponCode: couponCode,
+      addressId: CustomerApiService.selectedAddressId);
 
-  static List<({String itemId, int quantity})> _aggregate(List<({String itemId, int quantity})> raw) {
+  static List<({String itemId, int quantity})> _aggregate(
+      List<({String itemId, int quantity})> raw) {
     final totals = <String, int>{};
     for (final i in raw) {
       totals[i.itemId] = (totals[i.itemId] ?? 0) + i.quantity;
@@ -80,15 +102,28 @@ class CheckoutDraft {
   /// Identifies "the same cart": a repeat checkout of an unchanged cart reuses the same
   /// idempotency key (and therefore the same server order).
   String get cartKey {
-    if (!isGroup) return [vendorId, for (final i in items) '${i.itemId}x${i.quantity}', (couponCode ?? '').toUpperCase()].join('|');
+    if (!isGroup) {
+      return [
+        vendorId,
+        if (paymentMethod != 'ONLINE') paymentMethod,
+        for (final i in items) '${i.itemId}x${i.quantity}',
+        (couponCode ?? '').toUpperCase()
+      ].join('|');
+    }
     // Order of the restaurants does not matter for "the same cart".
-    final parts = [for (final r in restaurants) '${r.vendorId}:${[for (final i in r.items) '${i.itemId}x${i.quantity}'].join(',')}']..sort();
+    final parts = [
+      for (final r in restaurants)
+        '${r.vendorId}:${[
+          for (final i in r.items) '${i.itemId}x${i.quantity}'
+        ].join(',')}'
+    ]..sort();
     return ['group', ...parts, (couponCode ?? '').toUpperCase()].join('|');
   }
 }
 
 class _CheckoutAttempt {
-  _CheckoutAttempt(this.cartKey, this.clientRequestId, this.dropoffHostel, this.dropoffNotes);
+  _CheckoutAttempt(this.cartKey, this.clientRequestId, this.dropoffHostel,
+      this.dropoffNotes);
   final String cartKey;
   final String clientRequestId;
 
@@ -98,6 +133,7 @@ class _CheckoutAttempt {
   /// 409 CLIENT_REQUEST_MISMATCH otherwise.
   final String dropoffHostel;
   final String dropoffNotes;
+
   /// The id to pay and cancel: the order, or the PRIMARY child of a combined order.
   String? orderId;
 }
@@ -249,7 +285,9 @@ class OrderProvider with ChangeNotifier {
 
   OrderModel? _composite(String groupId) {
     final kids = _orders.values.where((o) => o.group?.id == groupId).toList();
-    return kids.isEmpty ? null : OrderModel.composite(kids, groupTotal: _groupTotals[groupId]);
+    return kids.isEmpty
+        ? null
+        : OrderModel.composite(kids, groupTotal: _groupTotals[groupId]);
   }
 
   /// One entry per combined order (its composite), single orders as they are; first occurrence wins.
@@ -270,7 +308,10 @@ class OrderProvider with ChangeNotifier {
   /// Orders in progress (newest first) followed by ones that finished in the last few minutes.
   /// A combined order is ONE entry.
   List<OrderModel> get activeOrders {
-    final list = _collapse(_activeIds.map((id) => _orders[id]).whereType<OrderModel>()).where(_isActiveNow).toList();
+    final list =
+        _collapse(_activeIds.map((id) => _orders[id]).whereType<OrderModel>())
+            .where(_isActiveNow)
+            .toList();
     list.sort((a, b) {
       if (a.isLive != b.isLive) return a.isLive ? -1 : 1;
       return b.createdAt.compareTo(a.createdAt);
@@ -279,7 +320,8 @@ class OrderProvider with ChangeNotifier {
   }
 
   /// Orders that are not delivered or cancelled yet.
-  List<OrderModel> get liveOrders => activeOrders.where((o) => o.isLive).toList();
+  List<OrderModel> get liveOrders =>
+      activeOrders.where((o) => o.isLive).toList();
 
   /// The order the Track tab and the Home bar show: the newest live one, else the most recently
   /// finished one (so the final state is visible for a while), else null.
@@ -294,7 +336,8 @@ class OrderProvider with ChangeNotifier {
     return live.isEmpty ? null : live.first;
   }
 
-  List<OrderModel> get history => _collapse(_historyIds.map((id) => _orders[id]).whereType<OrderModel>());
+  List<OrderModel> get history =>
+      _collapse(_historyIds.map((id) => _orders[id]).whereType<OrderModel>());
 
   /// Alias kept for screens/tests written against the previous API.
   List<OrderModel> get orderHistory => history;
@@ -304,7 +347,9 @@ class OrderProvider with ChangeNotifier {
   /// WELCOME20 promo never shows to someone it would be refused for.
   bool get isFirstTimeCustomer {
     if (!_historyLoaded || !_activeLoaded) return false;
-    if (_orders.values.any((o) => o.status != OrderProgressStatus.cancelled)) return false;
+    if (_orders.values.any((o) => o.status != OrderProgressStatus.cancelled)) {
+      return false;
+    }
     return !_historyHasMore; // more history pages might hold a delivered order
   }
 
@@ -327,23 +372,33 @@ class OrderProvider with ChangeNotifier {
 
   /// Why [orderId] could not be loaded (it is not in memory and the server refused or did not
   /// answer), or null. Lets the tracking screen show an error with Retry instead of a spinner.
-  OrderApiError? loadErrorFor(String orderId) => _orders.containsKey(orderId) ? null : _loadErrors[orderId];
+  OrderApiError? loadErrorFor(String orderId) =>
+      _orders.containsKey(orderId) ? null : _loadErrors[orderId];
 
   /// True when the server said this order is not ours / does not exist: no point polling it.
   bool _isGone(String id) {
     final e = _loadErrors[id];
-    return !_orders.containsKey(id) && e != null && (e.kind == OrderErrorKind.notFound || e.kind == OrderErrorKind.forbidden);
+    return !_orders.containsKey(id) &&
+        e != null &&
+        (e.kind == OrderErrorKind.notFound ||
+            e.kind == OrderErrorKind.forbidden);
   }
 
   /// Whether [o] still needs live updates: it is in progress, or it was cancelled after payment
   /// and its refund result has not arrived yet (for [refundWatchWindow] after its last update).
-  bool _needsUpdates(OrderModel o) => o.isLive || (o.isRefundInProgress && _clock().toUtc().difference(o.updatedAt) <= refundWatchWindow);
-  bool hasReviewed(String orderId) => _reviewed.contains(orderId) || (_orders[orderId]?.isReviewed ?? false);
+  bool _needsUpdates(OrderModel o) =>
+      o.isLive ||
+      (o.isRefundInProgress &&
+          _clock().toUtc().difference(o.updatedAt) <= refundWatchWindow);
+  bool hasReviewed(String orderId) =>
+      _reviewed.contains(orderId) || (_orders[orderId]?.isReviewed ?? false);
   RiderLocation? riderLocation(String orderId) => _riderLocations[orderId];
 
   /// The latest rider fix for [orderId] as a listenable. Changes do NOT notify this provider's
   /// listeners (see [riderLocation] for a plain read).
-  ValueListenable<RiderLocation?> riderLocationListenable(String orderId) => _riderNotifiers.putIfAbsent(orderId, () => ValueNotifier<RiderLocation?>(_riderLocations[orderId]));
+  ValueListenable<RiderLocation?> riderLocationListenable(String orderId) =>
+      _riderNotifiers.putIfAbsent(orderId,
+          () => ValueNotifier<RiderLocation?>(_riderLocations[orderId]));
 
   void _setRider(String orderId, RiderLocation? loc) {
     if (loc == null) {
@@ -366,19 +421,25 @@ class OrderProvider with ChangeNotifier {
   bool paymentUnconfirmed(String orderId) {
     final at = _paymentSubmittedAt[orderId];
     final order = _orders[orderId];
-    return at != null && order != null && order.awaitsPayment && !isConfirmingPayment(orderId);
+    return at != null &&
+        order != null &&
+        order.awaitsPayment &&
+        !isConfirmingPayment(orderId);
   }
 
   /// The unpaid order this cart already created (back-navigation into checkout shows it again
   /// instead of creating a second order), or null.
   OrderModel? openCheckoutOrder(CheckoutDraft draft) {
     final a = _attempt;
-    if (a == null || a.orderId == null || a.cartKey != draft.cartKey) return null;
+    if (a == null || a.orderId == null || a.cartKey != draft.cartKey) {
+      return null;
+    }
     final order = _view(a.orderId!);
     return order != null && order.isLive ? order : null;
   }
 
-  bool _isActiveNow(OrderModel o) => o.isLive || _clock().toUtc().difference(o.updatedAt) <= recentlyFinished;
+  bool _isActiveNow(OrderModel o) =>
+      o.isLive || _clock().toUtc().difference(o.updatedAt) <= recentlyFinished;
 
   // ---- session -------------------------------------------------------------------------------
 
@@ -453,7 +514,8 @@ class OrderProvider with ChangeNotifier {
   // ---- loading -------------------------------------------------------------------------------
 
   /// `GET /orders?scope=active`. Concurrent calls share one request.
-  Future<void> refreshActive() => _activeFuture ??= _refreshActive().whenComplete(() => _activeFuture = null);
+  Future<void> refreshActive() => _activeFuture ??=
+      _refreshActive().whenComplete(() => _activeFuture = null);
 
   Future<void> _refreshActive() async {
     final gen = _generation;
@@ -475,7 +537,13 @@ class OrderProvider with ChangeNotifier {
       for (final id in _activeIds) {
         final added = _locallyAddedAt[id];
         final o = _orders[id];
-        if (!ids.contains(id) && o != null && o.isLive && added != null && !added.isBefore(startedAt)) ids.add(id);
+        if (!ids.contains(id) &&
+            o != null &&
+            o.isLive &&
+            added != null &&
+            !added.isBefore(startedAt)) {
+          ids.add(id);
+        }
       }
       _activeIds = ids;
       _activeLoaded = true;
@@ -492,10 +560,12 @@ class OrderProvider with ChangeNotifier {
   Future<void> loadHistory({bool refresh = false}) {
     if (_historyFuture != null) return _historyFuture!;
     if (!refresh && _historyLoaded && !_historyHasMore) return Future.value();
-    return _historyFuture = _loadHistory(refresh || !_historyLoaded).whenComplete(() => _historyFuture = null);
+    return _historyFuture = _loadHistory(refresh || !_historyLoaded)
+        .whenComplete(() => _historyFuture = null);
   }
 
-  Future<void> loadMoreHistory() => _historyHasMore ? loadHistory() : Future.value();
+  Future<void> loadMoreHistory() =>
+      _historyHasMore ? loadHistory() : Future.value();
 
   Future<void> _loadHistory(bool fromStart) async {
     final gen = _generation;
@@ -503,7 +573,8 @@ class OrderProvider with ChangeNotifier {
     final cursor = _historyCursor;
     _historyLoading = true;
     _notify();
-    final r = await _api.fetchOrders(scope: 'history', limit: pageSize, cursor: cursor);
+    final r = await _api.fetchOrders(
+        scope: 'history', limit: pageSize, cursor: cursor);
     if (gen != _generation) return;
     _historyLoading = false;
     final page = r.value;
@@ -535,7 +606,8 @@ class OrderProvider with ChangeNotifier {
     return _refreshSingle(orderId);
   }
 
-  Future<OrderModel?> _refreshSingle(String orderId) => _refreshing[orderId] ??= _refreshOrder(orderId).whenComplete(() {
+  Future<OrderModel?> _refreshSingle(String orderId) =>
+      _refreshing[orderId] ??= _refreshOrder(orderId).whenComplete(() {
         // Block body: returning the removed Future here would make whenComplete wait on itself.
         _refreshing.remove(orderId);
       });
@@ -556,14 +628,17 @@ class OrderProvider with ChangeNotifier {
 
   /// `GET /order-groups/:id`: loads every part of a combined order and merges them like any
   /// order. Concurrent calls share one request.
-  Future<OrderResult<OrderGroupView>> refreshGroup(String groupId) => _groupRefreshing[groupId] ??= _refreshGroup(groupId).whenComplete(() {
+  Future<OrderResult<OrderGroupView>> refreshGroup(String groupId) =>
+      _groupRefreshing[groupId] ??= _refreshGroup(groupId).whenComplete(() {
         _groupRefreshing.remove(groupId);
       });
 
   Future<OrderResult<OrderGroupView>> _refreshGroup(String groupId) async {
     final gen = _generation;
     final r = await _api.fetchGroup(groupId);
-    if (gen != _generation) return const OrderResult.fail(OrderApiError(OrderErrorKind.unauthorized));
+    if (gen != _generation) {
+      return const OrderResult.fail(OrderApiError(OrderErrorKind.unauthorized));
+    }
     final g = r.value;
     if (g != null) _storeGroup(g);
     return r;
@@ -587,9 +662,13 @@ class OrderProvider with ChangeNotifier {
       sizes[g.id] = g.size;
     }
     for (final gid in loaded.keys) {
-      if (loaded[gid]! < sizes[gid]! && !_groupRefreshing.containsKey(gid) && _completionTried.add(gid)) {
+      if (loaded[gid]! < sizes[gid]! &&
+          !_groupRefreshing.containsKey(gid) &&
+          _completionTried.add(gid)) {
         unawaited(refreshGroup(gid).then((r) {
-          if (!r.ok) _completionTried.remove(gid); // try again on the next list load
+          if (!r.ok) {
+            _completionTried.remove(gid); // try again on the next list load
+          }
         }));
       }
     }
@@ -617,8 +696,12 @@ class OrderProvider with ChangeNotifier {
     }
     final hadError = _loadErrors.remove(orderId) != null;
     _ingest(o);
-    if (hadError) _ensurePolling(); // polling was switched off for a missing order: it exists now
-    if (o.group != null) _ensureGroupsComplete(); // the other restaurants of a combined order
+    if (hadError) {
+      _ensurePolling(); // polling was switched off for a missing order: it exists now
+    }
+    if (o.group != null) {
+      _ensureGroupsComplete(); // the other restaurants of a combined order
+    }
     return _view(orderId);
   }
 
@@ -646,7 +729,8 @@ class OrderProvider with ChangeNotifier {
     }
     if (kept.isTerminal && _historyLoaded && !_historyIds.contains(kept.id)) {
       final ids = [..._historyIds, kept.id];
-      ids.sort((a, b) => (_orders[b]?.createdAt ?? DateTime(0)).compareTo(_orders[a]?.createdAt ?? DateTime(0)));
+      ids.sort((a, b) => (_orders[b]?.createdAt ?? DateTime(0))
+          .compareTo(_orders[a]?.createdAt ?? DateTime(0)));
       _historyIds = ids;
       changed = true;
     }
@@ -664,36 +748,51 @@ class OrderProvider with ChangeNotifier {
   /// the same key is reused (retries after a timeout return the same order, never a duplicate)
   /// and an existing unpaid order is returned without another request. A second call while one
   /// is in flight returns the same future (double taps are harmless).
-  Future<OrderResult<OrderModel>> placeOrder(CheckoutDraft draft) => _placing ??= _placeOrder(draft).whenComplete(() {
+  Future<OrderResult<OrderModel>> placeOrder(CheckoutDraft draft) =>
+      _placing ??= _placeOrder(draft).whenComplete(() {
         _placing = null;
         _notify();
       });
 
   Future<OrderResult<OrderModel>> _placeOrder(CheckoutDraft draft) async {
     var attempt = _attempt;
-    if (attempt != null && attempt.cartKey == draft.cartKey && attempt.orderId != null) {
+    if (attempt != null &&
+        attempt.cartKey == draft.cartKey &&
+        attempt.orderId != null) {
       final existing = _view(attempt.orderId!);
       if (existing != null && existing.isLive) return OrderResult.ok(existing);
-      attempt = null; // that order is finished (expired / cancelled): a new order needs a new key
+      attempt =
+          null; // that order is finished (expired / cancelled): a new order needs a new key
     }
-    if (attempt != null && attempt.orderId == null && (attempt.dropoffHostel != draft.dropoffHostel || attempt.dropoffNotes != draft.dropoffNotes)) {
-      attempt = null; // no order exists yet and the drop point or note changed: a new key for the new request
+    if (attempt != null &&
+        attempt.orderId == null &&
+        (attempt.dropoffHostel != draft.dropoffHostel ||
+            attempt.dropoffNotes != draft.dropoffNotes)) {
+      attempt =
+          null; // no order exists yet and the drop point or note changed: a new key for the new request
     }
     if (attempt == null || attempt.cartKey != draft.cartKey) {
-      attempt = _CheckoutAttempt(draft.cartKey, newClientRequestId(), draft.dropoffHostel, draft.dropoffNotes);
+      attempt = _CheckoutAttempt(draft.cartKey, newClientRequestId(),
+          draft.dropoffHostel, draft.dropoffNotes);
     }
     _attempt = attempt;
     final gen = _generation;
     _notify();
     var r = await _createOrder(draft, attempt);
-    if (gen != _generation) return const OrderResult.fail(OrderApiError(OrderErrorKind.unauthorized));
+    if (gen != _generation) {
+      return const OrderResult.fail(OrderApiError(OrderErrorKind.unauthorized));
+    }
     if (r.error?.code == 'CLIENT_REQUEST_MISMATCH') {
       // The key was already used for a different body (should not happen after the re-key above,
       // but a lost response plus an edit elsewhere could): start a fresh checkout id and retry once.
-      attempt = _CheckoutAttempt(draft.cartKey, newClientRequestId(), draft.dropoffHostel, draft.dropoffNotes);
+      attempt = _CheckoutAttempt(draft.cartKey, newClientRequestId(),
+          draft.dropoffHostel, draft.dropoffNotes);
       _attempt = attempt;
       r = await _createOrder(draft, attempt);
-      if (gen != _generation) return const OrderResult.fail(OrderApiError(OrderErrorKind.unauthorized));
+      if (gen != _generation) {
+        return const OrderResult.fail(
+            OrderApiError(OrderErrorKind.unauthorized));
+      }
     }
     final order = r.value;
     if (order != null) {
@@ -705,9 +804,11 @@ class OrderProvider with ChangeNotifier {
     return r;
   }
 
-  Future<OrderResult<OrderModel>> _createOrder(CheckoutDraft draft, _CheckoutAttempt attempt) {
+  Future<OrderResult<OrderModel>> _createOrder(
+      CheckoutDraft draft, _CheckoutAttempt attempt) {
     if (draft.isGroup) return _createGroup(draft, attempt);
     return _api.createOrder(CreateOrderRequest(
+      paymentMethod: draft.paymentMethod,
       vendorId: draft.vendorId,
       items: draft.items,
       dropoffHostel: draft.dropoffHostel,
@@ -720,7 +821,8 @@ class OrderProvider with ChangeNotifier {
   /// `POST /order-groups` (two or more restaurants). The parts are merged into the order store
   /// here; the returned order is the composite of the whole group (id = the primary part, the id
   /// to pay). Same idempotency key for the same cart and drop point as the single flow.
-  Future<OrderResult<OrderModel>> _createGroup(CheckoutDraft draft, _CheckoutAttempt attempt) async {
+  Future<OrderResult<OrderModel>> _createGroup(
+      CheckoutDraft draft, _CheckoutAttempt attempt) async {
     final gen = _generation;
     final r = await _api.createGroup(CreateGroupRequest(
       restaurants: draft.restaurants,
@@ -729,12 +831,15 @@ class OrderProvider with ChangeNotifier {
       couponCode: draft.couponCode,
       clientRequestId: attempt.clientRequestId,
     ));
-    if (gen != _generation) return const OrderResult.fail(OrderApiError(OrderErrorKind.unauthorized));
+    if (gen != _generation) {
+      return const OrderResult.fail(OrderApiError(OrderErrorKind.unauthorized));
+    }
     final g = r.value;
     if (g == null) return OrderResult.fail(r.error!);
     _storeGroup(g);
     final primary = _orders[g.payOrderId] ?? g.orders.first;
-    return OrderResult.ok(_view(primary.id) ?? OrderModel.composite(g.orders, groupTotal: g.total));
+    return OrderResult.ok(_view(primary.id) ??
+        OrderModel.composite(g.orders, groupTotal: g.total));
   }
 
   /// Forget the checkout attempt (after a successful payment, or when the student cancels the
@@ -759,25 +864,39 @@ class OrderProvider with ChangeNotifier {
   Future<PaymentOutcome> _pay(String orderId, String? contact) async {
     final gen = _generation;
     final session = await _api.createPayment(orderId);
-    if (gen != _generation) return const PaymentOutcome(PaymentOutcomeKind.failed);
+    if (gen != _generation) {
+      return const PaymentOutcome(PaymentOutcomeKind.failed);
+    }
     if (session.value == null) {
       final error = session.error!;
       if (error.order != null) _ingest(error.order!);
-      if (error.code == 'PAYMENT_WINDOW_EXPIRED' || error.code == 'ORDER_CLOSED') {
+      if (error.code == 'PAYMENT_WINDOW_EXPIRED' ||
+          error.code == 'ORDER_CLOSED') {
         // The server will not take money for this order any more (the expiry job may not have
         // cancelled it yet): the next checkout must create a new order.
         if (_attempt?.orderId == orderId) _attempt = null;
         unawaited(refreshOrder(orderId));
-        return PaymentOutcome(PaymentOutcomeKind.orderClosed, order: _view(orderId), message: orderErrorMessage(error));
+        return PaymentOutcome(PaymentOutcomeKind.orderClosed,
+            order: _view(orderId), message: orderErrorMessage(error));
       }
-      if (!error.isNetwork && error.kind != OrderErrorKind.server && error.kind != OrderErrorKind.unauthorized) {
+      if (!error.isNetwork &&
+          error.kind != OrderErrorKind.server &&
+          error.kind != OrderErrorKind.unauthorized) {
         // Refused: maybe it was paid meanwhile (webhook, `ALREADY_PAID`) or it expired. Ask the server.
         final fresh = await refreshOrder(orderId);
-        if (gen != _generation) return const PaymentOutcome(PaymentOutcomeKind.failed);
-        if (fresh != null && fresh.isPaid) return PaymentOutcome(PaymentOutcomeKind.paid, order: fresh);
-        if (fresh != null && fresh.isTerminal) return PaymentOutcome(PaymentOutcomeKind.orderClosed, order: fresh, message: _closedMessage(fresh));
+        if (gen != _generation) {
+          return const PaymentOutcome(PaymentOutcomeKind.failed);
+        }
+        if (fresh != null && fresh.isPaid) {
+          return PaymentOutcome(PaymentOutcomeKind.paid, order: fresh);
+        }
+        if (fresh != null && fresh.isTerminal) {
+          return PaymentOutcome(PaymentOutcomeKind.orderClosed,
+              order: fresh, message: _closedMessage(fresh));
+        }
       }
-      return PaymentOutcome(PaymentOutcomeKind.failed, message: orderErrorMessage(error, action: 'start the payment'));
+      return PaymentOutcome(PaymentOutcomeKind.failed,
+          message: orderErrorMessage(error, action: 'start the payment'));
     }
 
     final order = _view(orderId);
@@ -786,28 +905,42 @@ class OrderProvider with ChangeNotifier {
       // and refuse to open the sheet until both agree.
       final fresh = await refreshOrder(orderId);
       if (fresh == null || session.value!.amountPaise != fresh.totalPaise) {
-        return const PaymentOutcome(PaymentOutcomeKind.failed, message: 'The amount to pay changed. Please check the updated bill and try again.');
+        return const PaymentOutcome(PaymentOutcomeKind.failed,
+            message:
+                'The amount to pay changed. Please check the updated bill and try again.');
       }
     }
 
     final GatewayResult g;
     try {
-      g = await (_gateway ??= RazorpayPaymentGateway()).pay(session.value!, contact: contact).timeout(paymentSheetTimeout);
+      g = await (_gateway ??= RazorpayPaymentGateway())
+          .pay(session.value!, contact: contact)
+          .timeout(paymentSheetTimeout);
     } on TimeoutException {
       unawaited(refreshOrder(orderId));
-      return const PaymentOutcome(PaymentOutcomeKind.failed, message: 'The payment window did not answer. If money was debited, it will show up on this order shortly; otherwise try again.');
+      return const PaymentOutcome(PaymentOutcomeKind.failed,
+          message:
+              'The payment window did not answer. If money was debited, it will show up on this order shortly; otherwise try again.');
     }
-    if (gen != _generation) return const PaymentOutcome(PaymentOutcomeKind.failed);
+    if (gen != _generation) {
+      return const PaymentOutcome(PaymentOutcomeKind.failed);
+    }
 
     switch (g.kind) {
       case GatewayResultKind.cancelled:
-        return const PaymentOutcome(PaymentOutcomeKind.cancelled, message: 'Payment not completed. Your order is saved: you can try again.');
+        return const PaymentOutcome(PaymentOutcomeKind.cancelled,
+            message:
+                'Payment not completed. Your order is saved: you can try again.');
       case GatewayResultKind.externalWallet:
-        return const PaymentOutcome(PaymentOutcomeKind.failed, message: 'That wallet is not supported here. Please pay with UPI or a card.');
+        return const PaymentOutcome(PaymentOutcomeKind.failed,
+            message:
+                'That wallet is not supported here. Please pay with UPI or a card.');
       case GatewayResultKind.failed:
         return PaymentOutcome(
           PaymentOutcomeKind.failed,
-          message: g.networkProblem ? 'The payment could not reach the bank. Check your connection and try again.' : 'The payment did not go through. You can try again.',
+          message: g.networkProblem
+              ? 'The payment could not reach the bank. Check your connection and try again.'
+              : 'The payment did not go through. You can try again.',
         );
       case GatewayResultKind.success:
         break;
@@ -816,7 +949,9 @@ class OrderProvider with ChangeNotifier {
     _paymentSubmittedAt[orderId] = _clock();
     _notify();
     final v = await _api.verifyPayment(g.proof!);
-    if (gen != _generation) return const PaymentOutcome(PaymentOutcomeKind.failed);
+    if (gen != _generation) {
+      return const PaymentOutcome(PaymentOutcomeKind.failed);
+    }
     if (v.value != null) _ingest(v.value!);
     final verifyError = v.error;
     if (verifyError?.order != null) _ingest(verifyError!.order!);
@@ -826,30 +961,46 @@ class OrderProvider with ChangeNotifier {
         _paymentSubmittedAt.remove(orderId);
         if (_attempt?.orderId == orderId) _attempt = null;
         unawaited(refreshOrder(orderId));
-        return PaymentOutcome(PaymentOutcomeKind.orderClosed, order: _view(orderId), message: orderErrorMessage(verifyError!));
+        return PaymentOutcome(PaymentOutcomeKind.orderClosed,
+            order: _view(orderId), message: orderErrorMessage(verifyError!));
       case 'DUPLICATE_PAYMENT':
         unawaited(refreshOrder(orderId));
-        return PaymentOutcome(PaymentOutcomeKind.paid, order: _view(orderId), message: orderErrorMessage(verifyError!));
+        return PaymentOutcome(PaymentOutcomeKind.paid,
+            order: _view(orderId), message: orderErrorMessage(verifyError!));
       case 'PAYMENT_AMOUNT_MISMATCH':
         // Not marked paid and support has to sort out the money: never ask to "confirm" forever.
         _paymentSubmittedAt.remove(orderId);
         _notify();
-        return PaymentOutcome(PaymentOutcomeKind.failed, order: _view(orderId), message: orderErrorMessage(verifyError!));
+        return PaymentOutcome(PaymentOutcomeKind.failed,
+            order: _view(orderId), message: orderErrorMessage(verifyError!));
     }
     final fresh = await refreshOrder(orderId);
-    if (gen != _generation) return const PaymentOutcome(PaymentOutcomeKind.failed);
+    if (gen != _generation) {
+      return const PaymentOutcome(PaymentOutcomeKind.failed);
+    }
     final latest = fresh ?? _view(orderId);
-    if (latest != null && latest.isPaid) return PaymentOutcome(PaymentOutcomeKind.paid, order: latest);
+    if (latest != null && latest.isPaid) {
+      return PaymentOutcome(PaymentOutcomeKind.paid, order: latest);
+    }
     if (v.ok) {
       // The server accepted the signature but the order is still unpaid on its side: it answers
       // PENDING_CONFIRMATION while Razorpay has not confirmed the capture yet (the webhook or the
       // server's own reconciliation finishes it). Keep the "confirming" state; polling/socket flips it.
-      return PaymentOutcome(PaymentOutcomeKind.confirming, order: latest, message: 'Payment received. Waiting for the bank to confirm it; this can take a minute.');
+      return PaymentOutcome(PaymentOutcomeKind.confirming,
+          order: latest,
+          message:
+              'Payment received. Waiting for the bank to confirm it; this can take a minute.');
     }
-    if (latest != null && latest.isTerminal) return PaymentOutcome(PaymentOutcomeKind.orderClosed, order: latest, message: _closedMessage(latest));
+    if (latest != null && latest.isTerminal) {
+      return PaymentOutcome(PaymentOutcomeKind.orderClosed,
+          order: latest, message: _closedMessage(latest));
+    }
     // Razorpay took the payment but the server has not confirmed it (network, or a signature
     // problem the webhook may still resolve). Show "confirming" and never offer to pay again.
-    return PaymentOutcome(PaymentOutcomeKind.confirming, order: latest, message: 'Payment received. We\'re confirming it with ${BrandConfig.name}; this can take a minute.');
+    return PaymentOutcome(PaymentOutcomeKind.confirming,
+        order: latest,
+        message:
+            'Payment received. We\'re confirming it with ${BrandConfig.name}; this can take a minute.');
   }
 
   static String _closedMessage(OrderModel o) => o.isPaymentNotCompletedCancel
@@ -860,8 +1011,12 @@ class OrderProvider with ChangeNotifier {
 
   /// `POST /orders/:id/cancel` (only while PLACED). On a conflict the latest copy is loaded so
   /// the screen shows why.
-  Future<OrderResult<OrderModel>> cancelOrder(String orderId, {String? reason}) async {
-    if (_cancelling.contains(orderId)) return const OrderResult.fail(OrderApiError(OrderErrorKind.conflict, message: 'Already cancelling this order.'));
+  Future<OrderResult<OrderModel>> cancelOrder(String orderId,
+      {String? reason}) async {
+    if (_cancelling.contains(orderId)) {
+      return const OrderResult.fail(OrderApiError(OrderErrorKind.conflict,
+          message: 'Already cancelling this order.'));
+    }
     final gen = _generation;
     _cancelling.add(orderId);
     _notify();
@@ -886,7 +1041,8 @@ class OrderProvider with ChangeNotifier {
     final gen = _generation;
     final r = await _api.submitReview(request);
     if (gen != _generation) return r;
-    final alreadyReviewed = r.error?.kind == OrderErrorKind.rejected && (r.error?.message ?? '').toLowerCase().contains('already');
+    final alreadyReviewed = r.error?.kind == OrderErrorKind.rejected &&
+        (r.error?.message ?? '').toLowerCase().contains('already');
     if (r.ok || alreadyReviewed) {
       _reviewed.add(request.orderId);
       _notify();
@@ -922,7 +1078,8 @@ class OrderProvider with ChangeNotifier {
   bool isWatching(String orderId) {
     if (_watchers.containsKey(orderId)) return true;
     final gid = _orders[orderId]?.group?.id;
-    return gid != null && _watchers.keys.any((w) => _orders[w]?.group?.id == gid);
+    return gid != null &&
+        _watchers.keys.any((w) => _orders[w]?.group?.id == gid);
   }
 
   Iterable<String> get _pollIds => _watchers.keys.where(_isWatchedAndWanted);
@@ -968,7 +1125,12 @@ class OrderProvider with ChangeNotifier {
   Iterable<String> _roomsOf(String id) {
     final g = _orders[id]?.group;
     if (g == null) return [id];
-    return {id, for (final s in g.stops) s.orderId, for (final o in _orders.values) if (o.group?.id == g.id) o.id};
+    return {
+      id,
+      for (final s in g.stops) s.orderId,
+      for (final o in _orders.values)
+        if (o.group?.id == g.id) o.id
+    };
   }
 
   /// A watched order (loaded, or not loaded yet but not known to be missing) that still needs updates.
@@ -997,7 +1159,8 @@ class OrderProvider with ChangeNotifier {
       try {
         token = await _tokenProvider();
       } catch (e) {
-        debugPrint('[Orders] could not read the session token for the socket: ${e.runtimeType}');
+        debugPrint(
+            '[Orders] could not read the session token for the socket: ${e.runtimeType}');
         return; // polling still covers the watched orders; the next sync tries again
       } finally {
         // (After a logout `_reset` already cleared the flag for the new session; leave it alone.)
@@ -1027,7 +1190,9 @@ class OrderProvider with ChangeNotifier {
     final gen = _generation;
     _joined.add(id);
     rt.join(id, (ok) {
-      if (!ok && gen == _generation && identical(rt, _realtime)) _joined.remove(id);
+      if (!ok && gen == _generation && identical(rt, _realtime)) {
+        _joined.remove(id);
+      }
     });
   }
 
@@ -1053,8 +1218,13 @@ class OrderProvider with ChangeNotifier {
     // Only orders this student already knows about or is watching (rooms are server-checked,
     // this is defence in depth).
     final gid = o.group?.id;
-    final knownGroup = gid != null && _orders.values.any((x) => x.group?.id == gid);
-    if (!_orders.containsKey(o.id) && !_watchers.containsKey(o.id) && !knownGroup) return;
+    final knownGroup =
+        gid != null && _orders.values.any((x) => x.group?.id == gid);
+    if (!_orders.containsKey(o.id) &&
+        !_watchers.containsKey(o.id) &&
+        !knownGroup) {
+      return;
+    }
     _ingest(o);
   }
 
@@ -1072,7 +1242,16 @@ class OrderProvider with ChangeNotifier {
     if (g != null) {
       for (final o in _orders.values) {
         if (o.group?.id == g.id && o.id != loc.orderId && o.group!.primary) {
-          _setRider(o.id, RiderLocation(orderId: o.id, driverId: loc.driverId, lat: loc.lat, lng: loc.lng, heading: loc.heading, at: loc.at, receivedAt: loc.receivedAt));
+          _setRider(
+              o.id,
+              RiderLocation(
+                  orderId: o.id,
+                  driverId: loc.driverId,
+                  lat: loc.lat,
+                  lng: loc.lng,
+                  heading: loc.heading,
+                  at: loc.at,
+                  receivedAt: loc.receivedAt));
         }
       }
     }

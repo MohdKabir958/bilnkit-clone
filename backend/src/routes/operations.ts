@@ -1,3 +1,4 @@
+import { fulfillmentWhere, fulfillmentAuthorized, requireRiderAt } from '../services/marketplace';
 import { checkVendorProfileText, checkVendorBanner } from '../services/vendorProfile';
 import { Router, Response } from 'express';
 import { Prisma } from '@prisma/client';
@@ -34,9 +35,9 @@ operationsRouter.put('/v1/admin/drivers/:id/service-area',...admin,validParams('
 operationsRouter.post('/v1/dispatch-offers/:id/decline',requireAuth,requireRole('DRIVER'),requireApprovedPartner,validParams('id'),wrap(async(r,s)=>{await declineDispatchOffer(r.params.id,r.user!.id,text(r.body?.reason??'Not available','reason',160));ok(s,{declined:true});}));
 operationsRouter.post('/v1/admin/orders/:id/dispatch/retry',...admin,validParams('id'),wrap(async(r,s)=>{
   const id=await withOrderLock(r.params.id,async(tx,o,g)=>{
-    const primary=g?.[0]??o;if(primary.driverId||!['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(primary.status)||primary.paymentStatus!=='PAID')throw new AppError(409,'ORDER_NOT_AVAILABLE','Only an eligible unassigned delivery can be offered again.');
+    const primary=g?.[0]??o;if(primary.driverId||!['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(primary.status)||!fulfillmentAuthorized(primary))throw new AppError(409,'ORDER_NOT_AVAILABLE','Only an eligible unassigned delivery can be offered again.');
     await tx.dispatchOffer.updateMany({where:{orderId:primary.id,state:'PENDING'},data:{state:'REVOKED',reason:'Admin retry'}});
-    await tx.order.update({where:{id:primary.id},data:{dispatchRound:{increment:1},dispatchNote:null,dispatchEscalatedAt:null,dispatchNextAttemptAt:new Date()}});
+    await tx.order.update({where:{id:primary.id},data:{dispatchRound:primary.workflowVersion===2?(Math.floor(primary.dispatchRound/3)+1)*3:{increment:1},dispatchNote:null,dispatchEscalatedAt:null,dispatchNextAttemptAt:null}});
     await tx.adminAuditLog.create({data:{action:'DISPATCH_RETRIED',targetType:'ORDER',targetId:primary.id,summary:`Admin ${r.user!.id} requested a new offer round`}});return primary.id;
   });await ensureDispatchOffer(id);ok(s,{retried:true});
 }));
@@ -45,6 +46,7 @@ operationsRouter.post('/v1/orders/:id/arrive-pickup',requireAuth,requireRole('DR
     if(o.driverId!==r.user!.id)throw new AppError(404,'NOT_FOUND','Delivery not found.');
     if(!['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(o.status))throw new AppError(409,'BAD_STATE','Pickup arrival can be confirmed before collection.');
     if(o.pickupArrivalAt)return;
+    await requireRiderAt(tx,o,o.vendor);
     await tx.order.update({where:{id:o.id},data:{pickupArrivalAt:new Date()}});
     await tx.notificationIntent.create({data:{orderId:o.id,event:'RIDER_AT_PICKUP',options:{bucket:o.updatedAt.getTime()}}});
     await tx.adminAuditLog.create({data:{action:'RIDER_AT_PICKUP',targetType:'ORDER',targetId:o.id,summary:`Assigned rider ${r.user!.id} confirmed arrival at the store`}});
@@ -52,13 +54,13 @@ operationsRouter.post('/v1/orders/:id/arrive-pickup',requireAuth,requireRole('DR
 }));
 operationsRouter.get('/v1/admin/dispatch',...admin,wrap(async(r,s)=>{
   const cityId=r.query.cityId===undefined?undefined:text(r.query.cityId,'cityId',64),p=page(r);
-  const rows=await prisma.order.findMany({...p,where:{paymentStatus:'PAID',status:{in:['ACCEPTED','PREPARING','READY_FOR_PICKUP']},driverId:null,OR:[{groupId:null},{groupIndex:0}],...(cityId?{vendor:{cityId}}:{})},orderBy:{id:'asc'},select:{id:true,status:true,createdAt:true,dispatchRound:true,dispatchNote:true,dispatchEscalatedAt:true,dispatchNextAttemptAt:true,vendor:{select:{id:true,name:true,cityId:true}},dispatchOffers:{orderBy:{createdAt:'desc'},take:10,select:{id:true,state:true,round:true,expiresAt:true,reason:true,driver:{select:{id:true,name:true}}}}}});
+  const rows=await prisma.order.findMany({...p,where:{AND:[fulfillmentWhere],status:{in:['ACCEPTED','PREPARING','READY_FOR_PICKUP']},driverId:null,OR:[{groupId:null},{groupIndex:0}],...(cityId?{vendor:{cityId}}:{})},orderBy:{id:'asc'},select:{id:true,status:true,createdAt:true,dispatchRound:true,dispatchNote:true,dispatchEscalatedAt:true,dispatchNextAttemptAt:true,vendor:{select:{id:true,name:true,cityId:true}},dispatchOffers:{orderBy:{createdAt:'desc'},take:10,select:{id:true,state:true,round:true,expiresAt:true,reason:true,driver:{select:{id:true,name:true}}}}}});
   s.json({success:true,data:rows,nextCursor:rows.length===p.take?rows.at(-1)!.id:null});
 }));
 
 const storeFields={id:true,name:true,address:true,bannerImage:true,pinCode:true,locality:true,city:{select:{name:true,state:true}},coverage:{select:{active:true}}} as const;
 operationsRouter.get('/v1/partner/store',requireAuth,requireRole('VENDOR'),requireApprovedPartner,wrap(async(r,s)=>{
-  const store=await prisma.vendor.findFirst({where:{userId:r.user!.id,approvalStatus:'APPROVED'},select:storeFields});
+  const store=await prisma.vendor.findFirst({where:{userId:r.user!.id,approvalStatus:'APPROVED',...(r.query.vendorId?{id:text(r.query.vendorId,'vendorId',64)}:{})},select:storeFields});
   if(!store)throw new AppError(404,'NOT_FOUND','Store not found.');ok(s,store);
 }));
 operationsRouter.put('/v1/partner/store',requireAuth,requireRole('VENDOR'),requireApprovedPartner,wrap(async(r,s)=>{
@@ -71,7 +73,8 @@ operationsRouter.put('/v1/partner/store',requireAuth,requireRole('VENDOR'),requi
   const result=await prisma.$transaction(async(tx)=>{
     const account=await tx.$queryRaw<{deletedAt:Date|null}[]>`SELECT "deletedAt" FROM "User" WHERE "id"=${r.user!.id} FOR SHARE`;
     if(!account.length||account[0].deletedAt)throw new AppError(401,'ACCOUNT_UNAVAILABLE','Please sign in again.');
-    const ids=await tx.$queryRaw<{id:string}[]>`SELECT "id" FROM "Vendor" WHERE "userId"=${r.user!.id} AND "approvalStatus"='APPROVED' FOR UPDATE`;
+    const selected=r.query.vendorId?text(r.query.vendorId,'vendorId',64):'';
+    const ids=await tx.$queryRaw<{id:string}[]>`SELECT "id" FROM "Vendor" WHERE "userId"=${r.user!.id} AND "approvalStatus"='APPROVED' AND (${selected}='' OR "id"=${selected}) ORDER BY "id" FOR UPDATE`;
     if(!ids.length)throw new AppError(404,'NOT_FOUND','Store not found.');
     const before=await tx.vendor.findUniqueOrThrow({where:{id:ids[0].id}});
     const changed=keys.some(k=>(data as any)[k] !== (before as any)[k]);

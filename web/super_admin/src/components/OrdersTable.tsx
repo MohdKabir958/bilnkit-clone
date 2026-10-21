@@ -73,7 +73,7 @@ const StatusCell: React.FC<{ order: Order; now: number; attention: boolean }> = 
 
 const PaymentCell: React.FC<{ order: Order }> = ({ order }) => (
   <div className="flex flex-col items-start gap-1">
-    <PaymentPill status={order.paymentStatus} />
+    <PaymentPill method={order.paymentMethod} status={order.paymentStatus} />
     <RefundPill order={order} />
   </div>
 );
@@ -232,7 +232,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({ orders, attentionIds, 
               </div>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                 <RunnerCell name={order.driverName} unpaid={order.paymentStatus !== 'PAID'} finished={isTerminal(order.status)} />
-                <div className="flex flex-wrap justify-end gap-1"><PaymentPill status={order.paymentStatus} /><RefundPill order={order} /></div>
+                <div className="flex flex-wrap justify-end gap-1"><PaymentPill method={order.paymentMethod} status={order.paymentStatus} /><RefundPill order={order} /></div>
               </div>
               <div className="mt-3"><NextStepControl order={order} onAdvance={onAdvance} stacked /></div>
               <button

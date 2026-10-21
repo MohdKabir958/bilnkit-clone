@@ -297,7 +297,7 @@ void main() {
     test(
         'loading the real answer gives All + the server list in the server order, with icon keys',
         () async {
-      final server = FakeCatalogServer()..answer('home', realHomeCategories());
+      final server = FakeCatalogServer()..answer('restaurants', realHomeCategories());
       CustomerApiService.httpClientOverride = server.client;
       final p = withMenus();
       await p.loadCategories();
@@ -305,7 +305,7 @@ void main() {
       expect(p.categoryChips.map((c) => c.iconKey),
           [null, 'biryani', 'restaurant']);
       expect(p.hasServerCategories, isTrue);
-      expect(server.categoryRequests.toSet(), {'home', 'dishes'});
+      expect(server.categoryRequests.toSet(), {'restaurants', 'dishes'});
     });
 
     test(
@@ -313,7 +313,7 @@ void main() {
         () async {
       final rows = [for (var i = 0; i < 14; i++) categoryRow('Cat $i', i)]
         ..insert(3, categoryRow('CAT 0', 99));
-      final server = FakeCatalogServer()..answer('home', categoriesBody(rows));
+      final server = FakeCatalogServer()..answer('restaurants', categoriesBody(rows));
       CustomerApiService.httpClientOverride = server.client;
       final p = withMenus();
       await p.loadCategories();
@@ -327,11 +327,11 @@ void main() {
         () async {
       for (final setup in <void Function(FakeCatalogServer)>[
         (s) {}, // 404 for both
-        (s) => s.answer('home', categoriesBody([])),
-        (s) => s.answer('home', '<html>nope</html>'),
-        (s) => s.answer('home', {'success': true, 'data': 'x'}),
-        (s) => s.answer('home', 'null'),
-        (s) => s.answer('home', categoriesBody([]), status: 500),
+        (s) => s.answer('restaurants', categoriesBody([])),
+        (s) => s.answer('restaurants', '<html>nope</html>'),
+        (s) => s.answer('restaurants', {'success': true, 'data': 'x'}),
+        (s) => s.answer('restaurants', 'null'),
+        (s) => s.answer('restaurants', categoriesBody([]), status: 500),
       ]) {
         final server = FakeCatalogServer();
         setup(server);
@@ -352,19 +352,19 @@ void main() {
     test(
         'a failed refresh keeps the last good list; an empty refresh returns to the derived chips',
         () async {
-      final server = FakeCatalogServer()..answer('home', realHomeCategories());
+      final server = FakeCatalogServer()..answer('restaurants', realHomeCategories());
       CustomerApiService.httpClientOverride = server.client;
       final p = withMenus();
       await p.loadCategories();
       expect(p.categories, ['All', 'Biryani', 'North Indian']);
 
-      server.answer('home', 'garbage', status: 502);
+      server.answer('restaurants', 'garbage', status: 502);
       server.answer('dishes', 'garbage', status: 502);
       await p.loadCategories();
       expect(p.categories, ['All', 'Biryani', 'North Indian'],
           reason: 'cached in memory');
 
-      server.answer('home', categoriesBody([]));
+      server.answer('restaurants', categoriesBody([]));
       await p.loadCategories();
       expect(p.categories, ['All', 'Beverages', 'Rolls', 'Thalis']);
     });
@@ -404,14 +404,14 @@ void main() {
           reason: 'the menu screen reloads the catalog only');
       expect(await p.refreshHome(), isTrue);
       await Future<void>.delayed(const Duration(milliseconds: 20));
-      expect(server.categoryRequests.toSet(), {'home', 'dishes'});
+      expect(server.categoryRequests.toSet(), {'restaurants', 'dishes'});
       expect(p.hasServerCategories, isFalse);
     });
 
     test(
         'concurrent loads share one request pair; disposing during a load does not throw',
         () async {
-      final server = FakeCatalogServer()..answer('home', realHomeCategories());
+      final server = FakeCatalogServer()..answer('restaurants', realHomeCategories());
       CustomerApiService.httpClientOverride = server.client;
       final p = withMenus();
       await Future.wait(
@@ -522,7 +522,7 @@ void main() {
         'ties in sortOrder are alphabetical; the dishes list order is used for categories that are not on Home',
         () async {
       final server = FakeCatalogServer()
-        ..answer('home', categoriesBody([categoryRow('Biryani', 10)]))
+        ..answer('restaurants', categoriesBody([categoryRow('Biryani', 10)]))
         ..answer(
             'dishes',
             categoriesBody([
@@ -542,7 +542,7 @@ void main() {
         () async {
       final server = FakeCatalogServer()
         ..answer(
-            'home',
+            'restaurants',
             categoriesBody(
                 [categoryRow('Thali', 2), categoryRow('Biryani', 1)]));
       CustomerApiService.httpClientOverride = server.client;
@@ -577,7 +577,7 @@ void main() {
           ])
         ]
         ..answer(
-            'home',
+            'restaurants',
             categoriesBody([
               categoryRow('Biryani', 1),
               categoryRow('Thali', 2),
@@ -618,7 +618,7 @@ void main() {
           ]),
         ]
         ..answer(
-            'home',
+            'restaurants',
             categoriesBody([
               categoryRow('Biryani', 1, icon: 'biryani'),
               categoryRow('Chai', 2, icon: 'tea'),

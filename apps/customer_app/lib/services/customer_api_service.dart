@@ -103,7 +103,12 @@ class CustomerApiService {
 
   /// Saves JWT token to local persistence
   static Future<void> saveToken(String token) async {
-    if (GrozoAuthConfig.usesClerk) { try { await SecureSessionTokens.delete(_tokenPrefKey); } catch (_) {} return; }
+    if (GrozoAuthConfig.usesClerk) {
+      try {
+        await SecureSessionTokens.delete(_tokenPrefKey);
+      } catch (_) {}
+      return;
+    }
     _tokenEpoch++;
     _cachedToken = token;
     try {
@@ -246,13 +251,15 @@ class CustomerApiService {
 
   /// Loads the public restaurant catalog, including database-backed menu IDs.
   static Future<List<Map<String, dynamic>>> fetchVendors(
-      {bool hydrateProducts = true}) async {
+      {bool hydrateProducts = true, String searchQuery = ''}) async {
     final vendors = <Map<String, dynamic>>[];
     final addressId = selectedAddressId;
     String? after;
     do {
       final query = Uri(queryParameters: {
         'limit': '50',
+        'marketplace': '1',
+        if (searchQuery.trim().isNotEmpty) 'q': searchQuery.trim(),
         if (addressId != null) 'addressId': addressId,
         if (after != null) 'after': after
       }).query;

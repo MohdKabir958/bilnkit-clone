@@ -344,6 +344,7 @@ class OrderModel {
     required this.id,
     required this.status,
     required this.paymentStatus,
+    this.paymentMethod = 'ONLINE',
     required this.subtotal,
     required this.deliveryFee,
     required this.taxAndPackaging,
@@ -382,6 +383,8 @@ class OrderModel {
   final String id;
   final OrderProgressStatus status;
   final PaymentStatus paymentStatus;
+  final String paymentMethod;
+  bool get isCashOnDelivery => paymentMethod == 'COD';
   final double subtotal;
   final double deliveryFee;
   final double taxAndPackaging;
@@ -465,6 +468,7 @@ class OrderModel {
       id: id,
       status: status,
       paymentStatus: _parsePayment(json['paymentStatus']),
+      paymentMethod: json['paymentMethod'] == 'COD' ? 'COD' : 'ONLINE',
       subtotal: _num(json['subtotal']),
       deliveryFee: _num(json['deliveryFee']),
       taxAndPackaging: _num(json['taxAndPackaging']),
@@ -631,6 +635,7 @@ class OrderModel {
 
   /// PLACED and not paid yet: the student still has to pay (or it expires).
   bool get awaitsPayment =>
+      !isCashOnDelivery &&
       status == OrderProgressStatus.placed &&
       (paymentStatus == PaymentStatus.pending ||
           paymentStatus == PaymentStatus.failed);

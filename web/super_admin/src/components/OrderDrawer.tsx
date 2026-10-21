@@ -132,7 +132,7 @@ const OrderView: React.FC<Omit<Props, 'mode' | 'onModeChange' | 'onClose' | 'onC
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <StatusPill status={order.status} />
-        <PaymentPill status={order.paymentStatus} />
+        <PaymentPill method={order.paymentMethod} status={order.paymentStatus} />
         <RefundPill order={order} />
         <OtpLockedPill order={order} />
         <GroupBadge group={order.group} />
@@ -199,9 +199,9 @@ const OrderView: React.FC<Omit<Props, 'mode' | 'onModeChange' | 'onClose' | 'onC
         </Notice>
       )}
 
-      {order.status === 'PLACED' && order.paymentStatus === 'PAID' && acceptBy && (
+      {order.status === 'PLACED' && (order.paymentStatus === 'PAID'||order.paymentMethod==='COD') && acceptBy && (
         <Notice tone="info" icon={Clock3} title={`Store must accept by ${acceptBy}`}>
-          <p>Otherwise the server cancels the order and refunds the customer automatically.</p>
+          <p>{order.paymentMethod==='COD'?'Otherwise the server cancels the order. No cash has been collected.':'Otherwise the server cancels the order and refunds the customer automatically.'}</p>
         </Notice>
       )}
 
@@ -278,7 +278,7 @@ const OrderView: React.FC<Omit<Props, 'mode' | 'onModeChange' | 'onClose' | 'onC
         <Section title="Rider" icon={Bike}>
           {order.driverName || order.driverId
             ? <><p className="font-bold text-kraveo-ink [overflow-wrap:anywhere]">{order.driverName ?? 'Assigned rider'}</p><CallLink phone={order.driverPhone} who={order.driverName ?? 'the rider'} /></>
-            : <p className="text-sm text-kraveo-ink3">{order.paymentStatus === 'PAID' ? 'No rider has claimed this order yet.' : 'Riders see the order once it is paid.'}</p>}
+            : <p className="text-sm text-kraveo-ink3">{order.paymentStatus === 'PAID'||order.paymentMethod==='COD' ? 'No rider has claimed this order yet.' : 'Riders see the order once it is paid.'}</p>}
           <h3 className="k-label mb-1.5 mt-4 flex items-center gap-1.5"><Store className="h-3.5 w-3.5" aria-hidden="true" />Store</h3>
           <p className="font-bold text-kraveo-ink [overflow-wrap:anywhere]">{order.vendorName}</p>
           {order.vendorAddress && <p className="text-xs text-kraveo-ink3 [overflow-wrap:anywhere]">{order.vendorAddress}</p>}

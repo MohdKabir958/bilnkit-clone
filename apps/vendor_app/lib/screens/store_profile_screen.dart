@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../services/product_api.dart';
 
 class StoreProfileScreen extends StatefulWidget {
-  const StoreProfileScreen({super.key, this.api});
+  const StoreProfileScreen({super.key, this.api, this.vendorId});
   final ProductApi? api;
+  final String? vendorId;
   @override
   State<StoreProfileScreen> createState() => _StoreProfileScreenState();
 }
@@ -38,7 +39,7 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
       error = null;
     });
     try {
-      final result = await api.call('GET', '/v1/partner/store');
+      final result = await api.call('GET', '/v1/partner/store${widget.vendorId==null?'':'?vendorId=${Uri.encodeComponent(widget.vendorId!)}'}');
       if (!mounted) return;
       final data = Map<String, dynamic>.from(result['data']);
       setState(() {
@@ -79,7 +80,7 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
       saved = null;
     });
     try {
-      final result = await api.call('PUT', '/v1/partner/store', {
+      final result = await api.call('PUT', '/v1/partner/store${widget.vendorId==null?'':'?vendorId=${Uri.encodeComponent(widget.vendorId!)}'}', {
         'name': name.text.trim(),
         'address': address.text.trim(),
         'bannerImage': banner.text.trim()

@@ -609,7 +609,7 @@ void main() {
       await _settle(tester);
       expect(find.text('ON DUTY'), findsOneWidget);
       expect(find.text('Allow location'),
-          findsNothing); // Idle riders do not request GPS.
+          findsOneWidget); // On-duty nearby offers require a current availability fix.
       await _reveal(tester, find.text('NEW ORDERS (2)'));
       await _reveal(tester, find.text('Southern Spice'));
       expect(find.text('Southern Spice'), findsOneWidget);

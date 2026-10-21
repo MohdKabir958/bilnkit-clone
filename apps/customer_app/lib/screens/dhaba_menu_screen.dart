@@ -121,6 +121,26 @@ class _DhabaMenuScreenState extends State<DhabaMenuScreen> {
                                               style: KraveoType.bodySm
                                                   .copyWith(color: k.inkMuted))
                                         ],
+                                        if (store.description?.isNotEmpty ??
+                                            false)
+                                          Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 8),
+                                              child: Text(store.description!,
+                                                  style: KraveoType.bodySm)),
+                                        if (store.publicPhone?.isNotEmpty ??
+                                            false)
+                                          Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 8),
+                                              child: SelectableText(
+                                                  'Store contact: ${store.publicPhone}',
+                                                  style: KraveoType.bodySm)),
+                                        Padding(
+                                            padding:
+                                                const EdgeInsets.only(top: 8),
+                                            child: Text(store.hoursLabel,
+                                                style: KraveoType.bodySm)),
                                         if (store.address.isNotEmpty) ...[
                                           const SizedBox(height: 8),
                                           Text(store.address,

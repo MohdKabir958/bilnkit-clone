@@ -57,7 +57,11 @@ export const publicVendorView = (v: any) => {
   return {
     id: v.id,
     name: v.name,
-    category: v.category,
+    category: v.primaryCategory?.name ?? v.category,
+    primaryCategoryId: v.primaryCategoryId ?? null,
+    publicPhone: v.publicPhone ?? null,
+    description: v.description ?? null,
+    operatingHours: v.operatingHours ?? null,
     rating: v.rating,
     totalRatingsCount: v.totalRatingsCount,
     eta: v.eta,

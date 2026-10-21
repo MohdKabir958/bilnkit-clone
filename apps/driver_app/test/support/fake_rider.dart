@@ -225,7 +225,7 @@ class FakeRiderApi implements RiderOrdersApi {
   }
 
   @override
-  Future<ApiResult<OrderView?>> verifyGateOtp(String id, String code) async {
+  Future<ApiResult<OrderView?>> verifyGateOtp(String id, String code, {bool cashCollected = false}) async {
     calls.add('otp:$id:$code');
     return onOtp(id, code);
   }

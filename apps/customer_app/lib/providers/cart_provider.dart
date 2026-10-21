@@ -18,6 +18,12 @@ class CartRestaurant {
 }
 
 class CartProvider with ChangeNotifier {
+  /// Compatibility reader for an existing combined cart. New storefronts always use the default.
+  CartProvider({bool allowLegacyGroups = false})
+      : _allowLegacyGroups = allowLegacyGroups,
+        _maxRestaurants = allowLegacyGroups ? 3 : 1;
+  final bool _allowLegacyGroups;
+
   /// The server refuses more than this many of one dish in an order (`MAX_ITEM_QUANTITY`).
   static const int maxQuantityPerDish = 20;
 
@@ -38,7 +44,7 @@ class CartProvider with ChangeNotifier {
   /// How many restaurants one order may hold (`maxRestaurants` of the last quote; 3 before the
   /// first quote answered). 1 means the feature is off: adding from another restaurant starts a
   /// new cart, as before.
-  int _maxRestaurants = kDefaultMaxRestaurants;
+  int _maxRestaurants;
 
   String? _appliedCouponCode;
   double _couponDiscountAmount = 0.0;
@@ -121,7 +127,7 @@ class CartProvider with ChangeNotifier {
   /// Sets the restaurant limit from the server's quote. A cart that already holds more than the
   /// new limit is kept as it is (checkout tells the student what to remove).
   void setMaxRestaurants(int value) {
-    final v = value < 1 ? 1 : value;
+    final v = _allowLegacyGroups ? (value < 1 ? 1 : value) : 1;
     if (v == _maxRestaurants) return;
     _maxRestaurants = v;
     notifyListeners();

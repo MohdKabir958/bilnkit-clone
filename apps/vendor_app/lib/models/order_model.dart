@@ -206,7 +206,10 @@ class OrderGroup {
 }
 
 class OrderModel {
+  final String paymentMethod;
+  bool get isCashOnDelivery => paymentMethod == 'COD';
   const OrderModel({
+    this.paymentMethod = 'ONLINE',
     required this.id,
     required this.status,
     required this.paymentStatus,
@@ -302,6 +305,7 @@ class OrderModel {
   /// Something the restaurant may legitimately see: paid, or cancelled/refunded after payment.
   /// Unpaid orders never reach the kitchen (contract 1.2); we drop them even if a server bug sends one.
   bool get isVisibleToVendor =>
+      isCashOnDelivery ||
       paymentStatus == PaymentStatus.paid ||
       paymentStatus == PaymentStatus.refunded ||
       (status == OrderStatus.cancelled &&
@@ -309,7 +313,8 @@ class OrderModel {
           paymentStatus != PaymentStatus.failed);
 
   /// A new paid order waiting for Accept / Reject.
-  bool get isIncoming => status == OrderStatus.placed && isPaid;
+  bool get isIncoming =>
+      status == OrderStatus.placed && (isPaid || isCashOnDelivery);
 
   /// When the accept window closes: the server's `acceptBy`; only if it is missing, payment time + 10 minutes.
   DateTime get acceptDeadline =>
@@ -338,6 +343,7 @@ class OrderModel {
         id: id,
         status: status ?? this.status,
         paymentStatus: paymentStatus,
+        paymentMethod: paymentMethod,
         items: items,
         totalAmount: totalAmount,
         subtotal: subtotal,
@@ -420,6 +426,7 @@ class OrderModel {
       id: id,
       status: OrderStatus.parse(raw['status']),
       paymentStatus: PaymentStatus.parse(raw['paymentStatus']),
+      paymentMethod: raw['paymentMethod'] == 'COD' ? 'COD' : 'ONLINE',
       items: items,
       totalAmount: _double(raw['totalAmount']) ?? 0,
       subtotal: _double(raw['subtotal']),

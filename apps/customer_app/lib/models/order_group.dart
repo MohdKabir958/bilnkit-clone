@@ -19,7 +19,7 @@ String? _str(Object? v) {
 }
 
 /// What the app assumes for the maximum number of restaurants before the first quote answered.
-const int kDefaultMaxRestaurants = 3;
+const int kDefaultMaxRestaurants = 1;
 
 /// Local fallback used only when the server's quote is not available (estimate marked as such):
 /// the base fee and the fee each extra restaurant adds (admin settings, Docs/21/22 defaults).
@@ -111,7 +111,9 @@ class QuoteLine {
 
 /// `POST /orders/quote` -> `data`: what placing the same cart would charge.
 class OrderQuote {
+  final List<String> paymentMethods;
   const OrderQuote({
+    this.paymentMethods = const ['ONLINE'],
     required this.restaurantCount,
     required this.subtotal,
     required this.baseFee,
@@ -175,6 +177,9 @@ class OrderQuote {
         ? (fees['total'] as num).toDouble()
         : _num(fees['base']) + _num(fees['extraTotal']);
     return OrderQuote(
+      paymentMethods: json['paymentMethods'] is List
+          ? (json['paymentMethods'] as List).whereType<String>().toList()
+          : const ['ONLINE'],
       restaurantCount:
           count is num ? count.toInt() : (lines.isEmpty ? 1 : lines.length),
       subtotal: subtotal.toDouble(),

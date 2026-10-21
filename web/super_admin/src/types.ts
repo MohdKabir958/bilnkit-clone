@@ -45,6 +45,7 @@ export interface PaymentRecord {
 }
 
 export interface Order {
+  paymentMethod?: 'ONLINE'|'COD';
   cityId?: string;
   id: string;
   customerId?: string;
@@ -108,6 +109,9 @@ export interface Order {
 }
 
 export interface Vendor {
+  primaryCategoryId?: string | null;
+  publicPhone?: string | null;
+  description?: string | null;
   cityId?: string;
   pinCode?: string;
   locality?: string;
@@ -290,6 +294,7 @@ export const normalizeOrderPartial = (input: any): Partial<Order> & { id: string
   const out: Partial<Order> & { id: string } = { id: String(raw?.id ?? '') };
   const put = <K extends keyof Order>(key: K, value: Order[K]) => { out[key] = value; };
 
+  if(raw.paymentMethod==='ONLINE'||raw.paymentMethod==='COD') put('paymentMethod',raw.paymentMethod);
   const customer = raw.customer && typeof raw.customer === 'object' ? raw.customer : undefined;
   if (has(raw, 'customerId') || customer?.id) put('customerId', str(raw.customerId) ?? str(customer?.id));
   if (str(raw.customerName) || str(customer?.name)) put('customerName', (str(raw.customerName) ?? str(customer?.name))!);

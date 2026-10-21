@@ -73,7 +73,7 @@ MenuItemModel dish(String id, String vendor, double price, {String? name}) =>
 
 /// Kitchen 1 (thali 100) + Kitchen 2 (roll 90): estimate = 190 + 25 + 15 = 230, the server's quote says 260.
 CartProvider groupCart() {
-  final cart = CartProvider();
+  final cart = CartProvider(allowLegacyGroups: true);
   cart.addItem(
       item: dish('m-thali', 'gx-ven-1', 100, name: 'Paneer Thali'),
       dhabaId: 'gx-ven-1',
@@ -86,7 +86,7 @@ CartProvider groupCart() {
 }
 
 CartProvider singleCart() {
-  final cart = CartProvider();
+  final cart = CartProvider(allowLegacyGroups: true);
   cart.addItem(
       item: dish('m-thali', 'gx-ven-1', 120, name: 'Paneer Thali'),
       dhabaId: 'gx-ven-1',
@@ -144,7 +144,7 @@ Future<void> pumpApp(
       ChangeNotifierProvider<SessionProvider>.value(value: signedIn()),
       ChangeNotifierProvider<DhabaProvider>.value(
           value: dhabas ?? liveDhabas()),
-      ChangeNotifierProvider<CartProvider>.value(value: cart ?? CartProvider()),
+      ChangeNotifierProvider<CartProvider>.value(value: cart ?? CartProvider(allowLegacyGroups: true)),
       ChangeNotifierProvider<OrderProvider>.value(value: orders),
     ],
     child: MaterialApp(theme: KraveoTheme.customer(), home: child),
@@ -885,7 +885,7 @@ void main() {
               by: const ['SYSTEM', 'VENDOR'],
               reasons: const ['x', 'Out of paneer']));
       final orders = fakeOrders(api)..beginSession('u1');
-      final cart = CartProvider();
+      final cart = CartProvider(allowLegacyGroups: true);
       await pumpApp(tester, const LiveTrackingScreen(orderId: 'gx-order-1'),
           orders: orders, cart: cart, dhabas: catalog());
       await tapButton(tester, 'Order again');
@@ -978,7 +978,7 @@ void main() {
           j
       ]))!;
       final orders = fakeOrders(api)..beginSession('u1');
-      final cart = CartProvider();
+      final cart = CartProvider(allowLegacyGroups: true);
       await pumpApp(tester, const OrderHistoryScreen(selectedHostel: 'BH2'),
           orders: orders,
           cart: cart,

@@ -178,6 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         .toLowerCase()
                         .contains(query)) &&
                 (category == null ||
+                    store.primaryCategoryId != null ||
                     p.category.toLowerCase() == category.toLowerCase()))
             .map((p) => (p, store))
     ];

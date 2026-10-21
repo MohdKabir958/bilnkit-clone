@@ -193,8 +193,8 @@ class _OfferCardState extends State<OfferCard> {
           const SizedBox(height: 6),
           Text(
             isCombined
-                ? '${items > 0 ? '$items item${items == 1 ? '' : 's'} · ' : ''}Prepaid · ${OfferCard.ago(order.offeredAt, now)}'
-                : '${items > 0 ? '$items item${items == 1 ? '' : 's'} · ' : ''}Order ${OfferCard.rupees(order.totalAmount)} prepaid · ${OfferCard.ago(order.offeredAt, now)}',
+                ? '${items > 0 ? '$items item${items == 1 ? '' : 's'} · ' : ''}${order.isCashOnDelivery ? 'Cash on delivery' : 'Prepaid'} · ${OfferCard.ago(order.offeredAt, now)}'
+                : '${items > 0 ? '$items item${items == 1 ? '' : 's'} · ' : ''}Order ${OfferCard.rupees(order.totalAmount)} ${order.isCashOnDelivery ? 'cash to collect' : 'prepaid'} · ${OfferCard.ago(order.offeredAt, now)}',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: KraveoType.bodySm.copyWith(color: k.inkMuted),

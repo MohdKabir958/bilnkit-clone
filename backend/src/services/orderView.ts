@@ -1,3 +1,4 @@
+import { isCashOrder, fulfillmentAuthorized } from './marketplace';
 import { Prisma } from '@prisma/client';
 import { dropoffView, vendorHasLocation } from '../config/campus';
 import { paymentWindowMin, vendorAcceptWindowMin } from '../config/orderFlow';
@@ -31,6 +32,7 @@ const vendorProductSnapshot=(snapshot:unknown)=>{
  */
 export const ORDER_VIEW_INCLUDE = {
   items: true,
+  cashCollection: true,
   vendor: { include: { user: { select: { phone: true } } } },
   customer: true,
   driver: true,
@@ -68,11 +70,11 @@ const POOL_STATUSES = new Set(['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP']);
 export const ACTIVE_RIDER_STATUSES = ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'PICKED_UP', 'ARRIVED_AT_GATE'] as const;
 export const TERMINAL_STATUSES = ['DELIVERED', 'CANCELLED'] as const;
 
-type OrderCore = Pick<OrderWithRelations, 'status' | 'paymentStatus' | 'driverId' | 'paidAt'> & Partial<Pick<OrderWithRelations, 'groupId' | 'groupIndex' | 'group'>>;
+type OrderCore = Pick<OrderWithRelations, 'status' | 'paymentStatus' | 'driverId' | 'paidAt'> & Partial<Pick<OrderWithRelations, 'groupId' | 'groupIndex' | 'group' | 'paymentMethod' | 'workflowVersion'>>;
 type GroupSibling = NonNullable<OrderWithRelations['group']>['orders'][number];
 
-const childPoolReady = (o: { status: string; paymentStatus: string; driverId: string | null }) =>
-  o.paymentStatus === 'PAID' && o.driverId === null && POOL_STATUSES.has(o.status);
+const childPoolReady = (o: { status: string; paymentStatus: string; driverId: string | null; paymentMethod?: string; workflowVersion?: number }) =>
+  fulfillmentAuthorized(o) && o.driverId === null && POOL_STATUSES.has(o.status);
 
 /**
  * In the rider pool: paid, cooking or ready, nobody assigned.
@@ -121,7 +123,7 @@ const withGroup = (g: object | undefined) => (g ? { group: g } : {});
  * the order live; legacy rows (before paidAt existed) count when they are PAID and not cancelled.
  * A payment that arrived after the order was already cancelled (auto-refunded) never reaches the restaurant.
  */
-export const isVendorVisible = (o: OrderCore) => o.paidAt !== null || (o.paymentStatus === 'PAID' && o.status !== 'CANCELLED');
+export const isVendorVisible = (o: OrderCore) => isCashOrder(o) || o.paidAt !== null || (o.paymentStatus === 'PAID' && o.status !== 'CANCELLED');
 
 /**
  * What the restaurant earns per unit / for the order. Orders created before Docs/21 were backfilled (vendorUnitPrice = price,
@@ -142,6 +144,10 @@ const buildView = (o: OrderWithRelations) => ({
   id: o.id,
   status: o.status,
   paymentStatus: o.paymentStatus,
+  paymentMethod: o.paymentMethod,
+  workflowVersion: o.workflowVersion,
+  cashAmountDue: isCashOrder(o) && o.paymentStatus === 'PENDING' ? o.totalAmount : 0,
+  cashCollected: !!o.cashCollection,
   totalAmount: o.totalAmount,
   deliveryFee: o.deliveryFee,
   subtotal: o.subtotal,
@@ -163,7 +169,7 @@ const buildView = (o: OrderWithRelations) => ({
   items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, productSnapshot: publicProductSnapshot(i.productSnapshot), name: i.name, quantity: i.quantity, price: i.price })),
   vendorId: o.vendorId,
   cityId: o.vendor.cityId,
-  vendor: { id: o.vendor.id, name: o.vendor.name, address: o.vendor.address, lat: o.vendor.lat, lng: o.vendor.lng, hasLocation: vendorHasLocation(o.vendor.lat, o.vendor.lng) },
+  vendor: { id: o.vendor.id, name: o.vendor.name, address: o.vendor.address, lat: o.vendor.lat, lng: o.vendor.lng, hasLocation: vendorHasLocation(o.vendor.lat, o.vendor.lng), phone: o.vendor.publicPhone ?? null },
   customer: null as null | { id: string; name: string | null; phone: string | null; hostelBlock: string | null },
   driver: null as null | { id: string; name: string; phone: string | null },
   otpCode: null as string | null,
@@ -174,9 +180,9 @@ const buildView = (o: OrderWithRelations) => ({
 
 const driverOf = (o: OrderWithRelations, privatePhone=false) => (o.driver ? { id: o.driver.id, name: o.driver.name, phone: privatePhone || (ACTIVE_RIDER_STATUSES as readonly string[]).includes(o.status) ? o.driver.phone ?? null : null } : null);
 const payByOf = (o: OrderWithRelations) =>
-  o.status === 'PLACED' && o.paymentStatus !== 'PAID' && o.paymentStatus !== 'REFUNDED' ? addMinutes(o.createdAt, paymentWindowMin()).toISOString() : null;
+  !isCashOrder(o) && o.status === 'PLACED' && o.paymentStatus !== 'PAID' && o.paymentStatus !== 'REFUNDED' ? addMinutes(o.createdAt, paymentWindowMin()).toISOString() : null;
 const acceptByOf = (o: OrderWithRelations) =>
-  o.status === 'PLACED' && o.paymentStatus === 'PAID' && o.paidAt ? addMinutes(o.paidAt, vendorAcceptWindowMin()).toISOString() : null;
+  o.status === 'PLACED' && fulfillmentAuthorized(o) && (o.paidAt || isCashOrder(o)) ? addMinutes(o.paidAt ?? o.createdAt, vendorAcceptWindowMin()).toISOString() : null;
 
 const privateDelivery = (o: OrderWithRelations): Record<string, unknown> => {
   const a = o.addressSnapshot as any;
@@ -189,7 +195,7 @@ export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string
       return {
         ...buildView(o),
         ...privateDelivery(o),
-        vendor: { id: o.vendor.id, name: o.vendor.name, address: o.vendor.address, lat: o.vendor.lat, lng: o.vendor.lng, hasLocation: vendorHasLocation(o.vendor.lat, o.vendor.lng), phone: o.vendor.user?.phone ?? null },
+        vendor: { id: o.vendor.id, name: o.vendor.name, address: o.vendor.address, lat: o.vendor.lat, lng: o.vendor.lng, hasLocation: vendorHasLocation(o.vendor.lat, o.vendor.lng), phone: o.vendor.publicPhone ?? o.vendor.user?.phone ?? null },
         customer: { id: o.customer.id, name: o.customer.name, phone: o.customer.phone ?? null, hostelBlock: o.customer.hostelBlock ?? null },
         driver: driverOf(o,true),
         otpCode: realOtp(o.otpCode),
@@ -248,6 +254,7 @@ export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string
       const earn = vendorEarnTotal(o);
       return {
         ...base,
+        cashAmountDue: undefined,
         totalAmount: earn,
         subtotal: earn,
         items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, productSnapshot: vendorProductSnapshot(i.productSnapshot), name: i.name, quantity: i.quantity, price: vendorEarnUnit(i) })),

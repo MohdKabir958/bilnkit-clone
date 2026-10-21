@@ -542,7 +542,7 @@ void main() {
         () async {
       var fired = 0;
       CustomerApiService.onUnauthorized = () => fired++;
-      backend.on('POST /v1/orders',
+      backend.on('POST /v2/checkout',
           (_) => reply(401, {'success': false, 'message': 'jwt expired'}));
       backend.on(
           'POST /payments/create-order', (_) => reply(401, {'success': false}));
@@ -1629,7 +1629,7 @@ void main() {
       await settle(tester);
       expect(find.byType(AddressesScreen), findsOneWidget);
       expect(find.text('Add address'), findsOneWidget);
-      expect(backend.to('POST /v1/orders'), isEmpty);
+      expect(backend.to('POST /v2/checkout'), isEmpty);
       expect(tester.takeException(), isNull);
     });
     testWidgets(
@@ -1794,7 +1794,7 @@ void main() {
       SharedPreferences.setMockInitialValues(
           {'kraveo_customer_jwt_token': 'jwt-live'});
       FakeServer(backend, seed: userJson(hostel: 'Block 3'), isNewUser: false);
-      backend.on('POST /v1/orders',
+      backend.on('POST /v2/checkout',
           (_) => reply(401, {'success': false, 'message': 'jwt expired'}));
       final google = FakeGoogleAuth();
       await launch(tester, google: google);

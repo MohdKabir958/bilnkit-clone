@@ -1,3 +1,5 @@
+// Historical lifecycle fixtures explicitly create v1 orders; deployed servers default to v2-only creation.
+process.env.LEGACY_CHECKOUT_ENABLED='true';
 // Explicit, non-secret fixtures for the local payment simulator and real HMAC tests.
 // Loaded only by Jest, before services read their environment. Never used by the API entrypoint.
 if (process.env.NODE_ENV !== 'test') throw new Error('Test fixtures must only run in test mode.');

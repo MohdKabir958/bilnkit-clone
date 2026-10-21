@@ -6,9 +6,9 @@ import { DriverPartner, Order, OrderStatus, PaymentStatus, orderFromPartial } fr
 export const SLA = { PAYMENT_WINDOW_MIN: 15, VENDOR_ACCEPT_WINDOW_MIN: 10, PICKUP_WAIT_MIN: 15 } as const;
 
 export const isTerminal = (status: string): boolean => status === 'DELIVERED' || status === 'CANCELLED';
-export const isUnpaid = (order: Pick<Order, 'paymentStatus'>): boolean => order.paymentStatus === 'PENDING' || order.paymentStatus === 'FAILED';
+export const isUnpaid = (order: Pick<Order, 'paymentStatus'> & Partial<Pick<Order,'paymentMethod'>>): boolean => order.paymentMethod!=='COD' && (order.paymentStatus === 'PENDING' || order.paymentStatus === 'FAILED');
 /** Open order that the customer has not paid for yet (the restaurant and riders cannot see it). */
-export const isUnpaidOpen = (order: Pick<Order, 'paymentStatus' | 'status'>): boolean => isUnpaid(order) && !isTerminal(order.status);
+export const isUnpaidOpen = (order: Pick<Order, 'paymentStatus' | 'status'> & Partial<Pick<Order,'paymentMethod'>>): boolean => isUnpaid(order) && !isTerminal(order.status);
 
 const ts = (iso?: string | null): number | null => {
   if (!iso) return null;
@@ -128,8 +128,9 @@ export const nextStep = (order: Order, otp = ''): NextStep | null => {
   const status = FORWARD[order.status as OrderStatus];
   if (!status) return null;
   let blockedReason: string | null = null;
-  if (status === 'ACCEPTED' && order.paymentStatus !== 'PAID') blockedReason = 'Not paid yet';
+  if (status === 'ACCEPTED' && isUnpaid(order)) blockedReason = 'Not paid yet';
   else if (status === 'PICKED_UP' && !order.driverId) blockedReason = 'Assign a rider first';
+  else if(status==='DELIVERED' && order.paymentMethod==='COD' && order.paymentStatus==='PENDING') blockedReason='The assigned rider must confirm cash collection and delivery';
   else if (status === 'DELIVERED' && order.otpLocked) blockedReason = 'OTP locked: reset it first';
   else if (status === 'DELIVERED' && !/^\d{4}$/.test(otp)) blockedReason = 'Enter the 4-digit delivery verification code';
   return { status, blockedReason };
@@ -164,12 +165,13 @@ export const canResetOtpLock = (order: Order): boolean => order.otpLocked === tr
 /** Riders never see unpaid orders (contract 1.2), so an admin must not hand one to a rider either. */
 export const reassignBlockedReason = (order: Order): string | null => {
   if (isTerminal(order.status)) return 'Order is finished';
-  if (order.paymentStatus !== 'PAID') return 'Waiting for payment';
+  if (isUnpaid(order)) return 'Waiting for payment';
   return null;
 };
 
 /** What the cancel confirmation must say about money. */
 export const cancelMoneyNote = (order: Order): { refunds: boolean; text: string } => {
+  if(order.paymentMethod==='COD') return {refunds:false,text:order.paymentStatus==='PENDING'?'No cash has been collected. No gateway refund is required.':'Cash refunds are recorded separately in Finance → Cash collections.'};
   if (order.paymentStatus === 'PAID') return { refunds: true, text: 'The customer has paid, so Grozo refunds the full amount to their original payment method automatically.' };
   if (order.paymentStatus === 'REFUNDED') return { refunds: false, text: 'This order was already refunded. Nothing more is refunded.' };
   return { refunds: false, text: 'No payment has been captured, so nothing is refunded. If a payment still arrives later, the server refunds it automatically.' };

@@ -418,11 +418,15 @@ class _MetaLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final k = context.k;
-    final pay = switch (order.paymentStatus) {
-      PaymentStatus.paid => 'Paid online',
-      PaymentStatus.refunded => 'Refunded to customer',
-      _ => 'Payment: ${order.paymentStatus.name}',
-    };
+    final pay = order.isCashOnDelivery
+        ? (order.isPaid
+            ? 'Cash collected by rider'
+            : 'Cash on delivery · rider collects')
+        : switch (order.paymentStatus) {
+            PaymentStatus.paid => 'Paid online',
+            PaymentStatus.refunded => 'Refunded to customer',
+            _ => 'Payment: ${order.paymentStatus.name}',
+          };
     final parts = <String>[
       pay,
       'placed ${formatClock(order.createdAt)}',

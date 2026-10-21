@@ -28,7 +28,7 @@ abstract class VendorLocationApi {
   /// `PUT /api/partner/vendor/location` `{lat, lng, accuracyM?}` for the signed-in restaurant (the server never takes
   /// a restaurant id from the app).
   Future<ApiResult<SavedLocation>> save(
-      {required double lat, required double lng, double? accuracyM});
+      {required double lat, required double lng, double? accuracyM, String? vendorId});
 }
 
 /// The text to show when a save failed: the server's own message when it sent one (it says exactly what is wrong,
@@ -65,8 +65,8 @@ class HttpVendorLocationApi implements VendorLocationApi {
 
   @override
   Future<ApiResult<SavedLocation>> save(
-      {required double lat, required double lng, double? accuracyM}) async {
-    final uri = Uri.parse('${ApiConfig.baseUrl}/partner/vendor/location');
+      {required double lat, required double lng, double? accuracyM, String? vendorId}) async {
+    final uri = Uri.parse(vendorId==null?'${ApiConfig.baseUrl}/partner/vendor/location':'${ApiConfig.baseUrl}/v1/partner/stores/${Uri.encodeComponent(vendorId)}/location');
     final headers = await VendorApiService.getAuthHeaders();
     final body = jsonEncode({
       'lat': lat,

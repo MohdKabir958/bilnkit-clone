@@ -203,7 +203,10 @@ class GroupInfo {
 }
 
 class OrderView {
+  final String paymentMethod;
+  bool get isCashOnDelivery => paymentMethod == 'COD';
   const OrderView({
+    this.paymentMethod = 'ONLINE',
     required this.id,
     required this.status,
     this.group,
@@ -526,6 +529,7 @@ class OrderView {
       offerExpiresAt: raw['dispatchOffer'] is Map
           ? _date(raw['dispatchOffer']['expiresAt'])
           : null,
+      paymentMethod: raw['paymentMethod'] == 'COD' ? 'COD' : 'ONLINE',
       paymentStatus: raw['paymentStatus']?.toString().toUpperCase(),
       totalAmount: _num(raw['totalAmount']),
       deliveryFee: _num(raw['deliveryFee']),

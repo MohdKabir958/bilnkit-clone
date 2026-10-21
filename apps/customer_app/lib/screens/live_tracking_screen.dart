@@ -142,7 +142,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
       context,
       title: 'Cancel this order?',
       message:
-          '$whole${order.isPaid ? '${order.isGroup ? 'None of the stores has accepted yet. ' : 'The store has not accepted it yet. '}Your ${rupee(order.totalAmount)} will be refunded to your account.' : 'You have not completed a payment for this order, so nothing is charged. If your bank did take money, Grozo refunds it automatically.'}',
+          '$whole${order.isCashOnDelivery ? 'No cash has been collected. Nothing will be charged or refunded.' : order.isPaid ? '${order.isGroup ? 'None of the stores has accepted yet. ' : 'The store has not accepted it yet. '}Your ${rupee(order.totalAmount)} will be refunded to your account.' : 'You have not completed a payment for this order, so nothing is charged. If your bank did take money, Grozo refunds it automatically.'}',
       confirmLabel: 'Cancel order',
       cancelLabel: 'Keep it',
       danger: true,
@@ -364,6 +364,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
               const SizedBox(height: 10),
             ],
             const NotificationsOffHint(key: ValueKey('notifications-hint')),
+            if(order.isCashOnDelivery) Padding(padding:const EdgeInsets.only(bottom:14),child:KCard(padding:const EdgeInsets.all(16),child:Text(order.paymentStatus==PaymentStatus.refunded?'Cash refund recorded by support.':order.isPaid?'Cash received by your delivery partner.':'Cash on delivery · Pay ${rupee(order.totalAmount)} to your assigned delivery partner at your doorstep.'))),
             KReveal(
                 key: const ValueKey('hero'),
                 child: _StatusHero(order: order, confirming: confirming)),
@@ -458,7 +459,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                       ]),
                 ),
               ),
-            if (status == OrderProgressStatus.placed && order.isPaid) ...[
+            if (status == OrderProgressStatus.placed && (order.isPaid || order.isCashOnDelivery)) ...[
               const SizedBox(height: 14),
               Text(
                 order.isGroup
@@ -898,6 +899,7 @@ class _CancelledCard extends StatelessWidget {
   }
 
   String get _money {
+    if(order.isCashOnDelivery)return order.paymentStatus==PaymentStatus.refunded?'Support recorded your completed cash refund.':'No cash was collected for this cancelled order. No online refund is needed.';
     if (order.paymentStatus == PaymentStatus.refunded) {
       return 'Your refund of ${rupee(order.totalAmount)} has been issued. It will reach your account in 5–7 working days.';
     }
