@@ -1,3 +1,15 @@
+# Latest customer Android test build
+
+**Grozo Customer 1.10.1** is now configured for the deployed Render backend and current Clerk development instance.
+
+[Download customer APK](clerk-staging/1.10.1-17/Grozo-Customer-Clerk-Test.apk) · [Configuration, integrity and test limits](clerk-staging/1.10.1-17/README.md)
+
+Vendor/Delivery links below are historical previews. The new customer build is development-signed, ARM64/API24+, with FCM unavailable and staging payments disabled. Live login/device verification is pending.
+
+---
+
+## Historical previews (preserved)
+
 # Grozo Android phone previews
 
 These are installable **ARM64 profile APKs signed with a development certificate**. They are provided to inspect the Grozo app startup/sign-in screens on a personal Android phone.
