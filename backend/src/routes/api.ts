@@ -1,4 +1,5 @@
 import { grozoClerkMiddleware } from '../middleware/clerk';
+import {anonymizeAdminAccess} from '../services/adminAccess';
 import { adminTeamRouter } from './adminTeam';
 import { adminStoresRouter } from './adminStores';
 import { clerkWebhookRouter } from './clerk';
@@ -471,6 +472,7 @@ apiRouter.delete('/auth/account', requireAuth, requireRole('STUDENT'), async (re
       await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
       const active = await tx.order.count({ where: { customerId: userId, status: { notIn: ['DELIVERED', 'CANCELLED'] } } });
       if (active > 0) return true;
+      await anonymizeAdminAccess(tx,userId);
       await tx.address.deleteMany({ where: { customerId: userId } });
       const cases=await tx.supportCase.findMany({where:{customerId:userId},select:{id:true}});
       await tx.supportNote.updateMany({where:{caseId:{in:cases.map((c)=>c.id)}},data:{message:'[Removed after account deletion]'}});

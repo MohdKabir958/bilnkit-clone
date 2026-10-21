@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import {anonymizeAdminAccess} from '../services/adminAccess';
 import { verifyWebhook } from '@clerk/express/webhooks';
 import { prisma } from '../db';
 import { clerkOnly } from '../config/authMode';
@@ -41,6 +42,7 @@ clerkWebhookRouter.post('/webhooks/clerk', clerkOnly, async (req,res) => {
         await tx.vendor.updateMany({where:{userId:user.id},data:{isAcceptingOrders:false}});
       }
       if (deleted) {
+        await anonymizeAdminAccess(tx,user.id);
         // Match in-app privacy cleanup while retaining order/payment foreign keys.
         await tx.address.deleteMany({where:{customerId:user.id}});
         const cases=await tx.supportCase.findMany({where:{customerId:user.id},select:{id:true}});

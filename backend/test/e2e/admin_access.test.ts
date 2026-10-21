@@ -1,5 +1,5 @@
 /** Real PostgreSQL and official Clerk signature/middleware checks; provider HTTP is an explicit fixture. */
-import {generateKeyPairSync} from 'crypto';
+import {generateKeyPairSync,createHmac} from 'crypto';
 import jwt from 'jsonwebtoken';
 import supertest from 'supertest';
 import {io,Socket} from 'socket.io-client';
@@ -10,6 +10,7 @@ import {startTestServer,stopTestServer,TestServerInstance} from '../harness/app'
 import {setClerkTestTransport,ProviderUser} from '../../src/services/clerkIdentity';
 
 const original={...process.env},issuer='https://rbac-fixture.clerk.accounts.dev',party='https://admin.rbac.test';
+const webhookBytes=Buffer.from('local-admin-deletion-webhook-fixture-only');
 const keys=generateKeyPairSync('rsa',{modulusLength:2048});
 const people=new Map<string,ProviderUser>(),sessions=new Map<string,string>();
 let server:TestServerInstance,request:ReturnType<typeof supertest>;
@@ -20,7 +21,7 @@ function auth(subject=owner,claims:Record<string,unknown>={}){const sid='sess_'+
 async function invite(email:string,role='ADMIN'){const r=await request.post('/api/v1/admin/team').set(auth()).send({email,role});expect(r.status).toBe(201);return r.body.data;}
 async function member(subject:string,email:string,role='ADMIN') {identity(subject,email);const grant=await invite(email,role);const r=await request.get('/api/auth/profile').set(auth(subject));expect(r.status).toBe(200);expect(r.body.user.role).toBe('ADMIN');return grant;}
 beforeAll(async()=>{
-  Object.assign(process.env,{AUTH_MODE:'clerk-test',CLERK_PUBLISHABLE_KEY:'pk_test_'+Buffer.from('rbac-fixture.clerk.accounts.dev$').toString('base64'),CLERK_SECRET_KEY:'sk_test_explicit_fixture_not_a_provider_credential',CLERK_JWT_KEY:keys.publicKey.export({type:'spki',format:'pem'}).toString(),CLERK_ISSUER:issuer,CLERK_AUTHORIZED_PARTIES:party,CLERK_ADMIN_USER_IDS:owner,CLERK_ALLOW_NATIVE_WITHOUT_AZP:'false'});
+  Object.assign(process.env,{AUTH_MODE:'clerk-test',CLERK_PUBLISHABLE_KEY:'pk_test_'+Buffer.from('rbac-fixture.clerk.accounts.dev$').toString('base64'),CLERK_SECRET_KEY:'sk_test_explicit_fixture_not_a_provider_credential',CLERK_JWT_KEY:keys.publicKey.export({type:'spki',format:'pem'}).toString(),CLERK_ISSUER:issuer,CLERK_AUTHORIZED_PARTIES:party,CLERK_ADMIN_USER_IDS:owner,CLERK_ALLOW_NATIVE_WITHOUT_AZP:'false',CLERK_WEBHOOK_SIGNING_SECRET:'whsec_'+webhookBytes.toString('base64')});
   delete process.env.CLERK_AUDIENCE;
   setClerkTestTransport({user:async id=>{const u=people.get(id);if(!u)throw Object.assign(Error('fixture missing'),{status:404});return u;},session:async id=>({id,userId:sessions.get(id)!,status:'active'}),revoke:async()=>{},deleteUser:async()=>{},usersByEmail:async email=>[...people.values()].filter(u=>u.emailAddresses?.some(e=>e.emailAddress.toLowerCase()===email))});
   identity(owner,'owner@team-test.invalid');
@@ -126,6 +127,23 @@ test('city order filtering is enforced in the server query and survives paginati
   for(const [index,v]of [a,b,a].entries())await prisma.order.create({data:{id:`rbac-qa-order-${index}`,customerId:customer.id,vendorId:v.id,totalAmount:100,dropoffHostel:'Simulated test address'}});
   const first=await request.get('/api/orders').query({cityId:city,limit:1}).set(auth());expect(first.status).toBe(200);expect(first.body.data).toHaveLength(1);expect(first.body.data[0].vendorId).toBe(a.id);expect(first.body.nextCursor).toBeTruthy();
   const second=await request.get('/api/orders').query({cityId:city,limit:1,cursor:first.body.nextCursor}).set(auth());expect(second.body.data).toHaveLength(1);expect(second.body.data[0].vendorId).toBe(a.id);expect(second.body.data[0].id).not.toBe(first.body.data[0].id);
+});
+test('verified provider deletion anonymizes team contact data while retaining UUID/audit tombstones',async()=>{
+  const subject='user_RbacProviderDeleted',grant=await member(subject,'provider-deleted@team-test.invalid');
+  const before=await prisma.user.findUniqueOrThrow({where:{clerkUserId:subject}});
+  const id='msg_admin_deletion_fixture',timestamp=Math.floor(Date.now()/1000).toString();
+  const body=JSON.stringify({type:'user.deleted',timestamp:Date.now(),data:{id:subject,deleted:true}});
+  const signature=createHmac('sha256',webhookBytes).update(`${id}.${timestamp}.${body}`).digest('base64');
+  const r=await request.post('/api/webhooks/clerk').set({'Content-Type':'application/json','svix-id':id,'svix-timestamp':timestamp,'svix-signature':`v1,${signature}`}).send(body);expect(r.status).toBe(200);
+  expect(await prisma.adminAccess.findUniqueOrThrow({where:{id:grant.id}})).toMatchObject({userId:before.id,clerkUserId:subject,email:null,displayName:null,status:'REVOKED'});
+  expect((await prisma.user.findUniqueOrThrow({where:{id:before.id}})).deletedAt).not.toBeNull();
+  expect((await request.get('/api/auth/profile').set(auth(subject))).status).toBe(401);
+});
+test('a removed administrator deleting their customer account clears the retained directory contact fields',async()=>{
+  const subject='user_RbacAccountDeleted',grant=await member(subject,'account-deleted@team-test.invalid');
+  expect((await request.delete('/api/v1/admin/team/'+grant.id).set(auth())).status).toBe(200);
+  expect((await request.delete('/api/auth/account').set(auth(subject))).status).toBe(200);
+  expect(await prisma.adminAccess.findUniqueOrThrow({where:{id:grant.id}})).toMatchObject({email:null,displayName:null,status:'REVOKED'});
 });
 test('activation rechecks partner role under lock when an earlier customer snapshot is stale',async()=>{
   const subject='user_RbacStaleRole',email='stale-role@team-test.invalid';identity(subject,email);

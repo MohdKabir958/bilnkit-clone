@@ -36,6 +36,7 @@ export async function synchronizeAdminAccess(user: User, identity: VerifiedProvi
       if (!['STUDENT','ADMIN'].includes(user.role)) throw new AppError(409,'PARTNER_ROLE_CONFLICT','Use a separate administrator identity; a store or delivery partner account cannot become an administrator.');
       // Same subject lock as deletion/linking; directory lock serializes concurrent accept/revoke.
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${identity.id}, 81971))`;
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${user.id} FOR UPDATE`;
       const fresh = await tx.user.findUnique({where:{id:user.id}});
       const state = await tx.clerkIdentityState.findUnique({where:{clerkUserId:identity.id}});
       if (!fresh || fresh.deletedAt || state?.deleted || state?.suspended || state?.deleteRequested) throw new AppError(403,'ACCOUNT_UNAVAILABLE','This account cannot accept administrator access.');
@@ -103,3 +104,6 @@ export async function changeAdminAccess(actorId: string, memberId: string, rawRo
     return changed;
   });
 }
+
+/** Keep audit/identity tombstones, remove directory contact data under the account deletion policy. */
+export const anonymizeAdminAccess = (tx:Prisma.TransactionClient,userId:string) => tx.adminAccess.updateMany({where:{userId},data:{email:null,displayName:null,status:'REVOKED',revokedAt:new Date()}});
