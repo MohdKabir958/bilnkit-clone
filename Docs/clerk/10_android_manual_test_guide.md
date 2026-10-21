@@ -1,6 +1,8 @@
 # 10. Install the APKs and record real-device results
 
-These are Grozo **Clerk authentication previews**, version `1.10.0+16`, ARM64, Android 7/API 24 or newer. They are development-signed and are not Play Store releases. The staging backend is unconfigured; shopping, store management, approvals, delivery operations, payments and FCM cannot be tested through these previews. Rotate the previously disclosed Clerk Secret Key before signing in.
+The latest **Customer 1.10.1+17** test APK is configured for `https://grozo-backend-3wdf.onrender.com` and the current `capable-mutt-6` Clerk development instance, with authentication preview mode off. Backend keys/issuer and Android redirect configuration must match. Build/static/fixture checks passed; actual provider/device behavior remains to be verified. Firebase is omitted and staging payments remain disabled.
+
+The older Customer/Vendor/Delivery **Clerk authentication previews**, version `1.10.0+16`, retain an unconfigured backend. Their business operations cannot be tested. All these APKs are ARM64, Android 7/API24+, development-signed profile builds, not Play Store releases. Use the correct latest customer link in [downloads](android-artifacts.md) and rotate the previously disclosed Clerk Secret Key before signing in.
 
 ## Download and install
 
@@ -74,4 +76,4 @@ Record device model, Android version, APK SHA-256, date, app name, expected/actu
 - Pending/rejected/suspended partner: login does not override Grozo's status; inventory, assignment and delivery operations remain denied.
 - Deletion: preserve required business/financial IDs, remove private profile/address/support data according to policy, revoke/block future access. Do not test this on live accounts.
 
-Android split-per-ABI packaging adds its ARM64 offset to the Flutter build number: base build `16` produces actual manifest `versionCode=2016`, with `versionName=1.10.0`. The verification manifest records both values.
+Android split-per-ABI packaging adds its ARM64 offset to the Flutter build number: base build `16` produces actual manifest `versionCode=2016`, with `versionName=1.10.0`. The new customer build uses base `17`, actual versionCode `2017`, versionName `1.10.1`. The verification manifests record these values. The higher version and matching certificate permit an in-place update of the earlier customer preview; physical installation remains unverified here.

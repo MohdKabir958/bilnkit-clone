@@ -1,6 +1,33 @@
 # Verified Android downloads
 
-All three files are development-signed **Clerk authentication previews**. No backend is deployed; business operations and FCM are unavailable. Use ARM64 Android 7/API24 or newer. Rotate the disclosed Clerk Secret Key before testing. Real-device/provider login remains unverified here.
+## Latest customer APK — configured for Render
+
+[Download Grozo Customer 1.10.1](https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/d7dfeceb2c213cb3577615cfd055712f99417705/clerk-staging/1.10.1-17/Grozo-Customer-Clerk-Test.apk) — 52,027,398 bytes (52.0 MB), ARM64, Android 7/API24 or later.
+
+- REST API: `https://grozo-backend-3wdf.onrender.com/api`; Socket.io: `https://grozo-backend-3wdf.onrender.com`.
+- Current Clerk development instance: `https://capable-mutt-6.clerk.accounts.dev`. Render must use this same instance and permit native SDK tokens according to the documented policy.
+- Authentication preview is **off**. This build attempts the configured backend; no demo login or fake data was added. Actual login/shopping still depends on deployed configuration and available catalog/serviceability data.
+- Package `in.grozo.customer`; version `1.10.1`; Flutter build 17; actual Android versionCode 2017. Development-signed profile APK, using the same certificate as the earlier previews.
+- SHA-256: `e4231044cd369f6fc7e738ec331c0fbeab4a69422dd9b76b84faf5f4259f5024`.
+- Source commit `6b5e7365d8f21d1267d7c65bf411629a84fa5cc6`; artifact commit `d7dfeceb2c213cb3577615cfd055712f99417705`. Existing preview artifacts were preserved.
+
+Build, signature, package/callback/ABI/ZIP checks, compiled API URL verification and secret-pattern scan passed. Flutter analysis found no issues; 3 customer Clerk token/logout fixture tests passed. Physical-device and hosted Clerk authentication are unverified. The workspace proxy blocks Render checks. Firebase configuration is omitted, so push notifications are unavailable; staging payments remain disabled. This is not an owned-key Play Store release.
+
+Reproduce from the repository root with the configured Android/Flutter tools:
+
+```sh
+python3 scripts/clerk/build_test_apks.py --app customer \
+  --backend-origin https://grozo-backend-3wdf.onrender.com \
+  --public-config Docs/clerk/android-staging-public.json \
+  --build-name 1.10.1 --build-number 17
+python3 scripts/clerk/verify_apks.py --app customer
+```
+
+Evidence: [build and verification](evidence/customer-connected-1.10.1/manifest.json), [download verification](evidence/customer-connected-1.10.1/download-verification.json), [analysis](evidence/customer-connected-1.10.1/customer-connected-analysis.txt), [fixture tests](evidence/customer-connected-1.10.1/customer-connected-auth-tests.txt).
+
+## Earlier authentication previews (preserved)
+
+The following three files are older development-signed **Clerk authentication previews**. Their backend address is intentionally unconfigured; business operations and FCM are unavailable in these files. Use ARM64 Android 7/API24 or newer. Rotate the disclosed Clerk Secret Key before testing. Real-device/provider login remains unverified here.
 
 The direct links below were downloaded without GitHub authentication: HTTP 200, complete byte counts and SHA-256 matched the built APKs. These immutable GitHub files avoid expiring chat artifact links.
 

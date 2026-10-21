@@ -13,6 +13,7 @@ Docs/clerk/11_admin_staging_quickstart.md
 Docs/clerk/README.md
 Docs/clerk/android-artifacts.md
 Docs/clerk/android-preview-public.json
+Docs/clerk/android-staging-public.json
 Docs/clerk/changed-files.txt
 Docs/clerk/evidence/admin/build.txt
 Docs/clerk/evidence/admin/clerk-test-build.txt
@@ -48,6 +49,14 @@ Docs/clerk/evidence/clerk-targeted-final/backend-full-run-summary.json
 Docs/clerk/evidence/clerk-targeted-final/backend-full-run.json
 Docs/clerk/evidence/clerk-targeted-final/backend-full-run.log
 Docs/clerk/evidence/csp-tests.txt
+Docs/clerk/evidence/customer-connected-1.10.1/SHA256SUMS
+Docs/clerk/evidence/customer-connected-1.10.1/customer-apk-verification.txt
+Docs/clerk/evidence/customer-connected-1.10.1/customer-build.json
+Docs/clerk/evidence/customer-connected-1.10.1/customer-build.log
+Docs/clerk/evidence/customer-connected-1.10.1/customer-connected-analysis.txt
+Docs/clerk/evidence/customer-connected-1.10.1/customer-connected-auth-tests.txt
+Docs/clerk/evidence/customer-connected-1.10.1/download-verification.json
+Docs/clerk/evidence/customer-connected-1.10.1/manifest.json
 Docs/clerk/evidence/customer-implementation-native-compile.log
 Docs/clerk/evidence/mobile/customer-analysis.txt
 Docs/clerk/evidence/mobile/customer-clerk-mode-tests.txt
