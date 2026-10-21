@@ -695,7 +695,7 @@ class RiderController extends ChangeNotifier {
 
   bool _poolable(OrderView o) =>
       (o.offerExpiresAt == null || o.offerExpiresAt!.isAfter(_now())) &&
-      (o.paymentStatus == null || o.paymentStatus == 'PAID') &&
+      (o.paymentStatus == null || o.paymentStatus == 'PAID' || (o.isCashOnDelivery && o.paymentStatus == 'PENDING')) &&
       o.driver == null &&
       (o.status == OrderStatus.accepted ||
           o.status == OrderStatus.preparing ||

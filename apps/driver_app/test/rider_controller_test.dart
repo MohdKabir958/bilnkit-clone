@@ -36,6 +36,15 @@ void main() {
     if (booted) c.dispose();
   });
 
+  test('cash due offers are shown while unpaid online offers remain hidden',()async{
+    f.api.available=ApiResult.ok([
+      OrderView.tryParse({...orderJson(id:'cash-offer',pool:true),'paymentMethod':'COD','paymentStatus':'PENDING'})!,
+      OrderView.tryParse({...orderJson(id:'unpaid-online',pool:true),'paymentMethod':'ONLINE','paymentStatus':'PENDING'})!,
+    ]);
+    await boot();await c.setDuty(true);await flush();
+    expect(c.offers.map((o)=>o.id),['cash-offer']);
+  });
+
   group('restore and duty', () {
     test(
         'a delivery in progress is restored after the app was killed, even off duty',
