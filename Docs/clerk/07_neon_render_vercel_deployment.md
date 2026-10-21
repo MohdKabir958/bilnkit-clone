@@ -150,7 +150,9 @@ For an existing Docker Render service, use branch `feature/india-grocery-platfor
 - Default Docker start command: `node scripts/start-render.mjs` (uses pooled runtime `DATABASE_URL`).
 - Health check: `/ready`.
 
-Pre-deploy commands and persistent disks require the supported paid service plan; review the cost before changing plans. This update does not create or upgrade a service. The Docker image does not automatically migrate at API startup. Run the migration as a controlled separate deployment step before the API starts.
+Pre-deploy commands and persistent disks require the supported paid service plan; review the cost before changing plans. This update does not create or upgrade a service. The default Docker image does not automatically migrate at API startup. On the supported paid baseline, run the migration as a controlled separate deployment step before the API starts.
+
+For the owner's existing **Render Free staging service**, set Docker Command to `npm run start:render`, without shell quotes. This opt-in package script runs `migrate-hosted.mjs` before starting the API and stops if migration fails; it requires no paid pre-deploy command. Keep/set `PORT=10000`; the API binds explicitly to `0.0.0.0` and logs the listening address. Initial migrations can delay port opening; confirm the complete deploy log and HTTP responses instead of assuming a startup message proves readiness. Free local uploads are ephemeral and are unsuitable for durable product imagery. See [port binding verification](../qa/render-port-binding.md).
 
 If Prisma reports “Can't reach database server”, the URL parses but network/database connectivity is unconfirmed. Copy the full current URLs from the correct Neon branch with pooling ON for runtime and OFF for migrations. Confirm the endpoint is active and Neon IP restrictions permit the Render service's outbound IPs. Do not assume a password error or a successful migration from this message. A temporary `connect_timeout=30` URL parameter may help a confirmed cold-start timeout, but does not repair a wrong hostname or blocked networking.
 

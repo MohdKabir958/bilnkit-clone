@@ -161,7 +161,7 @@
   "routerMounts": [
     {
       "file": "backend/src/index.ts",
-      "line": 75,
+      "line": 78,
       "router": "app",
       "method": "USE",
       "path": "",
@@ -172,7 +172,7 @@
     },
     {
       "file": "backend/src/index.ts",
-      "line": 76,
+      "line": 79,
       "router": "app",
       "method": "USE",
       "path": "",
@@ -183,7 +183,7 @@
     },
     {
       "file": "backend/src/index.ts",
-      "line": 79,
+      "line": 82,
       "router": "app",
       "method": "USE",
       "path": "",
@@ -194,7 +194,7 @@
     },
     {
       "file": "backend/src/index.ts",
-      "line": 90,
+      "line": 93,
       "router": "app",
       "method": "USE",
       "path": "/api",
@@ -205,18 +205,18 @@
     },
     {
       "file": "backend/src/index.ts",
-      "line": 118,
+      "line": 121,
       "router": "app",
       "method": "USE",
       "path": "",
       "middleware": [],
       "inlineHandlerLines": [
-        118
+        121
       ]
     },
     {
       "file": "backend/src/index.ts",
-      "line": 126,
+      "line": 129,
       "router": "app",
       "method": "USE",
       "path": "",
@@ -406,24 +406,24 @@
   "endpoints": [
     {
       "file": "backend/src/index.ts",
-      "line": 93,
+      "line": 96,
       "router": "app",
       "method": "GET",
       "path": "/health",
       "middleware": [],
       "inlineHandlerLines": [
-        93
+        96
       ]
     },
     {
       "file": "backend/src/index.ts",
-      "line": 103,
+      "line": 106,
       "router": "app",
       "method": "GET",
       "path": "/ready",
       "middleware": [],
       "inlineHandlerLines": [
-        103
+        106
       ]
     },
     {
@@ -9284,12 +9284,12 @@
     },
     {
       "path": "backend/src/index.ts",
-      "sha256": "5641e78856010ecadb62106b7347f1ef78e80f41fe1eb84cbf5528e0ac2d3734",
+      "sha256": "6836f6e4f6c8a4da611ba1809f0c81abd17133c3d9e8581649fffc5e742e38e8",
       "references": [
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 136
+          "line": 140
         },
         {
           "kind": "authentication",

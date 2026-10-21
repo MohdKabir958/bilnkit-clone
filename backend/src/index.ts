@@ -70,7 +70,10 @@ const io = new SocketIOServer(server, {
   },
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT || 5000);
+if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
+  throw new Error('PORT must be an integer between 1 and 65535.');
+}
 
 app.use(securityHeaders);
 app.use(cors(corsOptions));
@@ -132,9 +135,10 @@ attachRealtime(io);
 // half-dead process that still runs the maintenance job: log and exit non-zero so PM2 retries.
 server.on('error', guards.onListenError);
 
-server.listen(PORT, () => {
+// Bind IPv4 explicitly so Render's port scanner and container ingress can reach the API.
+server.listen(PORT, '0.0.0.0', () => {
   if (usesClerk()) { const cleanup = setInterval(() => { retryClerkDeletions().catch(() => console.warn('Clerk deletion cleanup will retry.')); },60_000); cleanup.unref(); }
-  console.log(`🚀 ${brand.name} Backend Engine running on http://localhost:${PORT}`);
+  console.log(`🚀 ${brand.name} Backend Engine listening on http://0.0.0.0:${PORT}`);
   console.log(`📡 WebSockets listening for real-time driver tracking & order alerts`);
   // Order housekeeping every 60 s: expire unpaid orders, auto-cancel unaccepted paid orders, retry refunds.
   // Started only once the port is really ours.

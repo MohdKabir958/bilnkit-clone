@@ -87,6 +87,7 @@ Docs/qa/render-docker-fix/migration-config-tests.txt
 Docs/qa/render-docker-fix/production-prisma.txt
 Docs/qa/render-docker-fix/production-prune.txt
 Docs/qa/render-docker-startup-fix.md
+Docs/qa/render-port-binding.md
 apps/customer_app/android/app/build.gradle.kts
 apps/customer_app/android/app/src/main/AndroidManifest.xml
 apps/customer_app/android/app/src/main/kotlin/site/kraveo/customer/MainActivity.kt
@@ -161,6 +162,7 @@ scripts/clerk/inventory.mjs
 scripts/clerk/verify_apks.py
 scripts/configure_hosted_admin.mjs
 scripts/qa/render_migration_config.test.mjs
+scripts/qa/render_port_binding.test.mjs
 scripts/qa/run_full_backend.mjs
 scripts/qa/terminology-allowances.json
 web/super_admin/.env.example
