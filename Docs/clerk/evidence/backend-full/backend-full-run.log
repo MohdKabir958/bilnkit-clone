@@ -1,0 +1,1538 @@
+Grozo complete backend regression
+Fresh isolated database: grozo_final_1792573990706_test
+Empty database: applying the audited schema baseline. No existing data will be changed.
+Script executed successfully.
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_align_legacy_schema marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_clear_legacy_gate_otps marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_make_order_otp_nullable marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260930_auth_v2_and_indexes marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261001_partner_approval marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261002_order_flow marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261003_hardening marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261005_push_notifications marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261006_campus_dropoints marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261007_user_hostel_no_default marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261008_vendor_location_source marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261009_pricing_catalog marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261010_settlements_payouts marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261011_order_groups marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261012_categories marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792573990706_test", schema "public" at "127.0.0.1:5432"
+
+22 migrations found in prisma/migrations
+
+Applying migration `20261019_india_serviceability`
+Applying migration `20261020_delivery_handover`
+Applying migration `20261020_delivery_operations`
+Applying migration `20261020_grocery_inventory`
+Applying migration `20261020_grocery_price_guard`
+Applying migration `20261020_real_review_scores`
+Applying migration `20261021060000_clerk_identity`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261019_india_serviceability/
+    └─ migration.sql
+  └─ 20261020_delivery_handover/
+    └─ migration.sql
+  └─ 20261020_delivery_operations/
+    └─ migration.sql
+  └─ 20261020_grocery_inventory/
+    └─ migration.sql
+  └─ 20261020_grocery_price_guard/
+    └─ migration.sql
+  └─ 20261020_real_review_scores/
+    └─ migration.sql
+  └─ 20261021060000_clerk_identity/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+FAIL test/e2e/payments_adversarial.test.ts (43.565 s)
+  ● Console
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order fb5679c8-d3ae-450f-9e78-f0644e9e88ed
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      Razorpay order creation failed: provider unavailable
+
+      282 |     return { success: true, razorpayOrderId: rzpOrder.id, amountInPaise, currency: 'INR', keyId: razorpayKeyId };
+      283 |   } catch (err: any) {
+    > 284 |     console.error('Razorpay order creation failed:', providerErrorMessage(err));
+          |             ^
+      285 |     return { success: false, error: 'Payment provider is unavailable. Please try again.' };
+      286 |   }
+      287 | };
+
+      at createRazorpayOrder (src/services/paymentService.ts:284:13)
+      at src/services/orderFlow.ts:457:20
+      at db_1.prisma.$transaction.maxWait (src/services/orderFlow.ts:109:20)
+      at Proxy._transactionWithCallback (node_modules/@prisma/client/runtime/library.js:130:8000)
+      at src/routes/orders.ts:640:15
+
+    console.error
+      refund of extra payment pay_second_down failed (temporary): provider down
+
+      241 |   } catch (err) {
+      242 |     const perr = toProviderError(err);
+    > 243 |     console.error(`refund of extra payment ${providerPaymentId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      244 |     try {
+      245 |       const delay = backoffMs((await failuresSinceReset(orderId, 'PAYMENT_DUPLICATE_REFUND_FAILED')) + 1);
+      246 |       if (paymentRowId) {
+
+      at refundExtraPayment (src/services/refundService.ts:243:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 1
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 10)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 12)
+
+    console.error
+      refund for order 9729cf48-fb56-4a78-82e2-85a388d9dc30 failed (temporary): Could not reach the payment provider (network error).
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:443:15
+
+    console.error
+      refund for order 9729cf48-fb56-4a78-82e2-85a388d9dc30 failed (temporary): provider down (list)
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:534:7)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order c6cd17a9-7e35-442f-b461-bb71b620d98e
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 37ffacc4-eeda-42b3-a8b0-ea5bf44a22ba
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 2, refunds retried 2 (2 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 4)
+
+    console.log
+      order maintenance: expired 12, auto-cancelled 10, refunds retried 10 (10 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 1)
+
+    console.log
+      order maintenance: expired 100, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 30, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 3)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 3)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 0)
+
+    console.error
+      refund for order 315ebc33-aa78-44dd-b2c2-917fa42ba692 failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:443:15
+
+    console.error
+      refund for order 315ebc33-aa78-44dd-b2c2-917fa42ba692 failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1037:37)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 315ebc33-aa78-44dd-b2c2-917fa42ba692 failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1037:37)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 315ebc33-aa78-44dd-b2c2-917fa42ba692 failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1037:37)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 315ebc33-aa78-44dd-b2c2-917fa42ba692 failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1037:37)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order d848262d-1f97-4039-a5a7-32a8117cefcb failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:443:15
+
+    console.error
+      refund for order d848262d-1f97-4039-a5a7-32a8117cefcb failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1064:9)
+
+    console.error
+      refund for order d848262d-1f97-4039-a5a7-32a8117cefcb failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1064:9)
+
+    console.error
+      refund for order d848262d-1f97-4039-a5a7-32a8117cefcb failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1064:9)
+
+    console.error
+      refund for order d848262d-1f97-4039-a5a7-32a8117cefcb failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1064:9)
+
+    console.error
+      refund for order dc46bf84-af09-41c7-abc1-13432853ba5a failed (permanent): The payment has not been captured yet
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:443:15
+
+    console.error
+      refund for order dc46bf84-af09-41c7-abc1-13432853ba5a failed (permanent): The payment has not been captured yet
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1088:36)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order dc46bf84-af09-41c7-abc1-13432853ba5a failed (permanent): The payment has not been captured yet
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1088:36)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 4949bc76-a888-4321-ad10-d40d0a66d162 failed (permanent): The payment has been fully refunded already
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:443:15
+
+    console.error
+      refund for order a89a3a14-61a1-4050-b902-a41f6b2c2d30 failed (temporary): throttled
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:443:15
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 24faea95-ead9-4592-a4dd-2b43d3a96186 failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:443:15
+
+    console.error
+      refund for order 24faea95-ead9-4592-a4dd-2b43d3a96186 failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1150:37)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 24faea95-ead9-4592-a4dd-2b43d3a96186 failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1150:37)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 24faea95-ead9-4592-a4dd-2b43d3a96186 failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1150:37)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 24faea95-ead9-4592-a4dd-2b43d3a96186 failed (temporary): provider down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1150:37)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order fbb43f23-49c8-49c7-a691-12348a246dcb failed (temporary): Payment provider did not answer within 1500 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 1)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1167:9)
+
+    console.error
+      refund for order fc352838-2f18-4dcb-b01c-21014ad3148c failed (temporary): Payment provider did not answer within 1500 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1167:9)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 2 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 26fc26fd-793e-4342-8095-22fa31055abc failed (temporary): Payment provider did not answer within 6000 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1196:9)
+
+    console.error
+      refund for order 60179875-0ee6-4596-b7cc-af9ef61eded5 failed (temporary): Payment provider did not answer within 6000 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 1)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1196:9)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_966b81df-7: Payment provider did not answer within 6000 ms.
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1196:9)
+
+    console.warn
+      order maintenance: payment provider phase stopped after repeated provider failures; the next tick tries again.
+
+      161 |   }
+      162 |   summary.providerPhaseStopped = breaker.open;
+    > 163 |   if (breaker.open) console.warn('order maintenance: payment provider phase stopped after repeated provider failures; the next tick tries again.');
+          |                             ^
+      164 |
+      165 |   const touched = summary.expired.length + summary.autoCancelled.length + summary.refundsRetried.length + summary.reconciledPaid.length + summary.reconciledLateRefund.length + summary.extraRefundsDone.length;
+      166 |   if (touched > 0) {
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:163:29)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1196:9)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 1, refunds retried 2 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 62788e0a-35c9-47aa-8ff5-ef7092125b7c failed (temporary): Payment provider did not answer within 800 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1208:22)
+
+    console.error
+      refund for order 553319ad-d049-4e49-bf4d-18cbec1277eb failed (temporary): Payment provider did not answer within 800 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 3)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1208:22)
+
+    console.error
+      refund for order f85cfef3-e988-4a49-9099-12b989d844a4 failed (temporary): Payment provider did not answer within 800 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 2)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1208:22)
+
+    console.error
+      refund for order 2c0fbb9d-f80d-44ee-bb15-012fe47bd2f0 failed (temporary): Payment provider did not answer within 800 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 4)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1208:22)
+
+    console.error
+      refund for order a8b2c5b3-76a5-480a-a4f6-056bb002187c failed (temporary): Payment provider did not answer within 800 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 1)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1208:22)
+
+    console.error
+      refund for order 3019d046-2df7-4a52-b5b7-1fd32987f239 failed (temporary): Payment provider did not answer within 800 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 1)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1208:22)
+
+    console.error
+      refund for order 98fddbe0-1f49-4fd2-838c-8fc49793f2e0 failed (temporary): Payment provider did not answer within 800 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 4)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1208:22)
+
+    console.warn
+      order maintenance: payment provider phase stopped after repeated provider failures; the next tick tries again.
+
+      161 |   }
+      162 |   summary.providerPhaseStopped = breaker.open;
+    > 163 |   if (breaker.open) console.warn('order maintenance: payment provider phase stopped after repeated provider failures; the next tick tries again.');
+          |                             ^
+      164 |
+      165 |   const touched = summary.expired.length + summary.autoCancelled.length + summary.refundsRetried.length + summary.reconciledPaid.length + summary.reconciledLateRefund.length + summary.extraRefundsDone.length;
+      166 |   if (touched > 0) {
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:163:29)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1208:22)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 7 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 12 (12 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 0 (0 done), reconciled 1 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 1 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 1 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 0 (0 done), reconciled 1 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_7d9aebeb-f: provider down (fetch)
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1344:17)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_4878aafa-8: provider down (fetch)
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 1)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1344:17)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_0c9d1081-d: provider down (fetch)
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 2)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1344:17)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_b5756a18-f: provider down (fetch)
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 3)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1344:17)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_7ec5735c-c: provider down (fetch)
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 4)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1344:17)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_e9bdefde-f: provider down (fetch)
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1344:17)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_946e3547-9: provider down (fetch)
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 1)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1344:17)
+
+    console.warn
+      order maintenance: payment provider phase stopped after repeated provider failures; the next tick tries again.
+
+      161 |   }
+      162 |   summary.providerPhaseStopped = breaker.open;
+    > 163 |   if (breaker.open) console.warn('order maintenance: payment provider phase stopped after repeated provider failures; the next tick tries again.');
+          |                             ^
+      164 |
+      165 |   const touched = summary.expired.length + summary.autoCancelled.length + summary.refundsRetried.length + summary.reconciledPaid.length + summary.reconciledLateRefund.length + summary.extraRefundsDone.length;
+      166 |   if (touched > 0) {
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:163:29)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1344:17)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 0 (0 done), reconciled 12 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_af7b2f55-d: Payment provider did not answer within 700 ms.
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1361:19)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_c3a0d122-f: Payment provider did not answer within 700 ms.
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 1)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1361:19)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_b3137aae-5: Payment provider did not answer within 700 ms.
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 2)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1361:19)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_d9e0ff13-8: Payment provider did not answer within 700 ms.
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 3)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1361:19)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_8c954788-6: Payment provider did not answer within 700 ms.
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 4)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1361:19)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_d93c0315-9: Payment provider did not answer within 700 ms.
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1361:19)
+
+    console.warn
+      reconcile: could not ask the provider about rzp_order_sim_7e7cd215-8: Payment provider did not answer within 700 ms.
+
+      129 |     } catch (err) {
+      130 |       const perr = toProviderError(err);
+    > 131 |       console.warn(`reconcile: could not ask the provider about ${row.razorpayOrderId}:`, perr.message);
+          |               ^
+      132 |       return { transient: perr.transient };
+      133 |     }
+      134 |     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
+
+      at src/services/paymentReconcile.ts:131:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 1)
+      at runPool (src/services/providerPool.ts:40:3)
+      at reconcilePendingPayments (src/services/paymentReconcile.ts:125:21)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:133:19)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1361:19)
+
+    console.warn
+      order maintenance: payment provider phase stopped after repeated provider failures; the next tick tries again.
+
+      161 |   }
+      162 |   summary.providerPhaseStopped = breaker.open;
+    > 163 |   if (breaker.open) console.warn('order maintenance: payment provider phase stopped after repeated provider failures; the next tick tries again.');
+          |                             ^
+      164 |
+      165 |   const touched = summary.expired.length + summary.autoCancelled.length + summary.refundsRetried.length + summary.reconciledPaid.length + summary.reconciledLateRefund.length + summary.extraRefundsDone.length;
+      166 |   if (touched > 0) {
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:163:29)
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1361:19)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 0 (0 done), reconciled 1 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.warn
+      verify-signature: payment could not be confirmed at the provider yet: provider down (fetch)
+
+      77 |     fetched = await withProviderTimeout(need(getPaymentProvider(), 'fetchPayment')(razorpayPaymentId, { razorpayOrderId, amountPaise: expectedPaise }));
+      78 |   } catch (err) {
+    > 79 |     console.warn('verify-signature: payment could not be confirmed at the provider yet:', toProviderError(err).message);
+         |             ^
+      80 |     return { outcome: 'PENDING_CONFIRMATION', order: await loadOrder(row.orderId) };
+      81 |   }
+      82 |   const check = await confirmPayment(fetched, { razorpayOrderId, expectedPaise });
+
+      at confirmAndMarkPaid (src/services/paymentReconcile.ts:79:13)
+      at src/routes/orders.ts:673:32
+
+    console.warn
+      verify-signature: payment could not be confirmed at the provider yet: Could not reach the payment provider (network error).
+
+      77 |     fetched = await withProviderTimeout(need(getPaymentProvider(), 'fetchPayment')(razorpayPaymentId, { razorpayOrderId, amountPaise: expectedPaise }));
+      78 |   } catch (err) {
+    > 79 |     console.warn('verify-signature: payment could not be confirmed at the provider yet:', toProviderError(err).message);
+         |             ^
+      80 |     return { outcome: 'PENDING_CONFIRMATION', order: await loadOrder(row.orderId) };
+      81 |   }
+      82 |   const check = await confirmPayment(fetched, { razorpayOrderId, expectedPaise });
+
+      at confirmAndMarkPaid (src/services/paymentReconcile.ts:79:13)
+      at src/routes/orders.ts:673:32
+
+    console.warn
+      verify-signature: payment could not be confirmed at the provider yet: Payment provider did not answer within 700 ms.
+
+      77 |     fetched = await withProviderTimeout(need(getPaymentProvider(), 'fetchPayment')(razorpayPaymentId, { razorpayOrderId, amountPaise: expectedPaise }));
+      78 |   } catch (err) {
+    > 79 |     console.warn('verify-signature: payment could not be confirmed at the provider yet:', toProviderError(err).message);
+         |             ^
+      80 |     return { outcome: 'PENDING_CONFIRMATION', order: await loadOrder(row.orderId) };
+      81 |   }
+      82 |   const check = await confirmPayment(fetched, { razorpayOrderId, expectedPaise });
+
+      at confirmAndMarkPaid (src/services/paymentReconcile.ts:79:13)
+      at src/routes/orders.ts:673:32
+
+    console.error
+      reconcile report: payment provider unavailable: undefined
+
+      497 |       report = await findOrphanPayments(Math.floor(start / 1000), Math.floor(end / 1000));
+      498 |     } catch (err) {
+    > 499 |       console.error('reconcile report: payment provider unavailable:', (err as Error)?.message);
+          |               ^
+      500 |       return res.status(503).json({ success: false, code: 'PROVIDER_UNAVAILABLE', message: 'The payment provider could not be reached. Try again in a minute.' });
+      501 |     }
+      502 |     return res.json({
+
+      at src/routes/orders.ts:499:15
+
+    console.error
+      refund for order 442ae5e0-533d-4ab5-a3f3-22a489b98bb2 failed (temporary): Could not reach the payment provider (network error).
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:443:15
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.allSettled (index 120)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.allSettled (index 57)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.allSettled (index 113)
+
+  ● Payments adversarial audit › 7. reconciliation and provider verification › PROVE: at most 20 Payment rows are asked per tick (newest always, the rest rotates) and old/paid rows are never asked
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      1386 |       await runOrderMaintenance(minutesFromNow(4));
+      1387 |       const asked = fetchedIds();
+    > 1388 |       for (const o of orders) expect(asked.has(o.rzp)).toBe(true); // everyone was asked within two ticks
+           |                                                        ^
+      1389 |       expect(asked.has(paid.rzp)).toBe(false);
+      1390 |       expect(asked.has(old.rzp)).toBe(false);
+      1391 |     });
+
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1388:56)
+
+
+Summary of all failing tests
+FAIL test/e2e/payments_adversarial.test.ts (43.565 s)
+  ● Payments adversarial audit › 7. reconciliation and provider verification › PROVE: at most 20 Payment rows are asked per tick (newest always, the rest rotates) and old/paid rows are never asked
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      1386 |       await runOrderMaintenance(minutesFromNow(4));
+      1387 |       const asked = fetchedIds();
+    > 1388 |       for (const o of orders) expect(asked.has(o.rzp)).toBe(true); // everyone was asked within two ticks
+           |                                                        ^
+      1389 |       expect(asked.has(paid.rzp)).toBe(false);
+      1390 |       expect(asked.has(old.rzp)).toBe(false);
+      1391 |     });
+
+      at Object.<anonymous> (test/e2e/payments_adversarial.test.ts:1388:56)
+
+
+Test Suites: 1 failed, 43 passed, 44 total
+Tests:       1 failed, 1092 passed, 1093 total
+Snapshots:   0 total
+Time:        460.054 s
+Ran all test suites.
+Test results written to: ../Docs/clerk/evidence/backend-full/backend-full-run.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?
+
+FINAL RESULT
+{
+  "database": "grozo_final_1792573990706_test",
+  "databaseHost": "127.0.0.1",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "command": "node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/clerk/evidence/backend-full/backend-full-run.json",
+  "invocations": 1,
+  "passed": 1092,
+  "failed": 1,
+  "skipped": 0,
+  "total": 1093,
+  "suites": 44,
+  "durationMs": 461292,
+  "exitCode": 1,
+  "startedAt": "2026-10-21T09:13:27.564Z",
+  "finishedAt": "2026-10-21T09:21:08.889Z"
+}

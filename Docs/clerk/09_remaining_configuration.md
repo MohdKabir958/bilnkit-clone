@@ -1,24 +1,21 @@
-# 9. Remaining configuration and blockers
+# 9. Remaining configuration and honest limits
 
-**The migration is not complete. Current Grozo login remains in place.** No new Clerk credentials were saved, no hosted database was modified and no paid infrastructure was created.
+No backend, Neon database or Vercel admin has been deployed by this change. No paid resources were created. The current APKs are authentication previews, not connected marketplace builds.
 
-## What blocks stage 1
+The owner/deployment operator must complete:
 
-1. A machine/network that can reach the development Clerk frontend API. This workspace's proxy rejects the supplied instance's public `/v1/environment` connection with CONNECT 403. The request never reached Clerk, so this says nothing about whether the supplied secret is valid.
-2. An Android device or usable emulator for native sign-in/Google/callback/persistence/refresh/logout/revocation checks. Core Kotlin compilation passed in all three apps, but those functional/security checks remain unresolved. The current container has no KVM device or attached phone; attempting adb also encountered its default home state directory's filesystem restriction.
+- Rotate the disclosed Clerk Secret Key; store the replacement only in Render/backend secure settings.
+- Enable intended email/password/verification/recovery and optional Google in the shared development Clerk application; configure all Android callbacks and signing requirements.
+- Create a fresh isolated Neon staging database and collect pooled/direct TLS URLs.
+- Review Render Starter and persistent disk prices before provisioning; configure staging exactly as document 07, never against production data.
+- Supply the actual Render HTTPS and Vercel admin origins, generate/commit the exact CSP, configure CORS and Clerk authorized origins.
+- Create the Clerk webhook, install its signing secret and verify a signed delivery.
+- Explicitly provision the administrator subject. Link historical UUIDs only after verified operator ownership checks.
+- Rebuild connected APKs with the real backend origin. Install/test all three on physical Android devices and fill document 10.
+- Supply owned Firebase client/service configuration to test FCM. Preview builds explicitly omit it; source preservation is not delivery verification.
+- Use real Razorpay **test** credentials only when sandbox payment testing is desired; otherwise the isolated development service deliberately disables payments and checkout cannot charge.
+- Complete real-provider/browser/device/security checks before approving any production Clerk-only cutover.
 
-The request explicitly says: “If the Clerk Flutter feasibility check reveals an unresolved security or functionality blocker, stop before destructive auth removal and report the specific blocker.” The work stopped at that gate. No backend-only partial cutover, parallel custom Clerk session issuer or demo authentication bypass was introduced.
+The public development instance may be reachable from a phone even though this cloud environment's proxy rejects its hostname. That proxy limitation is not evidence that provider authentication succeeded or failed. Automated tests use signed local JWTs, verified webhook fixtures, mocked Clerk HTTP responses and SDK/channel UI fixtures. They are not Clerk-hosted authentication results.
 
-## Configuration needed before resuming integration/deployment
-
-- Rotate the Secret Key pasted in chat and place the replacement only in private backend settings. Publishable keys may be used in clients; the Secret Key and Clerk webhook signing secret may not.
-- Confirm the same development Clerk application has the required email verification/password/recovery and Google methods configured for all clients.
-- Supply owned Android signing certificate configuration and configure all three package-specific callbacks in Clerk/Google. Keep `in.grozo.customer`, `in.grozo.vendor`, `in.grozo.driver`.
-- Identify the explicitly approved initial **Clerk user IDs** for operator-only admin bootstrap. No arbitrary customer should become admin.
-- Confirm exact Render API and Vercel admin HTTPS URLs, reviewed Clerk issuer/authorized parties, webhook endpoint/secret and CORS/CSP resource domains. Actual hosted URLs were not provided or provisioned here.
-- Provide separate Neon pooled runtime and direct migration TLS URLs through secure environment settings when deployment is authorized. Never paste database passwords into documentation or Git.
-- Preserve independent Razorpay test/production configuration, payout encryption and owned Firebase client/service configuration. No fabricated payment credentials or FCM migration to Clerk.
-
-The templates under `templates/` are worksheets for the **future** cutover, with no secrets. Existing runtime files still require legacy configuration. Do not deploy those templates as though the Clerk implementation already existed.
-
-Stages 2–12 remain: identity migration/linking; backend roles/verification; admin/customer/vendor/rider integration; webhooks/sockets; equivalent tests; legacy removal; hosted configurations; full regressions/builds; and verified release/handover. These cannot be described as completed from the compile-only probe results.
+Do not send passwords, verification codes, session tokens or replacement secret keys in chat. Non-sensitive URLs, Clerk user IDs for operator provisioning, build hashes and redacted Pass/Fail results are sufficient for handover.

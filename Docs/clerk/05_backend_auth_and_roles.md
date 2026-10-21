@@ -1,42 +1,22 @@
-# 5. Backend identity and permission design
+# 5. Backend authentication and roles
 
-Status: **design only; no Clerk middleware, webhook or database migration has been enabled**.
+`@clerk/express` supplies `clerkMiddleware()`, `getAuth()`, official token verification and webhook signature verification. Protected JSON endpoints require Bearer session tokens. The backend verifies signature, issuer, expiry, optional audience and authorized party, then queries Clerk session/user status online. Invalid/expired/revoked sessions return 401, banned or unauthorized identities 403, provider availability failures fail closed. No redirect-based API authentication is used.
 
-## HTTP verification
+Native tokens may have no `azp`. Permit this only with explicit `CLERK_ALLOW_NATIVE_WITHOUT_AZP=true` and requests without an Origin header. A present `azp` must always match `CLERK_AUTHORIZED_PARTIES`. This exception does not replace cryptographic verification, online session checks or resource authorization. Browser CORS stays restricted to exact configured origins.
 
-Install the maintained `@clerk/express`; run `clerkMiddleware()` before protected routers. Use supported `getAuth()`/verification APIs for cross-origin Bearer sessions, with configured instance/issuer, authorized parties and applicable audience restrictions. Do not use redirecting `requireAuth()` for JSON APIs, accept a decoded but unverified JWT, or use a development shortcut in deployed code.
+The Clerk subject resolves only via unique `User.clerkUserId`. First request can safely create a customer UUID without waiting for a webhook. It does not match existing email/phone accounts. PostgreSQL advisory locks serialize provisioning, webhooks and linking. Operator linking also locks the UUID row to prevent conflicting subjects. Metadata roles are ignored.
 
-Resolve the verified `sub` to Grozo `User.clerkUserId`. The current `req.user` shape can remain `{id, phone, role}` for existing business handlers, but every value must come from trusted database records, not a role claim or body. Recheck deleted/suspended and partner approval state on relevant requests. Return 401 for invalid/missing/expired sessions and 403 for authenticated identities lacking authority; provider/database outages should fail closed with an appropriate service error, without pretending the session was revoked.
-
-Local token signature verification alone cannot guarantee immediate provider revocation. Select and test an online Clerk session/user status check for protected requests and socket revalidation, with an explicit availability/cache policy. Verify revoked session, deleted/banned user and role removal behavior before claiming this requirement. Do not make the old `tokenVersion` comparison an excuse to trust an unrelated Clerk JWT.
-
-The existing per-user rate limiter separately verifies legacy JWTs in `middleware/rateLimit.ts`. Migrate it to a verified Clerk/internal identity; keep IP limits for unauthenticated requests. Upload endpoints have conditional inline role and approval checks. Inventory shows them but does not prove their semantics.
-
-## Business authority
-
-| Identity | Trusted Grozo authority |
+| Identity | Grozo authority |
 | --- | --- |
-| New customer | First-request provisioning keyed by Clerk subject; internal STUDENT compatibility value; private addresses/orders/devices owned by that UUID. |
-| Vendor applicant | Explicit authenticated application; new business profile PENDING. No store claimed from email, phone, client role or arbitrary vendorId. |
-| Approved vendor | Database role AND approved store association; each product/order/inventory change checks that associated store. |
-| Rider applicant | Separate authenticated application and pending rider profile, never automatically approved because the app is the rider app. |
-| Approved rider | Database role, current approval/duty, dispatch eligibility and actual assigned order; GPS and delivery verification remain assignment scoped. |
-| Admin | Explicit operator-provisioned Clerk subject plus approved trusted internal ADMIN record. No self-service promotion or metadata authority. |
+| Customer (`STUDENT` internal compatibility enum) | Owned addresses, orders, devices and private records only |
+| Vendor | Database VENDOR association, approved store and ownership of the requested resource |
+| Rider (`DRIVER`) | Approved database rider, duty/dispatch eligibility, owned assignment, existing order-state/OTP rules |
+| Admin | Database ADMIN **and** exact `CLERK_ADMIN_USER_IDS` provisioning; no editable metadata/body assignment |
 
-Define `CLERK_ADMIN_USER_IDS` as an operator-controlled bootstrap input, not a frontend variable or a public API parameter. Provision/link only those exact subjects transactionally and audit the operation. Specify how an operator revokes admin authority; normal first-request provisioning and webhooks must never promote roles.
+`POST /partner/clerk-application` accepts an authenticated customer and creates a new pending vendor/rider application. It ignores password/approval input and cannot select an existing store to claim. Customers with business history cannot repurpose the account through this endpoint. Pending/rejected/suspended partner restrictions remain enforced server-side.
 
-## Verified webhooks
+`POST /api/webhooks/clerk` verifies the original raw body with Clerk's signing secret before reading event data. Receipt IDs make duplicates idempotent, timestamps prevent stale updates, and deletion is terminal even if delivered late. Webhooks do not grant roles. Deletion deidentifies the identity and invalidates devices/sockets while keeping financial foreign keys. Customer in-app deletion retains existing active-order constraints, address/support cleanup and a durable provider-deletion retry flag.
 
-Add the endpoint only with the supported Clerk signature verifier and `CLERK_WEBHOOK_SIGNING_SECRET`. Preserve exact request bytes before JSON parsing as required by that verifier. Do not share the Razorpay signing secret or weaken its existing independent verification.
+Socket.io requires a verified Clerk session, checks room ownership/approval, revalidates protected packets and private recipients, periodically checks revocation (15 seconds), and disconnects at expiry. Reconnect requires a current SDK token. Revocation checks introduce Clerk API availability/rate-limit dependence; an outage denies private access. Measure hosted load before production and size provider limits accordingly.
 
-Store delivery/event identifiers under a unique constraint and apply identity updates transactionally. Keep a per-subject provider version/timestamp and deletion tombstone so a duplicate is harmless and an old update/create cannot resurrect a deleted account. Define deterministic tie handling. Webhooks may synchronize necessary verified identity attributes but never role/approval/ownership. A first authenticated request must safely provision without waiting for a webhook; concurrent provisioning must be subject-unique and idempotent.
-
-Do not claim an old account on email/phone match. Identity-field uniqueness conflicts need explicit resolution without reassociation. Deleted users must lose access synchronously in Grozo, including devices/sockets; provider deletion/revocation retries and webhook reconciliation preserve financial records and current privacy policy. User deletion must not cascade-delete orders/refunds/settlements.
-
-## Socket.io
-
-Replace `verifyTokenForAccount` only after the SDK session path is proven. Authenticate handshake using the official verifier and trusted DB mapping; schedule expiry and provider revocation/status rechecks. Recheck ownership/approval for room joins, events and recipient fanout; disconnect or remove rooms when authority changes.
-
-Keep `user_<UUID>`, `admins`, `drivers`, `vendor_<UUID>` and `order_<UUID>` compatibility room names. Customers may watch only owned orders, vendors only associated approved stores and authorized paid order views, riders only their private offers and assignments. Preserve join limits, per-viewer redaction, on-duty checks, tracking eligibility and suspension disconnects. Clerk login alone grants none of these rooms.
-
-Razorpay HMAC/idempotency, payout encryption, FCM device ownership, stock reservations, order transitions, refunds and settlements remain independent invariants. They have not been modified in this stage.
+Razorpay signatures/idempotency, payout encryption, inventory reservations and payment transitions stay separate. `DELIVERY_PROOF_SECRET` is an independent delivery-receipt HMAC key; when migrating existing records, preserve the old signing value as described in document 06. FCM token ownership checks remain active.

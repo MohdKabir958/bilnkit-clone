@@ -1,0 +1,19 @@
+{
+  "database": "grozo_final_1792576066307_test",
+  "databaseHost": "127.0.0.1",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "command": "node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/clerk/evidence/backend-release/backend-full-run.json",
+  "invocations": 1,
+  "passed": 1093,
+  "failed": 0,
+  "skipped": 0,
+  "total": 1093,
+  "suites": 44,
+  "durationMs": 374467,
+  "exitCode": 0,
+  "startedAt": "2026-10-21T09:47:56.983Z",
+  "finishedAt": "2026-10-21T09:54:11.472Z"
+}

@@ -1,0 +1,368 @@
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+> Configure project :gradle
+WARNING: Unsupported Kotlin plugin version.
+The `embedded-kotlin` and `kotlin-dsl` plugins rely on features of Kotlin `2.2.0` that might work differently than in the requested version `2.2.20`.
+
+> Task :gradle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle:compileKotlin UP-TO-DATE
+> Task :gradle:compileJava NO-SOURCE
+> Task :gradle:compileGroovy NO-SOURCE
+> Task :gradle:pluginDescriptors UP-TO-DATE
+> Task :gradle:processResources UP-TO-DATE
+> Task :gradle:classes UP-TO-DATE
+> Task :gradle:jar UP-TO-DATE
+
+> Configure project :app
+Unable to initialize metrics, ensure /home/agent/.android is writable, details: /home/agent/.android/analytics.settings (No such file or directory)
+WARNING: The option setting 'android.builtInKotlin=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: The option setting 'android.newDsl=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':app' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :firebase_core
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':firebase_core' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :firebase_messaging
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':firebase_messaging' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :flutter_local_notifications
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':flutter_local_notifications' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :flutter_plugin_android_lifecycle
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':flutter_plugin_android_lifecycle' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :flutter_secure_storage
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':flutter_secure_storage' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :geolocator_android
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':geolocator_android' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :google_maps_flutter_android
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':google_maps_flutter_android' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :google_sign_in_android
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':google_sign_in_android' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :jni
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':jni' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :jni_flutter
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':jni_flutter' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :razorpay_flutter
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':razorpay_flutter' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :shared_preferences_android
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':shared_preferences_android' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+
+> Configure project :url_launcher_android
+w: ⚠️ Deprecated 'org.jetbrains.kotlin.android' plugin usage
+The 'org.jetbrains.kotlin.android' plugin in project ':url_launcher_android' is no longer required for Kotlin support since AGP 9.0.
+Solution: Remove both `android.builtInKotlin=true` and `android.newDsl=false` from `gradle.properties`, then migrate to built-in Kotlin.
+See https://kotl.in/gradle/agp-built-in-kotlin for more details.
+
+WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): firebase_core
+Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
+
+Please check the changelogs of these plugins and upgrade to a version that supports Built-in Kotlin.
+If no such version exists, report the issue to the plugin. If necessary, here is a guide on filing 
+an issue against a plugin: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers#report-incompatible-kotlin-gradle-plugin-usage-to-plugin-authors
+
+If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
+Warning: SDK processing. This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:cleanMergeProfileAssets
+> Task :app:compileFlutterBuildProfile
+> Task :app:generateProfileAssets UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preProfileBuild UP-TO-DATE
+> Task :firebase_core:generateProfileAssets UP-TO-DATE
+> Task :firebase_core:preBuild UP-TO-DATE
+> Task :firebase_core:preProfileBuild UP-TO-DATE
+> Task :firebase_core:mergeProfileAssets
+> Task :firebase_messaging:generateProfileAssets UP-TO-DATE
+> Task :firebase_messaging:preBuild UP-TO-DATE
+> Task :firebase_messaging:preProfileBuild UP-TO-DATE
+> Task :firebase_messaging:mergeProfileAssets
+> Task :flutter_local_notifications:generateProfileAssets UP-TO-DATE
+> Task :flutter_local_notifications:preBuild UP-TO-DATE
+> Task :flutter_local_notifications:preProfileBuild UP-TO-DATE
+> Task :flutter_local_notifications:mergeProfileAssets
+> Task :flutter_plugin_android_lifecycle:generateProfileAssets UP-TO-DATE
+> Task :flutter_plugin_android_lifecycle:preBuild UP-TO-DATE
+> Task :flutter_plugin_android_lifecycle:preProfileBuild UP-TO-DATE
+> Task :flutter_plugin_android_lifecycle:mergeProfileAssets
+> Task :flutter_secure_storage:generateProfileAssets UP-TO-DATE
+> Task :flutter_secure_storage:preBuild UP-TO-DATE
+> Task :flutter_secure_storage:preProfileBuild UP-TO-DATE
+> Task :flutter_secure_storage:mergeProfileAssets
+> Task :geolocator_android:generateProfileAssets UP-TO-DATE
+> Task :geolocator_android:preBuild UP-TO-DATE
+> Task :geolocator_android:preProfileBuild UP-TO-DATE
+> Task :geolocator_android:mergeProfileAssets
+> Task :google_maps_flutter_android:generateProfileAssets UP-TO-DATE
+> Task :google_maps_flutter_android:preBuild UP-TO-DATE
+> Task :google_maps_flutter_android:preProfileBuild UP-TO-DATE
+> Task :google_maps_flutter_android:mergeProfileAssets
+> Task :google_sign_in_android:generateProfileAssets UP-TO-DATE
+> Task :google_sign_in_android:preBuild UP-TO-DATE
+> Task :google_sign_in_android:preProfileBuild UP-TO-DATE
+> Task :google_sign_in_android:mergeProfileAssets
+> Task :jni:generateProfileAssets UP-TO-DATE
+> Task :jni:preBuild UP-TO-DATE
+> Task :jni:preProfileBuild UP-TO-DATE
+> Task :jni:mergeProfileAssets
+> Task :jni_flutter:generateProfileAssets UP-TO-DATE
+> Task :jni_flutter:preBuild UP-TO-DATE
+> Task :jni_flutter:preProfileBuild UP-TO-DATE
+> Task :jni_flutter:mergeProfileAssets
+> Task :razorpay_flutter:generateProfileAssets UP-TO-DATE
+> Task :razorpay_flutter:preBuild UP-TO-DATE
+> Task :razorpay_flutter:preProfileBuild UP-TO-DATE
+> Task :razorpay_flutter:mergeProfileAssets
+> Task :shared_preferences_android:generateProfileAssets UP-TO-DATE
+> Task :shared_preferences_android:preBuild UP-TO-DATE
+> Task :shared_preferences_android:preProfileBuild UP-TO-DATE
+> Task :shared_preferences_android:mergeProfileAssets
+> Task :url_launcher_android:generateProfileAssets UP-TO-DATE
+> Task :url_launcher_android:preBuild UP-TO-DATE
+> Task :url_launcher_android:preProfileBuild UP-TO-DATE
+> Task :url_launcher_android:mergeProfileAssets
+> Task :app:mergeProfileAssets
+> Task :app:copyFlutterAssetsProfile
+> Task :app:generateProfileResources
+> Task :app:packageProfileResources
+> Task :firebase_core:processProfileNavigationResources
+> Task :firebase_messaging:processProfileNavigationResources
+> Task :flutter_local_notifications:processProfileNavigationResources
+> Task :flutter_plugin_android_lifecycle:processProfileNavigationResources
+> Task :flutter_secure_storage:processProfileNavigationResources
+> Task :geolocator_android:processProfileNavigationResources
+> Task :google_maps_flutter_android:processProfileNavigationResources
+> Task :google_sign_in_android:processProfileNavigationResources
+> Task :jni:processProfileNavigationResources
+> Task :jni_flutter:processProfileNavigationResources
+> Task :razorpay_flutter:processProfileNavigationResources
+> Task :shared_preferences_android:processProfileNavigationResources
+> Task :url_launcher_android:processProfileNavigationResources
+> Task :app:processProfileNavigationResources
+> Task :firebase_core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :firebase_core:generateProfileBuildConfig
+> Task :firebase_core:generateProfileResources
+> Task :firebase_core:packageProfileResources
+> Task :firebase_core:parseProfileLocalResources
+> Task :app:parseProfileLocalResources
+> Task :app:generateProfileRFile
+> Task :firebase_core:generateProfileRFile
+> Task :firebase_core:javaPreCompileProfile
+> Task :firebase_messaging:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :firebase_messaging:generateProfileBuildConfig
+> Task :firebase_messaging:generateProfileResources
+> Task :firebase_messaging:packageProfileResources
+> Task :firebase_messaging:parseProfileLocalResources
+> Task :firebase_messaging:generateProfileRFile
+> Task :firebase_messaging:javaPreCompileProfile
+> Task :flutter_local_notifications:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :flutter_local_notifications:generateProfileResources
+> Task :flutter_local_notifications:packageProfileResources
+> Task :flutter_local_notifications:parseProfileLocalResources
+> Task :flutter_local_notifications:generateProfileRFile
+> Task :flutter_local_notifications:compileProfileKotlin NO-SOURCE
+> Task :flutter_local_notifications:javaPreCompileProfile
+> Task :flutter_local_notifications:compileProfileJavaWithJavac
+> Task :flutter_local_notifications:bundleLibCompileToJarProfile
+> Task :flutter_plugin_android_lifecycle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :flutter_plugin_android_lifecycle:generateProfileResources
+> Task :flutter_plugin_android_lifecycle:packageProfileResources
+> Task :flutter_plugin_android_lifecycle:parseProfileLocalResources
+> Task :flutter_plugin_android_lifecycle:generateProfileRFile
+> Task :flutter_plugin_android_lifecycle:compileProfileKotlin NO-SOURCE
+> Task :flutter_plugin_android_lifecycle:javaPreCompileProfile
+> Task :flutter_plugin_android_lifecycle:compileProfileJavaWithJavac
+> Task :flutter_plugin_android_lifecycle:bundleLibCompileToJarProfile
+> Task :flutter_secure_storage:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :flutter_secure_storage:generateProfileBuildConfig
+> Task :flutter_secure_storage:generateProfileResources
+> Task :flutter_secure_storage:packageProfileResources
+> Task :flutter_secure_storage:parseProfileLocalResources
+> Task :flutter_secure_storage:generateProfileRFile
+> Task :flutter_secure_storage:compileProfileKotlin NO-SOURCE
+> Task :flutter_secure_storage:javaPreCompileProfile
+> Task :flutter_secure_storage:compileProfileJavaWithJavac
+> Task :flutter_secure_storage:bundleLibCompileToJarProfile
+> Task :geolocator_android:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :geolocator_android:generateProfileResources
+> Task :geolocator_android:packageProfileResources
+> Task :geolocator_android:parseProfileLocalResources
+> Task :geolocator_android:generateProfileRFile
+> Task :geolocator_android:compileProfileKotlin NO-SOURCE
+> Task :geolocator_android:javaPreCompileProfile
+
+> Task :geolocator_android:compileProfileJavaWithJavac
+Java compiler version 21 has deprecated support for compiling with source/target version 8.
+Try one of the following options:
+    1. [Recommended] Use Java toolchain with a lower language version
+    2. Set a higher source/target version
+    3. Use a lower version of the JDK running the build (if you're not using Java toolchain)
+For more details on how to configure these settings, see https://developer.android.com/build/jdks.
+To suppress this warning, set android.javaCompile.suppressSourceTargetDeprecationWarning=true in gradle.properties.
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+
+> Task :geolocator_android:bundleLibCompileToJarProfile
+> Task :google_maps_flutter_android:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :google_maps_flutter_android:generateProfileResources
+> Task :google_maps_flutter_android:packageProfileResources
+> Task :google_maps_flutter_android:parseProfileLocalResources
+> Task :google_maps_flutter_android:generateProfileRFile
+
+> Task :firebase_core:compileProfileKotlin
+w: file:///workspace/.pub-cache/hosted/pub.dev/firebase_core-4.15.0/android/src/main/kotlin/io/flutter/plugins/firebase/core/FlutterFirebaseCorePlugin.kt:40:33 Elvis operator (?:) always returns the left operand of non-nullable type 'String'.
+w: file:///workspace/.pub-cache/hosted/pub.dev/firebase_core-4.15.0/android/src/main/kotlin/io/flutter/plugins/firebase/core/FlutterFirebaseCorePlugin.kt:207:21 'fun setDataCollectionDefaultEnabled(p0: Boolean): Unit' is deprecated. Deprecated in Java.
+
+> Task :firebase_core:compileProfileJavaWithJavac
+> Task :firebase_core:bundleLibCompileToJarProfile
+> Task :firebase_messaging:compileProfileKotlin NO-SOURCE
+
+> Task :firebase_messaging:compileProfileJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :firebase_messaging:bundleLibCompileToJarProfile
+> Task :google_maps_flutter_android:javaPreCompileProfile
+> Task :google_sign_in_android:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :google_sign_in_android:generateProfileResources
+> Task :google_sign_in_android:packageProfileResources
+> Task :google_sign_in_android:parseProfileLocalResources
+> Task :google_sign_in_android:generateProfileRFile
+> Task :google_maps_flutter_android:compileProfileKotlin
+> Task :google_maps_flutter_android:compileProfileJavaWithJavac
+> Task :google_maps_flutter_android:bundleLibCompileToJarProfile
+> Task :google_sign_in_android:javaPreCompileProfile
+> Task :jni:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :jni:generateProfileResources
+> Task :jni:packageProfileResources
+> Task :jni:parseProfileLocalResources
+> Task :jni:generateProfileRFile
+> Task :jni:compileProfileKotlin NO-SOURCE
+> Task :jni:javaPreCompileProfile
+> Task :jni:compileProfileJavaWithJavac
+> Task :jni:bundleLibCompileToJarProfile
+> Task :jni_flutter:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :jni_flutter:generateProfileResources
+> Task :jni_flutter:packageProfileResources
+> Task :jni_flutter:parseProfileLocalResources
+> Task :jni_flutter:generateProfileRFile
+> Task :jni_flutter:compileProfileKotlin NO-SOURCE
+> Task :jni_flutter:javaPreCompileProfile
+> Task :jni_flutter:compileProfileJavaWithJavac
+> Task :jni_flutter:bundleLibCompileToJarProfile
+> Task :razorpay_flutter:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :razorpay_flutter:generateProfileResources
+> Task :razorpay_flutter:packageProfileResources
+> Task :razorpay_flutter:parseProfileLocalResources
+> Task :razorpay_flutter:generateProfileRFile
+> Task :razorpay_flutter:compileProfileKotlin NO-SOURCE
+> Task :razorpay_flutter:javaPreCompileProfile
+
+> Task :razorpay_flutter:compileProfileJavaWithJavac
+Note: /workspace/.pub-cache/hosted/pub.dev/razorpay_flutter-1.4.7/android/src/main/java/com/razorpay/razorpay_flutter/RazorpayDelegate.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :razorpay_flutter:bundleLibCompileToJarProfile
+> Task :shared_preferences_android:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared_preferences_android:generateProfileResources
+> Task :shared_preferences_android:packageProfileResources
+> Task :shared_preferences_android:parseProfileLocalResources
+> Task :shared_preferences_android:generateProfileRFile
+> Task :google_sign_in_android:compileProfileKotlin
+> Task :google_sign_in_android:compileProfileJavaWithJavac
+> Task :google_sign_in_android:bundleLibCompileToJarProfile
+> Task :shared_preferences_android:javaPreCompileProfile
+> Task :url_launcher_android:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :url_launcher_android:generateProfileBuildConfig
+> Task :url_launcher_android:generateProfileResources
+> Task :url_launcher_android:packageProfileResources
+> Task :url_launcher_android:parseProfileLocalResources
+> Task :url_launcher_android:generateProfileRFile
+> Task :url_launcher_android:compileProfileKotlin
+> Task :url_launcher_android:javaPreCompileProfile
+> Task :url_launcher_android:compileProfileJavaWithJavac
+> Task :url_launcher_android:bundleLibCompileToJarProfile
+
+> Task :shared_preferences_android:compileProfileKotlin
+w: file:///workspace/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.28/android/src/main/kotlin/io/flutter/plugins/sharedpreferences/SharedPreferencesPlugin.kt:450:52 Unnecessary non-null assertion (!!) on a non-null receiver of type 'String'.
+
+> Task :shared_preferences_android:compileProfileJavaWithJavac NO-SOURCE
+> Task :shared_preferences_android:bundleLibCompileToJarProfile
+> Task :app:compileProfileKotlin
+
+[Incubating] Problems report is available at: file:///workspace/bilnkit-clone/apps/customer_app/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.1.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 2m 29s
+139 actionable tasks: 135 executed, 4 up-to-date

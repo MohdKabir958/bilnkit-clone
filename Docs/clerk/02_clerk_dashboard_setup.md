@@ -1,14 +1,25 @@
-# 2. Clerk dashboard setup worksheet
+# 2. Clerk dashboard setup
 
-Status: **not configured or verified by this change**. No Clerk application, user, session or paid resource was created. The public development endpoint check did not reach Clerk because the network proxy denied the connection.
+1. Sign in to the Clerk dashboard as the application owner. Rotate/delete the Secret Key previously pasted into chat. Do not send the replacement in chat, Git, screenshots or APK configuration.
+2. Set the application display name to Grozo and configure the supplied owned Grozo logo in the dashboard for provider/email branding. Use the development instance for staging. All four Grozo clients must share this instance. Keep a separate production instance and database for an eventual approved launch.
+3. Under authentication settings, enable email/password and email verification for the intended test flow. Enable sign-up, password recovery and optional MFA as required. Do not disable verification merely to make a test pass.
+4. If Google login is needed, enable the Google connection, configure owned OAuth credentials where required, and complete Clerk's displayed Google provider callback setup. A disabled Google connection will not appear in the SDK UI.
+5. Copy the Publishable Key to the admin's `VITE_CLERK_PUBLISHABLE_KEY` and Android public build configuration. Copy the **rotated** Secret Key only to Render's `CLERK_SECRET_KEY`.
+6. Add the exact Vercel admin origin to Clerk's authorized web origins/redirect settings. Put the same origin in backend `CLERK_AUTHORIZED_PARTIES` and `ADMIN_URL`. Do not use wildcard deployment origins. Development preview URLs need explicit configuration too.
+7. Register all Android applications in Clerk's native/Android setup, following the SDK dashboard fields. Preserve these IDs and register the SDK callback URIs below. Configure owned Google Android credentials/signing fingerprints if your selected Google flow requires them.
 
-1. Rotate the test secret shared in chat. Put its replacement only in a private server environment/secret manager. The probe needs only a publishable key, not the secret.
-2. In the Clerk dashboard, select one development application for all Grozo clients. Use a separate production instance when ready; never point test clients at live users.
-3. Enable the required email/password, email verification, recovery and Google methods. Review sign-up requirements, session lifetime, multi-session behavior and allowed redirects. Do not disable verification just to make a demo pass.
-4. Configure all three Android clients under the same environment's application: `in.grozo.customer`, `in.grozo.vendor`, `in.grozo.driver`. Enter the actual signing certificate fingerprints required by Clerk/Google. Debug and owned release fingerprints differ. Do not copy another application's fingerprint.
-5. Verify the selected official Android SDK's callback configuration. Its supported redirect coordinator/browser flow must validate the callback and pending authentication attempt. Use distinct package-specific callbacks; test wrong callback, cancellation and activity recreation. No Android manifest/deep-link configuration has been changed yet, so do not assume callbacks already work.
-6. Configure the exact localhost admin origin for development and exact owned Vercel domain for production. Preview URLs require explicit review; do not trust all Vercel subdomains. Redirect URLs must be allowlisted.
-7. After backend webhook support exists, add its HTTPS Clerk webhook endpoint for `user.created`, `user.updated`, `user.deleted`. Copy the separate webhook signing secret into the backend, never a client. Test duplicate delivery, retry and old-event ordering.
-8. Explicitly identify operator-approved Clerk user IDs for admin bootstrap. Registering in Clerk never grants ADMIN. Do not put authority in user-editable metadata.
+| Android application ID | SDK callback URIs |
+| --- | --- |
+| `in.grozo.customer` | `clerk://in.grozo.customer.callback`, `clerk://in.grozo.customer.oauth` |
+| `in.grozo.vendor` | `clerk://in.grozo.vendor.callback`, `clerk://in.grozo.vendor.oauth` |
+| `in.grozo.driver` | `clerk://in.grozo.driver.callback`, `clerk://in.grozo.driver.oauth` |
 
-Verification must include a real test identity completing verification, the backend accepting its Clerk session, a non-admin receiving 403 on admin APIs, logout/revocation, Android cold start and callback handling. None of these hosted checks has passed yet. A successful public environment request alone is insufficient.
+The official SDK contributes its redirect receiver through the merged manifest and validates pending OAuth callbacks. The Grozo native authentication activity is not exported. Verify browser return, cancellation and cold starts on each physical app; compilation does not prove callback behavior.
+
+8. Create a webhook endpoint after the backend URL is available: `https://YOUR-RENDER-HOST/api/webhooks/clerk`. Subscribe to `user.created`, `user.updated`, `user.deleted`. Put the endpoint's signing secret in Render as `CLERK_WEBHOOK_SIGNING_SECRET`; it is independent of the Razorpay webhook secret. Deliver a dashboard test event and verify a successful response.
+9. Create a synthetic administrator identity through Clerk. Copy its exact `user_…` ID, configure `CLERK_ADMIN_USER_IDS`, then run the operator provisioning command in document 06. Email, metadata and successful Clerk login do not grant admin access.
+10. When testing, use accounts/mailboxes you control and enter verification codes delivered by the configured provider. Do not use test-code shortcuts as evidence of actual email delivery.
+
+The backend supports optional `CLERK_AUDIENCE`; leave unset unless the same audience is explicitly configured on Clerk session tokens. The instance issuer is the exact HTTPS frontend API origin (for the provided development public key: `https://enhanced-foal-30.clerk.accounts.dev`).
+
+Rotating only the backend Secret Key keeps the same instance/public key for these APKs. Changing the Clerk application or Publishable Key requires rebuilding them.

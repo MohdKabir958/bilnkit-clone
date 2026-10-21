@@ -1,46 +1,141 @@
-# 7. Neon, Render and Vercel deployment worksheet
+# 7. Deploy staging: Neon database → Render API → Vercel admin
 
-Status: **no deployment or resource creation performed; existing deployment configuration is unchanged**. The templates in `templates/` describe the intended Clerk cutover and cannot boot the current legacy backend by themselves.
+This guide deploys a **separate Clerk development/staging environment**. No deployment has been performed for you. Keep production databases, accounts and money separate. Render's supported baseline is a paid Starter web service with a 1 GB persistent disk; check the current quoted monthly prices before clicking Create/Apply. Neon/Vercel plan limits and any upgrades must also be reviewed. This guide is not authorization to purchase resources.
 
-## Environment variable ownership
+## A. Prepare GitHub and Clerk
 
-| Variable | Where entered after cutover | Purpose |
-| --- | --- | --- |
-| `DATABASE_URL` | Render backend secret environment | Neon pooled runtime URL with TLS and reviewed connection limit. |
-| `MIGRATION_DATABASE_URL` | Render controlled pre-deploy environment | Neon direct URL with TLS; separate from pooler. |
-| `CLERK_PUBLISHABLE_KEY` | Backend environment; mobile public build configuration | Environment-specific public Clerk instance key. |
-| `CLERK_SECRET_KEY` | Backend secret environment only | Server-side Clerk verification/API operations. Never Vite/Flutter. |
-| `CLERK_WEBHOOK_SIGNING_SECRET` | Backend secret environment only | Clerk webhook signature verification; separate from Razorpay. |
-| `CLERK_AUTHORIZED_PARTIES` | Proposed backend setting | Exact reviewed session parties, including admin origin; native token claims need real SDK verification before choosing their policy. |
-| `CLERK_ISSUER` | Proposed backend setting | Exact expected instance issuer; must match tested SDK verification behavior. |
-| `CLERK_ADMIN_USER_IDS` | Proposed operator-only backend/bootstrap setting | Explicit approved subject IDs; never client role assignment. |
-| `ADMIN_URL` | Render backend environment | Exact Vercel origin for CORS/socket origin checks. |
-| `PUBLIC_BASE_URL` | Render backend environment/start wrapper | Actual public HTTPS API origin, including upload URLs. |
-| `UPLOAD_DIR` | Render backend environment | `/var/data/grozo/uploads` on persistent disk. |
-| `VITE_CLERK_PUBLISHABLE_KEY` | Vercel project environment | Public key for the same environment/instance as the backend and apps. |
-| `VITE_API_BASE_URL`, `VITE_SOCKET_URL` | Vercel project environment | Exact Render HTTPS origin; no `/api` suffix in the admin base URL. |
-| `API_BASE_URL`, `SOCKET_URL` | Mobile public build definitions | API URL includes `/api`; socket URL is the origin. Use actual HTTPS endpoints on phones, not emulator `10.0.2.2`. |
+1. Use repository `MohdKabir958/bilnkit-clone`, branch `feature/india-grocery-platform`, at the implementation commit in the handover. Connect GitHub to Render and Vercel with access to this repository.
+2. Rotate the Clerk Secret Key previously shared in chat. Keep the replacement private. Complete [Clerk dashboard setup](02_clerk_dashboard_setup.md). Use the **development** instance for this staging deployment.
+3. Choose a distinct admin Vercel project name, e.g. an available `grozo-admin-staging-YOUR-SUFFIX`. Reserve/create the project and note its actual assigned `https://…vercel.app` origin. A first deployment may wait until section D. Use the actual domain, not this example, in the steps below. Avoid transient preview URLs for this test environment.
+4. Do not enable automatic production cutover. The default Blueprint remains `AUTH_MODE=legacy`; configure staging manually as below. A single environment must use matching Clerk mode across its clients/API.
 
-`CLERK_*` names designated proposed above are design inputs, not implemented runtime parsing. Current backend still requires `JWT_SECRET` and `ADMIN_PASSCODE`; do not delete those from a running service until coordinated cutover is tested. Keep `PAYOUT_ENC_KEY`, Razorpay secrets and Firebase configuration independently.
+## B. Neon PostgreSQL
 
-## Neon
+1. In Neon, create a **new staging project/database** near Render's Singapore region when available. Name it clearly, e.g. `grozo-clerk-staging`. Do not select/import a production database. Retain the generated database user/password privately.
+2. Open Connect. Select the staging branch, database and role. Copy the pooled connection string (pooling enabled) and the direct string (pooling disabled). Both must use TLS (`sslmode=require`).
+3. Store the pooled string as Render `DATABASE_URL`. Retain any Neon-provided security parameters; add Prisma's bounded connection options with `&` when the URL already has a query:
 
-The existing `backend/scripts/migrate-hosted.mjs` selects `MIGRATION_DATABASE_URL` for migration execution and preserves `DATABASE_URL` for runtime. `migrate.mjs` audits legacy baseline checksums, bootstraps only empty schemas and refuses an untracked existing schema. Keep this mechanism.
+```text
+postgresql://USER:PASSWORD@NEON-POOLER-HOST/DATABASE?sslmode=require&connection_limit=5&pool_timeout=10
+```
 
-Use Neon-provided TLS URLs. Runtime should use a pooled connection and a bounded Prisma `connection_limit` appropriate to one Render instance (a starting worksheet value is 5; verify actual load/Neon plan). Use the direct URL for migration deploy. Do not run `db push --force-reset`, `migrate reset`, truncate or destructive migration commands on a hosted database.
+4. Store the direct string as Render `MIGRATION_DATABASE_URL`:
 
-Verify migration status, nullable/unique subject association, preserved UUID/foreign keys, conflicts/idempotency and webhook versioning in an isolated staging database before touching any production data. No hosted schema verification was performed here.
+```text
+postgresql://USER:PASSWORD@NEON-DIRECT-HOST/DATABASE?sslmode=require
+```
 
-## Render
+5. Never paste either connection string in Git, screenshots or chat. No database URL belongs in Vercel or Android.
+6. The Render pre-deploy command will apply the repository's controlled migrations using the direct URL. Do not run reset or destructive schema push commands. Keep one Render instance for the current socket/persistent-upload architecture.
+7. After migration, verify in the Neon SQL editor (staging only):
 
-Keep the existing Node/Express/Socket.io paid **Starter + 1 GB persistent disk** Blueprint baseline, single instance, `/health`, `/ready`, safe migration pre-deploy and the persistent upload directory. These resources incur recurring paid costs; current regional pricing must be reviewed and explicit authorization obtained before provisioning. This task did not incur cloud costs.
+```sql
+SELECT column_name, is_nullable
+FROM information_schema.columns
+WHERE table_name = 'User' AND column_name IN ('id', 'clerkUserId');
+SELECT indexname FROM pg_indexes
+WHERE tablename = 'User' AND indexdef LIKE '%clerkUserId%';
+SELECT migration_name, finished_at FROM "_prisma_migrations"
+ORDER BY started_at DESC LIMIT 5;
+SELECT COUNT(*) FROM "ClerkIdentityState";
+```
 
-After cutover update `render.yaml` and startup config to require Clerk settings in place of obsolete auth secrets. Retain payment encryption/signatures, notification settings, TLS, origin checks and release configuration. Test health/readiness, an unauthenticated 401, authenticated customer access, non-admin 403, owned uploads and authenticated sockets after reconnect.
+Expect the existing UUID `id`, nullable `clerkUserId`, its unique index, and completed migrations including `20261021060000_clerk_identity`. Initial identity counts can be zero. Preserve any existing-data ownership links through document 06; do not auto-claim matching emails.
 
-An isolated staging environment should use genuine Razorpay **test-mode** keys and webhook signing secret in secrets settings. Do not fabricate keys, use live money, or loosen production validation. The existing payment-disabled mode is for `NODE_ENV=development` only and is not a hosted production bypass.
+## C. Render backend
 
-## Vercel
+The prepared `deploy/render.clerk-staging.yaml` expresses this separate staging configuration. Applying it creates paid resources; the manual steps below show the same settings. `render.yaml` keeps the existing production default unchanged.
 
-Import the single admin project with **Root Directory `web/super_admin`**, framework **Vite**, build **`npm run build`**, output **`dist`**. Preserve SPA rewrites. Add public Vite settings, then configure exact Clerk redirect/origin and Render CORS settings for that URL. No Secret Key belongs in Vercel's frontend bundle.
+1. New → Web Service → connect the repository and feature branch. **Root Directory: `backend`**. Runtime Node, supported Node version `24.19.0`. Choose Starter and one instance after reviewing cost. Disable automatic deployment while configuring.
+2. Set these commands:
 
-Update the existing CSP generation/configuration only after observing the selected Clerk UI resource origins. Permit required exact Clerk hosts and Render HTTPS/WSS, not `*` or blanket third-party subdomains. Verify sign-in/Google callbacks, route refresh, refresh-token behavior and admin denial for a normal customer in a real browser. None of these deployment checks is complete.
+| Setting | Value |
+| --- | --- |
+| Build | `npm ci --include=dev && npx prisma generate && npm run build` |
+| Pre-deploy | `node scripts/migrate-hosted.mjs` |
+| Start | `node scripts/start-render.mjs` |
+| Health check | `/ready` |
+
+3. Add the persistent disk: mount `/var/data/grozo`, size 1 GB. Set `UPLOAD_DIR=/var/data/grozo/uploads`. Keep it across redeploys. A service without persistence is not the supported product-image deployment.
+4. In Environment enter the following **staging** values. Environment settings are separate from repository files:
+
+| Variable | Staging value / source |
+| --- | --- |
+| `NODE_VERSION` | `24.19.0` |
+| `NODE_ENV` | `development` (required by isolated `clerk-test`; do not label this production) |
+| `AUTH_MODE` | `clerk-test` |
+| `DATABASE_URL` | Neon staging pooled TLS URL from B |
+| `MIGRATION_DATABASE_URL` | Neon staging direct TLS URL from B |
+| `CLERK_PUBLISHABLE_KEY` | Development `pk_test_…` public key |
+| `CLERK_SECRET_KEY` | **Rotated** development `sk_test_…`, backend only |
+| `CLERK_ISSUER` | Exact development instance HTTPS origin; provided public instance is `https://enhanced-foal-30.clerk.accounts.dev` |
+| `CLERK_AUTHORIZED_PARTIES` | Exact assigned Vercel admin HTTPS origin; comma-separated only for individually approved extra origins |
+| `CLERK_ALLOW_NATIVE_WITHOUT_AZP` | `true` for verified native SDK tokens without `azp` |
+| `CLERK_WEBHOOK_SIGNING_SECRET` | Endpoint signing secret from Clerk; see step 5 |
+| `CLERK_ADMIN_USER_IDS` | Exact approved admin `user_…` IDs, comma-separated |
+| `DELIVERY_PROOF_SECRET` | Fresh random >=32-character staging HMAC key; existing-data cutover instead preserves old JWT signing value (document 06) |
+| `PAYOUT_ENC_KEY` | Separate random 32-byte base64 encryption key; never reuse Clerk/payment keys |
+| `ADMIN_URL` | Exact assigned Vercel admin origin |
+| `CLIENT_URL` | Same admin origin for this Android-first staging setup; add only an actual trusted web client if needed |
+| `PUBLIC_BASE_URL` | Actual Render HTTPS origin (the start wrapper can derive it from `RENDER_EXTERNAL_URL`) |
+| `UPLOAD_DIR` | `/var/data/grozo/uploads` |
+| `PAYMENT_PROVIDER` | `disabled` for a no-charge development staging service |
+
+Generate secrets securely with your password manager or a local cryptographic generator; do not use example strings. Clerk mode does not require `JWT_SECRET`, `ADMIN_PASSCODE` or `GOOGLE_WEB_CLIENT_ID`. Do not delete independent payout, payment or Firebase secrets from existing deployments. `CLERK_AUDIENCE` is optional and must match Clerk token configuration if enabled.
+
+5. Render assigns the service URL when the service is created. In Clerk, add webhook `https://ACTUAL-RENDER-HOST/api/webhooks/clerk`, select the three user events listed in document 02, and copy its signing secret to Render. If the first deploy failed because this setting was absent, save it and redeploy; do not fabricate a secret to force boot.
+6. `PAYMENT_PROVIDER=disabled` is allowed **only** in development. It intentionally prevents charges; checkout reports provider unavailable. To test real sandbox payments later, switch to `razorpay` and configure owned Razorpay **test** key ID, key secret and webhook signing secret. Production payment validation is not weakened.
+7. For FCM testing, add the owned Firebase service account as a Render Secret File, set `FIREBASE_KEY_PATH` to its actual mounted file path, and rebuild APKs with owned client configuration. Keep FCM separate from Clerk. Without it, document notifications as unverified.
+8. Deploy. Inspect migration/build/start logs without sharing credentials. Open:
+
+```sh
+curl --fail https://ACTUAL-RENDER-HOST/health
+curl --fail https://ACTUAL-RENDER-HOST/ready
+curl -i https://ACTUAL-RENDER-HOST/api/auth/profile
+```
+
+Expect successful health/readiness and a JSON **401** on the private profile without a session. A 503 readiness result means database/configuration needs repair; do not proceed as if healthy. Confirm a legacy login route returns **410** in Clerk mode.
+9. Open Render Shell in `backend` and run admin provisioning from document 06, using the intended exact Clerk subject. Login alone never creates an administrator. Send a signed Clerk test webhook and verify success in its delivery log.
+
+## D. Vercel admin portal
+
+1. Configure CSP **before** Vercel reads the repository configuration. From the repository root on a development machine, substitute your actual backend origin and public key:
+
+```sh
+GROZO_BACKEND_ORIGIN=https://ACTUAL-RENDER-HOST \
+VITE_CLERK_PUBLISHABLE_KEY=YOUR_PUBLIC_PK_TEST_KEY \
+node scripts/configure_hosted_admin.mjs
+```
+
+On Windows PowerShell, run the equivalent from your local repository folder (with Node and Git installed):
+
+```powershell
+$env:GROZO_BACKEND_ORIGIN = "https://ACTUAL-RENDER-HOST"
+$env:VITE_CLERK_PUBLISHABLE_KEY = "YOUR_PUBLIC_PK_TEST_KEY"
+node scripts/configure_hosted_admin.mjs
+git add web/super_admin/vercel.json
+git commit -m "Configure staging admin CSP"
+git push origin feature/india-grocery-platform
+```
+
+This updates `web/super_admin/vercel.json` with exact Render HTTPS/WSS and Clerk resources. Commit and push that configuration to the feature branch before deployment. It does not require a Secret Key. For external product storage, optionally supply comma-separated exact `GROZO_PRODUCT_IMAGE_ORIGINS`; backend-hosted product images already work. Do not add `*`, remove CSP, or use fictional placeholder domains. Running this only inside Vercel's build is too late to reliably configure deployment headers.
+
+2. Vercel → Add New Project → import the same repository. On the multiple-app screen, click **Import single project next to `super_admin`**. Choose **Root Directory `web/super_admin`**, Framework Vite, build `npm run build`, output `dist`, install `npm ci`. Do not select `backend`, `web/landing` or the repository root.
+3. Set Vercel environment variables for the selected staging deployment:
+
+| Variable | Value |
+| --- | --- |
+| `VITE_AUTH_MODE` | `clerk-test` |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Same Clerk development public key |
+| `VITE_API_BASE_URL` | Actual Render origin, e.g. `https://ACTUAL-RENDER-HOST` (no `/api`) |
+| `VITE_SOCKET_URL` | Same Render HTTPS origin (Socket.io negotiates WSS) |
+
+No database URL, Clerk Secret Key, webhook secret, passcode or payout key belongs here. Vite public variables enter the browser bundle.
+
+4. Deploy/redeploy. Ensure the **actual assigned stable admin URL** matches Render `ADMIN_URL`/`CLERK_AUTHORIZED_PARTIES`, Clerk authorized web origins and redirect configuration. If it differs, update those exact values and redeploy/restart affected services.
+5. Open the portal. Clerk sign-in must render. Sign in as the provisioned administrator; inspect the network tab for successful backend validation, Bearer-protected API requests and authenticated Socket.io. A normal customer must receive 403 and never see private admin data. Refresh a nested route; SPA fallback must not return 404.
+6. Inspect response headers and browser console. CSP must include the actual Render and Clerk origins. For a blocked genuinely required resource, add its exact trusted origin through the CSP tool; do not weaken the whole policy. Test logout, token renewal and account switching. These are real deployed checks, not covered by mocked unit results.
+
+## E. Connect Android and complete acceptance
+
+Rebuild each APK using `python3 scripts/clerk/build_test_apks.py --app customer --backend-origin https://ACTUAL-RENDER-HOST`, and repeat with `vendor`/`driver`. Test with the Pass/Fail sheet in document 10. Configure owned Firebase/release signing separately when moving beyond these development previews. Only after connected staging tests and explicit approval should production use live Clerk keys, `NODE_ENV=production`, `AUTH_MODE=clerk`, a separate production database/instance, real payment configuration and coordinated clients. No production cutover is implied by this guide.

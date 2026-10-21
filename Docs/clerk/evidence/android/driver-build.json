@@ -1,0 +1,32 @@
+{
+  "filename": "Grozo-Delivery-Clerk-Test.apk",
+  "command": [
+    "flutter",
+    "build",
+    "apk",
+    "--profile",
+    "--split-per-abi",
+    "--target-platform",
+    "android-arm64",
+    "--no-pub",
+    "--build-name=1.10.0",
+    "--build-number=16",
+    "--dart-define=AUTH_MODE=clerk-test",
+    "--dart-define=AUTH_PREVIEW=true",
+    "--dart-define=API_BASE_URL=https://unconfigured.grozo.invalid/api",
+    "--dart-define=SOCKET_URL=https://unconfigured.grozo.invalid"
+  ],
+  "workingDirectory": "apps/driver_app",
+  "exitCode": 0,
+  "buildCommit": "490b6707b3b09594c24902a5bee1c19314e98040",
+  "appSourceDirty": false,
+  "authMode": "clerk-test",
+  "authenticationPreview": true,
+  "apiOrigin": "https://unconfigured.grozo.invalid",
+  "socketOrigin": "https://unconfigured.grozo.invalid",
+  "clerkFrontendOrigin": "https://enhanced-foal-30.clerk.accounts.dev",
+  "publishableKey": "pk_test_ZW5oYW5jZWQtZm9hbC0zMC5jbGVyay5hY2NvdW50cy5kZXYk",
+  "firebaseConfigured": false,
+  "signing": "Android development signing; not a Play Store release",
+  "abi": "arm64-v8a"
+}

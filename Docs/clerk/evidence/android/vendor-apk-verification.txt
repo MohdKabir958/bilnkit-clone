@@ -1,0 +1,496 @@
+package: name='in.grozo.vendor' versionCode='2016' versionName='1.10.0' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+minSdkVersion:'24'
+targetSdkVersion:'36'
+uses-permission: name='android.permission.INTERNET'
+uses-permission: name='android.permission.WAKE_LOCK'
+uses-permission: name='android.permission.VIBRATE'
+uses-permission: name='android.permission.USE_FULL_SCREEN_INTENT'
+uses-permission: name='android.permission.FOREGROUND_SERVICE'
+uses-permission: name='android.permission.POST_NOTIFICATIONS'
+uses-permission: name='android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS'
+uses-permission: name='android.permission.ACCESS_FINE_LOCATION'
+uses-permission: name='android.permission.ACCESS_COARSE_LOCATION'
+uses-permission: name='android.permission.ACCESS_NETWORK_STATE'
+uses-permission: name='android.permission.USE_BIOMETRIC'
+uses-permission: name='android.permission.USE_FINGERPRINT'
+uses-permission: name='com.google.android.c2dm.permission.RECEIVE'
+uses-permission: name='in.grozo.vendor.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+application-label:'Grozo Vendor'
+application-label-af:'Grozo Vendor'
+application-label-am:'Grozo Vendor'
+application-label-ar:'Grozo Vendor'
+application-label-as:'Grozo Vendor'
+application-label-az:'Grozo Vendor'
+application-label-be:'Grozo Vendor'
+application-label-bg:'Grozo Vendor'
+application-label-bn:'Grozo Vendor'
+application-label-bs:'Grozo Vendor'
+application-label-ca:'Grozo Vendor'
+application-label-cs:'Grozo Vendor'
+application-label-da:'Grozo Vendor'
+application-label-de:'Grozo Vendor'
+application-label-el:'Grozo Vendor'
+application-label-en-AU:'Grozo Vendor'
+application-label-en-CA:'Grozo Vendor'
+application-label-en-GB:'Grozo Vendor'
+application-label-en-IN:'Grozo Vendor'
+application-label-en-XC:'Grozo Vendor'
+application-label-es:'Grozo Vendor'
+application-label-es-US:'Grozo Vendor'
+application-label-et:'Grozo Vendor'
+application-label-eu:'Grozo Vendor'
+application-label-fa:'Grozo Vendor'
+application-label-fi:'Grozo Vendor'
+application-label-fr:'Grozo Vendor'
+application-label-fr-CA:'Grozo Vendor'
+application-label-gl:'Grozo Vendor'
+application-label-gu:'Grozo Vendor'
+application-label-hi:'Grozo Vendor'
+application-label-hr:'Grozo Vendor'
+application-label-hu:'Grozo Vendor'
+application-label-hy:'Grozo Vendor'
+application-label-in:'Grozo Vendor'
+application-label-is:'Grozo Vendor'
+application-label-it:'Grozo Vendor'
+application-label-iw:'Grozo Vendor'
+application-label-ja:'Grozo Vendor'
+application-label-ka:'Grozo Vendor'
+application-label-kk:'Grozo Vendor'
+application-label-km:'Grozo Vendor'
+application-label-kn:'Grozo Vendor'
+application-label-ko:'Grozo Vendor'
+application-label-ky:'Grozo Vendor'
+application-label-lo:'Grozo Vendor'
+application-label-lt:'Grozo Vendor'
+application-label-lv:'Grozo Vendor'
+application-label-mk:'Grozo Vendor'
+application-label-ml:'Grozo Vendor'
+application-label-mn:'Grozo Vendor'
+application-label-mr:'Grozo Vendor'
+application-label-ms:'Grozo Vendor'
+application-label-my:'Grozo Vendor'
+application-label-nb:'Grozo Vendor'
+application-label-ne:'Grozo Vendor'
+application-label-nl:'Grozo Vendor'
+application-label-or:'Grozo Vendor'
+application-label-pa:'Grozo Vendor'
+application-label-pl:'Grozo Vendor'
+application-label-pt:'Grozo Vendor'
+application-label-pt-BR:'Grozo Vendor'
+application-label-pt-PT:'Grozo Vendor'
+application-label-ro:'Grozo Vendor'
+application-label-ru:'Grozo Vendor'
+application-label-si:'Grozo Vendor'
+application-label-sk:'Grozo Vendor'
+application-label-sl:'Grozo Vendor'
+application-label-sq:'Grozo Vendor'
+application-label-sr:'Grozo Vendor'
+application-label-sr-Latn:'Grozo Vendor'
+application-label-sv:'Grozo Vendor'
+application-label-sw:'Grozo Vendor'
+application-label-ta:'Grozo Vendor'
+application-label-te:'Grozo Vendor'
+application-label-th:'Grozo Vendor'
+application-label-tl:'Grozo Vendor'
+application-label-tr:'Grozo Vendor'
+application-label-uk:'Grozo Vendor'
+application-label-ur:'Grozo Vendor'
+application-label-uz:'Grozo Vendor'
+application-label-vi:'Grozo Vendor'
+application-label-zh-CN:'Grozo Vendor'
+application-label-zh-HK:'Grozo Vendor'
+application-label-zh-TW:'Grozo Vendor'
+application-label-zu:'Grozo Vendor'
+application-icon-120:'res/mipmap-anydpi-v26/ic_launcher.xml'
+application-icon-160:'res/mipmap-anydpi-v26/ic_launcher.xml'
+application-icon-240:'res/mipmap-anydpi-v26/ic_launcher.xml'
+application-icon-320:'res/mipmap-anydpi-v26/ic_launcher.xml'
+application-icon-480:'res/mipmap-anydpi-v26/ic_launcher.xml'
+application-icon-640:'res/mipmap-anydpi-v26/ic_launcher.xml'
+application-icon-65534:'res/mipmap-anydpi-v26/ic_launcher.xml'
+application-icon-65535:'res/mipmap-anydpi-v26/ic_launcher.xml'
+application: label='Grozo Vendor' icon='res/mipmap-anydpi-v26/ic_launcher.xml'
+application-debuggable
+launchable-activity: name='site.kraveo.vendor.MainActivity'  label='' icon=''
+uses-library-not-required:'androidx.window.extensions'
+uses-library-not-required:'androidx.window.sidecar'
+feature-group: label=''
+  uses-feature: name='android.hardware.faketouch'
+  uses-implied-feature: name='android.hardware.faketouch' reason='default feature for all apps'
+  uses-feature: name='android.hardware.location'
+  uses-implied-feature: name='android.hardware.location' reason='requested android.permission.ACCESS_COARSE_LOCATION permission, and requested android.permission.ACCESS_FINE_LOCATION permission'
+main
+other-activities
+other-receivers
+other-services
+supports-screens: 'small' 'normal' 'large' 'xlarge'
+supports-any-density: 'true'
+locales: '--_--' 'af' 'am' 'ar' 'as' 'az' 'be' 'bg' 'bn' 'bs' 'ca' 'cs' 'da' 'de' 'el' 'en-AU' 'en-CA' 'en-GB' 'en-IN' 'en-XC' 'es' 'es-US' 'et' 'eu' 'fa' 'fi' 'fr' 'fr-CA' 'gl' 'gu' 'hi' 'hr' 'hu' 'hy' 'in' 'is' 'it' 'iw' 'ja' 'ka' 'kk' 'km' 'kn' 'ko' 'ky' 'lo' 'lt' 'lv' 'mk' 'ml' 'mn' 'mr' 'ms' 'my' 'nb' 'ne' 'nl' 'or' 'pa' 'pl' 'pt' 'pt-BR' 'pt-PT' 'ro' 'ru' 'si' 'sk' 'sl' 'sq' 'sr' 'sr-Latn' 'sv' 'sw' 'ta' 'te' 'th' 'tl' 'tr' 'uk' 'ur' 'uz' 'vi' 'zh-CN' 'zh-HK' 'zh-TW' 'zu'
+densities: '120' '160' '240' '320' '480' '640' '65534' '65535'
+native-code: 'arm64-v8a'
+
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
+Signer #1 certificate SHA-256 digest: 7e7927c909310c5ff55ecc744c7a742c13fa8fd9a4a1d7efa7b387a5967f19fe
+Signer #1 certificate SHA-1 digest: 4dcdebe19c17dae70c855a76f07ace1042c9720b
+Signer #1 certificate MD5 digest: 1cc2ef473301b3d800f163c205cc6c29
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: d264556151ddafdb65f9599989deea48e1c8eb4adade5941c630ba5b70b0bf74
+Signer #1 public key SHA-1 digest: acdc34e2a10789ad0cf2a1dbfcdd215dd8de409b
+Signer #1 public key MD5 digest: 06f61a4348e6d0de5c1b0a98a3977572
+
+N: android=http://schemas.android.com/apk/res/android (line=2)
+  E: manifest (line=2)
+    A: http://schemas.android.com/apk/res/android:versionCode(0x0101021b)=2016
+    A: http://schemas.android.com/apk/res/android:versionName(0x0101021c)="1.10.0" (Raw: "1.10.0")
+    A: http://schemas.android.com/apk/res/android:compileSdkVersion(0x01010572)=36
+    A: http://schemas.android.com/apk/res/android:compileSdkVersionCodename(0x01010573)="16" (Raw: "16")
+    A: package="in.grozo.vendor" (Raw: "in.grozo.vendor")
+    A: platformBuildVersionCode=36
+    A: platformBuildVersionName=16
+      E: uses-sdk (line=7)
+        A: http://schemas.android.com/apk/res/android:minSdkVersion(0x0101020c)=24
+        A: http://schemas.android.com/apk/res/android:targetSdkVersion(0x01010270)=36
+      E: uses-permission (line=15)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.INTERNET" (Raw: "android.permission.INTERNET")
+      E: uses-permission (line=16)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.WAKE_LOCK" (Raw: "android.permission.WAKE_LOCK")
+      E: uses-permission (line=17)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.VIBRATE" (Raw: "android.permission.VIBRATE")
+      E: uses-permission (line=18)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.USE_FULL_SCREEN_INTENT" (Raw: "android.permission.USE_FULL_SCREEN_INTENT")
+      E: uses-permission (line=19)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.FOREGROUND_SERVICE" (Raw: "android.permission.FOREGROUND_SERVICE")
+      E: uses-permission (line=20)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.POST_NOTIFICATIONS" (Raw: "android.permission.POST_NOTIFICATIONS")
+      E: uses-permission (line=21)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" (Raw: "android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS")
+      E: uses-permission (line=26)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.ACCESS_FINE_LOCATION" (Raw: "android.permission.ACCESS_FINE_LOCATION")
+      E: uses-permission (line=27)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.ACCESS_COARSE_LOCATION" (Raw: "android.permission.ACCESS_COARSE_LOCATION")
+      E: queries (line=29)
+          E: intent (line=32)
+              E: action (line=33)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.action.SENDTO" (Raw: "android.intent.action.SENDTO")
+              E: data (line=35)
+                A: http://schemas.android.com/apk/res/android:scheme(0x01010027)="mailto" (Raw: "mailto")
+          E: intent (line=39)
+              E: action (line=40)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.action.VIEW" (Raw: "android.intent.action.VIEW")
+              E: data (line=42)
+                A: http://schemas.android.com/apk/res/android:scheme(0x01010027)="geo" (Raw: "geo")
+          E: intent (line=44)
+              E: action (line=45)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.action.VIEW" (Raw: "android.intent.action.VIEW")
+              E: data (line=47)
+                A: http://schemas.android.com/apk/res/android:scheme(0x01010027)="https" (Raw: "https")
+          E: intent (line=49)
+              E: action (line=50)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.action.PROCESS_TEXT" (Raw: "android.intent.action.PROCESS_TEXT")
+              E: data (line=52)
+                A: http://schemas.android.com/apk/res/android:mimeType(0x01010026)="text/plain" (Raw: "text/plain")
+          E: intent (line=54)
+              E: action (line=55)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.clerk.api.action.SHARED_SESSION_SYNC" (Raw: "com.clerk.api.action.SHARED_SESSION_SYNC")
+      E: uses-permission (line=59)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.ACCESS_NETWORK_STATE" (Raw: "android.permission.ACCESS_NETWORK_STATE")
+      E: uses-permission (line=60)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.USE_BIOMETRIC" (Raw: "android.permission.USE_BIOMETRIC")
+      E: uses-permission (line=61)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.permission.USE_FINGERPRINT" (Raw: "android.permission.USE_FINGERPRINT")
+      E: uses-permission (line=62)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.c2dm.permission.RECEIVE" (Raw: "com.google.android.c2dm.permission.RECEIVE")
+      E: permission (line=64)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="in.grozo.vendor.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" (Raw: "in.grozo.vendor.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION")
+        A: http://schemas.android.com/apk/res/android:protectionLevel(0x01010009)=0x00000002
+      E: uses-permission (line=68)
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="in.grozo.vendor.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" (Raw: "in.grozo.vendor.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION")
+      E: application (line=70)
+        A: http://schemas.android.com/apk/res/android:label(0x01010001)=@0x7f0f0036
+        A: http://schemas.android.com/apk/res/android:icon(0x01010002)=@0x7f0d0000
+        A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.grozo.clerk.GrozoClerkApplication" (Raw: "com.grozo.clerk.GrozoClerkApplication")
+        A: http://schemas.android.com/apk/res/android:debuggable(0x0101000f)=true
+        A: http://schemas.android.com/apk/res/android:allowBackup(0x01010280)=false
+        A: http://schemas.android.com/apk/res/android:supportsRtl(0x010103af)=true
+        A: http://schemas.android.com/apk/res/android:extractNativeLibs(0x010104ea)=false
+        A: http://schemas.android.com/apk/res/android:appComponentFactory(0x0101057a)="androidx.core.app.CoreComponentFactory" (Raw: "androidx.core.app.CoreComponentFactory")
+        A: http://schemas.android.com/apk/res/android:dataExtractionRules(0x0101063e)=@0x7f120000
+          E: meta-data (line=80)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="in.grozo.AUTH_MODE" (Raw: "in.grozo.AUTH_MODE")
+            A: http://schemas.android.com/apk/res/android:value(0x01010024)="clerk-test" (Raw: "clerk-test")
+          E: meta-data (line=83)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="in.grozo.CLERK_PUBLISHABLE_KEY" (Raw: "in.grozo.CLERK_PUBLISHABLE_KEY")
+            A: http://schemas.android.com/apk/res/android:value(0x01010024)="pk_test_ZW5oYW5jZWQtZm9hbC0zMC5jbGVyay5hY2NvdW50cy5kZXYk" (Raw: "pk_test_ZW5oYW5jZWQtZm9hbC0zMC5jbGVyay5hY2NvdW50cy5kZXYk")
+          E: activity (line=87)
+            A: http://schemas.android.com/apk/res/android:theme(0x01010000)=@0x01030241
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.grozo.clerk.GrozoClerkAuthActivity" (Raw: "com.grozo.clerk.GrozoClerkAuthActivity")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+          E: activity (line=91)
+            A: http://schemas.android.com/apk/res/android:theme(0x01010000)=@0x7f1000a6
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="site.kraveo.vendor.MainActivity" (Raw: "site.kraveo.vendor.MainActivity")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=true
+            A: http://schemas.android.com/apk/res/android:taskAffinity(0x01010012)=""
+            A: http://schemas.android.com/apk/res/android:launchMode(0x0101001d)=1
+            A: http://schemas.android.com/apk/res/android:configChanges(0x0101001f)=0x40003fb4
+            A: http://schemas.android.com/apk/res/android:windowSoftInputMode(0x0101022b)=0x00000010
+            A: http://schemas.android.com/apk/res/android:hardwareAccelerated(0x010102d3)=true
+              E: meta-data (line=100)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="io.flutter.embedding.android.NormalTheme" (Raw: "io.flutter.embedding.android.NormalTheme")
+                A: http://schemas.android.com/apk/res/android:resource(0x01010025)=@0x7f1000a7
+              E: intent-filter (line=104)
+                  E: action (line=105)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.action.MAIN" (Raw: "android.intent.action.MAIN")
+                  E: category (line=107)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.category.LAUNCHER" (Raw: "android.intent.category.LAUNCHER")
+          E: meta-data (line=111)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="flutterEmbedding" (Raw: "flutterEmbedding")
+            A: http://schemas.android.com/apk/res/android:value(0x01010024)=2
+          E: meta-data (line=119)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.messaging.default_notification_icon" (Raw: "com.google.firebase.messaging.default_notification_icon")
+            A: http://schemas.android.com/apk/res/android:resource(0x01010025)=@0x7f0800a2
+          E: meta-data (line=122)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.messaging.default_notification_color" (Raw: "com.google.firebase.messaging.default_notification_color")
+            A: http://schemas.android.com/apk/res/android:resource(0x01010025)=@0x7f060045
+          E: meta-data (line=125)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.messaging.default_notification_channel_id" (Raw: "com.google.firebase.messaging.default_notification_channel_id")
+            A: http://schemas.android.com/apk/res/android:value(0x01010024)="order_updates" (Raw: "order_updates")
+          E: provider (line=129)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="io.flutter.plugins.imagepicker.ImagePickerFileProvider" (Raw: "io.flutter.plugins.imagepicker.ImagePickerFileProvider")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+            A: http://schemas.android.com/apk/res/android:authorities(0x01010018)="in.grozo.vendor.flutter.image_provider" (Raw: "in.grozo.vendor.flutter.image_provider")
+            A: http://schemas.android.com/apk/res/android:grantUriPermissions(0x0101001b)=true
+              E: meta-data (line=134)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.support.FILE_PROVIDER_PATHS" (Raw: "android.support.FILE_PROVIDER_PATHS")
+                A: http://schemas.android.com/apk/res/android:resource(0x01010025)=@0x7f120001
+          E: service (line=138)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.gms.metadata.ModuleDependencies" (Raw: "com.google.android.gms.metadata.ModuleDependencies")
+            A: http://schemas.android.com/apk/res/android:enabled(0x0101000e)=false
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+              E: intent-filter (line=142)
+                  E: action (line=143)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.gms.metadata.MODULE_DEPENDENCIES" (Raw: "com.google.android.gms.metadata.MODULE_DEPENDENCIES")
+              E: meta-data (line=146)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="photopicker_activity:0:required" (Raw: "photopicker_activity:0:required")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)=""
+          E: provider (line=155)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.clerk.api.sharedsession.SharedSessionSyncProvider" (Raw: "com.clerk.api.sharedsession.SharedSessionSyncProvider")
+            A: http://schemas.android.com/apk/res/android:enabled(0x0101000e)=false
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=true
+            A: http://schemas.android.com/apk/res/android:authorities(0x01010018)="in.grozo.vendor.clerk.shared-session-sync" (Raw: "in.grozo.vendor.clerk.shared-session-sync")
+            A: http://schemas.android.com/apk/res/android:grantUriPermissions(0x0101001b)=false
+              E: intent-filter (line=161)
+                  E: action (line=162)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.clerk.api.action.SHARED_SESSION_SYNC" (Raw: "com.clerk.api.action.SHARED_SESSION_SYNC")
+          E: activity (line=166)
+            A: http://schemas.android.com/apk/res/android:theme(0x01010000)=@0x7f100135
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.clerk.api.sso.SSOManagerActivity" (Raw: "com.clerk.api.sso.SSOManagerActivity")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+            A: http://schemas.android.com/apk/res/android:launchMode(0x0101001d)=2
+            A: http://schemas.android.com/apk/res/android:configChanges(0x0101001f)=0x00000db0
+          E: activity (line=172)
+            A: http://schemas.android.com/apk/res/android:theme(0x01010000)=@0x7f100135
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.clerk.api.sso.SSOReceiverActivity" (Raw: "com.clerk.api.sso.SSOReceiverActivity")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=true
+              E: intent-filter (line=176)
+                  E: action (line=177)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.action.VIEW" (Raw: "android.intent.action.VIEW")
+                  E: category (line=179)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.category.DEFAULT" (Raw: "android.intent.category.DEFAULT")
+                  E: category (line=180)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.category.BROWSABLE" (Raw: "android.intent.category.BROWSABLE")
+                  E: data (line=182)
+                    A: http://schemas.android.com/apk/res/android:scheme(0x01010027)="clerk" (Raw: "clerk")
+                    A: http://schemas.android.com/apk/res/android:host(0x01010028)="in.grozo.vendor.callback" (Raw: "in.grozo.vendor.callback")
+              E: intent-filter (line=186)
+                  E: action (line=187)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.action.VIEW" (Raw: "android.intent.action.VIEW")
+                  E: category (line=189)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.category.DEFAULT" (Raw: "android.intent.category.DEFAULT")
+                  E: category (line=190)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="android.intent.category.BROWSABLE" (Raw: "android.intent.category.BROWSABLE")
+                  E: data (line=192)
+                    A: http://schemas.android.com/apk/res/android:scheme(0x01010027)="clerk" (Raw: "clerk")
+                    A: http://schemas.android.com/apk/res/android:host(0x01010028)="in.grozo.vendor.oauth" (Raw: "in.grozo.vendor.oauth")
+          E: service (line=198)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.credentials.playservices.CredentialProviderMetadataHolder" (Raw: "androidx.credentials.playservices.CredentialProviderMetadataHolder")
+            A: http://schemas.android.com/apk/res/android:enabled(0x0101000e)=true
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+              E: meta-data (line=202)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.credentials.CREDENTIAL_PROVIDER_KEY" (Raw: "androidx.credentials.CREDENTIAL_PROVIDER_KEY")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="androidx.credentials.playservices.CredentialProviderPlayServicesImpl" (Raw: "androidx.credentials.playservices.CredentialProviderPlayServicesImpl")
+          E: activity (line=207)
+            A: http://schemas.android.com/apk/res/android:theme(0x01010000)=@0x7f100136
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.credentials.playservices.controllers.identityauth.HiddenActivity" (Raw: "androidx.credentials.playservices.controllers.identityauth.HiddenActivity")
+            A: http://schemas.android.com/apk/res/android:enabled(0x0101000e)=true
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+            A: http://schemas.android.com/apk/res/android:configChanges(0x0101001f)=0x000005a0
+            A: http://schemas.android.com/apk/res/android:fitsSystemWindows(0x010100dd)=true
+          E: activity (line=215)
+            A: http://schemas.android.com/apk/res/android:theme(0x01010000)=@0x7f100136
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.credentials.playservices.controllers.identitycredentials.IdentityCredentialApiHiddenActivity" (Raw: "androidx.credentials.playservices.controllers.identitycredentials.IdentityCredentialApiHiddenActivity")
+            A: http://schemas.android.com/apk/res/android:enabled(0x0101000e)=true
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+            A: http://schemas.android.com/apk/res/android:configChanges(0x0101001f)=0x000005a0
+            A: http://schemas.android.com/apk/res/android:fitsSystemWindows(0x010100dd)=true
+          E: activity (line=223)
+            A: http://schemas.android.com/apk/res/android:theme(0x01010000)=@0x01030007
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="io.flutter.plugins.urllauncher.WebViewActivity" (Raw: "io.flutter.plugins.urllauncher.WebViewActivity")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+          E: service (line=228)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingBackgroundService" (Raw: "io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingBackgroundService")
+            A: http://schemas.android.com/apk/res/android:permission(0x01010006)="android.permission.BIND_JOB_SERVICE" (Raw: "android.permission.BIND_JOB_SERVICE")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+          E: service (line=232)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingService" (Raw: "io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingService")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+              E: intent-filter (line=235)
+                  E: action (line=236)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.MESSAGING_EVENT" (Raw: "com.google.firebase.MESSAGING_EVENT")
+          E: receiver (line=240)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingReceiver" (Raw: "io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingReceiver")
+            A: http://schemas.android.com/apk/res/android:permission(0x01010006)="com.google.android.c2dm.permission.SEND" (Raw: "com.google.android.c2dm.permission.SEND")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=true
+              E: intent-filter (line=244)
+                  E: action (line=245)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.c2dm.intent.RECEIVE" (Raw: "com.google.android.c2dm.intent.RECEIVE")
+          E: service (line=249)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.components.ComponentDiscoveryService" (Raw: "com.google.firebase.components.ComponentDiscoveryService")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+            A: http://schemas.android.com/apk/res/android:directBootAware(0x01010505)=true
+              E: meta-data (line=253)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.components:io.flutter.plugins.firebase.messaging.FlutterFirebaseAppRegistrar" (Raw: "com.google.firebase.components:io.flutter.plugins.firebase.messaging.FlutterFirebaseAppRegistrar")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw: "com.google.firebase.components.ComponentRegistrar")
+              E: meta-data (line=256)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.components:io.flutter.plugins.firebase.core.FlutterFirebaseCoreRegistrar" (Raw: "com.google.firebase.components:io.flutter.plugins.firebase.core.FlutterFirebaseCoreRegistrar")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw: "com.google.firebase.components.ComponentRegistrar")
+              E: meta-data (line=259)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingKtxRegistrar" (Raw: "com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingKtxRegistrar")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw: "com.google.firebase.components.ComponentRegistrar")
+              E: meta-data (line=262)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar" (Raw: "com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw: "com.google.firebase.components.ComponentRegistrar")
+              E: meta-data (line=265)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsKtxRegistrar" (Raw: "com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsKtxRegistrar")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw: "com.google.firebase.components.ComponentRegistrar")
+              E: meta-data (line=268)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsRegistrar" (Raw: "com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsRegistrar")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw: "com.google.firebase.components.ComponentRegistrar")
+              E: meta-data (line=271)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar" (Raw: "com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw: "com.google.firebase.components.ComponentRegistrar")
+              E: meta-data (line=274)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar" (Raw: "com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw: "com.google.firebase.components.ComponentRegistrar")
+          E: provider (line=279)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingInitProvider" (Raw: "io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingInitProvider")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+            A: http://schemas.android.com/apk/res/android:authorities(0x01010018)="in.grozo.vendor.flutterfirebasemessaginginitprovider" (Raw: "in.grozo.vendor.flutterfirebasemessaginginitprovider")
+            A: http://schemas.android.com/apk/res/android:initOrder(0x0101001a)=99
+          E: service (line=285)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.baseflow.geolocator.GeolocatorLocationService" (Raw: "com.baseflow.geolocator.GeolocatorLocationService")
+            A: http://schemas.android.com/apk/res/android:enabled(0x0101000e)=true
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+            A: http://schemas.android.com/apk/res/android:foregroundServiceType(0x01010599)=0x00000008
+          E: activity (line=291)
+            A: http://schemas.android.com/apk/res/android:theme(0x01010000)=@0x01030010
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.gms.auth.api.signin.internal.SignInHubActivity" (Raw: "com.google.android.gms.auth.api.signin.internal.SignInHubActivity")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+            A: http://schemas.android.com/apk/res/android:excludeFromRecents(0x01010017)=true
+          E: service (line=300)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.gms.auth.api.signin.RevocationBoundService" (Raw: "com.google.android.gms.auth.api.signin.RevocationBoundService")
+            A: http://schemas.android.com/apk/res/android:permission(0x01010006)="com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION" (Raw: "com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=true
+            A: http://schemas.android.com/apk/res/android:visibleToInstantApps(0x01010531)=true
+          E: receiver (line=306)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.iid.FirebaseInstanceIdReceiver" (Raw: "com.google.firebase.iid.FirebaseInstanceIdReceiver")
+            A: http://schemas.android.com/apk/res/android:permission(0x01010006)="com.google.android.c2dm.permission.SEND" (Raw: "com.google.android.c2dm.permission.SEND")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=true
+              E: intent-filter (line=310)
+                  E: action (line=311)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.c2dm.intent.RECEIVE" (Raw: "com.google.android.c2dm.intent.RECEIVE")
+              E: meta-data (line=314)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.gms.cloudmessaging.FINISHED_AFTER_HANDLED" (Raw: "com.google.android.gms.cloudmessaging.FINISHED_AFTER_HANDLED")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)=true
+          E: service (line=322)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.messaging.FirebaseMessagingService" (Raw: "com.google.firebase.messaging.FirebaseMessagingService")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+            A: http://schemas.android.com/apk/res/android:directBootAware(0x01010505)=true
+              E: intent-filter (line=326)
+                A: http://schemas.android.com/apk/res/android:priority(0x0101001c)=-500
+                  E: action (line=327)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.MESSAGING_EVENT" (Raw: "com.google.firebase.MESSAGING_EVENT")
+          E: provider (line=331)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.firebase.provider.FirebaseInitProvider" (Raw: "com.google.firebase.provider.FirebaseInitProvider")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+            A: http://schemas.android.com/apk/res/android:authorities(0x01010018)="in.grozo.vendor.firebaseinitprovider" (Raw: "in.grozo.vendor.firebaseinitprovider")
+            A: http://schemas.android.com/apk/res/android:initOrder(0x0101001a)=100
+            A: http://schemas.android.com/apk/res/android:directBootAware(0x01010505)=true
+          E: activity (line=338)
+            A: http://schemas.android.com/apk/res/android:theme(0x01010000)=@0x01030010
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.gms.common.api.GoogleApiActivity" (Raw: "com.google.android.gms.common.api.GoogleApiActivity")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+          E: uses-library (line=343)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.window.extensions" (Raw: "androidx.window.extensions")
+            A: http://schemas.android.com/apk/res/android:required(0x0101028e)=false
+          E: uses-library (line=346)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.window.sidecar" (Raw: "androidx.window.sidecar")
+            A: http://schemas.android.com/apk/res/android:required(0x0101028e)=false
+          E: provider (line=350)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.startup.InitializationProvider" (Raw: "androidx.startup.InitializationProvider")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+            A: http://schemas.android.com/apk/res/android:authorities(0x01010018)="in.grozo.vendor.androidx-startup" (Raw: "in.grozo.vendor.androidx-startup")
+              E: meta-data (line=354)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.emoji2.text.EmojiCompatInitializer" (Raw: "androidx.emoji2.text.EmojiCompatInitializer")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="androidx.startup" (Raw: "androidx.startup")
+              E: meta-data (line=357)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.lifecycle.ProcessLifecycleInitializer" (Raw: "androidx.lifecycle.ProcessLifecycleInitializer")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="androidx.startup" (Raw: "androidx.startup")
+              E: meta-data (line=360)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="okhttp3.internal.platform.PlatformInitializer" (Raw: "okhttp3.internal.platform.PlatformInitializer")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="androidx.startup" (Raw: "androidx.startup")
+              E: meta-data (line=363)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.profileinstaller.ProfileInstallerInitializer" (Raw: "androidx.profileinstaller.ProfileInstallerInitializer")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="androidx.startup" (Raw: "androidx.startup")
+          E: meta-data (line=368)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.gms.version" (Raw: "com.google.android.gms.version")
+            A: http://schemas.android.com/apk/res/android:value(0x01010024)=@0x7f0a0004
+          E: receiver (line=372)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.profileinstaller.ProfileInstallReceiver" (Raw: "androidx.profileinstaller.ProfileInstallReceiver")
+            A: http://schemas.android.com/apk/res/android:permission(0x01010006)="android.permission.DUMP" (Raw: "android.permission.DUMP")
+            A: http://schemas.android.com/apk/res/android:enabled(0x0101000e)=true
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=true
+            A: http://schemas.android.com/apk/res/android:directBootAware(0x01010505)=false
+              E: intent-filter (line=378)
+                  E: action (line=379)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.profileinstaller.action.INSTALL_PROFILE" (Raw: "androidx.profileinstaller.action.INSTALL_PROFILE")
+              E: intent-filter (line=381)
+                  E: action (line=382)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.profileinstaller.action.SKIP_FILE" (Raw: "androidx.profileinstaller.action.SKIP_FILE")
+              E: intent-filter (line=384)
+                  E: action (line=385)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.profileinstaller.action.SAVE_PROFILE" (Raw: "androidx.profileinstaller.action.SAVE_PROFILE")
+              E: intent-filter (line=387)
+                  E: action (line=388)
+                    A: http://schemas.android.com/apk/res/android:name(0x01010003)="androidx.profileinstaller.action.BENCHMARK_OPERATION" (Raw: "androidx.profileinstaller.action.BENCHMARK_OPERATION")
+          E: service (line=392)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery" (Raw: "com.google.android.datatransport.runtime.backends.TransportBackendDiscovery")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+              E: meta-data (line=395)
+                A: http://schemas.android.com/apk/res/android:name(0x01010003)="backend:com.google.android.datatransport.cct.CctBackendFactory" (Raw: "backend:com.google.android.datatransport.cct.CctBackendFactory")
+                A: http://schemas.android.com/apk/res/android:value(0x01010024)="cct" (Raw: "cct")
+          E: service (line=399)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService" (Raw: "com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService")
+            A: http://schemas.android.com/apk/res/android:permission(0x01010006)="android.permission.BIND_JOB_SERVICE" (Raw: "android.permission.BIND_JOB_SERVICE")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false
+          E: receiver (line=405)
+            A: http://schemas.android.com/apk/res/android:name(0x01010003)="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver" (Raw: "com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver")
+            A: http://schemas.android.com/apk/res/android:exported(0x01010010)=false

@@ -1,0 +1,35 @@
+[
+  {
+    "filename": "Grozo-Customer-Clerk-Test.apk",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/9d9482809a9b7141de9efb2ec89e4b4ec0dc675e/clerk-test/1.10.0-16/Grozo-Customer-Clerk-Test.apk",
+    "httpStatus": 200,
+    "bytes": 52027398,
+    "sha256": "779a3dd0d75b7fc7b8e56fdc965779054af95d4583474a89e7f989ee8d82d8d1",
+    "matchesBuiltApk": true,
+    "authenticationHeaderSent": false,
+    "durationSeconds": 1.703,
+    "verifiedAt": "2026-10-21T09:50:08.738888+00:00"
+  },
+  {
+    "filename": "Grozo-Vendor-Clerk-Test.apk",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/9d9482809a9b7141de9efb2ec89e4b4ec0dc675e/clerk-test/1.10.0-16/Grozo-Vendor-Clerk-Test.apk",
+    "httpStatus": 200,
+    "bytes": 47863321,
+    "sha256": "2a8d335d7f67b57c21b2f9b1c5f2eeac280105bbaa274f894f9475a55efbc5f4",
+    "matchesBuiltApk": true,
+    "authenticationHeaderSent": false,
+    "durationSeconds": 1.913,
+    "verifiedAt": "2026-10-21T09:50:08.950052+00:00"
+  },
+  {
+    "filename": "Grozo-Delivery-Clerk-Test.apk",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/9d9482809a9b7141de9efb2ec89e4b4ec0dc675e/clerk-test/1.10.0-16/Grozo-Delivery-Clerk-Test.apk",
+    "httpStatus": 200,
+    "bytes": 48615815,
+    "sha256": "e49d5266bbbd3507154e16328673a623b5aa3bb6309c3b5a82c9140a8752e7f2",
+    "matchesBuiltApk": true,
+    "authenticationHeaderSent": false,
+    "durationSeconds": 1.793,
+    "verifiedAt": "2026-10-21T09:50:08.831063+00:00"
+  }
+]

@@ -1,0 +1,20 @@
+00:00 +0: loading /workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart
+00:00 +0: /workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart: KAvatar renders ids 0..16 (valid, placeholder, out of range) without exceptions
+00:02 +1: /workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart: KAvatar renders ids 0..16 (valid, placeholder, out of range) without exceptions
+00:02 +2: /workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart: KAvatar renders ids 0..16 (valid, placeholder, out of range) without exceptions
+00:02 +3: /workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart: KAvatar renders ids 0..16 (valid, placeholder, out of range) without exceptions
+00:02 +4: /workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart: KAvatar renders ids 0..16 (valid, placeholder, out of range) without exceptions
+00:03 +5: /workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart: KAvatar keeps its requested size, with or without ring
+00:03 +6: /workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart: KAvatar exposes a semantic label per creature and a placeholder label
+00:03 +7: /workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart: KAvatarPicker shows all avatars and reports the tapped id
+00:05 +8: /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart: initialization reads native identity without requesting a Grozo token
+00:05 +9: /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart: each token request reaches SDK and refresh flag is forwarded
+00:05 +10: /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart: old-account in-flight token is discarded after native session switch
+00:05 +11: /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart: logout clears local identity without falsely claiming remote revocation
+00:05 +12: /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart: native signed-in event cannot silently undo local logout
+00:05 +13: /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart: account cleanup runs before native account selection
+00:05 +14: /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart: cancellation is distinct from a successful sign-in
+00:05 +15: /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart: SDK refresh outage remains an error rather than a fake signed-out response
+00:05 +16: /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart: unsupported flow cannot invoke native authentication
+00:05 +17: /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart: preview labels unavailable business operations and uses native auth
+00:08 +18: All tests passed!

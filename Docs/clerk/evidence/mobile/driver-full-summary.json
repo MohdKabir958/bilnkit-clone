@@ -1,0 +1,17 @@
+{
+  "app": "driver",
+  "command": [
+    "flutter",
+    "test",
+    "--no-pub",
+    "--concurrency=2",
+    "--machine"
+  ],
+  "cwd": "apps/driver_app",
+  "exitCode": 0,
+  "passed": 408,
+  "failed": 0,
+  "skipped": 1,
+  "durationSeconds": 106.745,
+  "startedAt": "2026-10-21T09:43:54.274104+00:00"
+}

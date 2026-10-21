@@ -72,3 +72,12 @@ backend/var/
 !Docs/qa/backend-initial-attempt.log
 !Docs/clerk/evidence/*-native-compile.log
 __pycache__/
+
+# Clerk regression evidence (synthetic fixtures and isolated local databases only).
+!Docs/clerk/evidence/backend-full/backend-full-run.log
+!Docs/clerk/evidence/backend-final/backend-full-run.log
+!Docs/clerk/evidence/backend-handover/backend-full-run.log
+!Docs/clerk/evidence/backend-release/backend-full-run.log
+!Docs/clerk/evidence/clerk-targeted-final/backend-full-run.log
+!Docs/clerk/evidence/android/*-build.log
+**/.flutter-plugins-dependencies

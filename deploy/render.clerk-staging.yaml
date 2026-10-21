@@ -1,0 +1,57 @@
+# Paid Starter + 1 GB disk. Review current prices before applying.
+# Fresh staging database and Clerk DEVELOPMENT instance only. Never use production data.
+services:
+  - type: web
+    name: grozo-clerk-staging-api
+    runtime: node
+    branch: feature/india-grocery-platform
+    rootDir: backend
+    region: singapore
+    plan: starter
+    numInstances: 1
+    autoDeploy: false
+    buildCommand: npm ci --include=dev && npx prisma generate && npm run build
+    preDeployCommand: node scripts/migrate-hosted.mjs
+    startCommand: node scripts/start-render.mjs
+    healthCheckPath: /ready
+    disk:
+      name: grozo-staging-product-images
+      mountPath: /var/data/grozo
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
+      - key: NODE_ENV
+        value: development
+      - key: AUTH_MODE
+        value: clerk-test
+      - key: PAYMENT_PROVIDER
+        value: disabled
+      - key: UPLOAD_DIR
+        value: /var/data/grozo/uploads
+      - key: DATABASE_URL
+        sync: false
+      - key: MIGRATION_DATABASE_URL
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_WEBHOOK_SIGNING_SECRET
+        sync: false
+      - key: CLERK_ISSUER
+        sync: false
+      - key: CLERK_AUTHORIZED_PARTIES
+        sync: false
+      - key: CLERK_ADMIN_USER_IDS
+        sync: false
+      - key: CLERK_ALLOW_NATIVE_WITHOUT_AZP
+        value: "true"
+      - key: DELIVERY_PROOF_SECRET
+        generateValue: true
+      - key: PAYOUT_ENC_KEY
+        sync: false
+      - key: ADMIN_URL
+        sync: false
+      - key: CLIENT_URL
+        sync: false

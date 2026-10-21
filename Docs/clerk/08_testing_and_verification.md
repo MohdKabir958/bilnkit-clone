@@ -1,61 +1,70 @@
-# 8. Actual testing and remaining verification
+# 8. Verification and actual limits
 
-Status: **mobile feasibility gate not cleared; migration acceptance not reached**.
+The implementation supports isolated Clerk mode. Production cutover is not activated. Automated fixtures, native compilation and APK integrity checks are complete; hosted Clerk authentication and physical-device acceptance remain pending.
 
-## Evidence from this change
+## Reproducible commands
+
+From the repository root:
+
+```sh
+# Requires a private backend/.env pointing to LOCAL PostgreSQL with CREATE DATABASE permission.
+# No QA_TEST_PATH for the full run. This creates a fresh UTF-8 *_test database.
+QA_EVIDENCE_DIR=Docs/clerk/evidence/backend-release node scripts/qa/run_full_backend.mjs
+node --test scripts/clerk/hosted_admin_config.test.mjs
+node scripts/clerk/inventory.mjs --check
+python3 scripts/qa/check_ui_terminology.py
+```
+
+From `backend`: `npm run build`.
+
+From `web/super_admin`: `npm test -- --reporter=json --outputFile=tests.json`, then `npm run build`. A separate Clerk-test build was run with public development configuration and an explicit unconfigured `.invalid` API origin; it is compile evidence, not a deployed portal.
+
+From each `apps/customer_app`, `apps/vendor_app`, `apps/driver_app`:
+
+```sh
+flutter analyze --no-pub
+flutter test --no-pub --concurrency=2 --machine
+flutter test --no-pub test/clerk_api_tokens_test.dart --dart-define=AUTH_MODE=clerk-test --reporter expanded
+```
+
+From `packages/kraveo_ui`: `flutter analyze --no-pub` and `flutter test --no-pub --reporter expanded`.
+
+Build/verify APKs from the root using `scripts/clerk/build_test_apks.py` and `scripts/clerk/verify_apks.py` as in document 03. The verification script requires `ANDROID_HOME` and an appropriate JDK. Each build JSON contains its exact command, source commit, mode, endpoints and signing description. Builds use profile mode, ARM64, explicit development signing and omitted unowned Firebase configuration. Kotlin compilation is included in all three successful APK builds; a standalone implementation compile is also preserved for Customer.
+
+## Results and evidence
 
 | Check | Actual result | Evidence |
 | --- | --- | --- |
-| Published Flutter beta source | Checksums match; default credential JSON storage and embedded Google WebView identified; defaults rejected | `evidence/mobile-feasibility.json` |
-| Official Android API SDK source | Maven source checksum matches; Keystore/AES-GCM, refresh and sign-out APIs inspected | Same JSON |
-| Customer Kotlin/MethodChannel probe | Passed, exit 0 | `evidence/customer-native-compile.json` and `.log` |
-| Vendor Kotlin/MethodChannel probe | Passed, exit 0 | `evidence/vendor-native-compile.json` and `.log` |
-| Rider Kotlin/MethodChannel probe | Passed, exit 0 | `evidence/driver-native-compile.json` and `.log` |
-| Probe safety/reporting tests | 7 passed, exit 0 | `evidence/probe-tests.txt` |
-| Inventory freshness | 200 referenced files; 161 endpoint registrations; 20 middleware/router registrations | `migration-inventory.json`; `node scripts/clerk/inventory.mjs --check` |
-| Real Clerk endpoint connectivity | Failed at workspace network proxy: CONNECT 403, including a retry outside the sandbox; not an invalid-key response from Clerk | `evidence/mobile-feasibility.json`, `evidence/environment.json` |
-| Real Clerk login, refresh, revocation, webhooks | **Not verified**; no authenticated Clerk request made | Explicit gate remains false |
-| Physical Android / real callback lifecycle | **Not verified**; no device/KVM emulator available | Environment limitation |
-| New backend/admin/Flutter auth regressions and APK assembly | **Not run/not implemented**; runtime cutover stopped at stage 1 | Do not interpret native compilation as APK/login verification |
+| Complete backend, one invocation, fresh database | 1093 passed, 0 failed, 0 skipped; 44 suites; exit 0; 374.467s | [final backend report](../qa/final-backend-regression.md), `evidence/backend-release/` |
+| Backend TypeScript build | Passed | `evidence/backend-build.txt` |
+| Admin tests | 819 passed, 0 failed, 0 skipped | `evidence/admin/tests.json` |
+| Admin builds | Default legacy build and isolated Clerk-test build passed | `evidence/admin/build.txt`, `clerk-test-build.txt` |
+| Customer analysis | No issues | `evidence/mobile/customer-analysis.txt` |
+| Vendor analysis | No issues | `evidence/mobile/vendor-analysis.txt` |
+| Delivery analysis | No issues | `evidence/mobile/driver-analysis.txt` |
+| Customer full Flutter suite | 458 passed, 0 failed, 2 skipped; exit 0 | `evidence/mobile/customer-full-summary.json` and `.jsonl` |
+| Vendor full Flutter suite | 528 passed, 0 failed, 1 skipped; exit 0 | `evidence/mobile/vendor-full-summary.json` and `.jsonl` |
+| Delivery full Flutter suite | 408 passed, 0 failed, 1 skipped; exit 0 | `evidence/mobile/driver-full-summary.json` and `.jsonl` |
+| Clerk-mode mobile API fixtures | 3 passed per app; no legacy-token substitution; logout blocks injection | `evidence/mobile/*-clerk-mode-tests.txt` |
+| Shared mobile session/UI package | Analysis clean; 18 tests passed | `evidence/mobile/shared-*` |
+| CSP security configuration tests | 3 passed, 0 failed | `evidence/csp-tests.txt` |
+| Active terminology audit | Passed with exact compatibility allowances | `evidence/terminology.txt` |
+| Android APK builds | Customer, Vendor and Delivery passed | `evidence/android/*-build.json` and `.log` |
+| APK integrity/signatures/IDs/callbacks/ABI | Passed; no Clerk Secret Key pattern found | `evidence/android/manifest.json`, `*-apk-verification.txt` |
+| Public APK downloads | All three HTTP 200, complete byte counts and SHA-256 matches, no auth header | `evidence/android/download-verification.json` |
 
-The official SDK's Kotlin probe compiled using existing Android projects, Java 21, Gradle 9.1.0, AGP 9.0.1 and Kotlin plugin 2.3.20, against the installed Flutter toolchain. Each JSON report records its exact command, working directory, duration, exit code and environment variable names. Compile warnings about existing plugin/AGP deprecations remain visible in complete logs. No compiler metadata checks or verification were disabled to force success.
+The four skipped Flutter tests are pre-existing opt-in screenshot-capture tests. No authentication/business regression test was disabled or skipped to make this change pass. Early analysis found lints in newly added fixture tests; those were fixed and analysis rerun cleanly. A reporting-wrapper parsing error after successful Flutter tests was corrected, and the final machine-readable full-suite runs completed with actual exit 0.
 
-One preliminary local probe attempt failed because Flutter tried to write default home configuration in a restricted filesystem. The recorded probes use the workspace's established XDG/Pub/cache environment. This was a tooling setup correction, not a Clerk code/test failure. The first safety-test attempt had an exhausted mock response list in the probe test itself; it was corrected to represent successful public connectivity. These tests concern reporting and URL/archive safety, not mocked identity validation.
+The backend full run exercises existing business regressions in isolated legacy mode and the new Clerk verification/authorization suite in explicitly selected Clerk-test mode. New tests use the official SDK's cryptographic verification with locally generated RSA keys and signed webhook fixtures; only Clerk provider HTTP responses are substituted. They cover missing/invalid/forged/expired/wrong-issuer/party/audience tokens, online revocation/suspension/outage, native authorized-party policy, subject/UUID linkage/conflicts/concurrency, pending partner applications, explicit admin assignment, role/foreign-resource isolation, duplicate/stale/deletion webhooks, socket room restrictions, logout/account switching, device ownership, durable deletion retry and independent Razorpay signatures. These are not Clerk-hosted login results.
 
-The existing `Docs/qa/final-backend-regression.md` and full-run log describe the **previous baseline**, not a Clerk migration regression run. Their 1,064 passing backend tests must not be relabeled as Clerk tests. No application/backend runtime source changed in this stage, so the full legacy suites were not rerun to imply migration acceptance.
+An earlier full run failed on nondeterministic payment reconciliation when concurrent rows shared `createdAt`. The query now orders by timestamp **and ID**; the regression forces tied timestamps and uses one captured clock advanced exactly a minute. No assertion was weakened. Another run while Android builds competed for CPU timed out during the existing 80-product inventory setup, causing a downstream search assertion to fail. Its complete failed output is retained. The final suite is scheduled without competing builds; no timeout was increased and no inventory assertion was removed. The final report must be read as a single full invocation, never a sum of targeted runs.
 
-The public registry responses identifying the maintained React/Express packages and the deprecated React package are recorded in `evidence/web-sdk-registry.json`. Toolchain versions and absence of KVM/USB device interfaces are recorded in `evidence/environment.json`.
+Earlier development attempts are not presented as acceptance evidence. `backend-full/` preserves the initial failed full run; `backend-final/` records an intermediate successful run before later privacy corrections; `backend-handover/` preserves the CPU-contention failure. The final source is assessed by `backend-release/`. Existing baseline evidence is historical and not relabelled as Clerk verification.
 
-Raw compiler logs retain the tool's output, including three trailing-space warnings from Flutter's own diagnostic text. Source/document whitespace checks exclude those unmodified evidence logs.
+## External checks still pending
 
-## Reproduce the probes
+No staging backend/database/admin was deployed. No physical phone or working emulator is attached. The workspace proxy rejects the Clerk frontend hostname; the disclosed Secret Key was not used. Real email verification/recovery, Google callbacks, encrypted persistence on hardware, session renewal/revocation with the actual provider, deployed CSP/CORS/socket behavior, owned FCM delivery and real Razorpay sandbox operations remain **not verified**. Follow documents 02, 07 and 10 before final cutover approval.
 
-Use the repository's installed toolchain and writable environment locations (adjust SDK paths on another machine):
+Existing plugin Java/Kotlin/Gradle deprecation warnings, SDK XML tooling warnings, the Vite chunk-size warning and Jest's pre-existing forceExit/open-handle notice remain in raw logs. Owned production signing and Firebase configuration are not available; Play Store release builds and notification delivery are not claimed.
 
-```bash
-export JAVA_HOME=/workspace/.tools/jdk/java-21-openjdk-amd64
-export ANDROID_HOME=/workspace/.tools/android-sdk
-export ANDROID_SDK_ROOT="$ANDROID_HOME"
-export ANDROID_USER_HOME=/workspace/.android
-export GRADLE_USER_HOME=/workspace/.gradle
-export PUB_CACHE=/workspace/.pub-cache
-export XDG_CONFIG_HOME=/workspace/.config
-export XDG_CACHE_HOME=/workspace/.cache
-export ANALYZER_STATE_LOCATION_OVERRIDE=/workspace/.dartServer
-export DASH__SUPPRESS_ANALYTICS=true
-python3 scripts/clerk/run_android_probe.py --app customer --output Docs/clerk/evidence
-python3 scripts/clerk/run_android_probe.py --app vendor --output Docs/clerk/evidence
-python3 scripts/clerk/run_android_probe.py --app driver --output Docs/clerk/evidence
-python3 -m unittest discover -s scripts/clerk -p 'test_*.py' -v
-node scripts/clerk/inventory.mjs --check
-```
-
-For public source/connectivity review, set only the development `CLERK_PUBLISHABLE_KEY` privately and run `mobile_feasibility.py`. Exit 2 deliberately means static review cannot clear a real-device/authentication acceptance gate. It is not a failing authentication test that should be skipped or changed to green.
-
-## Required final migration regression (still outstanding)
-
-After genuine mobile feasibility passes, implement and test customer registration/login/verification, partner approval/suspension, explicit admin bootstrap, private resource isolation, invalid/forged/expired/wrong-instance/wrong-party/audience tokens, online revocation, duplicate/out-of-order webhooks, ownership linking conflicts and concurrency, logout/account switching, protected socket rooms/events, independent Razorpay HMAC and owned FCM devices.
-
-Then update fixtures to the real Clerk verifier boundary, preserving each business authorization assertion; report mocked fixture tests separately from genuine provider tests. Run the entire backend Jest suite once against a fresh UTF-8 isolated PostgreSQL database with all migrations and deterministic state, recording complete logs/JSON/counts/duration/exit code. Do not disable failed tests. Run admin tests/build, all three Flutter analysis/tests, supported Android builds and owned-device/provider integration checks. Preserve order, stock, refund, settlement and dispatch concurrency regressions.
-
-Production release builds also require owned signing/Firebase configuration, actual HTTPS endpoints, and the final SDK callback configuration. No current APK should be described as a Clerk-enabled build.
+Toolchain: Flutter 3.44.9, Dart 3.12.2, Node 24.19.0, PostgreSQL 17.11, Prisma 5.22, Java 21, Gradle 9.1, AGP 9.0.1 and Kotlin 2.3.20. Official Clerk Android UI 1.2.1, `@clerk/express` 2.1.81 and maintained `@clerk/react` 6.18.0 are pinned through build/package configuration and locks.

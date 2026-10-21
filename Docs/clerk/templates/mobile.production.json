@@ -1,5 +1,6 @@
 {
-  "CLERK_PUBLISHABLE_KEY": "",
+  "AUTH_MODE": "clerk",
+  "AUTH_PREVIEW": "false",
   "API_BASE_URL": "https://YOUR-API-DOMAIN/api",
   "SOCKET_URL": "https://YOUR-API-DOMAIN"
 }

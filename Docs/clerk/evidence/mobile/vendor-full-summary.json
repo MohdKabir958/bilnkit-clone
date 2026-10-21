@@ -1,0 +1,17 @@
+{
+  "app": "vendor",
+  "command": [
+    "flutter",
+    "test",
+    "--no-pub",
+    "--concurrency=2",
+    "--machine"
+  ],
+  "cwd": "apps/vendor_app",
+  "exitCode": 0,
+  "passed": 528,
+  "failed": 0,
+  "skipped": 1,
+  "durationSeconds": 159.538,
+  "startedAt": "2026-10-21T09:41:14.730784+00:00"
+}

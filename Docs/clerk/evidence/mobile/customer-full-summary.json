@@ -1,0 +1,17 @@
+{
+  "app": "customer",
+  "command": [
+    "flutter",
+    "test",
+    "--no-pub",
+    "--concurrency=2",
+    "--machine"
+  ],
+  "cwd": "apps/customer_app",
+  "exitCode": 0,
+  "passed": 458,
+  "failed": 0,
+  "skipped": 2,
+  "durationSeconds": 111.0,
+  "startedAt": "2026-10-21T09:39:23.729930+00:00"
+}

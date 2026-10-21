@@ -1,0 +1,7 @@
+00:00 +0: loading /workspace/bilnkit-clone/apps/vendor_app/test/clerk_api_tokens_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: Clerk mode requests fresh SDK tokens for API headers
+00:00 +1: saving an old Grozo JWT cannot replace the SDK session
+00:00 +2: secure logout blocks further SDK token injection
+00:00 +3: (tearDownAll)
+00:00 +3: All tests passed!

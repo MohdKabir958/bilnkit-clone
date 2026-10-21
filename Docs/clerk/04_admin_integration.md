@@ -1,18 +1,24 @@
-# 4. Admin integration design
+# 4. React admin integration
 
-Status: **not activated; the existing passcode/localStorage implementation remains** because the required mobile-first feasibility gate is unresolved.
+Root directory: **`web/super_admin`**. This is Vite/React, so use `VITE_CLERK_PUBLISHABLE_KEY`, not `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`.
 
-The maintained React package is `@clerk/react` (registry review: 6.18.0, React 18 compatible). `@clerk/clerk-react` is deprecated in the registry and explicitly points to `@clerk/react`. Backend candidate `@clerk/express` was 2.1.81 (Node >=20.9). These were inspected, not installed into Grozo's runtime lockfiles.
+The maintained `@clerk/react` package supplies ClerkProvider, SignIn, UserButton and useAuth. `ClerkAdminRoot` shows loading/sign-in/error states and waits for Grozo's admin validation before mounting private screens. An authenticated customer sees access denied. A provider/network outage offers retry; it does not silently grant access or return to the passcode form.
 
-After the gate passes:
+`api.ts` retrieves a current session token with the SDK for each protected API/download request. Socket.io obtains a fresh token on every connection/reconnection. The old `kraveo_admin_token`/profile entries are cleared and ignored in Clerk mode. Clerk tokens are never manually persisted in localStorage. Account/session changes unmount the old private shell. The profile menu and sign-out use Clerk.
 
-1. Wrap the existing `src/main.tsx` tree in `ClerkProvider` using `VITE_CLERK_PUBLISHABLE_KEY`. Keep the existing error/toast boundaries and Grozo layout.
-2. Use Clerk sign-in, signed-out/loading states and the SDK profile/sign-out UI. Protect the admin shell using both Clerk session state and a backend profile/RBAC check. A signed-in customer must see access denied, never admin data.
-3. Change `src/services/api.ts` to obtain a fresh SDK `getToken()` asynchronously for every authenticated request. Preserve request cancellation/timeouts and API error contracts. Treat network/503 separately from rejected authentication; do not turn an outage into a destructive logout.
-4. Remove `kraveo_admin_token`, `kraveo_admin_profile`, `memoryToken` and passcode consumers only after all have migrated. Clear old keys once. Do not manually persist Clerk tokens anywhere in localStorage.
-5. Reconnect Socket.io using its auth callback to retrieve the current SDK token on each connection attempt. On expired/revoked/account-switched state, discard the old socket. Never reconnect using a token captured once at app startup.
-6. Replace admin login/storage tests with provider-state fixtures plus real backend RBAC integration tests. Test all sensitive finance, inventory, assignment, approval, upload and operational events. A mock ClerkProvider is not evidence of Clerk-hosted sign-in.
+Set in Vercel's environment settings:
 
-Vercel root remains `web/super_admin`. Set `VITE_API_BASE_URL` to the exact Render HTTPS origin, `VITE_SOCKET_URL` to its Socket.io HTTPS origin, and `VITE_CLERK_PUBLISHABLE_KEY` to the environment's public key. The supplied `NEXT_PUBLIC_...` variable is for Next.js and is not automatically read by this Vite app.
+```text
+VITE_AUTH_MODE=clerk-test
+VITE_CLERK_PUBLISHABLE_KEY=<development public key>
+VITE_API_BASE_URL=https://YOUR-RENDER-HOST
+VITE_SOCKET_URL=https://YOUR-RENDER-HOST
+```
 
-CSP changes need observed Clerk resource requests: exact frontend API/CDN/frame domains, configured Google challenge resources if actually required, and the exact API HTTPS/WSS origins. Keep a narrow policy with no wildcard host permissions. Do not remove CSP, grant arbitrary Vercel origins, or promise the current `connect-src 'self'` policy already supports Clerk. Existing SPA rewrites must remain so direct route refresh works.
+The API client adds `/api` internally. Do not append `/api` to these two admin origins. No secret belongs in Vite variables. Rebuild after changing them.
+
+Before importing/redeploying Vercel, generate and commit the CSP with the exact backend origin and public key using document 07. It allows the exact Clerk frontend, Render HTTPS/WSS, Clerk image/telemetry and Cloudflare challenge origins; no wildcard origins. Add exact owned product-image origins only when needed. Existing SPA rewrites preserve route refreshes.
+
+Admin partner creation/password-reset controls are hidden in Clerk mode. Partners apply through the authenticated native flow; historical identities can be linked only by an operator. Approval/status/inventory/finance screens continue to use backend RBAC.
+
+Local checks: `npm ci --include=dev`, `npm test -- --runInBand`, `npm run build` from `web/super_admin`. Unit tests mock SDK state explicitly; hosted sign-in, CSP, cross-origin sessions, redirects and reconnects still need deployed browser verification.
