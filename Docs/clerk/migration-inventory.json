@@ -4,7 +4,7 @@
   "scope": "Tracked source/config/test files only; no .env, provider secrets, uploads or account records read.",
   "limitations": "Source reference inventory is navigation aid, not proof of authorization. Middleware inside handlers and ownership queries require manual review. Historical migrations are preserved, not renamed.",
   "counts": {
-    "referencedFiles": 224,
+    "referencedFiles": 225,
     "endpoints": 163,
     "mounts": 22
   },
@@ -15936,6 +15936,17 @@
           "kind": "authentication",
           "symbol": "ADMIN_PASSCODE",
           "line": 17
+        }
+      ]
+    },
+    {
+      "path": "scripts/qa/render_port_binding.test.mjs",
+      "sha256": "81c01b564a1b4ac1a35a59c32b1f5ce046e688d3e4b88978cb98d2f131ec23c8",
+      "references": [
+        {
+          "kind": "authentication",
+          "symbol": "JWT_SECRET",
+          "line": 21
         }
       ]
     },
