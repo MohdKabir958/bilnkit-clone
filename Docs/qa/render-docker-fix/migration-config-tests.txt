@@ -1,0 +1,12 @@
+✔ direct migration connection wins over the pooled runtime URL without logging credentials (44.399347ms)
+✔ runtime URL is used only when no direct URL is configured (43.125239ms)
+✔ missing, malformed and non-PostgreSQL settings stop before migration without exposing values (176.397022ms)
+✔ migration failure propagates rather than starting a healthy-looking API (37.332543ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 381.972428

@@ -77,6 +77,12 @@ Docs/qa/backend-full-run-summary.json
 Docs/qa/backend-full-run.json
 Docs/qa/backend-full-run.log
 Docs/qa/final-backend-regression.md
+Docs/qa/render-docker-fix/backend-build.txt
+Docs/qa/render-docker-fix/docker-build.txt
+Docs/qa/render-docker-fix/migration-config-tests.txt
+Docs/qa/render-docker-fix/production-prisma.txt
+Docs/qa/render-docker-fix/production-prune.txt
+Docs/qa/render-docker-startup-fix.md
 apps/customer_app/android/app/build.gradle.kts
 apps/customer_app/android/app/src/main/AndroidManifest.xml
 apps/customer_app/android/app/src/main/kotlin/site/kraveo/customer/MainActivity.kt
@@ -112,11 +118,13 @@ apps/vendor_app/lib/services/vendor_api_service.dart
 apps/vendor_app/lib/session/session_controller.dart
 apps/vendor_app/test/clerk_api_tokens_test.dart
 backend/.env.example
+backend/Dockerfile
 backend/package-lock.json
 backend/package.json
 backend/prisma/migrations/20261021060000_clerk_identity/migration.sql
 backend/prisma/schema.prisma
 backend/scripts/clerk-identity.mjs
+backend/scripts/migrate-hosted.mjs
 backend/src/config/authMode.ts
 backend/src/config/runtimeConfig.ts
 backend/src/index.ts
@@ -146,6 +154,7 @@ scripts/clerk/hosted_admin_config.test.mjs
 scripts/clerk/inventory.mjs
 scripts/clerk/verify_apks.py
 scripts/configure_hosted_admin.mjs
+scripts/qa/render_migration_config.test.mjs
 scripts/qa/run_full_backend.mjs
 scripts/qa/terminology-allowances.json
 web/super_admin/.env.example

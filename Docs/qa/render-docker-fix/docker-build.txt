@@ -1,0 +1,93 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.77kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:24.19.0-bookworm-slim
+#2 DONE 0.3s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 99B 0.0s done
+#3 DONE 0.0s
+
+#4 [build  1/11] FROM docker.io/library/node:24.19.0-bookworm-slim@sha256:a9f5f7c91a432850b2a8a7797adf5eadb6c733ceed61167806cee7ea7fbc29df
+#4 DONE 0.0s
+
+#5 [build  2/11] WORKDIR /app
+#5 CACHED
+
+#6 [internal] load build context
+#6 transferring context: 7.66kB 0.0s done
+#6 DONE 0.0s
+
+#7 [runtime 3/8] RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/* && mkdir -p /var/lib/market/uploads && chown node:node /var/lib/market/uploads
+#7 2.357 Ign:1 http://deb.debian.org/debian bookworm InRelease
+#7 7.364 Ign:2 http://deb.debian.org/debian bookworm-updates InRelease
+#7 7.365 Ign:3 http://deb.debian.org/debian-security bookworm-security InRelease
+#7 ...
+
+#8 [build  3/11] RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+#8 ...
+
+#7 [runtime 3/8] RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/* && mkdir -p /var/lib/market/uploads && chown node:node /var/lib/market/uploads
+#7 12.37 Ign:1 http://deb.debian.org/debian bookworm InRelease
+#7 12.38 Ign:2 http://deb.debian.org/debian bookworm-updates InRelease
+#7 17.38 Ign:3 http://deb.debian.org/debian-security bookworm-security InRelease
+#7 17.38 Ign:1 http://deb.debian.org/debian bookworm InRelease
+#7 22.39 Ign:2 http://deb.debian.org/debian bookworm-updates InRelease
+#7 22.39 Ign:3 http://deb.debian.org/debian-security bookworm-security InRelease
+#7 ...
+
+#8 [build  3/11] RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+#8 12.51 Ign:1 http://deb.debian.org/debian bookworm InRelease
+#8 22.52 Ign:2 http://deb.debian.org/debian bookworm-updates InRelease
+#8 ...
+
+#7 [runtime 3/8] RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/* && mkdir -p /var/lib/market/uploads && chown node:node /var/lib/market/uploads
+#7 27.40 Err:1 http://deb.debian.org/debian bookworm InRelease
+#7 27.40   Temporary failure resolving 'proxy'
+#7 27.41 Err:2 http://deb.debian.org/debian bookworm-updates InRelease
+#7 27.41   Temporary failure resolving 'proxy'
+#7 32.41 Err:3 http://deb.debian.org/debian-security bookworm-security InRelease
+#7 32.41   Temporary failure resolving 'proxy'
+#7 32.42 Reading package lists...
+#7 32.43 W: Failed to fetch http://deb.debian.org/debian/dists/bookworm/InRelease  Temporary failure resolving 'proxy'
+#7 32.43 W: Failed to fetch http://deb.debian.org/debian/dists/bookworm-updates/InRelease  Temporary failure resolving 'proxy'
+#7 32.43 W: Failed to fetch http://deb.debian.org/debian-security/dists/bookworm-security/InRelease  Temporary failure resolving 'proxy'
+#7 32.43 W: Some index files failed to download. They have been ignored, or old ones used instead.
+#7 32.44 Reading package lists...
+#7 32.44 Building dependency tree...
+#7 32.44 Reading state information...
+#7 32.44 Package ca-certificates is not available, but is referred to by another package.
+#7 32.44 This may mean that the package is missing, has been obsoleted, or
+#7 32.44 is only available from another source
+#7 32.44 
+#7 32.44 E: Unable to locate package openssl
+#7 32.44 E: Package 'ca-certificates' has no installation candidate
+#7 ERROR: process "/bin/sh -c apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/* && mkdir -p /var/lib/market/uploads && chown node:node /var/lib/market/uploads" did not complete successfully: exit code: 100
+
+#8 [build  3/11] RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+#8 CANCELED
+------
+ > [runtime 3/8] RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/* && mkdir -p /var/lib/market/uploads && chown node:node /var/lib/market/uploads:
+32.43 W: Some index files failed to download. They have been ignored, or old ones used instead.
+32.44 Reading package lists...
+32.44 Building dependency tree...
+32.44 Reading state information...
+32.44 Package ca-certificates is not available, but is referred to by another package.
+32.44 This may mean that the package is missing, has been obsoleted, or
+32.44 is only available from another source
+32.44 
+32.44 E: Unable to locate package openssl
+32.44 E: Package 'ca-certificates' has no installation candidate
+------
+Dockerfile:23
+--------------------
+  21 |     ENV NODE_ENV=production PORT=5000 UPLOAD_DIR=/var/lib/market/uploads
+  22 |     WORKDIR /app
+  23 | >>> RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/* && mkdir -p /var/lib/market/uploads && chown node:node /var/lib/market/uploads
+  24 |     COPY --from=production-deps --chown=node:node /app/node_modules ./node_modules
+  25 |     COPY --from=build --chown=node:node /app/dist ./dist
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/* && mkdir -p /var/lib/market/uploads && chown node:node /var/lib/market/uploads" did not complete successfully: exit code: 100

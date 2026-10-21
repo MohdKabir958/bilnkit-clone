@@ -139,3 +139,19 @@ No database URL, Clerk Secret Key, webhook secret, passcode or payout key belong
 ## E. Connect Android and complete acceptance
 
 Rebuild each APK using `python3 scripts/clerk/build_test_apks.py --app customer --backend-origin https://ACTUAL-RENDER-HOST`, and repeat with `vendor`/`driver`. Test with the Pass/Fail sheet in document 10. Configure owned Firebase/release signing separately when moving beyond these development previews. Only after connected staging tests and explicit approval should production use live Clerk keys, `NODE_ENV=production`, `AUTH_MODE=clerk`, a separate production database/instance, real payment configuration and coordinated clients. No production cutover is implied by this guide.
+
+## Existing Render service was created with Docker
+
+The default Docker image now starts the API as the non-root node user and includes the pinned Prisma CLI, schema and migration scripts needed by Render's pre-deploy phase. Explicit Compose `runtime` and one-off `migrate` targets remain supported.
+
+For an existing Docker Render service, use branch `feature/india-grocery-platform`, Dockerfile `backend/Dockerfile` with the backend build context (or `Dockerfile` if Root Directory is `backend`), clear any Docker Command override that runs `npm run db:deploy`, and set:
+
+- Pre-deploy command: `node scripts/migrate-hosted.mjs` (uses direct `MIGRATION_DATABASE_URL`).
+- Default Docker start command: `node scripts/start-render.mjs` (uses pooled runtime `DATABASE_URL`).
+- Health check: `/ready`.
+
+Pre-deploy commands and persistent disks require the supported paid service plan; review the cost before changing plans. This update does not create or upgrade a service. The Docker image does not automatically migrate at API startup. Run the migration as a controlled separate deployment step before the API starts.
+
+If Prisma reports “Can't reach database server”, the URL parses but network/database connectivity is unconfirmed. Copy the full current URLs from the correct Neon branch with pooling ON for runtime and OFF for migrations. Confirm the endpoint is active and Neon IP restrictions permit the Render service's outbound IPs. Do not assume a password error or a successful migration from this message. A temporary `connect_timeout=30` URL parameter may help a confirmed cold-start timeout, but does not repair a wrong hostname or blocked networking.
+
+The migration wrapper logs only which setting and hostname it selected. It never logs passwords or the full connection URL. Both database variables and all Clerk settings from section C are required; the three staging mode flags alone are insufficient.
