@@ -255,6 +255,12 @@ const orderOrNull = (raw: any): Order | null => {
 };
 
 export const apiService = {
+  fetchAdminTeam: () => request<import('../components/TeamAccessPanel').TeamMember[]>('/api/v1/admin/team'),
+  inviteAdmin: (email: string, role: 'OWNER' | 'ADMIN') => request('/api/v1/admin/team', {method:'POST',body:JSON.stringify({email,role})}),
+  changeAdminRole: (id: string, role: 'OWNER' | 'ADMIN') => request(`/api/v1/admin/team/${encodeURIComponent(id)}`, {method:'PATCH',body:JSON.stringify({role})}),
+  revokeAdmin: (id: string) => request(`/api/v1/admin/team/${encodeURIComponent(id)}`, {method:'DELETE'}),
+  createStore: (data: {name:string;address:string;cityId:string;pinCode:string;locality:string;lat:number;lng:number;zoneId?:string;ownerEmail?:string}) => request('/api/v1/admin/stores', {method:'POST',body:JSON.stringify(data)}),
+
   operations: (cityId: string, days: string) => request<any>(`/api/v1/admin/operations?${new URLSearchParams({days,...(cityId?{cityId}:{})})}`),
   dispatchPage: (cityId: string, after='') => requestFull<any>(`/api/v1/admin/dispatch?${new URLSearchParams({limit:'30',...(cityId?{cityId}:{}),...(after?{after}:{})})}`),
   retryDispatch: (id:string) => request(`/api/v1/admin/orders/${encodeURIComponent(id)}/dispatch/retry`,{method:'POST'}),
@@ -265,6 +271,7 @@ export const apiService = {
   inventoryPage: (opts: {q:string;vendorId:string;cityId:string;lowStock:boolean;after:string}) => requestFull<any>(`/api/v1/admin/products?${new URLSearchParams(Object.fromEntries(Object.entries({...opts,limit:'50'}).filter(([,v]) => v !== '' && v !== false).map(([k,v])=>[k,String(v)])))}`),
   productMovements: (id:string) => requestFull<any>(`/api/v1/products/${encodeURIComponent(id)}/stock-movements?limit=100`),
   adjustProductStock: (id:string, data:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/stock`, {method:'POST',body:JSON.stringify(data)}),
+  createGroceryProduct: (vendorId:string,data:Record<string,unknown>) => request(`/api/v1/vendors/${encodeURIComponent(vendorId)}/products`, {method:'POST',body:JSON.stringify(data)}),
   saveGroceryProduct: (id:string, data:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}`, {method:'PUT',body:JSON.stringify(data)}),
   fetchGeography: () => request<import('../components/GeographyPanel').Geography>('/api/v1/admin/geography'),
   createDeliveryCity: (data: { code: string; name: string; state: string; active: boolean }) => request('/api/v1/admin/cities', { method: 'POST', body: JSON.stringify(data) }),
@@ -289,7 +296,7 @@ export const apiService = {
     const profile = await request<any>('/api/auth/profile');
     const user = profile?.user || profile;
     if (user?.role !== 'ADMIN') throw new ApiError(403, 'This session is not authorized for the admin console.');
-    return { id: user.id, name: user.name, phone: user.phone, role: 'ADMIN' };
+    return { id: user.id, name: user.name, phone: user.phone, role: 'ADMIN',adminRole:user.adminRole === 'OWNER' ? 'OWNER' : 'ADMIN' };
   },
 
   async fetchOrders(): Promise<Order[]> {
@@ -297,10 +304,11 @@ export const apiService = {
   },
 
   /** One page of orders, newest first (the server default is 100). `cursor` = the id of the last order already loaded. */
-  async fetchOrderPage(cursor?: string | null, limit?: number): Promise<{ orders: Order[]; nextCursor: string | null }> {
+  async fetchOrderPage(cursor?: string | null, limit?: number, cityId?: string): Promise<{ orders: Order[]; nextCursor: string | null }> {
     const params = new URLSearchParams();
     if (limit) params.set('limit', String(limit));
     if (cursor) params.set('cursor', cursor);
+    if(cityId) params.set('cityId',cityId);
     const query = params.toString();
     const body = await requestFull<any>(`/api/orders${query ? `?${query}` : ''}`);
     const data = Array.isArray(body?.data) ? body.data : Array.isArray(body) ? body : [];

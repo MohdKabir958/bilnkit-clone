@@ -17,19 +17,20 @@ interface HeaderProps {
 }
 
 const TITLES: Record<TabType, { title: string; subtitle: string; searchHint: string }> = {
-  operations: {title: 'Operations and support', subtitle: 'Dispatch, requests and business audit', searchHint: ''},
-  inventory: { title: 'Products and inventory', subtitle: 'Grocery SKUs, stock adjustments and product moderation', searchHint: '' },
-  coverage: { title: 'Delivery coverage', subtitle: 'Cities, service areas and store opening hours', searchHint: '' },
+  operations: {title: 'Overview', subtitle: 'Your marketplace at a glance', searchHint: ''},
+  inventory: { title: 'Products & stock', subtitle: 'Grocery SKUs, stock adjustments and product moderation', searchHint: '' },
+  coverage: { title: 'Cities & zones', subtitle: 'Cities, service areas and store opening hours', searchHint: '' },
   map: { title: 'Live command center', subtitle: 'Dispatch, delivery partners and the delivery pipeline', searchHint: 'Search orders, stores, localities, delivery partners' },
   orders: { title: 'Orders', subtitle: 'Latest 100 orders, with payment and live status', searchHint: 'Search order, customer, phone, store, rider or payment id' },
   attention: { title: 'Needs attention', subtitle: 'Orders and payments a human has to fix', searchHint: 'Search by order, store, customer or problem' },
-  applications: { title: 'Applications', subtitle: 'Stores and riders waiting for your approval', searchHint: 'Search by name, phone, location or plate' },
-  vendors: { title: 'Stores', subtitle: 'Store network and availability', searchHint: 'Search stores by name, category or address' },
+  applications: { title: 'Approvals', subtitle: 'Stores and riders waiting for your approval', searchHint: 'Search by name, phone, location or plate' },
+  vendors: { title: 'Vendors', subtitle: 'Find, onboard and manage your stores', searchHint: 'Search stores by name, category or address' },
   categories: { title: 'Categories', subtitle: 'One list for store and product categories', searchHint: 'Search categories by name' },
   drivers: { title: 'Delivery partners', subtitle: 'Delivery partners and service areas', searchHint: 'Search delivery partners by name, reg no or code' },
   customers: { title: 'Customers', subtitle: 'Everyone who signed in, with their order history', searchHint: 'Search name, email, phone or locality' },
-  catalog: { title: 'Catalog', subtitle: 'Approve products and set what customers pay', searchHint: 'Search products by name, category or store' },
+  catalog: { title: 'Product approvals', subtitle: 'Approve products and set what customers pay', searchHint: 'Search products by name, category or store' },
   finance: { title: 'Finance', subtitle: 'Revenue, store settlements and rider payouts', searchHint: '' },
+  team: {title:'Team & access',subtitle:'Administrator roles and email-based access',searchHint:''},
   settings: { title: 'Settings', subtitle: 'Fees, commission, rounding and settlements', searchHint: '' },
   analytics: { title: 'Analytics', subtitle: 'Delivery statistics from real orders', searchHint: '' },
 };
@@ -45,7 +46,7 @@ const useNow = (intervalMs: number): number => {
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, isLiveConnected, isLoading, adminProfile, onRefresh, onLogout, onOpenMenu, query, onQueryChange }) => {
   const meta = TITLES[activeTab];
-  const searchEnabled = activeTab !== 'operations' && activeTab !== 'analytics' && activeTab !== 'settings' && activeTab !== 'finance' && activeTab !== 'coverage' && activeTab !== 'inventory';
+  const searchEnabled = activeTab !== 'team' && activeTab !== 'operations' && activeTab !== 'analytics' && activeTab !== 'settings' && activeTab !== 'finance' && activeTab !== 'coverage' && activeTab !== 'inventory';
   const now = useNow(10_000);
   const [lastSynced, setLastSynced] = useState<number | null>(null);
   const wasLoading = useRef(false);
@@ -84,6 +85,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, isLiveConnected, isLo
   }, [menuOpen]);
 
   const adminName = adminProfile?.name || 'Admin';
+  const adminRoleLabel=adminProfile?.adminRole==='OWNER'?'Owner':'Administrator';
   const clock = new Date(now).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
   const syncLabel = isLoading ? 'Syncing' : lastSynced ? `Synced ${timeAgo(lastSynced, now)}` : 'Not synced yet';
 
@@ -149,7 +151,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, isLiveConnected, isLo
               className="flex min-h-10 min-w-0 max-w-full items-center gap-2 rounded-k-sm border border-kraveo-line bg-kraveo-surface2 pl-1.5 pr-2 transition-colors hover:border-kraveo-g400/40 sm:pr-3"
             >
               <Avatar name={adminName} size="sm" />
-              <span className="hidden max-w-[9rem] truncate text-sm font-bold text-kraveo-ink sm:inline">Administrator</span>
+              <span className="hidden max-w-[9rem] truncate text-sm font-bold text-kraveo-ink sm:inline">{adminRoleLabel}</span>
               <ChevronDown className={`hidden h-4 w-4 text-kraveo-ink3 transition-transform sm:block ${menuOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
             </button>
             {menuOpen && (
@@ -158,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, isLiveConnected, isLo
                   <Avatar name={adminName} />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold text-kraveo-ink">{adminName}</p>
-                    <p className="flex items-center gap-1 text-xs text-kraveo-ink3"><ShieldCheck className="h-3 w-3 text-kraveo-g400" aria-hidden="true" /> Administrator</p>
+                    <p className="flex items-center gap-1 text-xs text-kraveo-ink3"><ShieldCheck className="h-3 w-3 text-kraveo-g400" aria-hidden="true" /> {adminRoleLabel}</p>
                   </div>
                 </div>
                 <div className="border-b border-kraveo-line px-4 py-3 text-xs text-kraveo-ink3 xl:hidden">

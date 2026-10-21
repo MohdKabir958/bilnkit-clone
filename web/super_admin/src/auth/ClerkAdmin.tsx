@@ -4,17 +4,19 @@ import { App } from '../App';
 import { apiService, installClerkTokenGetter, clearAuthToken } from '../services/api';
 import type { AdminProfile } from '../types';
 import { ApiError } from '../services/api';
+import {AdminWelcome} from './AdminWelcome';
+import {LoaderCircle,ShieldCheck} from 'lucide-react';
 
 export const clerkEnabled = (import.meta.env.VITE_AUTH_MODE || 'legacy') !== 'legacy';
 
 function SignInUnavailable({blockedResource = ''}: {blockedResource?: string}) {
-  return <main className="min-h-screen flex flex-col items-center justify-center gap-4 p-8" role="alert">
+  return <AdminWelcome><section className="k-panel space-y-4" role="alert">
     <h1 className="text-3xl">Secure sign-in could not load</h1>
     <p>Check your connection and browser privacy settings, then reload this page.</p>
     {blockedResource && <p>{blockedResource}</p>}
     <p>If this continues, share the first red browser console error with the Grozo operator. Do not share session tokens.</p>
     <button className="rounded-lg bg-green-800 px-6 py-3 text-white" onClick={() => window.location.reload()}>Reload sign-in</button>
-  </main>;
+  </section></AdminWelcome>;
 }
 
 function SignInLoading() {
@@ -33,7 +35,7 @@ function SignInLoading() {
     return () => { window.clearTimeout(timer); document.removeEventListener('securitypolicyviolation', onPolicyViolation); };
   }, []);
   if (timedOut || blockedResource) return <SignInUnavailable blockedResource={blockedResource} />;
-  return <main className="p-8" role="status">Loading secure sign-in…</main>;
+  return <AdminWelcome><div className="k-panel flex items-center gap-3" role="status"><LoaderCircle className="h-5 w-5 animate-spin text-kraveo-g700"/>Loading secure sign-in…</div></AdminWelcome>;
 }
 
 function AdminSession() {
@@ -57,8 +59,8 @@ function AdminSession() {
     return () => { active = false; installClerkTokenGetter(null); };
   }, [isLoaded,isSignedIn,userId,sessionId,getToken,retry]);
   if (!isLoaded) return <main className="p-8" role="status">Loading secure sign-in…</main>;
-  if (!isSignedIn) return <main className="min-h-screen flex flex-col items-center justify-center gap-6"><h1 className="text-3xl">Grozo Admin</h1><SignIn routing="hash" /></main>;
-  if (!admin || verifiedFor !== `${userId}:${sessionId}`) return <main className="p-8" aria-live="polite"><h1>Grozo administrator access</h1><p>{error || 'Checking server permissions…'}</p>{error && <button onClick={() => setRetry(v => v+1)}>Retry</button>} <button onClick={() => void signOut()}>Sign out</button></main>;
+  if (!isSignedIn) return <AdminWelcome><div className="mb-6"><p className="k-label">Team sign-in</p><h2 className="mt-3 text-3xl font-bold tracking-tight">Welcome to your workspace</h2><p className="mt-3 text-sm leading-relaxed text-kraveo-ink2">Sign in with the email your owner has approved. New team members can create an account and verify that same email.</p></div><SignIn routing="hash" appearance={{variables:{colorPrimary:'#086331',colorForeground:'#17231d',colorMutedForeground:'#5e7066',colorBackground:'#ffffff',borderRadius:'12px',fontFamily:'inherit'},elements:{rootBox:'w-full',cardBox:'w-full shadow-none',card:'border border-kraveo-line shadow-none',headerTitle:'text-lg',headerSubtitle:'text-sm',formButtonPrimary:'bg-kraveo-g800'}}}/></AdminWelcome>;
+  if (!admin || verifiedFor !== `${userId}:${sessionId}`) return <AdminWelcome><section className="k-panel space-y-5" aria-live="polite"><ShieldCheck className="h-9 w-9 text-kraveo-g700"/><div><p className="k-label">Workspace access</p><h2 className="mt-2 text-2xl font-bold">{error?'Your sign-in is complete':'Checking your access'}</h2></div><p className="text-sm leading-relaxed text-kraveo-ink2">{error || 'Checking server permissions…'}</p>{error?.includes('not been approved')&&<p className="rounded-k-md bg-kraveo-surface2 p-4 text-sm">Ask a Grozo owner to add your verified email in <strong>Team & access</strong>. You do not need a shared passcode.</p>}<div className="flex flex-wrap gap-3">{error&&<button className="k-btn-primary" onClick={()=>setRetry(v=>v+1)}>Retry</button>}<button className="k-btn-ghost" onClick={()=>void signOut()}>Sign out</button></div></section></AdminWelcome>;
   return <><div className="fixed bottom-4 right-4 z-50" aria-label="Clerk account"><UserButton /></div><App clerkAdmin={admin} onClerkSignOut={() => void signOut()} onClerkDenied={() => {setAdmin(undefined);setError('Your administrator session could not be authorized. Sign in again or contact Grozo support.');}} /></>;
 }
 export function ClerkAdminRoot() {

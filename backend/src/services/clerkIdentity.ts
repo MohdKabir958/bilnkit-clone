@@ -3,19 +3,22 @@ import { Request } from 'express';
 import { Role, Prisma } from '@prisma/client';
 import { prisma } from '../db';
 import { AppError } from '../utils/appError';
+import { synchronizeAdminAccess, VerifiedProviderIdentity, lockAdminDirectory } from './adminAccess';
 import { clerkAdmins, clerkParties, nativeClerkRequest, usesClerk } from '../config/authMode';
 
-export interface ProviderUser { id: string; banned: boolean; firstName?: string | null; lastName?: string | null; }
+export interface ProviderUser extends VerifiedProviderIdentity { banned: boolean; }
 export interface ProviderSession { id: string; userId: string; status: string; }
 export interface ClerkTransport {
   user(id: string): Promise<ProviderUser>;
   session(id: string): Promise<ProviderSession>;
   revoke(id: string): Promise<unknown>;
   deleteUser(id: string): Promise<unknown>;
+  usersByEmail?(email: string): Promise<ProviderUser[]>;
 }
 const live: ClerkTransport = {
   user: id => clerkClient.users.getUser(id), session: id => clerkClient.sessions.getSession(id),
   revoke: id => clerkClient.sessions.revokeSession(id), deleteUser: id => clerkClient.users.deleteUser(id),
+  usersByEmail: async email => (await clerkClient.users.getUserList({emailAddress:[email],limit:10})).data,
 };
 let transport: ClerkTransport = live;
 /** Only provider HTTP calls may be faked. JWT verification always uses the official SDK. */
@@ -25,6 +28,15 @@ export function setClerkTestTransport(value: ClerkTransport | null) {
 }
 export const deniedSession = () => new AppError(401, 'INVALID_SESSION', 'Invalid or expired authentication session.');
 const unavailable = () => new AppError(503, 'AUTH_UNAVAILABLE', 'Authentication service is temporarily unavailable. Please retry.');
+
+export async function verifiedPartnerIdentity(email: string) {
+  if (!transport.usersByEmail) throw unavailable();
+  let rows: ProviderUser[];
+  try { rows = await transport.usersByEmail(email); } catch { throw unavailable(); }
+  const verified = rows.filter(user => !user.banned && user.emailAddresses?.some(address => address.emailAddress.toLowerCase() === email && address.verification?.status === 'verified'));
+  if (verified.length !== 1) throw new AppError(409,'PARTNER_ACCOUNT_REQUIRED','Ask this partner to create a Clerk account and verify this email first, or leave the owner blank to set up the store.','ownerEmail');
+  return verified[0];
+}
 
 export async function verifiedClerkClaims(token: string, origin?: string) {
   let claims;
@@ -55,14 +67,15 @@ export async function resolveClerkSession(token: string, origin?: string) {
   if (identity.banned) throw new AppError(403, 'ACCOUNT_SUSPENDED', 'This account is suspended. Contact Grozo support.');
   const user = await provisionClerkUser(claims.sub, identity);
   if (user.deletedAt) throw deniedSession();
-  if (user.role === 'ADMIN' && !clerkAdmins().includes(claims.sub)) throw new AppError(403, 'ADMIN_NOT_PROVISIONED', 'Administrator access has not been provisioned.');
+  const access = await synchronizeAdminAccess(user,identity);
+  if (user.role === 'ADMIN' && !access) throw new AppError(403, 'ADMIN_NOT_PROVISIONED', 'Administrator access has not been provisioned.');
   // Database approval is authoritative, independently of token metadata/provider login.
   if (user.role === 'VENDOR') {
     const rows = await prisma.vendor.findMany({where:{userId:user.id},select:{approvalStatus:true}});
     if (rows.some(v => v.approvalStatus === 'SUSPENDED') && !rows.some(v => v.approvalStatus === 'APPROVED')) throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Store access is suspended.');
   }
   if (user.role === 'DRIVER' && (await prisma.driverPartner.findUnique({where:{userId:user.id}}))?.approvalStatus === 'SUSPENDED') throw new AppError(403, 'ACCOUNT_SUSPENDED', 'Delivery partner access is suspended.');
-  return {id:user.id, phone:user.phone, role:user.role, exp:claims.exp, sid:claims.sid as string, clerkUserId:claims.sub};
+  return {id:user.id, phone:user.phone, role:access ? 'ADMIN' as const : user.role, adminRole:access?.role, exp:claims.exp, sid:claims.sid as string, clerkUserId:claims.sub};
 }
 
 /** Serializes first request, webhook, linking and deletion for this subject across instances. */
@@ -114,6 +127,7 @@ export async function provisionClerkAdmin(subject: string, operator: string) {
   const identity = await transport.user(subject);
   if (identity.id !== subject || identity.banned) throw deniedSession();
   return prisma.$transaction(async tx => {
+    await lockAdminDirectory(tx);
     await lockClerkSubject(tx,subject);
     const state = await tx.clerkIdentityState.findUnique({where:{clerkUserId:subject}});
     if (state?.deleted || state?.deleteRequested || state?.suspended) throw deniedSession();
@@ -121,7 +135,8 @@ export async function provisionClerkAdmin(subject: string, operator: string) {
     if (existing?.deletedAt) throw deniedSession();
     if (existing && !['STUDENT','ADMIN'].includes(existing.role)) throw new AppError(409,'ROLE_CONFLICT','Do not repurpose a partner identity as an administrator.');
     const user = existing ? await tx.user.update({where:{id:existing.id},data:{role:'ADMIN'}}) : await tx.user.create({data:{clerkUserId:subject,name:'Grozo administrator',role:'ADMIN'}});
-    if (existing?.role !== 'ADMIN') await tx.adminAuditLog.create({data:{action:'CLERK_ADMIN_PROVISIONED',targetType:'USER',targetId:user.id,summary:`Operator ${operator.slice(0,160)} explicitly provisioned an allowlisted administrator.`}});
+    await tx.adminAccess.upsert({where:{clerkUserId:subject},create:{userId:user.id,clerkUserId:subject,displayName:user.name,role:'OWNER',status:'ACTIVE',acceptedAt:new Date()},update:{userId:user.id,role:'OWNER',status:'ACTIVE',revokedAt:null,acceptedAt:new Date()}});
+    await tx.adminAuditLog.create({data:{action:'CLERK_ADMIN_PROVISIONED',targetType:'USER',targetId:user.id,summary:`Operator ${operator.slice(0,160)} explicitly provisioned an allowlisted administrator.`}});
     return {id:user.id,role:user.role,alreadyProvisioned:existing?.role==='ADMIN'};
   });
 }

@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiService } from '../services/api';
 import { Drawer } from './ui/Drawer';
+import {CreateProductDrawer} from './CreateProductDrawer';
 import { ProductImage } from './ui/ProductImage';
 
 type Product = Record<string, any> & { id: string; name: string; vendorId: string; stockQty: number; stockVersion: number; pricePaise: number };
 const currency = (paise: number) => `₹${(paise / 100).toFixed(2)}`;
 const cls = 'k-input';
 const minor = (value: string) => { if (!/^\d+(\.\d{1,2})?$/.test(value.trim())) throw new Error('Enter a rupee amount with up to two decimals.'); const [whole, fraction = ''] = value.trim().split('.'); return Number(whole) * 100 + Number(fraction.padEnd(2,'0')); };
-export function InventoryPanel({ vendors, onAuthError }: { vendors: {id: string; name: string}[]; onAuthError: (e: unknown) => void }) {
+export function InventoryPanel({ vendors, onAuthError,selectedCityId }: { selectedCityId?:string; vendors: {id: string; name: string}[]; onAuthError: (e: unknown) => void }) {
   const [rows, setRows] = useState<Product[]>([]), [cities, setCities] = useState<{id:string;name:string}[]>([]);
+  const [creating,setCreating]=useState(false);
   const [appliedQ,setAppliedQ] = useState('');
-  const [q, setQ] = useState(''), [vendorId, setVendorId] = useState(''), [cityId, setCityId] = useState(''), [lowStock, setLowStock] = useState(false);
+  const [q, setQ] = useState(''), [vendorId, setVendorId] = useState(''), [cityId, setCityId] = useState(selectedCityId??''), [lowStock, setLowStock] = useState(false);
+  useEffect(()=>{if(selectedCityId!==undefined){setCityId(selectedCityId);setVendorId('');}},[selectedCityId]);
   const [cursor, setCursor] = useState<string|null>(null), [error,setError] = useState(''), [busy,setBusy] = useState(false), [notice,setNotice] = useState('');
   const [editing,setEditing] = useState<Product|null>(null), [adjusting,setAdjusting] = useState<Product|null>(null), [history,setHistory] = useState<any[]|null>(null);
   const [delta,setDelta] = useState(''), [reason,setReason] = useState('');
@@ -28,15 +31,15 @@ export function InventoryPanel({ vendors, onAuthError }: { vendors: {id: string;
   useEffect(() => { void reload(); }, [vendorId,cityId,lowStock,appliedQ]);
   const run = async (fn: () => Promise<unknown>) => {setBusy(true);setError('');setNotice('');try {await fn();setNotice('Saved.');await reload();}catch(e){onAuthError(e);setError(e instanceof Error ? e.message : 'Unable to save.');}finally{setBusy(false);}};
   return <section className="k-panel space-y-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-bold">Grocery products and inventory</h2><p className="mt-2 text-sm text-kraveo-ink2">Available stock excludes checkout reservations. Product packs and variants are separate SKUs within a store.</p></div></div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-bold">Grocery products and inventory</h2><p className="mt-2 text-sm text-kraveo-ink2">Available stock excludes checkout reservations. Product packs and variants are separate SKUs within a store.</p></div><button className="k-btn-primary" onClick={()=>setCreating(true)} disabled={!vendors.length}>Add product</button></div>
     <form className="flex flex-wrap items-center gap-3 rounded-k-md bg-kraveo-surface2 p-4 [&>input]:max-w-xs [&>select]:w-auto" onSubmit={(e) => {e.preventDefault();if(q===appliedQ) void reload();else setAppliedQ(q);}}>
       <input className={cls} aria-label="Search products or SKU" placeholder="Search products or SKU" value={q} onChange={(e) => setQ(e.target.value)} />
-      <select className={cls} aria-label="Inventory city" value={cityId} onChange={(e) => setCityId(e.target.value)}><option value="">All cities</option>{cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+      {selectedCityId===undefined&&<select className={cls} aria-label="Inventory city" value={cityId} onChange={(e) => setCityId(e.target.value)}><option value="">All cities</option>{cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>}
       <select className={cls} aria-label="Inventory store" value={vendorId} onChange={(e) => setVendorId(e.target.value)}><option value="">All stores</option>{vendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}</select>
       <label className="flex min-h-[44px] items-center gap-2 text-sm"><input type="checkbox" checked={lowStock} onChange={(e) => setLowStock(e.target.checked)} /> Low stock only</label><button className="k-btn-primary" type="submit" disabled={busy}>Search / refresh</button>
     </form>
     {error && <p role="alert" className="text-red-500">{error}</p>}{notice && <p role="status">{notice}</p>}{busy && <p role="status">Loading…</p>}
-    {!busy && rows.length === 0 && <p>No matching products. Stores can add products and variants in their Products and inventory screen.</p>}
+    {!busy && rows.length === 0 && <p>No matching products. Choose Add product to create a grocery item, then Adjust stock to record the available packs.</p>}
     <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-2">{rows.map((p) => <article key={p.id} className="min-w-0 rounded-k-xl border border-kraveo-line bg-kraveo-surface p-4 space-y-3 [overflow-wrap:anywhere]">
       <div className="flex items-start gap-4"><ProductImage url={p.imageUrls?.[0] ?? ''} name={p.name}/><div className="min-w-0 flex-1"><h3 className="font-bold">{p.name} · {p.packSize} {p.unit}</h3><p className="mt-1 text-xs text-kraveo-ink2">{p.vendor?.name} · SKU {p.sku ?? 'needs setup'}</p><span className="mt-2 inline-flex rounded-md bg-kraveo-surface2 px-2 py-1 text-xs font-semibold">{String(p.approvalStatus).replace(/_/g,' ')}</span></div></div>
       <p>{currency(p.pricePaise)}{p.mrpPaise > p.pricePaise && <> · MRP {currency(p.mrpPaise)}</>} · Available {p.stockQty}{p.lowStock && <strong> · Low stock</strong>}</p>
@@ -50,6 +53,7 @@ export function InventoryPanel({ vendors, onAuthError }: { vendors: {id: string;
     </form></Drawer>}
     {history && <Drawer open title="Recent stock movements" onClose={() => setHistory(null)}><h2>Recent stock movements</h2><p>Showing the latest available page of up to 100 records.</p><ul>{history.map((h) => <li key={h.id}>{h.createdAt} · {h.kind} {h.delta} · {h.reason}</li>)}</ul><button onClick={() => setHistory(null)}>Close history</button></Drawer>}
     {editing && <Drawer open title="Edit grocery product" onClose={() => {if(!busy)setEditing(null);}}>{error && <p role="alert" className="mb-4 text-sm text-kraveo-danger">{error}</p>}<ProductEdit key={editing.id} row={editing} busy={busy} onCancel={() => setEditing(null)} onSave={(body) => run(async () => {await apiService.saveGroceryProduct(editing.id,body);setEditing(null);})} /></Drawer>}
+    <CreateProductDrawer open={creating} vendors={vendors} initialVendorId={vendorId} onClose={()=>setCreating(false)} onCreated={()=>void reload()} onAuthError={onAuthError}/>
   </section>;
 }
 function ProductEdit({row,busy,onSave,onCancel}:{row:Product;busy:boolean;onSave:(v:Record<string,unknown>)=>Promise<void>;onCancel:()=>void}) {

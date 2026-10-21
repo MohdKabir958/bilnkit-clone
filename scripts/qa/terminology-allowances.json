@@ -638,5 +638,20 @@
     "file": "backend/src/services/clerkIdentity.ts",
     "value": "STUDENT",
     "reason": "Internal persisted customer role enum retained for database/API compatibility; never rendered as customer-facing copy."
+  },
+  {
+    "file": "backend/src/routes/adminStores.ts",
+    "value": "STUDENT",
+    "reason": "Existing Prisma customer role enum used for verified partner provisioning; not display copy."
+  },
+  {
+    "file": "backend/src/services/adminAccess.ts",
+    "value": "STUDENT",
+    "reason": "Existing Prisma customer role enum retained when accepting or revoking trusted admin grants; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CreateProductDrawer.tsx",
+    "value": "dish",
+    "reason": "Existing upload purpose API identifier for product photos; not user-facing terminology."
   }
 ]

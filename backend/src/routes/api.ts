@@ -1,4 +1,6 @@
 import { grozoClerkMiddleware } from '../middleware/clerk';
+import { adminTeamRouter } from './adminTeam';
+import { adminStoresRouter } from './adminStores';
 import { clerkWebhookRouter } from './clerk';
 import { legacyAuthOnly, usesClerk } from '../config/authMode';
 import { revokeClerkSession, requestClerkDeletion } from '../services/clerkIdentity';
@@ -45,6 +47,8 @@ export const apiRouter = Router();
 apiRouter.use(clerkWebhookRouter);
 apiRouter.use(grozoClerkMiddleware);
 apiRouter.use(rateLimitMiddleware);
+apiRouter.use(adminTeamRouter);
+apiRouter.use(adminStoresRouter);
 apiRouter.use(geographyRouter);
 apiRouter.use(productsRouter);
 apiRouter.use(operationsRouter);
@@ -373,7 +377,7 @@ apiRouter.get('/auth/profile', requireAuth, async (req: AuthenticatedRequest, re
     if (!req.user?.id) return res.status(401).json({ success: false, message: 'Unauthorized' });
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user) return res.status(404).json({ success: false, message: 'User profile not found.' });
-    return res.json({ success: true, user: publicUser(user), needsProfile: needsProfile(user) });
+    return res.json({ success: true, user: {...publicUser(user),...(req.user.role === 'ADMIN' ? {adminRole:req.user.adminRole ?? 'ADMIN'} : {})}, needsProfile: needsProfile(user) });
   } catch (err: any) {
     return fail(res, err, 'Error fetching profile');
   }

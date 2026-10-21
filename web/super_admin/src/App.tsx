@@ -1,3 +1,5 @@
+import { TeamAccessPanel } from './components/TeamAccessPanel';
+import type { DeliveryCity } from './components/GeographyPanel';
 import { OperationsPanel } from './components/OperationsPanel';
 import { InventoryPanel } from './components/InventoryPanel';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -54,8 +56,13 @@ const plainReassignError = (error: unknown): unknown => (error instanceof ApiErr
 export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => void; onClerkDenied?: () => void}> = ({clerkAdmin,onClerkSignOut,onClerkDenied}) => {
   const [isAuth, setIsAuth] = useState(Boolean(clerkAdmin));
   const [authChecking, setAuthChecking] = useState(!clerkAdmin);
-  const [adminProfile, setAdminProfile] = useState<AdminProfile | undefined>();
+  const [adminProfile, setAdminProfile] = useState<AdminProfile | undefined>(clerkAdmin);
   const [activeTab, setActiveTab] = useState<TabType>('operations');
+  const [selectedCity,setSelectedCity]=useState('');
+  const [cities,setCities]=useState<DeliveryCity[]>([]);
+  const [cityError,setCityError]=useState('');
+  const [createVendorRequest,setCreateVendorRequest]=useState(0);
+  const cityScope=useRef('');cityScope.current=selectedCity;
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -116,7 +123,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
   }, []);
 
   const refreshPendingCount = useCallback(async () => {
-    if (!getAuthToken()) return;
+    if (!clerkAuthEnabled && !getAuthToken()) return;
     try {
       const result = await apiService.fetchApplications('PENDING');
       setPendingApplications(result.counts.PENDING);
@@ -125,7 +132,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
 
   // Dishes waiting for approval (sidebar badge). Quiet on failure: the Catalog tab shows real errors.
   const refreshPendingDishes = useCallback(async () => {
-    if (!getAuthToken()) return;
+    if (!clerkAuthEnabled && !getAuthToken()) return;
     try {
       const counts = await apiService.fetchCatalogPendingCounts();
       // Same numbers = same object, so the Catalog tab does not re-render on every poll.
@@ -135,7 +142,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
 
   // Settlements waiting to be paid (sidebar badge). Quiet on failure: the Finance tab shows real errors.
   const refreshPendingSettlements = useCallback(async () => {
-    if (!getAuthToken()) return;
+    if (!clerkAuthEnabled && !getAuthToken()) return;
     try {
       const count = await apiService.fetchPendingSettlementCount();
       setPendingSettlements((current) => (current === count ? current : count));
@@ -143,7 +150,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
   }, []);
 
   const loadAttention = useCallback(async () => {
-    if (!getAuthToken()) return;
+    if (!clerkAuthEnabled && !getAuthToken()) return;
     setAttention((current) => ({ ...current, loading: true }));
     try {
       const result = await apiService.fetchNeedsAttention();
@@ -162,9 +169,11 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
 
   /** Background poll: no spinner, no error banner (the live socket or the next poll catches up). */
   const silentRefresh = useCallback(async () => {
-    if (!getAuthToken()) return;
+    if (!clerkAuthEnabled && !getAuthToken()) return;
     try {
-      const page = await apiService.fetchOrderPage();
+      const requestCity=selectedCity;
+      const page = await (selectedCity?apiService.fetchOrderPage(undefined,undefined,selectedCity):apiService.fetchOrderPage());
+      if(requestCity!==cityScope.current)return;
       setOrders((current) => mergeOrderLists(current, page.orders, { keepOlder: olderLoadedRef.current }));
       if (!olderLoadedRef.current) setHasMoreOrders(page.nextCursor !== null);
     } catch (error) {
@@ -183,18 +192,20 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
     refreshPendingDishes();
     refreshPendingSettlements();
     loadAttention();
-  }, [handleSessionError, loadAttention, refreshPendingDishes, refreshPendingSettlements]);
+  }, [handleSessionError, loadAttention, refreshPendingDishes, refreshPendingSettlements,selectedCity]);
 
   const fetchBackendData = useCallback(async () => {
-    if (!getAuthToken()) return;
+    if (!clerkAuthEnabled && !getAuthToken()) return;
     setIsLoading(true);
     setErrorMessage('');
+    const requestCity=selectedCity;
     const results = await Promise.allSettled([
-      apiService.fetchOrderPage(),
+      selectedCity?apiService.fetchOrderPage(undefined,undefined,selectedCity):apiService.fetchOrderPage(),
       apiService.fetchVendors(),
       apiService.fetchDrivers(),
       apiService.fetchDriverLocations(),
     ]);
+    if(requestCity!==cityScope.current)return;
     const [ordersResult, vendorsResult, driversResult, locationsResult] = results;
     if (ordersResult.status === 'fulfilled') {
       setOrders((current) => mergeOrderLists(current, ordersResult.value.orders, { keepOlder: olderLoadedRef.current }));
@@ -210,7 +221,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
     refreshPendingDishes();
     refreshPendingSettlements();
     loadAttention();
-  }, [handleAuthFailure, refreshPendingCount, refreshPendingDishes, refreshPendingSettlements, loadAttention]);
+  }, [handleAuthFailure, refreshPendingCount, refreshPendingDishes, refreshPendingSettlements, loadAttention,selectedCity]);
 
   // Check the stored session. Only a rejected token (401/403) ends it; if the server or network is down the token is
   // kept and the check retries with a growing delay, so a blip never throws away a valid 30-day session.
@@ -549,8 +560,10 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
     const cursor = oldestOrderId(ordersRef.current);
     if (!cursor || loadingOlder) return;
     setLoadingOlder(true);
+    const requestCity=selectedCity;
     try {
-      const page = await apiService.fetchOrderPage(cursor, OLDER_PAGE_SIZE);
+      const page = await (selectedCity?apiService.fetchOrderPage(cursor, OLDER_PAGE_SIZE,selectedCity):apiService.fetchOrderPage(cursor, OLDER_PAGE_SIZE));
+      if(requestCity!==cityScope.current)return;
       olderLoadedRef.current = true;
       setOrders((current) => appendOlderPage(current, page.orders));
       setHasMoreOrders(page.nextCursor !== null);
@@ -599,9 +612,17 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
   };
 
   const handleSelectTab = useCallback((tab: TabType) => {
+    setCreateVendorRequest(0);
     setActiveTab(tab);
     setSearchQuery('');
   }, []);
+  const reloadCities=useCallback(async()=>{try{const geo=await apiService.fetchGeography();setCities(geo.cities);setCityError('');}catch{setCityError('Cities could not be loaded.');}},[]);
+  useEffect(()=>{if(isAuth)void reloadCities();},[isAuth,reloadCities]);
+  const changeCity=(value:string)=>{olderLoadedRef.current=false;setHasMoreOrders(false);setOrders([]);setSelectedCity(value);};
+  const workspaceVendors=useMemo(()=>selectedCity?vendors.filter(v=>v.cityId===selectedCity):vendors,[vendors,selectedCity]);
+  const workspaceOrders=useMemo(()=>selectedCity?orders.filter(o=>o.cityId===selectedCity||workspaceVendors.some(v=>v.id===o.vendorId)):orders,[orders,workspaceVendors,selectedCity]);
+  const workspaceDrivers=useMemo(()=>selectedCity?driverPartners.filter(d=>d.cityId===selectedCity):driverPartners,[driverPartners,selectedCity]);
+  const navigateTask=(tab:TabType,create=false)=>{handleSelectTab(tab);if(create)setCreateVendorRequest(n=>n+1);};
   const clearQuery = useCallback(() => setSearchQuery(''), []);
   const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
 
@@ -670,9 +691,13 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
           </div>
         )}
         <main id="main" tabIndex={-1} className="min-w-0 flex-1 p-4 pb-10 outline-none sm:p-6 sm:pb-12">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-k-md border border-kraveo-line bg-kraveo-surface px-4 py-3">
+            <div className="flex min-w-0 flex-wrap items-center gap-3"><label className="text-xs font-semibold text-kraveo-ink2" htmlFor="workspace-city">Workspace city</label><select id="workspace-city" className="k-input !min-h-[38px] !w-auto max-w-full !py-1 text-sm" value={selectedCity} onChange={e=>changeCity(e.target.value)}><option value="">All cities</option>{cities.map(c=><option key={c.id} value={c.id}>{c.name}, {c.state}{c.active?'':' · paused'}</option>)}</select>{cityError&&<button className="text-xs underline" onClick={()=>void reloadCities()}>Retry cities</button>}</div>
+            <p className="text-xs text-kraveo-ink3">{['finance','settings','team','customers','applications','catalog','categories','analytics'].includes(activeTab)?'This page applies across the platform':selectedCity?'Orders and vendors shown for the selected city':'Showing your complete network'}</p>
+          </div>
           <div key={activeTab} className="animate-fade-up">
-            {activeTab === 'map' && <LiveCommandCenter drivers={drivers} orders={orders} driverPartners={driverPartners} vendors={vendors} onReassignDriver={handleReassignDriver} onOpenOrder={openOrder} loading={isLoading} query={searchQuery} />}
-            {activeTab === 'orders' && <OrdersTable orders={orders} attentionIds={attentionIds} onAdvance={handleStatusChange} onOpenOrder={openOrder} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} now={now} hasMore={hasMoreOrders} loadingOlder={loadingOlder} onLoadOlder={handleLoadOlder} />}
+            {activeTab === 'map' && <LiveCommandCenter drivers={selectedCity?drivers.filter(d=>workspaceDrivers.some(r=>r.id===d.id)):drivers} orders={workspaceOrders} driverPartners={workspaceDrivers} vendors={workspaceVendors} onReassignDriver={handleReassignDriver} onOpenOrder={openOrder} loading={isLoading} query={searchQuery} />}
+            {activeTab === 'orders' && <OrdersTable orders={workspaceOrders} attentionIds={attentionIds} onAdvance={handleStatusChange} onOpenOrder={openOrder} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} now={now} hasMore={hasMoreOrders} loadingOlder={loadingOlder} onLoadOlder={handleLoadOlder} />}
             {activeTab === 'attention' && (
               <NeedsAttentionPanel
                 entries={attentionEntries}
@@ -691,16 +716,17 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
               />
             )}
             {activeTab === 'applications' && <ApplicationsPanel refreshKey={applicationsKey} query={searchQuery} onChanged={fetchBackendData} onAuthError={handleSessionError} onLocationSaved={handleVendorLocationSaved} />}
-            {activeTab === 'vendors' && <VendorManager vendors={vendors} orders={orders} busyVendorIds={busyVendorIds} onToggleVendor={handleToggleVendor} onLocationSaved={handleVendorLocationSaved} onCommissionSaved={handleVendorCommissionSaved} onProfileSaved={handleVendorProfileSaved} onAuthError={handleSessionError} onCreated={fetchBackendData} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} />}
-            {activeTab === 'drivers' && <DriverManager drivers={driverPartners} orders={orders} now={now} onCreated={fetchBackendData} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} />}
+            {activeTab === 'vendors' && <VendorManager vendors={workspaceVendors} selectedCityId={selectedCity} createRequested={createVendorRequest} onOpenCoverage={()=>handleSelectTab('coverage')} orders={orders} busyVendorIds={busyVendorIds} onToggleVendor={handleToggleVendor} onLocationSaved={handleVendorLocationSaved} onCommissionSaved={handleVendorCommissionSaved} onProfileSaved={handleVendorProfileSaved} onAuthError={handleSessionError} onCreated={fetchBackendData} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} />}
+            {activeTab === 'drivers' && <DriverManager drivers={workspaceDrivers} orders={orders} now={now} onCreated={fetchBackendData} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} />}
             {activeTab === 'customers' && <CustomersPanel query={searchQuery} onClearQuery={clearQuery} onAuthError={handleSessionError} />}
             {activeTab === 'categories' && <CategoriesPanel query={searchQuery} onClearQuery={clearQuery} onAuthError={handleSessionError} onChanged={fetchBackendData} />}
             {activeTab === 'catalog' && <CatalogPanel vendors={vendors} query={searchQuery} onClearQuery={clearQuery} onAuthError={handleSessionError} pendingCounts={pendingDishes} onPendingChanged={refreshPendingDishes} />}
             {activeTab === 'finance' && <FinancePanel vendors={vendors} driverPartners={driverPartners} pendingSettlements={pendingSettlements} onSettlementsChanged={refreshPendingSettlements} onAuthError={handleSessionError} />}
             {activeTab === 'settings' && <SettingsPanel onAuthError={handleSessionError} />}
-            {activeTab === 'operations' && <OperationsPanel onAuthError={handleSessionError} onOpenOrder={openOrder} />}
-            {activeTab === 'inventory' && <InventoryPanel vendors={vendors} onAuthError={handleSessionError} />}
-            {activeTab === 'coverage' && <GeographyPanel drivers={driverPartners} vendors={vendors} onChanged={fetchBackendData} onSessionError={handleSessionError} />}
+            {activeTab === 'operations' && <OperationsPanel cityId={selectedCity} onCityChange={changeCity} onNavigate={navigateTask} vendorCount={workspaceVendors.length} cityCount={cities.length} onAuthError={handleSessionError} onOpenOrder={openOrder} />}
+            {activeTab === 'inventory' && <InventoryPanel vendors={workspaceVendors} selectedCityId={selectedCity} onAuthError={handleSessionError} />}
+            {activeTab === 'coverage' && <GeographyPanel selectedCityId={selectedCity} drivers={driverPartners} vendors={vendors} onChanged={fetchBackendData} onSessionError={handleSessionError} />}
+            {activeTab === 'team' && <TeamAccessPanel owner={adminProfile?.adminRole==='OWNER'} onSessionError={handleSessionError} onSelfChanged={()=>{void apiService.validateSession().then(setAdminProfile).catch(handleAuthFailure);}} />}
             {activeTab === 'analytics' && <AnalyticsPanel />}
           </div>
         </main>

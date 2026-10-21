@@ -25,6 +25,13 @@ beforeEach(async () => {
 afterEach(async () => { await act(async () => root.unmount()); host.remove(); vi.restoreAllMocks(); });
 
 describe('operations delivery coverage', () => {
+  it('shows one setup step at a time and moves through the workflow',async()=>{
+    expect([...host.querySelectorAll('form')].filter(f=>!f.hidden)).toHaveLength(1);
+    expect(host.querySelector('form:not([hidden])')?.textContent).toContain('City name');
+    await act(async()=>button('Next: Delivery zones').click());
+    expect([...host.querySelectorAll('form')].filter(f=>!f.hidden)).toHaveLength(1);
+    expect(host.querySelector('form:not([hidden])')?.textContent).toContain('Zone name');
+  });
   it('loads configured cities and zone prices instead of demo coverage', () => {
     expect(apiService.fetchGeography).toHaveBeenCalled();
     expect(host.textContent).toContain('Bengaluru, Karnataka');
@@ -39,6 +46,7 @@ describe('operations delivery coverage', () => {
     expect(host.querySelector('[role=status]')?.textContent).toBe('Saved.');
   });
   it('sends delivery fees in paise with exact two-decimal input', async () => {
+    await act(async()=>button('2. Delivery zones').click());
     const create = vi.spyOn(apiService, 'createDeliveryZone').mockResolvedValue({});
     await type('Zone city', 'blr'); await type('Zone name', 'East'); await type('Centre latitude', '12.97'); await type('Centre longitude', '77.59');
     await type('Base delivery fee (₹)', '25.75'); await type('Additional fee per km (₹)', '0.10');
@@ -46,6 +54,7 @@ describe('operations delivery coverage', () => {
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ cityId: 'blr', baseFeePaise: 2575, perKmFeePaise: 10, active: true }));
   });
   it('refuses fractional paise instead of silently rounding a delivery charge', async () => {
+    await act(async()=>button('2. Delivery zones').click());
     const create = vi.spyOn(apiService, 'createDeliveryZone').mockResolvedValue({});
     await type('Zone city', 'blr'); await type('Zone name', 'East'); await type('Centre latitude', '12.97'); await type('Centre longitude', '77.59');
     await type('Base delivery fee (₹)', '25.755');
@@ -54,6 +63,7 @@ describe('operations delivery coverage', () => {
     expect(host.querySelector('[role=alert]')?.textContent).toContain('two decimal places');
   });
   it('assigns coverage only through the selected store and zone API', async () => {
+    await act(async()=>button('4. Store coverage').click());
     const save = vi.spyOn(apiService, 'setStoreCoverage').mockResolvedValue({});
     await type('Coverage store', 'vendor-a'); await type('Delivery zone', 'central'); await type('Store delivery radius (km, optional)', '2.5');
     await submit('Enable store coverage');
@@ -67,6 +77,7 @@ describe('operations delivery coverage', () => {
     expect(host.querySelector('[role=status]')).toBeNull();
   });
   it('edits the persisted zone radius and fees without creating another zone', async () => {
+    await act(async()=>button('2. Delivery zones').click());
     const save = vi.spyOn(apiService, 'updateDeliveryZone').mockResolvedValue({});
     const create = vi.spyOn(apiService, 'createDeliveryZone');
     await act(async () => button('Edit Central').click());

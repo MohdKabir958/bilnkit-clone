@@ -16,6 +16,7 @@ export interface AuthenticatedRequest extends Request {
     role: UserRole;
     sid?: string;
     clerkUserId?: string;
+    adminRole?: 'OWNER' | 'ADMIN';
   };
 }
 

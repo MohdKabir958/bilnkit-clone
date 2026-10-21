@@ -1,0 +1,41 @@
+import {useEffect,useState} from 'react';
+import {Mail,Plus,ShieldCheck,UserRoundCheck,Users} from 'lucide-react';
+import {apiService,ApiError} from '../services/api';
+import {Drawer} from './ui/Drawer';
+import {useConfirm} from './ui/ConfirmDialog';
+export type TeamMember = {id:string;email:string|null;displayName:string|null;role:'OWNER'|'ADMIN';status:'INVITED'|'ACTIVE'|'REVOKED';createdAt:string;acceptedAt:string|null;isCurrentUser:boolean};
+
+export function TeamAccessPanel({owner,onSessionError,onSelfChanged}:{owner:boolean;onSessionError:(e:unknown)=>void;onSelfChanged:()=>void}) {
+  const [rows,setRows]=useState<TeamMember[]>([]),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState('');
+  const [open,setOpen]=useState(false),[email,setEmail]=useState(''),[role,setRole]=useState<'OWNER'|'ADMIN'>('ADMIN');
+  const {confirm,dialog}=useConfirm();
+  const load=async()=>{const members=await apiService.fetchAdminTeam();setRows(members);};
+  const fail=(e:unknown)=>{setError(e instanceof Error?e.message:'Team could not be updated.');if(e instanceof ApiError&&e.status===401)onSessionError(e);};
+  useEffect(()=>{if(!owner){setLoading(false);return;}let live=true;apiService.fetchAdminTeam().then(data=>{if(live)setRows(data);}).catch(e=>{if(live)fail(e);}).finally(()=>{if(live)setLoading(false);});return()=>{live=false;};},[owner]);
+  const run=async(fn:()=>Promise<unknown>,message:string)=>{setBusy(true);setError('');setNotice('');try{await fn();await load();setNotice(message);}catch(e){fail(e);}finally{setBusy(false);}};
+  const revoke=async(member:TeamMember)=>{
+    if(!await confirm({title:'Remove administrator access?',message:`${member.email||member.displayName||'This member'} will lose access to the admin portal. Their customer records and orders are preserved.`,confirmLabel:'Remove access',danger:true}))return;
+    await run(()=>apiService.revokeAdmin(member.id),'Administrator access removed.');if(member.isCurrentUser)onSelfChanged();
+  };
+  if(!owner)return <section className="k-panel max-w-2xl"><ShieldCheck className="mb-4 h-8 w-8 text-kraveo-g700"/><h2 className="text-xl font-bold">Team access is managed by owners</h2><p className="mt-2 text-sm text-kraveo-ink2">Your Administrator role includes marketplace operations. Ask an owner to add team members or change roles.</p></section>;
+  const active=rows.filter(r=>r.status==='ACTIVE').length,pending=rows.filter(r=>r.status==='INVITED').length;
+  return <section className="space-y-6">
+    <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="k-label">Administration</p><h2 className="mt-2 text-3xl font-bold">Team & access</h2><p className="mt-2 max-w-2xl text-sm text-kraveo-ink2">Add a trusted person's email and choose their role. They sign in with Clerk; no user IDs or database edits are needed.</p></div><button className="k-btn-primary" onClick={()=>{setEmail('');setRole('ADMIN');setError('');setOpen(true);}}><Plus className="h-4 w-4"/>Add administrator</button></div>
+    <div className="grid gap-4 sm:grid-cols-3">{[[Users,'Active members',active],[Mail,'Awaiting first sign-in',pending],[ShieldCheck,'Owners',rows.filter(r=>r.role==='OWNER'&&r.status==='ACTIVE').length]].map(([Icon,label,value]:any)=><div key={label} className="k-panel flex items-center gap-4"><Icon className="h-6 w-6 text-kraveo-g700"/><div><p className="text-xs text-kraveo-ink2">{label}</p><p className="k-num mt-1 text-2xl">{value}</p></div></div>)}</div>
+    {error&&<p className="k-panel border-kraveo-danger text-sm" role="alert">{error} <button className="underline" onClick={()=>void run(load,'Team refreshed.')}>Retry</button></p>}{notice&&<p role="status" className="rounded-k-md bg-kraveo-g50 p-4 text-sm text-kraveo-g800">{notice}</p>}
+    <div className="k-panel overflow-x-auto"><div className="mb-4 flex items-center justify-between"><h3 className="font-bold">People with admin access</h3><button className="k-btn-ghost" disabled={busy||loading} onClick={()=>void run(load,'Team refreshed.')}>Refresh team</button></div>
+      {loading?<p role="status">Loading team…</p>:<table className="w-full min-w-[620px] text-left text-sm"><thead><tr className="border-b border-kraveo-line text-xs text-kraveo-ink2"><th className="py-3 pr-4">Person</th><th>Role</th><th>Status</th><th className="text-right">Access</th></tr></thead><tbody>{rows.map(member=><tr key={member.id} className="border-b border-kraveo-line last:border-0"><td className="py-4 pr-4"><p className="font-semibold">{member.displayName||member.email||'Bootstrap owner'}{member.isCurrentUser&&<span className="ml-2 text-xs font-normal text-kraveo-ink3">You</span>}</p>{member.displayName&&<p className="mt-1 text-xs text-kraveo-ink2">{member.email||'Verified bootstrap identity'}</p>}</td><td className="py-3 pr-4">{member.status==='REVOKED'?(member.role==='OWNER'?'Owner':'Administrator'):<select aria-label={`Role for ${member.email||member.displayName}`} className="k-input !min-h-[38px] !py-1 text-sm" disabled={busy} value={member.role} onChange={async e=>{const next=e.target.value as 'OWNER'|'ADMIN';if(next==='OWNER'&&!await confirm({title:'Grant owner access?',message:'Owners can add and remove administrators and manage the entire marketplace.',confirmLabel:'Make owner'}))return;await run(()=>apiService.changeAdminRole(member.id,next),'Role updated.');if(member.isCurrentUser)onSelfChanged();}}><option value="ADMIN">Administrator</option><option value="OWNER">Owner</option></select>}</td><td><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${member.status==='ACTIVE'?'bg-kraveo-g50 text-kraveo-g800':'bg-kraveo-surface2 text-kraveo-ink2'}`}>{member.status==='INVITED'?'Awaiting sign-in':member.status==='ACTIVE'?'Active':'Access removed'}</span></td><td className="text-right">{member.status!=='REVOKED'&&<button className="k-btn-ghost text-kraveo-danger" disabled={busy} onClick={()=>void revoke(member)}>Remove access</button>}</td></tr>)}</tbody></table>}
+      {!loading&&rows.length===0&&<p className="py-8 text-sm text-kraveo-ink2">No team records are available. Refresh after the owner signs in.</p>}
+    </div>
+    <div className="grid gap-4 md:grid-cols-2"><div className="k-panel"><ShieldCheck className="mb-3 h-5 w-5 text-kraveo-g700"/><h3 className="font-bold">Owner</h3><p className="mt-2 text-sm text-kraveo-ink2">Manages team access and all marketplace operations. At least one active owner must remain.</p></div><div className="k-panel"><UserRoundCheck className="mb-3 h-5 w-5 text-kraveo-g700"/><h3 className="font-bold">Administrator</h3><p className="mt-2 text-sm text-kraveo-ink2">Manages vendors, products, orders, delivery cities and finance. Cannot change team permissions.</p></div></div>
+    <Drawer open={open} onClose={()=>{if(!busy)setOpen(false);}} title="Add administrator" subtitle="Access is tied to a verified email address">
+      <form className="space-y-5" onSubmit={e=>{e.preventDefault();void run(async()=>{await apiService.inviteAdmin(email.trim(),role);setOpen(false);},'Access added. Share the admin website link; this person must sign in with their verified email.');}}>
+        {error&&<p role="alert" className="text-sm text-kraveo-danger">{error}</p>}
+        <label className="block text-sm font-semibold">Email address<input type="email" required maxLength={254} autoComplete="off" className="k-input mt-2 w-full" placeholder="name@company.com" value={email} onChange={e=>setEmail(e.target.value)} /></label>
+        <label className="block text-sm font-semibold">Role<select className="k-input mt-2 w-full" value={role} onChange={e=>setRole(e.target.value as 'OWNER'|'ADMIN')}><option value="ADMIN">Administrator — marketplace operations</option><option value="OWNER">Owner — operations and team permissions</option></select></label>
+        <div className="rounded-k-md bg-kraveo-surface2 p-4 text-sm text-kraveo-ink2">Share <strong>{window.location.origin}</strong> with this person. Clerk must verify their email before access activates. This action does not send an email automatically.</div>
+        <button type="submit" className="k-btn-primary w-full" disabled={busy}>{busy?'Adding access…':'Grant access to email'}</button>
+      </form>
+    </Drawer>{dialog}
+  </section>;
+}

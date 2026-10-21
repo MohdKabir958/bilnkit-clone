@@ -42,6 +42,7 @@ beforeAll(async()=>{
 });
 afterAll(async()=>{
   sockets.forEach(s=>s.disconnect());await stopTestServer(server);
+  await prisma.adminAccess.deleteMany({where:{clerkUserId:'user_Admin'}});
   setClerkTestTransport(null);
   await cleanTestOrders();await cleanTestUsers();await prisma.clerkWebhookDelivery.deleteMany();await prisma.clerkIdentityState.deleteMany();
   await prisma.driverPartner.deleteMany({where:{user:{clerkUserId:{not:null}},userId:{notIn:['usr-4']}}});
@@ -106,11 +107,11 @@ test('controlled linking preserves UUID and related addresses, idempotently; con
   const other=await prisma.user.create({data:{name:'Other synthetic customer'}});
   await expect(linkClerkIdentity(other.id,'user_Linked','test')).rejects.toMatchObject({status:409});
 });
-test('ADMIN requires explicit operator provisioning and exact allowlisted subject',async()=>{
+test('first owner requires explicit operator provisioning; subsequent access uses trusted database grants',async()=>{
   await expect(provisionClerkAdmin('user_CustomerA','test')).rejects.toMatchObject({status:403});
   const result=await provisionClerkAdmin('user_Admin','test operator');expect(result.role).toBe('ADMIN');
   expect((await request.get('/api/admin/partners').set(header('user_Admin'))).status).toBe(200);
-  process.env.CLERK_ADMIN_USER_IDS='';expect((await request.get('/api/admin/partners').set(header('user_Admin'))).status).toBe(403);process.env.CLERK_ADMIN_USER_IDS='user_Admin';
+  process.env.CLERK_ADMIN_USER_IDS='';expect((await request.get('/api/admin/partners').set(header('user_Admin'))).status).toBe(200);process.env.CLERK_ADMIN_USER_IDS='user_Admin';
 });
 test('customer login alone cannot access vendor or rider operations',async()=>{
   expect((await request.get('/api/partner/me').set(header())).status).toBe(403);

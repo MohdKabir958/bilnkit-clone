@@ -64,7 +64,7 @@ for (const file of tracked.filter(f => scope.test(f) && suffix.test(f) && !ignor
   visit(ast);
 }
 const schema = readFileSync(path.join(root, 'backend/prisma/schema.prisma'), 'utf8');
-const models = [...schema.matchAll(/model\s+(User|Vendor|DriverPartner|DeviceToken|ClerkIdentityState|ClerkWebhookDelivery)\s*\{([\s\S]*?)\n\}/g)]
+const models = [...schema.matchAll(/model\s+(User|Vendor|DriverPartner|DeviceToken|ClerkIdentityState|ClerkWebhookDelivery|AdminAccess)\s*\{([\s\S]*?)\n\}/g)]
   .map(match => ({ model: match[1], fields: match[2].split('\n').map(line => line.trim())
     .filter(line => line && !line.startsWith('//') && !line.startsWith('@@')) }));
 const inventory = {

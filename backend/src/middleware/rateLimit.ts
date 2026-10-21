@@ -96,6 +96,8 @@ export const normalizedPath = (rawPath: string): string => (rawPath || '/').toLo
 
 const MIN = 60_000;
 const RULES: Rule[] = [
+  { name:'ADMIN_TEAM_WRITE', scope:'user', max:30, windowMs:10*MIN, applies:(r,p)=>['POST','PATCH','DELETE'].includes(r.method)&&/^\/admin\/team(?:\/|$)/.test(p), message:'Too many team access changes. Please wait a few minutes.' },
+  { name:'ADMIN_STORE_CREATE', scope:'user', max:30, windowMs:10*MIN, applies:(r,p)=>r.method==='POST'&&p==='/admin/stores', message:'Too many store creations. Please wait a few minutes.' },
   {name:'SUPPORT_WRITE',scope:'user',max:20,windowMs:10*MIN,applies:(r,p)=>r.method==='POST'&&/^\/(admin\/)?support-cases(?:\/|$)/.test(p),message:'Too many support updates. Please wait a few minutes.'},
   {name:'DISPATCH_WRITE',scope:'user',max:60,windowMs:10*MIN,applies:(r,p)=>r.method!=='GET'&&(/^\/dispatch-offers\//.test(p)||/^\/admin\/(orders\/[^/]+\/dispatch|drivers\/[^/]+\/service-area)/.test(p)||p==='/drivers/duty-status'),message:'Too many dispatch changes. Please wait.'},
   {name:'STORE_PROFILE_WRITE',scope:'user',max:30,windowMs:10*MIN,applies:(r,p)=>r.method==='PUT'&&p==='/partner/store',message:'Too many store profile changes. Please wait.'},

@@ -162,6 +162,7 @@ const buildView = (o: OrderWithRelations) => ({
   cancelReason: (o.cancelReason ?? null) as string | null,
   items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, productSnapshot: publicProductSnapshot(i.productSnapshot), name: i.name, quantity: i.quantity, price: i.price })),
   vendorId: o.vendorId,
+  cityId: o.vendor.cityId,
   vendor: { id: o.vendor.id, name: o.vendor.name, address: o.vendor.address, lat: o.vendor.lat, lng: o.vendor.lng, hasLocation: vendorHasLocation(o.vendor.lat, o.vendor.lng) },
   customer: null as null | { id: string; name: string | null; phone: string | null; hostelBlock: string | null },
   driver: null as null | { id: string; name: string; phone: string | null },

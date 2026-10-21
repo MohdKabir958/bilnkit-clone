@@ -1,0 +1,25 @@
+import {useEffect,useState} from 'react';
+import {apiService,ApiError} from '../services/api';
+import {Drawer} from './ui/Drawer';
+import {ImageUploadField} from './ImageUploadField';
+const paise=(raw:string)=>{if(!/^\d+(\.\d{1,2})?$/.test(raw.trim()))throw Error('Use a rupee amount with up to two decimal places.');const [a,b='']=raw.trim().split('.');const n=Number(a)*100+Number(b.padEnd(2,'0'));if(!Number.isSafeInteger(n))throw Error('Amount is too large.');return n;};
+export function CreateProductDrawer({open,vendors,initialVendorId,onClose,onCreated,onAuthError}:{open:boolean;vendors:{id:string;name:string}[];initialVendorId:string;onClose:()=>void;onCreated:()=>void;onAuthError:(e:unknown)=>void}){
+  const [form,setForm]=useState({vendorId:initialVendorId,name:'',sku:'',productKey:'',categoryId:'',packSize:'1',unit:'pack',price:'',mrp:'',description:'',imageUrl:''});
+  const [categories,setCategories]=useState<{id:string;name:string}[]>([]),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false),[imageBusy,setImageBusy]=useState(false),[error,setError]=useState('');
+  const load=async()=>{setLoading(true);try{setCategories((await apiService.fetchCategories()).filter(c=>c.isActive&&c.forDishes));}catch(e){setError(e instanceof Error?e.message:'Categories could not load.');}finally{setLoading(false);}};
+  useEffect(()=>{if(open){setForm({vendorId:initialVendorId,name:'',sku:'',productKey:'',categoryId:'',packSize:'1',unit:'pack',price:'',mrp:'',description:'',imageUrl:''});setError('');void load();}},[open]);
+  const field=(key:keyof typeof form,value:string)=>setForm(v=>({...v,[key]:value}));
+  return <Drawer open={open} onClose={()=>{if(!busy&&!imageBusy)onClose();}} title="Add grocery product" subtitle="Choose a store, pack size and selling price"><form className="space-y-5" onSubmit={async e=>{e.preventDefault();setBusy(true);setError('');try{await apiService.createGroceryProduct(form.vendorId,{name:form.name.trim(),sku:form.sku.trim().toUpperCase(),productKey:form.productKey.trim(),categoryId:form.categoryId,packSize:form.packSize,unit:form.unit,description:form.description.trim(),pricePaise:paise(form.price),mrpPaise:form.mrp?paise(form.mrp):null,imageUrls:form.imageUrl?[form.imageUrl]:[],isAvailable:true});onCreated();onClose();}catch(e){setError(e instanceof Error?e.message:'Product could not be created.');if(e instanceof ApiError&&e.status===401)onAuthError(e);}finally{setBusy(false);}}}>
+    {error&&<p role="alert" className="text-sm text-kraveo-danger">{error}</p>}
+    <label className="block text-sm font-semibold">Store<select required className="k-input mt-2 w-full" value={form.vendorId} onChange={e=>field('vendorId',e.target.value)}><option value="">Choose store</option>{vendors.map(v=><option key={v.id} value={v.id}>{v.name}</option>)}</select></label>
+    <label className="block text-sm font-semibold">Product category<select required disabled={loading} className="k-input mt-2 w-full" value={form.categoryId} onChange={e=>field('categoryId',e.target.value)}><option value="">Choose category</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+    {!loading&&!categories.length&&<p className="text-sm">Create an enabled product category in Categories first. <button type="button" className="underline" onClick={()=>void load()}>Reload categories</button></p>}
+    {([['name','Product name'],['sku','Unique SKU'],['productKey','Product group'],['packSize','Pack quantity'],['price','Selling price (₹)'],['mrp','MRP (₹, optional)']] as const).map(([key,label])=><label key={key} className="block text-sm font-semibold">{label}<input className="k-input mt-2 w-full" required={key!=='mrp'} maxLength={key==='name'?100:80} inputMode={['price','mrp','packSize'].includes(key)?'decimal':undefined} value={form[key]} onChange={e=>field(key,e.target.value)}/></label>)}
+    <p className="text-xs text-kraveo-ink2">Use the same product group for different pack sizes, for example milk. SKU identifies this pack within this store.</p>
+    <label className="block text-sm font-semibold">Unit<select className="k-input mt-2 w-full" value={form.unit} onChange={e=>field('unit',e.target.value)}>{['g','kg','ml','l','pcs','pack'].map(u=><option key={u}>{u}</option>)}</select></label>
+    <label className="block text-sm font-semibold">Description<textarea className="k-input mt-2 w-full" maxLength={2000} value={form.description} onChange={e=>field('description',e.target.value)}/></label>
+    <ImageUploadField id="new-product-image" label="Product photo" purpose="dish" value={form.imageUrl} onChange={url=>field('imageUrl',url)} previewAlt={form.name||'New grocery product'} disabled={busy} onBusyChange={setImageBusy} onAuthError={onAuthError} hint="Use photography you own or have permission to publish."/>
+    <p className="rounded-k-md bg-kraveo-g50 p-4 text-sm">The product starts with zero stock. After saving, choose Adjust stock and record the received quantity.</p>
+    <button className="k-btn-primary w-full" disabled={busy||loading||imageBusy}>{busy?'Saving product…':'Create product'}</button>
+  </form></Drawer>;
+}

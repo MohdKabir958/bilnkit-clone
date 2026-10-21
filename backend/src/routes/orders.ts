@@ -224,6 +224,10 @@ orderRouter.get('/orders', requireAuth, async (req: AuthenticatedRequest, res: R
     const str = (v: unknown) => (typeof v === 'string' && ID_RE.test(v) ? v : undefined);
     if (user.role === 'ADMIN') {
       const f: Prisma.OrderWhereInput = {};
+      if (req.query.cityId !== undefined) {
+        if (!str(req.query.cityId)) return bad(res,'Choose a valid city.','cityId');
+        f.vendor = {cityId:str(req.query.cityId)};
+      }
       if (str(req.query.vendorId)) f.vendorId = str(req.query.vendorId);
       if (str(req.query.driverId)) f.driverId = str(req.query.driverId);
       if (str(req.query.customerId)) f.customerId = str(req.query.customerId);

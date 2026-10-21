@@ -838,7 +838,11 @@ describe('Lifecycle journeys', () => {
       const rs = await Promise.all([...wrongs.map((c) => api.otp(r1, id, c)), api.otp(r1, id, otp)]);
       const o = await row(id);
       expect(o.otpAttempts).toBeLessThanOrEqual(5);
-      if (o.status === 'DELIVERED') expect(rs.filter((r) => r.status === 200 && /verified successfully/.test(r.body.message))).toHaveLength(1);
+      if (o.status === 'DELIVERED') {
+        const completions = rs.filter((r) => r.status === 200 && r.body.data?.status === 'DELIVERED');
+        expect(completions).toHaveLength(1);
+        expect(completions[0].body.message).toBe('Delivery verification code accepted. Order delivered.');
+      }
       else expect(o).toMatchObject({ otpLocked: true, status: 'ARRIVED_AT_GATE' });
     });
   });

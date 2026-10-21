@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Bike, ClipboardCheck, Landmark, MapPinned, PanelLeftClose, PanelLeftOpen, ShoppingBag, SlidersHorizontal, Store, Tags, TrendingUp, TriangleAlert, Users, Package, X } from 'lucide-react';
+import { Bike, ClipboardCheck, Landmark, MapPinned, PanelLeftClose, PanelLeftOpen, ShoppingBag, SlidersHorizontal, Store, Tags, TrendingUp, TriangleAlert, Users, Package, ShieldCheck, X } from 'lucide-react';
 import { TabType } from '../types';
 import { LogoBadge, LogoMark } from './ui/Logo';
 import { brand } from '../config/brand';
@@ -17,21 +17,22 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS: Array<{ id: TabType; label: string; hint: string; icon: React.ElementType }> = [
-  { id: 'operations', label: 'Overview', hint: 'City metrics, dispatch, support and audit', icon: ClipboardCheck },
-  { id: 'inventory', label: 'Products and inventory', hint: 'Grocery SKUs and stock movements', icon: ShoppingBag },
-  { id: 'coverage', label: 'Delivery coverage', hint: 'Cities, zones and store opening hours', icon: MapPinned },
-  { id: 'map', label: 'Live map', hint: 'Dispatch and delivery partner positions', icon: MapPinned },
-  { id: 'orders', label: 'Orders', hint: 'Every order and its status', icon: ShoppingBag },
-  { id: 'attention', label: 'Needs attention', hint: 'Failed refunds, locked OTPs, stuck orders', icon: TriangleAlert },
-  { id: 'applications', label: 'Applications', hint: 'Approve new stores and riders', icon: ClipboardCheck },
-  { id: 'vendors', label: 'Stores', hint: 'Stores and availability', icon: Store },
-  { id: 'categories', label: 'Categories', hint: 'Store and product categories', icon: Tags },
-  { id: 'catalog', label: 'Catalog', hint: 'Approve products, prices and commission', icon: Package },
-  { id: 'finance', label: 'Finance', hint: 'Revenue, settlements and rider payouts', icon: Landmark },
-  { id: 'drivers', label: 'Delivery partners', hint: 'Delivery partner partners and duty', icon: Bike },
-  { id: 'customers', label: 'Customers', hint: 'Everyone who ordered', icon: Users },
-  { id: 'analytics', label: 'Analytics', hint: 'Delivery statistics', icon: TrendingUp },
-  { id: 'settings', label: 'Settings', hint: 'Fees, commission and rounding', icon: SlidersHorizontal },
+  { id: 'operations', label: 'Overview', hint: 'Daily performance and next actions', icon: ClipboardCheck },
+  { id: 'orders', label: 'Orders', hint: 'Orders, delivery status and payment state', icon: ShoppingBag },
+  { id: 'vendors', label: 'Vendors', hint: 'All vendors, availability and store details', icon: Store },
+  { id: 'inventory', label: 'Products & stock', hint: 'Products, photos and stock adjustments', icon: Package },
+  { id: 'drivers', label: 'Delivery partners', hint: 'Partner accounts, duty and assignments', icon: Bike },
+  { id: 'map', label: 'Live map', hint: 'Delivery partner positions and dispatch', icon: MapPinned },
+  { id: 'attention', label: 'Needs attention', hint: 'Stuck orders, refunds and verification issues', icon: TriangleAlert },
+  { id: 'coverage', label: 'Cities & zones', hint: 'Set up cities, delivery areas and store coverage', icon: MapPinned },
+  { id: 'applications', label: 'Approvals', hint: 'Review vendor and delivery partner applications', icon: ClipboardCheck },
+  { id: 'categories', label: 'Categories', hint: 'Organize grocery products and vendors', icon: Tags },
+  { id: 'catalog', label: 'Product approvals', hint: 'Review products, prices and commissions', icon: ShoppingBag },
+  { id: 'customers', label: 'Customers', hint: 'Accounts and order history', icon: Users },
+  { id: 'finance', label: 'Finance', hint: 'Settlements, refunds and payouts', icon: Landmark },
+  { id: 'analytics', label: 'Analytics', hint: 'Delivery and sales reports', icon: TrendingUp },
+  { id: 'team', label: 'Team & access', hint: 'Manage administrator access by email', icon: ShieldCheck },
+  { id: 'settings', label: 'Settings', hint: 'Platform fees and ordering rules', icon: SlidersHorizontal },
 ];
 
 const COLLAPSE_KEY = 'kraveo_admin_sidebar_collapsed';
@@ -47,22 +48,23 @@ interface BodyProps extends Pick<SidebarProps, 'activeTab' | 'setActiveTab' | 'i
 
 const SidebarBody: React.FC<BodyProps> = ({ activeTab, setActiveTab, isLiveConnected, badges, alertBadges, expanded, onNavigate }) => (
   <>
-    <nav aria-label="Primary" className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-3">
-      {NAV_ITEMS.map((item, index) => {
+    <nav aria-label="Primary" className="flex min-h-0 flex-1 flex-col px-3 py-3">
+      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto">
+      {NAV_ITEMS.filter(item=>!['team','settings'].includes(item.id)).map((item, index) => {
         const Icon = item.icon;
         const isActive = activeTab === item.id;
         const count = badges?.[item.id] ?? 0;
         const alert = Boolean(alertBadges?.[item.id]) && count > 0;
         return (
           <React.Fragment key={item.id}>
-          {expanded && ['operations','vendors','finance'].includes(item.id) && <p className="k-label px-3 pb-1 pt-4">{item.id === 'operations' ? 'Operations' : item.id === 'vendors' ? 'Commerce' : 'Administration'}</p>}
+          {expanded && ['operations','coverage','customers','team'].includes(item.id) && <p className="k-label px-3 pb-1 pt-4">{item.id === 'operations' ? 'Daily workspace' : item.id === 'coverage' ? 'Network setup' : item.id === 'customers' ? 'Business' : 'Administration'}</p>}
           <button
             onClick={() => { setActiveTab(item.id); onNavigate?.(); }}
             aria-label={count > 0 ? `${item.label} (${count})` : item.label}
             aria-current={isActive ? 'page' : undefined}
             title={expanded ? undefined : item.label}
             style={{ ['--i' as string]: index }}
-            className={`k-reveal group relative flex min-h-[44px] w-full items-center gap-3 rounded-k-sm px-3 py-2.5 text-left text-sm font-semibold transition-all duration-fast ease-emphasized ${expanded ? '' : 'justify-center'} ${isActive ? 'bg-kraveo-g400/15 text-kraveo-g300' : 'text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink'}`}
+            className={`k-reveal group relative flex min-h-[40px] w-full items-center gap-3 rounded-k-sm px-3 py-2 text-left text-sm font-semibold transition-all duration-fast ease-emphasized ${expanded ? '' : 'justify-center'} ${isActive ? 'bg-kraveo-g400/15 text-kraveo-g300' : 'text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink'}`}
           >
             {isActive && <span className="absolute -left-3 top-2 h-[calc(100%-1rem)] w-1 rounded-r-full bg-kraveo-g400" aria-hidden="true" />}
             <Icon className={`h-5 w-5 shrink-0 transition-transform duration-base ease-spring ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} aria-hidden="true" />
@@ -81,6 +83,10 @@ const SidebarBody: React.FC<BodyProps> = ({ activeTab, setActiveTab, isLiveConne
           </React.Fragment>
         );
       })}
+      </div>
+      <div className="mt-2 shrink-0 space-y-1 border-t border-kraveo-line pt-2">
+        {NAV_ITEMS.filter(item=>['team','settings'].includes(item.id)).map(item=><button key={item.id} aria-label={item.label} aria-current={activeTab===item.id?'page':undefined} title={item.label} onClick={()=>{setActiveTab(item.id);onNavigate?.();}} className={`flex min-h-[40px] w-full items-center gap-3 rounded-k-sm px-3 py-2 text-left text-sm font-semibold ${expanded?'':'justify-center'} ${activeTab===item.id?'bg-kraveo-g400/15 text-kraveo-g300':'text-kraveo-ink2 hover:bg-kraveo-surface2'}`}><item.icon className="h-5 w-5 shrink-0"/>{expanded&&item.label}</button>)}
+      </div>
     </nav>
 
     <div className="px-3 pb-3">
@@ -151,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isLiv
               <LogoMark size={44} />
               <div className="min-w-0">
                 <p className="truncate font-display text-base font-extrabold leading-tight tracking-tight text-kraveo-ink">{brand.name}</p>
-                <p className="truncate text-xs font-semibold text-kraveo-ink3">Operations console</p>
+                <p className="truncate text-xs font-semibold text-kraveo-ink3">Marketplace workspace</p>
               </div>
             </div>
           )}

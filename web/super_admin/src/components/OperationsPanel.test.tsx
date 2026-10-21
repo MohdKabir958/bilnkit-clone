@@ -19,3 +19,13 @@ afterEach(async()=>{await act(async()=>root.unmount());host.remove();vi.restoreA
 it('renders actual paise metrics, dispatch escalation and audit responses',()=>{expect(host.textContent).toContain('₹650.45');expect(host.textContent).toContain('OFFERS_EXHAUSTED');expect(host.textContent).toContain('DELIVERY_OFFERED');expect(host.textContent).toContain('Damaged pack');});
 it('retries through the backend and opens the actual linked order for financial review',async()=>{const retry=vi.spyOn(apiService,'retryDispatch').mockResolvedValue({});await click('Start new offer round');expect(retry).toHaveBeenCalledWith('order-owned');await act(async()=>{[...host.querySelectorAll('button')].find(b=>b.textContent?.startsWith('Review order'))!.click();});expect(open).toHaveBeenCalledWith('order-owned');});
 it('submits a requester-visible reply and handles authentication errors',async()=>{const reply=vi.spyOn(apiService,'replySupport').mockRejectedValue(new Error('Session expired'));const textarea=host.querySelector('textarea')!;await act(async()=>{Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value')!.set!.call(textarea,'Approved after order review.');textarea.dispatchEvent(new Event('input',{bubbles:true}));});await act(async()=>{textarea.closest('form')!.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));});expect(reply).toHaveBeenCalledWith('case-owned','Approved after order review.','IN_PROGRESS');expect(auth).toHaveBeenCalled();expect(host.querySelector('[role="alert"]')?.textContent).toContain('Session expired');});
+
+it('a slow previous city response cannot overwrite the currently selected city metrics',async()=>{
+ const pending=new Map<string,(value:any)=>void>();vi.mocked(apiService.operations).mockImplementation((city)=>new Promise(resolve=>pending.set(city,resolve)));
+ await act(async()=>root.render(<OperationsPanel cityId="first-city" onAuthError={auth} onOpenOrder={open}/>));
+ await act(async()=>root.render(<OperationsPanel cityId="second-city" onAuthError={auth} onOpenOrder={open}/>));
+ await act(async()=>pending.get('second-city')!({orders:22,grossPaise:2200,refundPaise:0,commissionPaise:0}));
+ expect(host.textContent).toContain('₹22.00');
+ await act(async()=>pending.get('first-city')!({orders:11,grossPaise:1100,refundPaise:0,commissionPaise:0}));
+ expect(host.textContent).toContain('₹22.00');expect(host.textContent).not.toContain('₹11.00');
+});

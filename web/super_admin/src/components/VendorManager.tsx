@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronUp, Landmark, MapPin, Pencil, Plus, SearchX, Star, Store } from 'lucide-react';
 import { Order, Vendor } from '../types';
 import { activeOrderCountByVendor } from '../lib/dashboardStats';
@@ -6,6 +6,8 @@ import type { SavedPin } from '../lib/vendorLocation';
 import { VendorLocationEditor } from './VendorLocationEditor';
 import { CommissionEditor } from './CommissionEditor';
 import type { VendorCommission } from '../lib/catalogParse';
+import { clerkAuthEnabled } from '../services/api';
+import { CreateStoreDrawer } from './CreateStoreDrawer';
 import { AddPartnerDrawer } from './AddPartnerDrawer';
 import { EditRestaurantDrawer } from './EditRestaurantDrawer';
 import { PayoutAccountPanel } from './PayoutAccountPanel';
@@ -16,6 +18,9 @@ import { SkeletonCard } from './ui/Skeleton';
 import { Switch } from './ui/Switch';
 
 interface VendorManagerProps {
+  createRequested?: number;
+  selectedCityId?: string;
+  onOpenCoverage?: () => void;
   vendors: Vendor[];
   /** The loaded orders: "Active orders" per restaurant is counted from them (the vendors API does not send it). */
   orders?: Order[];
@@ -56,8 +61,9 @@ const VendorPayout: React.FC<{ vendor: Vendor; onAuthError?: (error: unknown) =>
 const NO_ORDERS: Order[] = [];
 const NOT_BUSY: ReadonlySet<string> = new Set();
 
-export const VendorManager: React.FC<VendorManagerProps> = ({ vendors, orders = NO_ORDERS, busyVendorIds = NOT_BUSY, onToggleVendor, onCreated, onLocationSaved, onCommissionSaved, onProfileSaved, onAuthError, loading = false, query = '', onClearQuery }) => {
+export const VendorManager: React.FC<VendorManagerProps> = ({ vendors, orders = NO_ORDERS, busyVendorIds = NOT_BUSY, onToggleVendor, onCreated, onLocationSaved, onCommissionSaved, onProfileSaved, onAuthError, loading = false, query = '', onClearQuery,createRequested=0,selectedCityId='',onOpenCoverage }) => {
   const [showDrawer, setShowDrawer] = useState(false);
+  useEffect(()=>{if(createRequested)setShowDrawer(true);},[createRequested]);
   const [filter, setFilter] = useState<VendorFilter>('ALL');
   const [editing, setEditing] = useState<Vendor | null>(null);
 
@@ -81,12 +87,13 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ vendors, orders = 
   const initialLoad = loading && vendors.length === 0;
   const onboardButton = (
     <button onClick={() => setShowDrawer(true)} className="k-btn-accent">
-      <Plus className="h-4 w-4" aria-hidden="true" /> Add store
+      <Plus className="h-4 w-4" aria-hidden="true" /> Add vendor
     </button>
   );
 
   return (
     <div className="space-y-5">
+      <div><h2 className="text-2xl font-bold">All vendors</h2><p className="mt-2 text-sm text-kraveo-ink2">Find a store, check its availability, or add a new vendor. Use the city selector above to focus your network.</p></div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:px-0" role="group" aria-label="Filter stores">
           {([['ALL', 'All'], ['OPEN', 'Open'], ['CLOSED', 'Closed']] as const).map(([id, label]) => (
@@ -103,7 +110,7 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ vendors, orders = 
         {initialLoad && Array.from({ length: 6 }).map((_, index) => <SkeletonCard key={index} lines={3} />)}
         {!initialLoad && vendors.length === 0 && (
           <div className="k-card sm:col-span-2 2xl:col-span-3">
-            <EmptyState icon={Store} title="No stores yet" description="Add a store here, or approve one that applied in the Applications tab." action={onboardButton} />
+            <EmptyState icon={Store} title="No vendors yet" description="Add your first vendor here, or review a partner application in Approvals." action={onboardButton} />
           </div>
         )}
         {!initialLoad && vendors.length > 0 && visible.length === 0 && (
@@ -132,7 +139,7 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ vendors, orders = 
 
             <div className="mt-4 grid grid-cols-2 gap-2">
               <div className="k-inset px-3 py-2.5">
-                <p className="k-label">Menu items</p>
+                <p className="k-label">Products</p>
                 <p className="k-num text-xl text-kraveo-ink">{v.menuItems ? v.menuItems.length : '-'}</p>
               </div>
               <div className="k-inset px-3 py-2.5">
@@ -164,7 +171,7 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ vendors, orders = 
       </div>
 
       {editing && <EditRestaurantDrawer key={editing.id} vendor={editing} onClose={() => setEditing(null)} onSaved={(saved) => onProfileSaved?.(saved)} onAuthError={onAuthError} />}
-      <AddPartnerDrawer open={showDrawer} kind="VENDOR" onClose={() => setShowDrawer(false)} onCreated={() => onCreated?.()} />
+      {clerkAuthEnabled ? <CreateStoreDrawer open={showDrawer} onClose={()=>setShowDrawer(false)} onCreated={()=>onCreated?.()} onAuthError={onAuthError} initialCityId={selectedCityId} onOpenCoverage={onOpenCoverage}/> : <AddPartnerDrawer open={showDrawer} kind="VENDOR" onClose={() => setShowDrawer(false)} onCreated={() => onCreated?.()} />}
     </div>
   );
 };

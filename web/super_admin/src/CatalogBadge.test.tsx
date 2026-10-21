@@ -43,7 +43,7 @@ describe('Catalog sidebar badge', () => {
   const dispatch=host.querySelector<HTMLButtonElement>('nav button[aria-label="Live map"]');
   if(dispatch)await act(async()=>{dispatch.click();});
     await flush(); await flush();
-    expect(document.querySelector('nav button[aria-label="Catalog (5)"]')).not.toBeNull();
+    expect(document.querySelector('nav button[aria-label="Product approvals (5)"]')).not.toBeNull();
   });
 });
 

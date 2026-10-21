@@ -1,7 +1,7 @@
 import { readPin } from './lib/vendorLocation';
 import { OrderGroupInfo, parseGroupInfo } from './lib/orderGroups';
 
-export type TabType = 'map' | 'orders' | 'attention' | 'applications' | 'vendors' | 'categories' | 'drivers' | 'customers' | 'analytics' | 'catalog' | 'finance' | 'settings' | 'coverage' | 'inventory' | 'operations';
+export type TabType = 'map' | 'orders' | 'attention' | 'applications' | 'vendors' | 'categories' | 'drivers' | 'customers' | 'analytics' | 'catalog' | 'finance' | 'settings' | 'coverage' | 'inventory' | 'operations' | 'team';
 
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
 export type PartnerKind = 'VENDOR' | 'DRIVER';
@@ -45,6 +45,7 @@ export interface PaymentRecord {
 }
 
 export interface Order {
+  cityId?: string;
   id: string;
   customerId?: string;
   customerName: string;
@@ -107,6 +108,9 @@ export interface Order {
 }
 
 export interface Vendor {
+  cityId?: string;
+  pinCode?: string;
+  locality?: string;
   id: string;
   userId?: string;
   name: string;
@@ -195,6 +199,7 @@ export const normalizeDriverPin = (raw: any): DriverPin | null => {
 };
 
 export interface DriverPartner {
+  cityId?: string;
   id: string;
   /** The rider's login account id. `Order.driverId` points at this, not at the DriverPartner id. */
   userId?: string;
@@ -235,6 +240,7 @@ export interface AdminProfile {
   name: string;
   phone?: string;
   role: 'ADMIN';
+  adminRole?: 'OWNER' | 'ADMIN';
 }
 
 const asNumber = (value: unknown, fallback = 0): number => {
@@ -292,6 +298,7 @@ export const normalizeOrderPartial = (input: any): Partial<Order> & { id: string
   if (customer && has(customer, 'email')) put('customerEmail', str(customer.email) ?? null);
 
   const vendor = raw.vendor && typeof raw.vendor === 'object' ? raw.vendor : undefined;
+  if(has(raw,'cityId') || (vendor&&has(vendor,'cityId'))) put('cityId',str(raw.cityId)??str(vendor?.cityId));
   if (has(raw, 'vendorId') || vendor?.id) put('vendorId', str(raw.vendorId) ?? str(vendor?.id));
   if (str(raw.vendorName) || str(vendor?.name)) put('vendorName', (str(raw.vendorName) ?? str(vendor?.name))!);
   if (vendor && has(vendor, 'address')) put('vendorAddress', str(vendor.address) ?? null);
@@ -408,6 +415,7 @@ const normalizeCuisine = (raw: any): VendorCuisine | null => (raw && typeof raw 
   : null);
 
 export const normalizeVendor = (raw: any): Vendor => ({
+  cityId:raw?.cityId,pinCode:raw?.pinCode,locality:raw?.locality,
   id: String(raw?.id || ''),
   userId: raw?.userId,
   name: raw?.name || 'Unnamed vendor',
@@ -435,6 +443,7 @@ export const normalizeVendor = (raw: any): Vendor => ({
 });
 
 export const normalizeDriver = (raw: any): DriverPartner => ({
+  cityId:raw?.cityId,
   id: String(raw?.id || raw?.userId || ''),
   userId: raw?.userId || raw?.user?.id || undefined,
   name: raw?.name || raw?.user?.name || 'Delivery partner',

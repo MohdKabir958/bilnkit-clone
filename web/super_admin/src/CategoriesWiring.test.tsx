@@ -114,7 +114,7 @@ describe('Vendors tab: edit restaurant', () => {
     vi.spyOn(apiService, 'updateVendorProfile').mockResolvedValue({ vendor: fresh, changed: true, message: 'Restaurant saved.' });
     await mount();
     await flush();
-    await click(nav('Stores'));
+    await click(nav('Vendors'));
     await flush();
     expect(document.body.textContent).toContain('Shape Kitchen & Co');
     const before = api.fetchVendors.mock.calls.length;
