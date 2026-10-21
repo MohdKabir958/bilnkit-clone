@@ -21,6 +21,8 @@ try {
   const csp = [
     "default-src 'self'", `connect-src 'self' ${api} ${socket}${clerk ? ` ${clerk} https://clerk-telemetry.com https://challenges.cloudflare.com` : ''}`,
     `script-src 'self'${clerk ? ` ${clerk} https://challenges.cloudflare.com` : ''}`,
+    // Clerk uses an app-origin blob worker. Keep blob: out of script-src.
+    `worker-src 'self'${clerk ? ' blob:' : ''}`,
     `frame-src${clerk ? ` ${clerk} https://challenges.cloudflare.com` : " 'none'"}`, "style-src 'self' 'unsafe-inline'", "font-src 'self'",
     `img-src 'self' data: ${api}${clerk ? ` ${clerk} https://img.clerk.com` : ''} ${images.join(' ')}`, "object-src 'none'", "base-uri 'self'", "frame-ancestors 'none'",
   ].join('; ');

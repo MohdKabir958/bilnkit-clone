@@ -21,3 +21,13 @@ The owner's browser console reported `failed_to_load_clerk_js` for `https://capa
 ## Owner verification
 
 Deploy latest main to Vercel with the current capable-mutt-6 public key, then open `https://grozo-admin.vercel.app` and hard-refresh. Clerk sign-in should replace the loading text and the reported CSP violation must disappear. If a different message appears, inspect that new error rather than changing CSP to a wildcard. Before checking admin access, ensure Render uses the same Clerk instance and the exact administrator has both an allowlisted subject and an explicitly provisioned Grozo ADMIN role. Never paste private keys/session tokens into chat.
+
+## Follow-up: worker CSP and backend 401
+
+The owner's next console report established a blocked `blob:https://grozo-admin.vercel.app/...` worker and HTTP 401 from `/api/auth/profile` after successful Clerk sign-in. These are separate findings. The development-instance usage warning is expected for this staging configuration; it is not evidence of an admin-role rejection. The generic UI had hidden this distinction.
+
+The CSP generator and committed policy now allow `worker-src 'self' blob:` for Clerk, leaving `blob:` out of script-src and keeping the exact network origins. The build guard rejects a missing worker directive. The admin UI distinguishes a rejected session (401) from missing approval (403) without exposing internal response data or weakening authorization.
+
+Follow-up local verification: 9 CSP/configuration tests passed (0 failed/skipped, 426.988894 ms); 16 targeted admin authentication/API tests passed (0 failed/skipped, 2.63 s). The Clerk-test build was rerun with the current public configuration. Hosted recovery and the cause of the 401 remain unverified pending deployment and backend settings/response evidence. No backend configuration, credentials or role assignments were changed here.
+
+For a continuing 401, check that Render's publishable key, rotated secret key and issuer all identify the current capable-mutt-6 Clerk application, that `CLERK_AUTHORIZED_PARTIES` includes `https://grozo-admin.vercel.app` exactly, and that AUTH_MODE is clerk-test in development. Keys copied from the earlier enhanced-foal-30 instance cannot verify the new instance's sessions. Also inspect the response JSON for the failed profile request, keeping Authorization/session tokens private. After any operator correction, redeploy Render, sign out and sign in again. Only after session authentication succeeds should an operator resolve a possible admin-approval 403 through explicit provisioning.

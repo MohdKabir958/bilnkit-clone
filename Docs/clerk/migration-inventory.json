@@ -15909,7 +15909,7 @@
     },
     {
       "path": "scripts/configure_hosted_admin.mjs",
-      "sha256": "978eb6494cf4847fe488a6c76add8f182bca3b75341c7f146543138f7e836384",
+      "sha256": "7fe5ceee07d3b82fe0731539968b4ec88832dd1cf4d241d0842560f348d00e2a",
       "references": [
         {
           "kind": "identity",
@@ -15920,6 +15920,11 @@
           "kind": "identity",
           "symbol": "Clerk",
           "line": 18
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 24
         }
       ]
     },
@@ -15999,7 +16004,7 @@
     },
     {
       "path": "web/super_admin/scripts/check-hosted-auth.mjs",
-      "sha256": "0f5f1512d5bba1e5b6a1eb161f1e63190fc868249130af131ff1c351e76b5cea",
+      "sha256": "07be20f7c7e9c82c647680e4066541288f5eb5195d529d0784a797e520f7175d",
       "references": [
         {
           "kind": "identity",
@@ -16015,6 +16020,11 @@
           "kind": "identity",
           "symbol": "Clerk",
           "line": 26
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 29
         }
       ]
     },
@@ -16190,7 +16200,7 @@
     },
     {
       "path": "web/super_admin/src/auth/ClerkAdmin.test.tsx",
-      "sha256": "aa80c30b5965df851ff4fcf0827ad785598614364535d7ea1967854b9d2255ff",
+      "sha256": "0e1791819ccf9aeec28317735e7f28ad77da60be5449429655448d005109ac87",
       "references": [
         {
           "kind": "identity",
@@ -16235,17 +16245,22 @@
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 65
+          "line": 67
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 69
+          "line": 72
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 75
+          "line": 76
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 82
         },
         {
           "kind": "session",
@@ -16261,7 +16276,7 @@
     },
     {
       "path": "web/super_admin/src/auth/ClerkAdmin.tsx",
-      "sha256": "e9b1edcfb711fdb7fd76dd1576910ff666e91b2748ba2e682f1c888a69826fb5",
+      "sha256": "165c921265db34b6347c60372bf7076086399f3a6cb2dfeb9aa644e23b04a0b8",
       "references": [
         {
           "kind": "identity",
@@ -16271,12 +16286,22 @@
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 60
+          "line": 55
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 66
+          "line": 55
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 62
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 68
         },
         {
           "kind": "session",
@@ -16306,7 +16331,7 @@
         {
           "kind": "session",
           "symbol": "installClerkTokenGetter",
-          "line": 55
+          "line": 57
         }
       ]
     },

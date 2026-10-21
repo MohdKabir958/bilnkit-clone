@@ -25,6 +25,8 @@ export function assertHostedAuthConfig(env, config) {
   for (const directive of ['script-src-elem', 'connect-src', 'frame-src']) {
     if (!allows(directive, clerkOrigin)) throw new Error(`Clerk CSP mismatch: ${directive} does not permit ${clerkOrigin}. Run scripts/configure_hosted_admin.mjs with the deployed publishable key and commit vercel.json before deploying.`);
   }
+  const workers = directives.get('worker-src') || [];
+  if (!workers.includes("'self'") || !workers.includes('blob:')) throw new Error("Clerk requires worker-src 'self' blob: in vercel.json. Regenerate and commit the deployment configuration.");
   for (const name of ['VITE_API_BASE_URL', 'VITE_SOCKET_URL']) {
     let url;
     try { url = new URL(env[name]); } catch { throw new Error(`${name} must be the backend HTTPS origin.`); }

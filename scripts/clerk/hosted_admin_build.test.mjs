@@ -6,7 +6,7 @@ const instance = 'synthetic.clerk.accounts.dev';
 const api = 'https://api.example.test';
 const key = host => 'pk_test_' + Buffer.from(`${host}$`).toString('base64');
 const env = {VITE_AUTH_MODE:'clerk-test',VITE_CLERK_PUBLISHABLE_KEY:key(instance),VITE_API_BASE_URL:api,VITE_SOCKET_URL:api};
-const config = (clerk = instance, extra = '') => ({headers:[{source:'/(.*)',headers:[{key:'Content-Security-Policy',value:`default-src 'self'; script-src 'self' https://${clerk}; connect-src 'self' https://${clerk} ${api} wss://api.example.test ${extra}; frame-src https://${clerk}`}]}]});
+const config = (clerk = instance, extra = '') => ({headers:[{source:'/(.*)',headers:[{key:'Content-Security-Policy',value:`default-src 'self'; script-src 'self' https://${clerk}; worker-src 'self' blob:; connect-src 'self' https://${clerk} ${api} wss://api.example.test ${extra}; frame-src https://${clerk}`}]}]});
 
 test('matching Clerk instance and API/socket origins pass',()=>assert.doesNotThrow(()=>assertHostedAuthConfig(env,config())));
 test('another instance key reproduces the deployed script blocking failure at build time',()=>{
@@ -24,3 +24,7 @@ test('wildcards, wrong key modes and insecure backend origins are refused',()=>{
   assert.throws(()=>assertHostedAuthConfig({...env,VITE_API_BASE_URL:'http://api.example.test'},config()),/HTTPS origin/);
 });
 test('legacy builds do not require Clerk configuration',()=>assert.doesNotThrow(()=>assertHostedAuthConfig({},{})));
+test('missing blob worker permission fails before publishing a broken Clerk build',()=>{
+  const blocked=config();blocked.headers[0].headers[0].value=blocked.headers[0].headers[0].value.replace("worker-src 'self' blob:;",'');
+  assert.throws(()=>assertHostedAuthConfig(env,blocked),/Clerk requires worker-src/);
+});

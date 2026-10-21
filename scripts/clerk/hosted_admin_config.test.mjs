@@ -18,6 +18,8 @@ test('Clerk CSP grants only exact trusted origins and preserves SPA refresh/secu
   assert.ok(csp.includes('https://synthetic-config.clerk.accounts.dev'));
   assert.ok(csp.includes('https://synthetic-api.example.test wss://synthetic-api.example.test'));
   assert.ok(csp.includes('https://challenges.cloudflare.com'));
+  assert.ok(csp.includes("worker-src 'self' blob:"));
+  assert.ok(!csp.split(';').find(part=>part.trim().startsWith('script-src ')).includes('blob:'));
   assert.ok(!csp.includes('*'));assert.ok(!/https:\s/.test(csp));
   assert.ok(csp.includes("frame-ancestors 'none'"));assert.ok(csp.includes("object-src 'none'"));
   assert.deepEqual(config.rewrites,[{source:'/(.*)',destination:'/index.html'}]);

@@ -62,6 +62,13 @@ describe('Clerk admin trust boundary (explicit fixtures)',()=>{
     await screen.findByText('This account has not been approved as a Grozo administrator.');expect(screen.queryByTestId('protected-admin')).toBeNull();
     fireEvent.click(screen.getByText('Sign out'));expect(fixture.state.signOut).toHaveBeenCalled();
   });
+  it('distinguishes a backend session rejection from missing administrator approval',async()=>{
+    fixture.validate.mockRejectedValue(new ApiError(401,'Invalid session'));render(<ClerkAdminRoot/>);
+    await screen.findByText(/Grozo could not authenticate this Clerk session \(401\)/);
+    expect(screen.queryByText('This account has not been approved as a Grozo administrator.')).toBeNull();
+    expect(screen.queryByTestId('protected-admin')).toBeNull();
+    expect(fixture.state.signOut).not.toHaveBeenCalled();
+  });
   it('backend outage offers retry without revoking the Clerk session',async()=>{
     fixture.validate.mockRejectedValueOnce(new ApiError(503,'offline'));render(<ClerkAdminRoot/>);await screen.findByText('Retry');
     expect(fixture.state.signOut).not.toHaveBeenCalled();fireEvent.click(screen.getByText('Retry'));await screen.findByTestId('protected-admin');
