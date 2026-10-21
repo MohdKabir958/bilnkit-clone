@@ -41,13 +41,18 @@ def main():
              '--build-name=1.10.0','--build-number=16','--dart-define=AUTH_MODE=clerk-test',
              f'--dart-define=AUTH_PREVIEW={str(preview).lower()}',f'--dart-define=API_BASE_URL={origin}/api',f'--dart-define=SOCKET_URL={origin}']
     app=ROOT/f'apps/{args.app}_app'
+    build_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+    source_tree=subprocess.check_output(['git','rev-parse','HEAD:apps','HEAD:packages'],cwd=ROOT,text=True)
+    if subprocess.check_output(['git','status','--porcelain','--','apps','packages'],cwd=ROOT,text=True).strip():
+        raise RuntimeError('Commit app source before building handover APKs.')
     with (output/f'{args.app}-build.log').open('w') as log:
         result=subprocess.run(command,cwd=app,env=env,stdout=log,stderr=subprocess.STDOUT)
     if result.returncode:return result.returncode
+    if subprocess.check_output(['git','rev-parse','HEAD:apps','HEAD:packages'],cwd=ROOT,text=True)!=source_tree or subprocess.check_output(['git','status','--porcelain','--','apps','packages'],cwd=ROOT,text=True).strip():
+        raise RuntimeError('App source changed during build; rebuild before publication.')
     label={'customer':'Customer','vendor':'Vendor','driver':'Delivery'}[args.app]
     target=output/f'Grozo-{label}-Clerk-Test.apk'
     shutil.copy2(app/'build/app/outputs/flutter-apk/app-arm64-v8a-profile.apk',target)
-    build_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
     source_dirty=bool(subprocess.check_output(['git','status','--porcelain','--','apps','packages'],cwd=ROOT,text=True).strip())
     (output/f'{args.app}-build.json').write_text(json.dumps({'filename':target.name,'command':command,'workingDirectory':str(app.relative_to(ROOT)),
         'exitCode':0,'buildCommit':build_commit,'appSourceDirty':source_dirty,'authMode':'clerk-test','authenticationPreview':preview,

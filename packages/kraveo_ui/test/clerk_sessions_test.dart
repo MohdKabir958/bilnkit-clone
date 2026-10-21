@@ -92,6 +92,7 @@ void main() {
     events.add(state);
     await Future<void>.delayed(Duration.zero);
     expect(await client.token(), isNull);
+    expect(client.identity.value.signedIn, isFalse);
   });
   test('account cleanup runs before native account selection', () async {
     await client.initialize();

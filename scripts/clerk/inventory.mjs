@@ -13,12 +13,12 @@ const ts = require('typescript');
 const git = spawnSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' });
 if (git.status !== 0) throw new Error('Cannot enumerate tracked source files.');
 const tracked = git.stdout.split('\0').filter(Boolean).sort();
-const scope = /^(backend\/(src|test|scripts|prisma)|apps\/(customer|vendor|driver)_app\/(lib|test|android)|web\/super_admin|packages\/kraveo_ui\/lib|scripts|deploy|render\.yaml|\.github\/workflows)/;
+const scope = /^(backend\/(src|test|scripts|prisma)|apps\/(customer|vendor|driver)_app\/(lib|test|android)|web\/super_admin|packages\/(kraveo_ui\/lib|grozo_clerk\/android)|scripts|deploy|render\.yaml|\.github\/workflows)/;
 const suffix = /\.(ts|tsx|dart|kt|kts|prisma|mjs|cjs|yaml|json|example)$/;
 const ignore = /(package-lock\.json|pubspec\.lock|\/prisma\/(migrations|baseline)\/|\/assets\/|^scripts\/clerk\/)/;
 const patterns = {
-  identity: /\b(googleSub|passwordHash|GoogleAuthService|PartnerAuthService|generateToken|verifyTokenForAccount|verifyGoogleIdToken)\b/g,
-  session: /\b(tokenVersion|invalidateAuthCache|bumpTokenVersion|accountMatchesToken|clearToken|getSavedToken|saveToken|getAuthToken|setAuthToken|clearAuthToken|SessionController|SessionProvider|SessionScope|SecureSessionTokens|FlutterSecureStorage|kraveo_admin_token|kraveo_admin_profile)\b/g,
+  identity: /\b(clerkUserId|Clerk|clerkMiddleware|getAuth|resolveClerkSession|verifiedClerkClaims|linkClerkIdentity|provisionClerkAdmin|googleSub|passwordHash|GoogleAuthService|PartnerAuthService|generateToken|verifyTokenForAccount|verifyGoogleIdToken)\b/g,
+  session: /\b(ClerkSessions|ClerkIdentity|GetTokenOptions|freshAuthToken|installClerkTokenGetter|tokenVersion|invalidateAuthCache|bumpTokenVersion|accountMatchesToken|clearToken|getSavedToken|saveToken|getAuthToken|setAuthToken|clearAuthToken|SessionController|SessionProvider|SessionScope|SecureSessionTokens|FlutterSecureStorage|kraveo_admin_token|kraveo_admin_profile)\b/g,
   clientFlows: /\b(AuthGate|AuthScreen|LoginScreen|SignupScreen|ProfileSetupScreen|PartnerSession|PartnerSignupForm|GoogleSignIn|SignInOutcome|google_sign_in)\b/g,
   authentication: /\b(requireAuth|authenticateJwt|jwt|jsonwebtoken|GOOGLE_WEB_CLIENT_ID|JWT_SECRET|ADMIN_PASSCODE)\b|\/auth\/[a-z-]+/g,
   authorization: /\b(requireRole|requireApprovedPartner|approvalStatus|AuthenticatedRequest)\b/g,
@@ -64,12 +64,12 @@ for (const file of tracked.filter(f => scope.test(f) && suffix.test(f) && !ignor
   visit(ast);
 }
 const schema = readFileSync(path.join(root, 'backend/prisma/schema.prisma'), 'utf8');
-const models = [...schema.matchAll(/model\s+(User|Vendor|DriverPartner|DeviceToken)\s*\{([\s\S]*?)\n\}/g)]
+const models = [...schema.matchAll(/model\s+(User|Vendor|DriverPartner|DeviceToken|ClerkIdentityState|ClerkWebhookDelivery)\s*\{([\s\S]*?)\n\}/g)]
   .map(match => ({ model: match[1], fields: match[2].split('\n').map(line => line.trim())
     .filter(line => line && !line.startsWith('//') && !line.startsWith('@@')) }));
 const inventory = {
   baselineCommit: '0d2b149887bad33e8db1a7e91898d72f6904b9e6',
-  status: 'Stage 1 only. Runtime authentication has NOT been migrated.',
+  status: 'Clerk backend/admin/Android integration implemented in isolated mode. Legacy default retained pending connected manual verification and explicit cutover approval.',
   scope: 'Tracked source/config/test files only; no .env, provider secrets, uploads or account records read.',
   limitations: 'Source reference inventory is navigation aid, not proof of authorization. Middleware inside handlers and ownership queries require manual review. Historical migrations are preserved, not renamed.',
   counts: { referencedFiles: files.length, endpoints: endpoints.length, mounts: mounts.length },

@@ -54,6 +54,8 @@ class ClerkSessions {
   void _accept(dynamic raw) {
     if (raw is! Map) return;
     final next = ClerkIdentity.fromMap(raw);
+    // Late native events cannot resurrect a locally signed-out identity.
+    if (_locallySignedOut && next.signedIn) return;
     final previous = identity.value;
     identity.value = next;
     if (next.userId != previous.userId ||
@@ -83,8 +85,8 @@ class ClerkSessions {
     try {
       final state = await _channel
           .invokeMapMethod<String, dynamic>('authenticate', {'mode': mode});
-      _accept(state);
       _locallySignedOut = false;
+      _accept(state);
       return identity.value.signedIn;
     } on PlatformException catch (error) {
       if (error.code == 'AUTH_CANCELLED') return false;
@@ -116,9 +118,10 @@ class ClerkSessions {
   Future<void> switchSession(String id) async {
     await beforeAccountChange?.call();
     _epoch++;
-    _accept(await _channel.invokeMapMethod<String, dynamic>(
-        'setActiveSession', {'sessionId': id}));
+    final state = await _channel.invokeMapMethod<String, dynamic>(
+        'setActiveSession', {'sessionId': id});
     _locallySignedOut = false;
+    _accept(state);
   }
 
   Future<void> dispose() async {
