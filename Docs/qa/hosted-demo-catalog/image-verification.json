@@ -1,0 +1,74 @@
+[
+  {
+    "product": "milk",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/milk.webp",
+    "bytes": 2834,
+    "sha256Matches": true
+  },
+  {
+    "product": "bananas",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/bananas.webp",
+    "bytes": 9358,
+    "sha256Matches": true
+  },
+  {
+    "product": "flour",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/flour.webp",
+    "bytes": 12478,
+    "sha256Matches": true
+  },
+  {
+    "product": "eggs",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/eggs.webp",
+    "bytes": 9912,
+    "sha256Matches": true
+  },
+  {
+    "product": "rice",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/rice.webp",
+    "bytes": 32010,
+    "sha256Matches": true
+  },
+  {
+    "product": "bread",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/bread.webp",
+    "bytes": 15554,
+    "sha256Matches": true
+  },
+  {
+    "product": "oil",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/oil.webp",
+    "bytes": 6234,
+    "sha256Matches": true
+  },
+  {
+    "product": "biscuits",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/biscuits.webp",
+    "bytes": 13096,
+    "sha256Matches": true
+  },
+  {
+    "product": "tea",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/tea.webp",
+    "bytes": 20010,
+    "sha256Matches": true
+  },
+  {
+    "product": "oranges",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/oranges.webp",
+    "bytes": 17860,
+    "sha256Matches": true
+  },
+  {
+    "product": "cleaner",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/cleaner.webp",
+    "bytes": 7824,
+    "sha256Matches": true
+  },
+  {
+    "product": "tomatoes",
+    "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/0d2b149887bad33e8db1a7e91898d72f6904b9e6/demo/assets/products/tomatoes.webp",
+    "bytes": 11626,
+    "sha256Matches": true
+  }
+]

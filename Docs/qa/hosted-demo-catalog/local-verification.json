@@ -1,0 +1,18 @@
+{
+  "database": "grozo_catalog_1792591071702_test",
+  "host": "127.0.0.1",
+  "checks": [
+    "all migrations applied to fresh local database",
+    "exactly two stores and 24 products inserted",
+    "initial inventory movements recorded for 22 in-stock products; zero-stock packs add no movement",
+    "existing account, Clerk identity, role and balance preserved; no new accounts",
+    "repeat seed preserves changed stock and creates no duplicate products or movements",
+    "all four store/address combinations pass real serviceability",
+    "real public customer discovery and store detail return both stores and product images",
+    "no orders or payment activity created",
+    "ownership collision refuses reseeding rather than changing association"
+  ],
+  "passed": 9,
+  "failed": 0,
+  "remoteDatabaseModified": false
+}
