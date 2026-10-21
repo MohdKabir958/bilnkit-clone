@@ -7,6 +7,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { prisma } from './db';
+import { databaseReadinessDiagnostic } from './services/readinessDiagnostic';
 import { apiRouter } from './routes/api';
 import { attachRealtime } from './realtime';
 import { startOrderMaintenance } from './services/orderMaintenance';
@@ -98,9 +99,19 @@ app.get('/health', (req, res) => {
 });
 
 // Readiness checks the actual database; liveness remains independent of external services.
+let lastReadinessFailureAt = 0;
 app.get('/ready', async (_req, res) => {
-  try { await prisma.$queryRaw`SELECT 1`; res.json({ready:true,pushConfigured:getPushProvider().enabled}); }
-  catch { res.status(503).json({ready:false}); }
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    lastReadinessFailureAt = 0;
+    res.json({ready:true,pushConfigured:getPushProvider().enabled});
+  } catch (error) {
+    if (!lastReadinessFailureAt || Date.now() - lastReadinessFailureAt >= 60_000) {
+      console.error('Database readiness check failed:', databaseReadinessDiagnostic(error, process.env.DATABASE_URL));
+      lastReadinessFailureAt = Date.now();
+    }
+    res.status(503).json({ready:false});
+  }
 });
 
 // 404 Non-Existent Route Guard

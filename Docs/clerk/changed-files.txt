@@ -77,6 +77,10 @@ Docs/qa/backend-full-run-summary.json
 Docs/qa/backend-full-run.json
 Docs/qa/backend-full-run.log
 Docs/qa/final-backend-regression.md
+Docs/qa/readiness-diagnostic.md
+Docs/qa/readiness-diagnostic/backend-build.txt
+Docs/qa/readiness-diagnostic/tests.json
+Docs/qa/readiness-diagnostic/tests.txt
 Docs/qa/render-docker-fix/backend-build.txt
 Docs/qa/render-docker-fix/docker-build.txt
 Docs/qa/render-docker-fix/migration-config-tests.txt
@@ -138,8 +142,10 @@ backend/src/routes/partners.ts
 backend/src/services/clerkIdentity.ts
 backend/src/services/orderFlow.ts
 backend/src/services/paymentReconcile.ts
+backend/src/services/readinessDiagnostic.ts
 backend/test/e2e/clerk_migration.test.ts
 backend/test/e2e/payments_adversarial.test.ts
+backend/test/unit/readinessDiagnostic.test.ts
 deploy/render.clerk-staging.yaml
 packages/grozo_clerk/android/src/main/kotlin/com/grozo/clerk/GrozoClerkAuthActivity.kt
 packages/grozo_clerk/android/src/main/kotlin/com/grozo/clerk/GrozoClerkBridge.kt
