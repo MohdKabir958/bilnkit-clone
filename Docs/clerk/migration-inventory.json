@@ -4,7 +4,7 @@
   "scope": "Tracked source/config/test files only; no .env, provider secrets, uploads or account records read.",
   "limitations": "Source reference inventory is navigation aid, not proof of authorization. Middleware inside handlers and ownership queries require manual review. Historical migrations are preserved, not renamed.",
   "counts": {
-    "referencedFiles": 223,
+    "referencedFiles": 224,
     "endpoints": 163,
     "mounts": 22
   },
@@ -15550,6 +15550,17 @@
           "kind": "authentication",
           "symbol": "GOOGLE_WEB_CLIENT_ID",
           "line": 14
+        }
+      ]
+    },
+    {
+      "path": "deploy/render.clerk-staging.yaml",
+      "sha256": "7b7455836da96f7b7d2860d840c6c0ad71d3e14cb8408316a54917231f425b73",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 2
         }
       ]
     },
