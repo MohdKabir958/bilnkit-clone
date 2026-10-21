@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show GrozoAuthConfig, ClerkSessions;
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
@@ -21,7 +22,9 @@ enum SessionStatus {
 /// injects it into every request); this keeps the who-am-I basics next to it. A password is
 /// only ever passed straight through to the server and is never stored.
 class SessionController extends ChangeNotifier {
-  SessionController({PartnerAuthService? auth}) : auth = auth ?? ApiPartnerAuthService();
+  SessionController({PartnerAuthService? auth}) : auth = auth ?? ApiPartnerAuthService() {
+    if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = (_) {if (_session != null) unawaited(expire());};
+  }
 
   static const String sessionPrefKey = 'kraveo_driver_session';
 
@@ -105,12 +108,13 @@ class SessionController extends ChangeNotifier {
 
   /// App start: validate the stored token, or fall through to the login screen.
   Future<void> restore() async {
-    final token = await DriverApiService.getSavedToken();
+    String? token;
+    try { token = await DriverApiService.getSavedToken(); } catch (_) { _set(SessionStatus.unreachable); return; }
     if (token == null || token.isEmpty) {
       _set(SessionStatus.signedOut);
       return;
     }
-    final stored = await _loadStored();
+    final stored = GrozoAuthConfig.usesClerk ? null : await _loadStored();
     final askedAt = DateTime.now();
     final result = await auth.fetchProfile(token);
     switch (result.outcome) {
@@ -214,6 +218,7 @@ class SessionController extends ChangeNotifier {
 
   @override
   void dispose() {
+    if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = null;
     dutyReading.dispose();
     super.dispose();
   }
@@ -247,6 +252,7 @@ class SessionController extends ChangeNotifier {
         if (token != null && token.isNotEmpty) auth.logout(token),
       ]).timeout(const Duration(seconds: 5));
     } catch (_) {}
+    if (GrozoAuthConfig.usesClerk) await ClerkSessions.instance.signOut();
     await _clearAll();
     _set(SessionStatus.signedOut);
   }

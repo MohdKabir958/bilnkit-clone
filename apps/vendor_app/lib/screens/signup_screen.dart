@@ -103,7 +103,7 @@ class _SignupScreenState extends State<SignupScreen> {
         e['phone'] =
             'Enter your 10-digit mobile number\n10 अंकों का मोबाइल नंबर डालें';
       }
-      if (_password.text.length < 8) {
+      if (!GrozoAuthConfig.usesClerk && _password.text.length < 8) {
         e['password'] = 'Use at least 8 characters\nकम से कम 8 अक्षर रखें';
       }
     }
@@ -459,7 +459,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                     ),
-                    if (!_editing) ...[
+                    if (!_editing && !GrozoAuthConfig.usesClerk) ...[
                       const SizedBox(height: 18),
                       KReveal(
                         index: 5,

@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show GrozoAuthConfig, ClerkSessions;
 import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -60,6 +61,7 @@ class DriverApiService {
 
   /// Retrieves the JWT from protected storage or the in-memory session cache
   static Future<String?> getSavedToken() async {
+    if (GrozoAuthConfig.usesClerk) return ClerkSessions.instance.token();
     if (_cachedToken != null && _cachedToken!.isNotEmpty) {
       return _cachedToken;
     }
@@ -76,6 +78,7 @@ class DriverApiService {
 
   /// Saves JWT token to local persistence
   static Future<void> saveToken(String token) async {
+    if (GrozoAuthConfig.usesClerk) { try { await SecureSessionTokens.delete(_tokenPrefKey); } catch (_) {} return; }
     _tokenEpoch++;
     _cachedToken = token;
     try {

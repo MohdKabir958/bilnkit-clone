@@ -34,6 +34,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (GrozoAuthConfig.usesClerk) return ClerkEntryScreen(appName:'Grozo Customer',onContinue:() async { await context.read<SessionProvider>().restore(); });
     final k = context.k;
     final busy = context.select<SessionProvider, bool>((s) => s.isSigningIn);
     return Scaffold(

@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show GrozoAuthConfig, ClerkSessions;
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
@@ -106,7 +107,11 @@ class IoRiderSocket implements RiderSocket {
         _url,
         io.OptionBuilder()
             .setTransports(['websocket'])
-            .setAuth(handshakeAuth(token))
+            .setAuthFn((callback) async {
+              if (!GrozoAuthConfig.usesClerk) { callback(handshakeAuth(token)); return; }
+              try { callback({'token': await ClerkSessions.instance.token(forceRefresh:true) ?? '', 'groups': 1}); }
+              catch (_) { callback({'token':'', 'groups': 1}); }
+            })
             .disableAutoConnect()
             .enableForceNew()
             .enableReconnection()
@@ -122,7 +127,8 @@ class IoRiderSocket implements RiderSocket {
         }
         _add(const SocketConnectionChanged(true));
       });
-      s.onDisconnect((_) {
+      s.onDisconnect((reason) {
+        if (reason == 'io server disconnect' && _wanted && !_disposed) s.connect();
         _connected = false;
         _add(const SocketConnectionChanged(false));
       });

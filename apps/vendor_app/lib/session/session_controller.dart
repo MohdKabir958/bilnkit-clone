@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show GrozoAuthConfig, ClerkSessions;
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
@@ -25,7 +26,12 @@ enum SessionStatus {
 class SessionController extends ChangeNotifier {
   SessionController({PartnerAuthService? auth, VendorLocationApi? locationApi})
       : auth = auth ?? ApiPartnerAuthService(),
-        locationApi = locationApi ?? HttpVendorLocationApi();
+        locationApi = locationApi ?? HttpVendorLocationApi() {
+    if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = (_) {if (_session != null) unawaited(expire());};
+  }
+
+  @override
+  void dispose() { if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = null; super.dispose(); }
 
   static const String sessionPrefKey = 'kraveo_vendor_session';
 
@@ -88,7 +94,7 @@ class SessionController extends ChangeNotifier {
   /// `GET /partner/me` carries the account, the restaurant and the approval state. If a response ever lacks the
   /// restaurant, keep the details we already stored and take only the fresh account + approval fields.
   static PartnerSession _mergeFresh(PartnerSession? stored, PartnerSession fresh) {
-    if (stored == null || fresh.vendorId != null) return fresh;
+    if (stored == null || stored.userId != fresh.userId || fresh.vendorId != null) return fresh;
     return stored.withUserFrom(fresh).copyWith(
           approval: fresh.approval,
           rejectionReason: fresh.rejectionReason,
@@ -98,12 +104,13 @@ class SessionController extends ChangeNotifier {
 
   /// App start: validate the stored token, or fall through to the login screen.
   Future<void> restore() async {
-    final token = await VendorApiService.getSavedToken();
+    String? token;
+    try { token = await VendorApiService.getSavedToken(); } catch (_) { _set(SessionStatus.unreachable); return; }
     if (token == null || token.isEmpty) {
       _set(SessionStatus.signedOut);
       return;
     }
-    final stored = await _loadStored();
+    final stored = GrozoAuthConfig.usesClerk ? null : await _loadStored();
     final result = await auth.fetchProfile(token);
     switch (result.outcome) {
       case ProfileOutcome.valid:
@@ -259,6 +266,7 @@ class SessionController extends ChangeNotifier {
         if (token != null && token.isNotEmpty) auth.logout(token),
       ]).timeout(const Duration(seconds: 5));
     } catch (_) {}
+    if (GrozoAuthConfig.usesClerk) await ClerkSessions.instance.signOut();
     await _clearAll();
     locationPromptShown = false;
     _set(SessionStatus.signedOut);

@@ -28,6 +28,9 @@ services:
         sync: false
       - key: MIGRATION_DATABASE_URL
         sync: false
+      # Legacy remains the default until explicit coordinated cutover approval.
+      - key: AUTH_MODE
+        value: legacy
       - key: JWT_SECRET
         generateValue: true
       - key: ADMIN_PASSCODE
@@ -48,3 +51,7 @@ services:
         sync: false
       - key: GOOGLE_WEB_CLIENT_ID
         sync: false
+      # Clerk variables are entered manually only for a separate staging service
+      # or an approved cutover. See Docs/clerk/07_neon_render_vercel_deployment.md.
+      # AUTH_MODE=clerk-test requires NODE_ENV=development and a fresh staging DB.
+      # Do not paste secrets into this Blueprint.

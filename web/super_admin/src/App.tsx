@@ -18,7 +18,7 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { FinancePanel } from './components/FinancePanel';
 import type { PendingCounts, VendorCommission } from './lib/catalogParse';
 import { AdminProfile, AttentionEntry, DriverPartner, DriverPin, Order, OrderStatus, TabType, Vendor, normalizeDriverPin, normalizeOrderPartial } from './types';
-import { ApiError, apiService, clearAuthToken, getAuthToken, isAuthenticated as hasSession, SOCKET_URL } from './services/api';
+import { ApiError, apiService, clearAuthToken, getAuthToken, isAuthenticated as hasSession, SOCKET_URL, freshAuthToken, clerkAuthEnabled } from './services/api';
 import { LoginScreen } from './components/LoginScreen';
 import { LogoMark } from './components/ui/Logo';
 import { useToast } from './components/ui/Toast';
@@ -51,9 +51,9 @@ const plainReassignError = (error: unknown): unknown => (error instanceof ApiErr
   ? new ApiError(error.status, reassignFailureMessage(error.code, error.message), error.code, error.field)
   : error);
 
-export const App: React.FC = () => {
-  const [isAuth, setIsAuth] = useState(false);
-  const [authChecking, setAuthChecking] = useState(true);
+export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => void; onClerkDenied?: () => void}> = ({clerkAdmin,onClerkSignOut,onClerkDenied}) => {
+  const [isAuth, setIsAuth] = useState(Boolean(clerkAdmin));
+  const [authChecking, setAuthChecking] = useState(!clerkAdmin);
   const [adminProfile, setAdminProfile] = useState<AdminProfile | undefined>();
   const [activeTab, setActiveTab] = useState<TabType>('operations');
   const [isLiveConnected, setIsLiveConnected] = useState(false);
@@ -97,6 +97,7 @@ export const App: React.FC = () => {
 
   const handleAuthFailure = useCallback((error: unknown) => {
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+      if (clerkAuthEnabled) onClerkDenied?.();
       clearAuthToken();
       setIsAuth(false);
       setAdminProfile(undefined);
@@ -107,6 +108,7 @@ export const App: React.FC = () => {
   // Panels keep their own inline error message; this only logs the admin out when the session is no longer valid.
   const handleSessionError = useCallback((error: unknown) => {
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+      if (clerkAuthEnabled) onClerkDenied?.();
       clearAuthToken();
       setIsAuth(false);
       setAdminProfile(undefined);
@@ -213,6 +215,7 @@ export const App: React.FC = () => {
   // Check the stored session. Only a rejected token (401/403) ends it; if the server or network is down the token is
   // kept and the check retries with a growing delay, so a blip never throws away a valid 30-day session.
   useEffect(() => {
+    if (clerkAuthEnabled) { setAuthChecking(false); return undefined; }
     if (!hasSession()) {
       setAuthChecking(false);
       return undefined;
@@ -249,9 +252,8 @@ export const App: React.FC = () => {
     if (!isAuth) return undefined;
     fetchBackendData();
 
-    const token = getAuthToken();
     const socket = io(SOCKET_URL, {
-      auth: { token },
+      auth: (callback) => { freshAuthToken(true).then(token => callback({token})).catch(() => callback({token:''})); },
       transports: ['websocket', 'polling'],
       // Never give up: a server restart or a Wi-Fi outage of any length must heal by itself.
       reconnection: true,
@@ -578,6 +580,7 @@ export const App: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
+    onClerkSignOut?.();
     clearAuthToken();
     setIsAuth(false);
     setAdminProfile(undefined);
@@ -627,6 +630,7 @@ export const App: React.FC = () => {
   }
 
   if (!isAuth) {
+    if (clerkAuthEnabled) return <main className="p-8"><p>Administrator access ended.</p><button onClick={onClerkSignOut}>Sign out</button></main>;
     return <LoginScreen onLoginSuccess={(profile) => { setAdminProfile(profile); setIsAuth(true); }} />;
   }
 

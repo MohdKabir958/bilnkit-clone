@@ -1,3 +1,5 @@
+import { usesClerk } from './config/authMode';
+import { retryClerkDeletions } from './services/clerkIdentity';
 import express from 'express';
 import {installStructuredLogging} from './utils/logger';
 import http from 'http';
@@ -120,6 +122,7 @@ attachRealtime(io);
 server.on('error', guards.onListenError);
 
 server.listen(PORT, () => {
+  if (usesClerk()) { const cleanup = setInterval(() => { retryClerkDeletions().catch(() => console.warn('Clerk deletion cleanup will retry.')); },60_000); cleanup.unref(); }
   console.log(`🚀 ${brand.name} Backend Engine running on http://localhost:${PORT}`);
   console.log(`📡 WebSockets listening for real-time driver tracking & order alerts`);
   // Order housekeeping every 60 s: expire unpaid orders, auto-cancel unaccepted paid orders, retry refunds.

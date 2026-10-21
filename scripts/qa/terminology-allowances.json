@@ -623,5 +623,20 @@
     "file": "packages/kraveo_ui/lib/src/tokens/colors.dart",
     "value": "GATE",
     "reason": "Backend status substring parser; the visible status label is At your door."
+  },
+  {
+    "file": "backend/src/realtime.ts",
+    "value": "STUDENT",
+    "reason": "Internal persisted customer role enum retained for database/API compatibility; never rendered as customer-facing copy."
+  },
+  {
+    "file": "backend/src/routes/partners.ts",
+    "value": "STUDENT",
+    "reason": "Internal persisted customer role enum retained for database/API compatibility; never rendered as customer-facing copy."
+  },
+  {
+    "file": "backend/src/services/clerkIdentity.ts",
+    "value": "STUDENT",
+    "reason": "Internal persisted customer role enum retained for database/API compatibility; never rendered as customer-facing copy."
   }
 ]

@@ -116,7 +116,9 @@ export const reconcilePendingPayments = async (now: Date, breaker: Breaker): Pro
       order: { paymentStatus: { in: ['PENDING', 'FAILED'] } },
     },
     select: { id: true, razorpayOrderId: true, orderId: true, order: { select: PAYABLE_SELECT } },
-    orderBy: { createdAt: 'desc' },
+    // Stable tie-breaker is required: rotating slices must see the same ordering
+    // when concurrent checkout inserts have identical timestamps.
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     take: 500,
   });
   const batch = pickReconcileBatch(rows, now.getTime());

@@ -1,0 +1,5 @@
+{
+  "environment": "development",
+  "publishableKey": "pk_test_ZW5oYW5jZWQtZm9hbC0zMC5jbGVyay5hY2NvdW50cy5kZXYk",
+  "note": "Public client configuration only. Rotate the previously exposed Secret Key before testing. No backend exists yet; default builds are explicitly labelled authentication previews."
+}

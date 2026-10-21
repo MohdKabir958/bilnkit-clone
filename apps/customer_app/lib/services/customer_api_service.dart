@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show GrozoAuthConfig, ClerkSessions;
 import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -85,6 +86,7 @@ class CustomerApiService {
 
   /// Retrieves the JWT from protected storage or the in-memory session cache
   static Future<String?> getSavedToken() async {
+    if (GrozoAuthConfig.usesClerk) return ClerkSessions.instance.token();
     if (_cachedToken != null && _cachedToken!.isNotEmpty) {
       return _cachedToken;
     }
@@ -101,6 +103,7 @@ class CustomerApiService {
 
   /// Saves JWT token to local persistence
   static Future<void> saveToken(String token) async {
+    if (GrozoAuthConfig.usesClerk) { try { await SecureSessionTokens.delete(_tokenPrefKey); } catch (_) {} return; }
     _tokenEpoch++;
     _cachedToken = token;
     try {
@@ -123,10 +126,9 @@ class CustomerApiService {
   /// [onUnauthorized] fires; on network trouble the token is kept so the user is not
   /// logged out just because they opened the app offline.
   static Future<ProfileResult?> fetchProfile() async {
-    final token = await getSavedToken();
-    if (token == null || token.isEmpty) return null;
-
     try {
+      final token = await getSavedToken();
+      if (token == null || token.isEmpty) return null;
       final response = await _get(
         Uri.parse('${ApiConfig.baseUrl}/auth/profile'),
         headers: await getAuthHeaders(),

@@ -8,6 +8,17 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
+    private var clerkBridge: com.grozo.clerk.GrozoClerkBridge? = null
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        clerkBridge?.onActivityResult(requestCode, resultCode)
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        clerkBridge?.detach(); clerkBridge = null
+        super.cleanUpFlutterEngine(flutterEngine)
+    }
     @Suppress("DEPRECATION")
     private fun mapsAvailable(): Boolean {
         return try {
@@ -26,6 +37,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        clerkBridge = com.grozo.clerk.GrozoClerkBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         // Lets the app send the student to this app's system notification settings when they
         // have turned notifications off (see lib/services/push/system_settings.dart).
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "site.kraveo.customer/system")

@@ -1,3 +1,4 @@
+import { authMode } from './authMode';
 /**
  * Boot-time configuration check. Pure (takes the env as an argument) so it can be tested.
  * Hard requirements stop the server from starting; soft ones are returned as warnings.
@@ -17,10 +18,20 @@ export const assertRuntimeConfig = (env: Record<string, string | undefined>): { 
   if (env.PAYMENT_PROVIDER && !['disabled', 'razorpay'].includes(env.PAYMENT_PROVIDER)) {
     throw new Error('Unsupported PAYMENT_PROVIDER. Use razorpay, or disabled for local development.');
   }
-  const missing = REQUIRED_CONFIG.filter((key) => !(paymentsDisabled && key.startsWith('RAZORPAY_')) && blank(key));
+  const mode = authMode(env);
+  const required = mode === 'legacy' ? [...REQUIRED_CONFIG] : [...REQUIRED_CONFIG.filter(key => !['JWT_SECRET','ADMIN_PASSCODE'].includes(key)), 'CLERK_PUBLISHABLE_KEY','CLERK_SECRET_KEY','CLERK_WEBHOOK_SIGNING_SECRET','CLERK_ISSUER','CLERK_AUTHORIZED_PARTIES','DELIVERY_PROOF_SECRET'];
+  const missing = required.filter(key => !(paymentsDisabled && key.startsWith('RAZORPAY_')) && blank(key));
+  if (mode !== 'legacy') {
+    const prefix = mode === 'clerk-test' ? 'pk_test_' : env.NODE_ENV === 'production' ? 'pk_live_' : 'pk_';
+    if (!env.CLERK_PUBLISHABLE_KEY?.startsWith(prefix)) throw new Error('Clerk instance does not match the configured environment.');
+    if (mode === 'clerk-test' && !env.CLERK_SECRET_KEY?.startsWith('sk_test_')) throw new Error('Clerk test mode requires a development instance.');
+    if (env.NODE_ENV === 'production' && !env.CLERK_SECRET_KEY?.startsWith('sk_live_')) throw new Error('Production Clerk mode requires production credentials.');
+    if (!env.CLERK_ISSUER?.startsWith('https://')) throw new Error('CLERK_ISSUER must be HTTPS.');
+    if ((env.DELIVERY_PROOF_SECRET?.length ?? 0) < 32) throw new Error('DELIVERY_PROOF_SECRET must contain at least 32 characters.');
+  }
   if (missing.length > 0) throw new Error(`Missing required configuration: ${missing.join(', ')}`);
   if (env.NODE_ENV === 'production') {
-    if ((env.JWT_SECRET?.length ?? 0) < 32 || (env.ADMIN_PASSCODE?.length ?? 0) < 20) throw new Error('Production requires a JWT_SECRET of at least 32 characters and an ADMIN_PASSCODE of at least 20.');
+    if (mode === 'legacy' && ((env.JWT_SECRET?.length ?? 0) < 32 || (env.ADMIN_PASSCODE?.length ?? 0) < 20)) throw new Error('Production requires a JWT_SECRET of at least 32 characters and an ADMIN_PASSCODE of at least 20.');
     for (const key of ['ADMIN_URL', 'PUBLIC_BASE_URL']) {
       let url: URL; try {url = new URL(env[key] ?? '');} catch {throw new Error(`${key} must be a configured HTTPS URL.`);}
       if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || url.pathname !== '/') throw new Error(`${key} must be an HTTPS origin.`);
@@ -30,7 +41,7 @@ export const assertRuntimeConfig = (env: Record<string, string | undefined>): { 
   }
   const warnings: string[] = [];
   if (paymentsDisabled) warnings.push('Payments are DISABLED for local development. Checkout cannot charge or capture money.');
-  for (const key of RECOMMENDED_CONFIG) {
+  for (const key of mode === 'legacy' ? RECOMMENDED_CONFIG : []) {
     if (blank(key)) warnings.push(`${key} is not set: customer Google sign-in will answer 503 until it is configured.`);
   }
   return { warnings };

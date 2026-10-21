@@ -1,6 +1,7 @@
 import java.util.Properties
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.gms.google-services") apply false
 }
@@ -17,6 +18,8 @@ val marketBrand = Properties().apply {
 }
 
 android {
+    buildFeatures { compose = true }
+    sourceSets.getByName("main").java.srcDir(rootProject.file("../../../packages/grozo_clerk/android/src/main/kotlin"))
     namespace = "site.kraveo.vendor"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
@@ -29,8 +32,10 @@ android {
     }
 
     defaultConfig {
+        manifestPlaceholders["GROZO_AUTH_MODE"] = providers.environmentVariable("GROZO_AUTH_MODE").getOrElse("legacy")
+        manifestPlaceholders["CLERK_PUBLISHABLE_KEY"] = providers.environmentVariable("CLERK_PUBLISHABLE_KEY").getOrElse("")
         applicationId = marketBrand.getProperty("vendor.applicationId")
-        minSdk = flutter.minSdkVersion
+        minSdk = maxOf(24, flutter.minSdkVersion)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -68,4 +73,14 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+}
+
+// Official native Clerk UI includes the core API; no community Flutter auth package.
+dependencies {
+    implementation("com.clerk:clerk-android-ui:1.2.1")
+    implementation("androidx.activity:activity-compose:1.13.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
+    implementation(platform("androidx.compose:compose-bom:2026.06.01"))
+    implementation("androidx.compose.material3:material3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
 }

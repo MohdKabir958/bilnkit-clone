@@ -47,6 +47,18 @@ import type { SavedPin } from '../lib/vendorLocation';
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? window.location.origin : 'http://localhost:5000');
 export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.PROD ? window.location.origin : 'http://localhost:5000');
 
+export const clerkAuthEnabled = (import.meta.env.VITE_AUTH_MODE || 'legacy') !== 'legacy';
+let clerkTokenGetter: ((force: boolean) => Promise<string | null>) | null = null;
+export const installClerkTokenGetter = (getter: typeof clerkTokenGetter) => { clerkTokenGetter = getter; };
+export async function freshAuthToken(force = false): Promise<string> {
+  if (!clerkAuthEnabled) return getAuthToken();
+  if (!clerkTokenGetter) throw new ApiError(401, 'Sign in with Clerk to continue.');
+  let token;
+  try { token = await clerkTokenGetter(force); } catch { throw new ApiError(503, 'Authentication service is temporarily unavailable.'); }
+  if (!token) throw new ApiError(401, 'Your Clerk session has ended.');
+  return token;
+}
+
 export class ApiError extends Error {
   /**
    * `code` / `field` come from the server's `{ success:false, message, code?, field? }` error body (contract 2).
@@ -71,10 +83,14 @@ async function send(path: string, init: RequestInit): Promise<{ response: Respon
   }
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, { ...init, signal: controller.signal, headers: { ...getHeaders(), ...(init.headers || {}) } });
+    const headers = await getHeaders();
+    // A session refresh can take time. Cancellation while obtaining it must prevent the request.
+    if (controller.signal.aborted) throw new DOMException('Cancelled','AbortError');
+    response = await fetch(`${API_BASE_URL}${path}`, { ...init, signal: controller.signal, headers: { ...headers, ...(init.headers || {}) } });
   } catch (error) {
     if (init.signal?.aborted) throw new ApiError(0, 'Cancelled.', 'ABORTED');
     if (controller.signal.aborted) throw new ApiError(0, 'The server took too long to answer. Check the connection and try again.', 'TIMEOUT');
+    if (error instanceof ApiError) throw error;
     throw new ApiError(0, 'The operations API is unreachable. Check the network connection and try again.', 'NETWORK');
   } finally {
     window.clearTimeout(timer);
@@ -98,6 +114,7 @@ let memoryToken = '';
 let storageWriteFailed = false;
 
 export const getAuthToken = (): string => {
+  if (clerkAuthEnabled) return '';
   try {
     const stored = localStorage.getItem('kraveo_admin_token') || '';
     return stored || (storageWriteFailed ? memoryToken : '');
@@ -107,6 +124,7 @@ export const getAuthToken = (): string => {
 };
 
 export const setAuthToken = (token: string, adminProfile?: AdminProfile) => {
+  if (clerkAuthEnabled) throw new ApiError(410, 'Legacy authentication is disabled.');
   const clean = token.replace(/^Bearer\s+/i, '');
   memoryToken = clean;
   try {
@@ -129,8 +147,8 @@ export const clearAuthToken = () => {
 
 export const isAuthenticated = (): boolean => getAuthToken().trim().length > 10;
 
-const getHeaders = (extraHeaders: Record<string, string> = {}) => {
-  const token = getAuthToken().replace(/^Bearer\s+/i, '');
+const getHeaders = async (extraHeaders: Record<string, string> = {}) => {
+  const token = (await freshAuthToken()).replace(/^Bearer\s+/i, '');
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -155,9 +173,10 @@ async function download(path: string): Promise<{ blob: Blob; filename: string }>
   const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, { signal: controller.signal, headers: getHeaders({ Accept: 'text/csv' }) });
-  } catch {
+    response = await fetch(`${API_BASE_URL}${path}`, { signal: controller.signal, headers: await getHeaders({ Accept: 'text/csv' }) });
+  } catch (error) {
     if (controller.signal.aborted) throw new ApiError(0, 'The server took too long to answer. Check the connection and try again.', 'TIMEOUT');
+    if (error instanceof ApiError) throw error;
     throw new ApiError(0, 'The operations API is unreachable. Check the network connection and try again.', 'NETWORK');
   } finally {
     window.clearTimeout(timer);

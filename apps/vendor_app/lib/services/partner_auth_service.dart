@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show GrozoAuthConfig, ClerkSessions;
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -180,6 +181,16 @@ class ApiPartnerAuthService implements PartnerAuthService {
 
   @override
   Future<LoginResult> login({required String phone, required String password}) async {
+    if (GrozoAuthConfig.usesClerk) {
+      try {
+        final token=await ClerkSessions.instance.token();
+        if(token==null) return const LoginResult.failure(LoginFailure.invalidCredentials,message:'Sign in with Clerk first.');
+        final result=await fetchProfile(token);
+        if(result.outcome==ProfileOutcome.valid && result.session!=null) return LoginResult.success(token:token,session:result.session!);
+        return const LoginResult.failure(LoginFailure.wrongRole,message:'Grozo partner access could not be verified. Apply for approval, check the connection or change account.');
+      } catch (_) { return const LoginResult.failure(LoginFailure.offline); }
+    }
+
     final http.Response response;
     try {
       response = await http
@@ -219,6 +230,17 @@ class ApiPartnerAuthService implements PartnerAuthService {
 
   @override
   Future<SignupResult> signUp(PartnerSignupForm form) async {
+    if (GrozoAuthConfig.usesClerk) {
+      try {
+        final token=await ClerkSessions.instance.token();
+        if(token==null) return const SignupResult.failure(SignupFailure.unauthorized);
+        final body=form.toSignupJson()..remove('password');
+        final response=await http.post(Uri.parse('${ApiConfig.baseUrl}/partner/clerk-application'),headers:{'Content-Type':'application/json','Authorization':'Bearer $token'},body:jsonEncode(body)).timeout(_loginTimeout);
+        final result=_signupResult(response,expectToken:false);
+        return result.ok && result.session!=null ? SignupResult.success(token:token,session:result.session) : result;
+      } catch (_) { return const SignupResult.failure(SignupFailure.offline); }
+    }
+
     final http.Response response;
     try {
       response = await http
@@ -286,7 +308,7 @@ class ApiPartnerAuthService implements PartnerAuthService {
         Uri.parse('${ApiConfig.baseUrl}/partner/me'),
         headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
       ).timeout(const Duration(seconds: 10));
-      if (response.statusCode == 401) return const ProfileResult(ProfileOutcome.unauthorized);
+      if (response.statusCode == 401 || (GrozoAuthConfig.usesClerk && response.statusCode == 403)) return const ProfileResult(ProfileOutcome.unauthorized);
       if (response.statusCode != 200) return const ProfileResult(ProfileOutcome.unreachable);
       final json = _decode(response.body);
       final session = json == null ? null : PartnerSession.fromMeJson(json);

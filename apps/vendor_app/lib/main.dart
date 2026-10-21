@@ -90,7 +90,7 @@ class _KraveoVendorAppState extends State<KraveoVendorApp> {
       debugShowCheckedModeBanner: false,
       theme: KraveoTheme.vendor(),
       // Respect the device text scale; shared controls grow with their labels.
-      home: AuthGate(
+      home: GrozoAuthConfig.usesClerk && GrozoAuthConfig.preview ? const ClerkEntryScreen(appName: 'Grozo Vendor',preview:true) : AuthGate(
           session: _session,
           push: widget.push,
           backend: widget.backend,

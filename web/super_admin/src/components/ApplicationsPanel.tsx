@@ -1,3 +1,4 @@
+import { clerkAuthEnabled } from '../services/api';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Bike, Check, ClipboardCheck, Copy, KeyRound, Loader2, MapPin, Phone, RefreshCw, Store, X } from 'lucide-react';
 import { Application, ApplicationCounts, ApprovalStatus, PartnerKind } from '../types';
@@ -219,7 +220,7 @@ export const ApplicationsPanel: React.FC<Props> = ({ refreshKey, query = '', onC
                 {a.status === 'APPROVED' && (
                   <button className="k-btn-danger flex-1" disabled={busy} onClick={() => setDialog({ type: 'reason', app: a, status: 'SUSPENDED' })}>Suspend</button>
                 )}
-                {a.userId && a.status !== 'PENDING' && (
+                {!clerkAuthEnabled && a.userId && a.status !== 'PENDING' && (
                   <button className="k-btn-ghost" onClick={() => setDialog({ type: 'password', app: a })}><KeyRound className="h-4 w-4" aria-hidden="true" />Reset password</button>
                 )}
               </div>

@@ -9,6 +9,17 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
+    private var clerkBridge: com.grozo.clerk.GrozoClerkBridge? = null
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        clerkBridge?.onActivityResult(requestCode, resultCode)
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        clerkBridge?.detach(); clerkBridge = null
+        super.cleanUpFlutterEngine(flutterEngine)
+    }
     // The geolocator plugin shows its "on duty" foreground-service notification on a channel with
     // this id and creates it with importance NONE (which Android may hide). Creating it here
     // first with LOW importance (visible in the shade, silent) is a best effort: Android lets an
@@ -49,6 +60,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        clerkBridge = com.grozo.clerk.GrozoClerkBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         ensureDutyChannel()
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "site.kraveo.driver/system")
             .setMethodCallHandler { call, result ->

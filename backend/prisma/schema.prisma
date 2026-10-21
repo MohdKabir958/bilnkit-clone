@@ -56,6 +56,7 @@ enum DutyStatus {
 
 model User {
   id               String    @id @default(uuid())
+  clerkUserId      String?   @unique
   phone            String?   @unique
   email            String?   @unique
   googleSub        String?   @unique
@@ -88,6 +89,25 @@ model User {
   payoutAccount   PayoutAccount?
   addresses       Address[]
   supportCases    SupportCase[]
+}
+
+// Independent provider subject state survives deidentification and webhook reordering.
+model ClerkIdentityState {
+  clerkUserId      String   @id
+  lastEventAt      BigInt   @default(0)
+  deleted          Boolean  @default(false)
+  suspended        Boolean  @default(false)
+  deleteRequested  Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
+}
+
+model ClerkWebhookDelivery {
+  id               String   @id
+  clerkUserId      String
+  type             String
+  eventTimestamp   BigInt
+  processedAt      DateTime @default(now())
+  @@index([processedAt])
 }
 
 model Vendor {

@@ -142,6 +142,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (GrozoAuthConfig.usesClerk) { return ClerkEntryScreen(appName:'Grozo Delivery',onApply:widget.onCreateAccount,onContinue:() async {
+      final result=await widget.onSubmit('','');
+      if(!result.ok) throw StateError(result.message ?? 'Partner access was not authorized.');
+    }); }
     final k = context.k;
     final locked = _locked;
     return Scaffold(

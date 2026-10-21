@@ -1,3 +1,7 @@
+import { grozoClerkMiddleware } from '../middleware/clerk';
+import { clerkWebhookRouter } from './clerk';
+import { legacyAuthOnly, usesClerk } from '../config/authMode';
+import { revokeClerkSession, requestClerkDeletion } from '../services/clerkIdentity';
 import { driverView } from './partners';
 import { operationsRouter } from './operations';
 import { productsRouter } from './products';
@@ -38,6 +42,8 @@ import { partnerRouter, requireApprovedPartner, validateVendorFields, validateDr
 export const apiRouter = Router();
 
 // Rate limits are mounted by path, before any handler (see middleware/rateLimit.ts for the numbers).
+apiRouter.use(clerkWebhookRouter);
+apiRouter.use(grozoClerkMiddleware);
 apiRouter.use(rateLimitMiddleware);
 apiRouter.use(geographyRouter);
 apiRouter.use(productsRouter);
@@ -64,8 +70,8 @@ export const __resetAdminLoginLimiter = () => adminLoginFailures.reset();
 const canManageVendor = async (vendorId: string, user: AuthenticatedRequest['user']) => {
   if (user?.role === Role.ADMIN) return true;
   if (user?.role !== Role.VENDOR) return false;
-  const vendor = await prisma.vendor.findUnique({ where: { id: vendorId }, select: { userId: true } });
-  return vendor?.userId === user.id;
+  const vendor = await prisma.vendor.findUnique({ where: { id: vendorId }, select: { userId: true, approvalStatus:true } });
+  return vendor?.userId === user.id && (!usesClerk() || vendor.approvalStatus === 'APPROVED');
 };
 
 /** Public catalogue routes do not require a login, but admins and the owning vendor may still see unapproved restaurants. */
@@ -73,7 +79,7 @@ const optionalViewer = async (req: Request): Promise<{ id: string; role: Role } 
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) return null;
   try {
-    const decoded = await verifyTokenForAccount(header.split(' ')[1]);
+    const decoded = await verifyTokenForAccount(header.split(' ')[1], req.headers.origin);
     return { id: decoded.id, role: decoded.role as Role };
   } catch {
     return null;
@@ -171,7 +177,7 @@ const publicUser = (u: any) => ({
 });
 
 // Students: verify the Google ID token, find or create the account.
-apiRouter.post('/auth/google', async (req: Request, res: Response) => {
+apiRouter.post('/auth/google', legacyAuthOnly, async (req: Request, res: Response) => {
   try {
     const idToken = req.body?.idToken;
     if (typeof idToken !== 'string' || idToken.length < 20) {
@@ -230,7 +236,7 @@ apiRouter.post('/auth/google', async (req: Request, res: Response) => {
 });
 
 // Partners (vendor / driver): phone + password. Accounts are created by Grozo only.
-apiRouter.post('/auth/partner-login', async (req: Request, res: Response) => {
+apiRouter.post('/auth/partner-login', legacyAuthOnly, async (req: Request, res: Response) => {
   try {
     const phone = canonicalPhone(req.body?.phone);
     const password = typeof req.body?.password === 'string' ? req.body.password : '';
@@ -289,7 +295,7 @@ apiRouter.post('/auth/partner-login', async (req: Request, res: Response) => {
 });
 
 // Admin Authentication (Passcode Login for Super Admin Dashboard)
-apiRouter.post('/auth/admin-login', async (req: Request, res: Response) => {
+apiRouter.post('/auth/admin-login', legacyAuthOnly, async (req: Request, res: Response) => {
   try {
     const { username, passcode } = req.body ?? {};
 
@@ -441,8 +447,13 @@ apiRouter.post('/auth/logout', requireAuth, async (req: AuthenticatedRequest, re
         await dropFromPartnerRooms(req.user.id, ['drivers']);
       }
     }
+    if (usesClerk() && req.user?.sid) {
+      await revokeClerkSession(req.user.sid);
+      req.app.get('io')?.in(`user_${req.user.id}`).disconnectSockets(true);
+    }
     return res.json({ success: true });
   } catch {
+    if (usesClerk()) return res.status(503).json({success:false,message:'Remote sign-out could not be confirmed. Sign out locally and retry when online.'});
     return res.json({ success: true });
   }
 });
@@ -474,6 +485,9 @@ apiRouter.delete('/auth/account', requireAuth, requireRole('STUDENT'), async (re
       return res.status(409).json({ success: false, message: 'You have an order in progress. You can delete your account once it is delivered.' });
     }
     invalidateAuthCache(userId);
+    const removed = await prisma.user.findUnique({where:{id:userId},select:{clerkUserId:true}});
+    if (removed?.clerkUserId) await requestClerkDeletion(removed.clerkUserId);
+    req.app.get('io')?.in(`user_${userId}`).disconnectSockets(true);
     await disableUserTokens(userId, 'ACCOUNT_DELETED'); // no more pushes to this person's phones (never throws)
     return res.json({ success: true, message: 'Your account has been deleted.' });
   } catch (err: any) {
@@ -484,7 +498,7 @@ apiRouter.delete('/auth/account', requireAuth, requireRole('STUDENT'), async (re
 // ----------------------------------------------------
 // ADMIN: partner accounts (vendor / driver). Grozo creates these; there is no self sign-up.
 // ----------------------------------------------------
-apiRouter.post('/admin/partners', requireAuth, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
+apiRouter.post('/admin/partners', legacyAuthOnly, requireAuth, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const b = req.body ?? {};
     const { role, name, password, vendorId } = b;

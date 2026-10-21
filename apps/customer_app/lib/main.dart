@@ -55,7 +55,7 @@ class KraveoCustomerApp extends StatelessWidget {
         title: BrandConfig.customerName,
         debugShowCheckedModeBanner: false,
         theme: KraveoTheme.customer(),
-        home: const AuthGate(),
+        home: GrozoAuthConfig.usesClerk && GrozoAuthConfig.preview ? const ClerkEntryScreen(appName: 'Grozo Customer',preview:true) : const AuthGate(),
       ),
     );
   }

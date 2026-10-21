@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show GrozoAuthConfig, ClerkSessions;
 import 'package:kraveo_ui/kraveo_ui.dart' show BrandConfig;
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -47,7 +48,9 @@ class SignInOutcome {
 class SessionProvider with ChangeNotifier {
   SessionProvider({SessionStatus initial = SessionStatus.checking, GoogleAuthService? googleAuth})
       : _status = initial,
-        _googleAuth = googleAuth ?? PlatformGoogleAuthService();
+        _googleAuth = googleAuth ?? PlatformGoogleAuthService() {
+    if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = (_) { if (!_disposed) _endSession(); };
+  }
 
   final GoogleAuthService _googleAuth;
 
@@ -63,7 +66,7 @@ class SessionProvider with ChangeNotifier {
   /// Selected server-owned delivery address, cleared when the account changes.
   bool _disposed = false;
   @override
-  void dispose() { _disposed = true; super.dispose(); }
+  void dispose() { _disposed = true; if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = null; super.dispose(); }
   int _addressEpoch = 0;
   DeliveryAddress? _address;
   DeliveryAddress? get selectedAddress => _address;
@@ -158,6 +161,11 @@ class SessionProvider with ChangeNotifier {
   /// "Continue with Google": account picker -> ID token -> POST /auth/google. On success the
   /// session moves to `needsProfile` or `signedIn`; otherwise the outcome says what to show.
   Future<SignInOutcome> signInWithGoogle() async {
+    if (GrozoAuthConfig.usesClerk) {
+      if (!await ClerkSessions.instance.authenticate()) return const SignInOutcome.cancelled();
+      await restore();
+      return _user == null ? const SignInOutcome.failed("Grozo could not verify this account.") : const SignInOutcome.ok();
+    }
     if (_signingIn) return const SignInOutcome.cancelled();
     _signingIn = true;
     notifyListeners();
@@ -238,8 +246,10 @@ class SessionProvider with ChangeNotifier {
         debugPrint('[Session] before-sign-out hook failed (ignored): $e');
       }
     }
-    unawaited(CustomerApiService.logout(token: token));
+    if (GrozoAuthConfig.usesClerk) { await CustomerApiService.logout(token: token); }
+    else { unawaited(CustomerApiService.logout(token: token)); }
     await CustomerApiService.clearToken();
+    if (GrozoAuthConfig.usesClerk) await ClerkSessions.instance.signOut();
     _endSession();
   }
 
@@ -247,6 +257,7 @@ class SessionProvider with ChangeNotifier {
   Future<ActionResult> deleteAccount() async {
     final result = await CustomerApiService.deleteAccount();
     if (result.success) {
+      if (GrozoAuthConfig.usesClerk) await ClerkSessions.instance.signOut();
       await CustomerApiService.clearToken();
       _endSession();
     }

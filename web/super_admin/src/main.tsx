@@ -1,3 +1,4 @@
+import { ClerkAdminRoot, clerkEnabled } from './auth/ClerkAdmin';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import '@fontsource-variable/bricolage-grotesque';
@@ -11,7 +12,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
       <ToastProvider>
-        <App />
+        {clerkEnabled ? <ClerkAdminRoot /> : <App />}
       </ToastProvider>
     </ErrorBoundary>
   </React.StrictMode>

@@ -67,7 +67,7 @@ class _SignupScreenState extends State<SignupScreen> {
     if (_name.text.trim().length < 2) e['name'] = 'Enter your full name';
     if (!_editing) {
       if (!isValidIndianMobile(_phone.text.trim())) e['phone'] = 'Enter your 10-digit mobile number';
-      if (_password.text.length < 8) e['password'] = 'Use at least 8 characters';
+      if (!GrozoAuthConfig.usesClerk && _password.text.length < 8) e['password'] = 'Use at least 8 characters';
     }
     if (_needsPlate && _plate.text.trim().length < 4) e['vehicleRegNo'] = 'Enter the number plate of your vehicle';
     final emergency = _emergency.text.trim();
@@ -247,7 +247,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     index: 3,
                     child: FieldBlock(
                       label: 'MOBILE NUMBER',
-                      hint: 'You will log in with this number',
+                      hint: GrozoAuthConfig.usesClerk ? 'Contact mobile number' : 'You will log in with this number',
                       error: _errors['phone'],
                       child: TextField(
                         key: const ValueKey('phone-field'),
@@ -277,7 +277,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  KReveal(
+                  if (!GrozoAuthConfig.usesClerk) KReveal(
                     index: 4,
                     child: FieldBlock(
                       label: 'CREATE A PASSWORD',

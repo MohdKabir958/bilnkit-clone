@@ -1,3 +1,4 @@
+import { legacyAuthOnly, usesClerk } from '../config/authMode';
 import { Router, Request, Response, NextFunction } from 'express';
 import { ApprovalStatus, Role } from '@prisma/client';
 import { prisma } from '../db';
@@ -176,8 +177,8 @@ export const requireApprovedPartner = async (req: AuthenticatedRequest, res: Res
       const d = await prisma.driverPartner.findUnique({ where: { userId: user.id }, select: { approvalStatus: true } });
       statuses = d ? [d.approvalStatus] : [];
     }
-    if (statuses.length === 0 || statuses.includes('APPROVED')) return next();
-    const blocking = statuses.includes('PENDING') ? 'PENDING' : statuses[0];
+    if (statuses.includes('APPROVED') || (statuses.length === 0 && !usesClerk())) return next();
+    const blocking = statuses.includes('PENDING') || !statuses.length ? 'PENDING' : statuses[0];
     return res.status(403).json({ success: false, code: 'PARTNER_NOT_APPROVED', approvalStatus: blocking, message: notApprovedMessage(blocking) });
   } catch (err) {
     console.error('requireApprovedPartner failed:', errSummary(err));
@@ -198,12 +199,48 @@ export const driverView = (d: any) => d && ({
   dutyStatus: d.dutyStatus ?? 'OFFLINE', // lets the rider app re-read what the server believes (second phone, bad network, logout elsewhere)
 });
 
+// Clerk creates identity only. An explicit application creates a NEW, unapproved business profile.
+partnerRouter.post('/partner/clerk-application', requireAuth, async (req: AuthenticatedRequest,res:Response) => {
+  if (!usesClerk() || !req.user?.clerkUserId) return res.status(404).json({success:false,message:'Not found.'});
+  const b = req.body ?? {}, role = b.role;
+  if (req.user.role !== 'STUDENT' || !['VENDOR','DRIVER'].includes(role)) return res.status(403).json({success:false,message:'This identity cannot create that partner application.'});
+  const name = clean(b.name,60), phone = canonicalPhone(b.phone);
+  if (!NAME_RE.test(name) || !phone) return res.status(400).json({success:false,message:'Enter a full name and valid contact mobile number.'});
+  const details = role === 'VENDOR' ? vendorFields(b) : driverFields(b,phone);
+  if (!details.ok) return res.status(400).json({success:false,...details.error});
+  const location = role === 'VENDOR' ? signupLocation(b) : ({ok:true,pin:null} as const);
+  if (!location.ok) return res.status(400).json({success:false,...location.error});
+  try {
+    const created = await prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${req.user!.id} FOR UPDATE`;
+      const user = await tx.user.findUniqueOrThrow({where:{id:req.user!.id}});
+      if (user.role !== 'STUDENT' || user.deletedAt) throw new Error('APPLICATION_CONFLICT');
+      // Do not repurpose an established customer with financial/order history into another role.
+      if (await tx.order.count({where:{customerId:user.id}}) || await tx.orderGroup.count({where:{customerId:user.id}})) throw new Error('APPLICATION_CONFLICT');
+      const updated = await tx.user.update({where:{id:user.id},data:{name,phone,role}});
+      const now = new Date();
+      if (role === 'VENDOR') {
+        const d = details.data as any;
+        const vendor = await tx.vendor.create({data:{userId:user.id,name:d.name,category:d.category,address:d.address,fssaiNumber:d.fssaiNumber,bannerImage:DEFAULT_BANNER,isAcceptingOrders:false,approvalStatus:'PENDING',appliedAt:now,...(location.pin?devicePinData(location.pin.lat,location.pin.lng,location.pin.accuracyM):{})}});
+        return {user:updated,vendor:vendorView(vendor)};
+      }
+      const d = details.data as any;
+      const driver = await tx.driverPartner.create({data:{userId:user.id,name,phone,runnerCode:await newRunnerCode(),vehicleType:d.vehicleType,vehicleRegNo:d.vehicleRegNo,emergencyPhone:d.emergencyPhone,upiId:d.upiId,approvalStatus:'PENDING',appliedAt:now,dutyStatus:'OFFLINE'}});
+      return {user:updated,driver:driverView(driver)};
+    });
+    return res.status(201).json({success:true,user:{id:created.user.id,name:created.user.name,phone:created.user.phone,role:created.user.role,avatarId:created.user.avatarId},approvalStatus:'PENDING',...('vendor' in created?{vendor:created.vendor}:{driver:created.driver})});
+  } catch(error) {
+    if ((error as any)?.code === 'P2002' || (error as Error).message === 'APPLICATION_CONFLICT') return res.status(409).json({success:false,message:'This account already has data or an application. Use a separate partner identity or contact Grozo support.'});
+    return res.status(503).json({success:false,message:'Application service is temporarily unavailable.'});
+  }
+});
+
 // ----------------------------------------------------------------------------
 // Partner side
 // ----------------------------------------------------------------------------
 
 // Create a partner account. It starts PENDING; the app signs the person in so it can show the waiting screen.
-partnerRouter.post('/auth/partner-signup', async (req: Request, res: Response) => {
+partnerRouter.post('/auth/partner-signup', legacyAuthOnly, async (req: Request, res: Response) => {
   let releaseSlot: (() => void) | null = null; // gives the throttle slot back when no account ends up being created
   try {
     const b = req.body ?? {};
@@ -281,10 +318,10 @@ const loadOwnProfile = async (userId: string, role: Role) => {
     const vendors = await retryStaleRead(() => prisma.vendor.findMany({ where: { userId }, orderBy: { createdAt: 'asc' }, include: CUISINES_INCLUDE }));
     // Prefer an APPROVED restaurant, otherwise whatever was applied for.
     const vendor = vendors.find((v) => v.approvalStatus === 'APPROVED') ?? vendors[0] ?? null;
-    return { vendor, driver: null as any, status: (vendor?.approvalStatus ?? 'APPROVED') as ApprovalStatus, reason: vendor?.rejectionReason ?? null };
+    return { vendor, driver: null as any, status: (vendor?.approvalStatus ?? (usesClerk() ? 'PENDING' : 'APPROVED')) as ApprovalStatus, reason: vendor?.rejectionReason ?? null };
   }
   const driver = await prisma.driverPartner.findUnique({ where: { userId } });
-  return { vendor: null as any, driver, status: (driver?.approvalStatus ?? 'APPROVED') as ApprovalStatus, reason: driver?.rejectionReason ?? null };
+  return { vendor: null as any, driver, status: (driver?.approvalStatus ?? (usesClerk() ? 'PENDING' : 'APPROVED')) as ApprovalStatus, reason: driver?.rejectionReason ?? null };
 };
 
 // "Where do I stand?" - the apps poll this while the application is pending.
@@ -517,7 +554,7 @@ partnerRouter.post('/admin/partners/:kind/:id/status', requireAuth, requireRole(
 });
 
 // There is no self-service "forgot password" (no SMS), so an admin sets a new one.
-partnerRouter.post('/admin/partners/:userId/reset-password', requireAuth, requireRole('ADMIN'), validParams('userId'), async (req: AuthenticatedRequest, res: Response) => {
+partnerRouter.post('/admin/partners/:userId/reset-password', legacyAuthOnly, requireAuth, requireRole('ADMIN'), validParams('userId'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const problem = passwordProblem(req.body?.password);
     if (problem) return res.status(400).json({ success: false, field: 'password', message: problem });

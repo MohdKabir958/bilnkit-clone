@@ -3,6 +3,9 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { UserRole } from '../types';
 import { prisma } from '../db';
+import { usesClerk } from '../config/authMode';
+import { clerkRequestIdentity, resolveClerkSession } from '../services/clerkIdentity';
+import { AppError } from '../utils/appError';
 
 dotenv.config();
 
@@ -11,6 +14,8 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     phone?: string | null;
     role: UserRole;
+    sid?: string;
+    clerkUserId?: string;
   };
 }
 
@@ -26,6 +31,7 @@ type TokenClaims = { exp?: number; id: string; phone?: string | null; role: User
 // Generates real signed JWT tokens with 30-day expiration. `tv` is the user's tokenVersion: bumping it in the
 // database (password reset, suspension, account deletion) revokes every token issued before.
 export const generateToken = (payload: { id: string; phone?: string | null; role: UserRole; tokenVersion?: number | null }): string => {
+  if (usesClerk()) throw new Error('Application session issuance is disabled in Clerk mode.');
   const { tokenVersion, ...claims } = payload;
   return jwt.sign({ ...claims, tv: tokenVersion ?? 0 }, getJwtSecret(), { expiresIn: payload.role === 'ADMIN' ? '8h' : '7d', algorithm:'HS256' });
 };
@@ -71,7 +77,8 @@ export const bumpTokenVersion = async (userId: string) => {
 export const verifyToken = (token: string) => jwt.verify(token, getJwtSecret(), {algorithms:['HS256']}) as TokenClaims;
 
 /** Signature + expiry + account check (exists, not deleted, tokenVersion). Throws on anything wrong. Used by sockets. */
-export const verifyTokenForAccount = async (token: string): Promise<TokenClaims> => {
+export const verifyTokenForAccount = async (token: string, origin?: string): Promise<TokenClaims> => {
+  if (usesClerk()) return resolveClerkSession(token, origin);
   const decoded = verifyToken(token);
   if (!decoded?.id || typeof decoded.id !== 'string' || !(await accountMatchesToken(decoded.id, decoded.tv))) throw new Error('Token revoked or account missing.');
   return decoded;
@@ -90,6 +97,13 @@ const partnerIsSuspended = async (userId: string, role: unknown): Promise<boolea
 
 // Middleware to verify JWT authentication header
 export const requireAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  if (usesClerk()) {
+    try { req.user = await clerkRequestIdentity(req); return next(); }
+    catch(error) {
+      const known = error instanceof AppError ? error : new AppError(503,'AUTH_UNAVAILABLE','Authentication is temporarily unavailable. Please retry.');
+      return res.status(known.status).json({success:false,code:known.code,message:known.message});
+    }
+  }
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

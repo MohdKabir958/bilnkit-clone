@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bike, Check, Copy, Loader2, RefreshCw, Store } from 'lucide-react';
 import { NewPartnerInput, PartnerKind } from '../types';
-import { apiService } from '../services/api';
+import { apiService, clerkAuthEnabled } from '../services/api';
 import { copyText, generatePassword } from '../lib/credentials';
 import { parseLocationInput } from '../lib/campus';
 import { MAX_RESTAURANT_CATEGORIES, restaurantChoices } from '../lib/categoryParse';
@@ -104,6 +104,8 @@ export const AddPartnerDrawer: React.FC<Props> = ({ open, kind, onClose, onCreat
 
   const loginText = created ? `Grozo ${isVendor ? 'Store Partner' : 'Delivery Partner'} login\nPhone: ${created.phone}\nPassword: ${created.password}` : '';
   const copyLogin = async () => { setCopied(await copyText(loginText)); };
+
+  if (clerkAuthEnabled) return <Drawer open={open} onClose={onClose} title="Partner onboarding"><p>Ask the partner to create a Clerk account in their Grozo app and submit an application. Review and approve it in Applications. Existing store ownership is linked only through the operator-controlled identity migration procedure.</p><p>Passwords and account recovery are managed by Clerk.</p></Drawer>;
 
   return (
     <Drawer

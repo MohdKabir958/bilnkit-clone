@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show GrozoAuthConfig, ClerkSessions;
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../config/api_config.dart';
@@ -65,7 +66,11 @@ class SocketIoOrderSocket extends OrderSocket {
         ApiConfig.socketUrl,
         io.OptionBuilder()
             .setTransports(['websocket'])
-            .setAuth({'token': token})
+            .setAuthFn((callback) async {
+              if (!GrozoAuthConfig.usesClerk) { callback({'token': token}); return; }
+              try { callback({'token': await ClerkSessions.instance.token(forceRefresh:true) ?? ''}); }
+              catch (_) { callback({'token':''}); }
+            })
             // Never reuse a cached manager: it would still carry a previous login's token.
             .enableForceNew()
             .enableReconnection()
@@ -73,6 +78,7 @@ class SocketIoOrderSocket extends OrderSocket {
             .build(),
       );
       _socket = socket;
+      socket.onDisconnect((reason) { if (reason == 'io server disconnect' && !_disposed) socket.connect(); });
       socket.onConnect((_) {
         _attemptStartedAt = null;
         if (_vendorId == null || _disposed) return;

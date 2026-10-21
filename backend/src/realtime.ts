@@ -1,3 +1,4 @@
+import { usesClerk } from './config/authMode';
 import { setDispatchPublisher } from './services/dispatch';
 import { errSummary } from './utils/log';
 import { SlidingWindow } from './middleware/rateLimit';
@@ -25,6 +26,7 @@ export const getIo = () => ioRef;
 setDispatchPublisher(async(order,userId,offer)=>{
   if(!ioRef) return;
   for(const socket of await ioRef.in(`user_${userId}`).fetchSockets()) {
+    if (!(await revalidateSocket(socket)) || !(await isRiderOnDuty(userId))) continue;
     if(order.groupId && !socket.data.groups) continue;
     const view=orderView(order,'DRIVER',userId);
     if(view) socket.emit('order_available',{...view,dispatchOffer:{id:offer.id,expiresAt:offer.expiresAt.toISOString()}});
@@ -32,6 +34,16 @@ setDispatchPublisher(async(order,userId,offer)=>{
 });
 
 type SocketUser = { id: string; role: string };
+
+/** Online revocation and current DB role checked for packets and private fan-out. */
+async function revalidateSocket(socket: any): Promise<boolean> {
+  if (!usesClerk()) return true;
+  try {
+    const fresh = await verifyTokenForAccount(socket.data.clerkToken, socket.data.authOrigin);
+    if (fresh.id !== socket.data.user?.id || fresh.role !== socket.data.user?.role) throw new Error('Authority changed');
+    return true;
+  } catch { socket.disconnect(true); return false; }
+}
 
 /**
  * join_room limits, per socket. Every order_<id> join runs a database query with all relations, so a loop of joins is a
@@ -97,7 +109,10 @@ const canJoin = async (room: string, user: SocketUser): Promise<boolean> => {
     const orderId = room.slice('order_'.length);
     if (!ORDER_ID_RE.test(orderId)) return false;
     const order = await prisma.order.findUnique({ where: { id: orderId }, include: ORDER_VIEW_INCLUDE });
-    return Boolean(order && canWatchOrder(order, user));
+    if (!order || !canWatchOrder(order,user)) return false;
+    if (usesClerk() && user.role === 'VENDOR' && !(await prisma.vendor.count({where:{id:order.vendorId,userId:user.id,approvalStatus:'APPROVED'}}))) return false;
+    if (usesClerk() && user.role === 'DRIVER' && !(await isApprovedRider(user.id))) return false;
+    return true;
   }
   return false; // user_* and anything else cannot be joined on request
 };
@@ -111,7 +126,9 @@ export const attachRealtime = (io: SocketIOServer) => {
       const rawToken = socket.handshake.auth?.token;
       if (typeof rawToken !== 'string' || !rawToken.trim()) return next(new Error('Authentication required.'));
       // Signature + the account still exists + the token was not revoked (password reset, suspension, deletion).
-      const decoded = await verifyTokenForAccount(rawToken.replace(/^Bearer\s+/i, ''));
+      const bearer = rawToken.replace(/^Bearer\s+/i, '');
+      const decoded = await verifyTokenForAccount(bearer, socket.handshake.headers.origin);
+      if (usesClerk()) {socket.data.clerkToken=bearer;socket.data.authOrigin=socket.handshake.headers.origin;}
       socket.data.tokenExpiresAt = decoded.exp;
       socket.data.user = { id: decoded.id, role: decoded.role } as SocketUser;
       const autoRooms = [`user_${decoded.id}`];
@@ -136,7 +153,10 @@ export const attachRealtime = (io: SocketIOServer) => {
     socket.join(socket.data.autoRooms as string[]);
     const authExpiryTimer = setTimeout(() => socket.disconnect(true), Math.max(0, Number(socket.data.tokenExpiresAt ?? 0)*1000-Date.now()));
     authExpiryTimer.unref();
-    socket.on('disconnect', () => { clearTimeout(authExpiryTimer); joinWindows.delete(socket.id); });
+    const revocationTimer = usesClerk() ? setInterval(() => {void revalidateSocket(socket);},15_000) : undefined;
+    revocationTimer?.unref();
+    socket.use(async (_packet,next) => { if (await revalidateSocket(socket)) next(); else next(new Error('Session ended.')); });
+    socket.on('disconnect', () => { clearTimeout(authExpiryTimer);if(revocationTimer)clearInterval(revocationTimer); joinWindows.delete(socket.id); });
 
     // join_room(room, ack?) -> ack({ ok }) so a client knows when it is actually subscribed.
     socket.on('join_room', async (room: unknown, ack?: unknown) => {
@@ -214,8 +234,11 @@ export const publishOrderChange = async (order: OrderWithRelations, opts: { wasP
     const vendorRoom = `vendor_${order.vendorId}`;
     const sockets = await io.in([orderRoom, 'admins', vendorRoom]).fetchSockets();
     for (const s of sockets) {
+      if (!(await revalidateSocket(s))) continue;
       const u = s.data.user as SocketUser | undefined;
       if (!u) continue;
+      if (usesClerk() && u.role === 'VENDOR' && !(await prisma.vendor.count({where:{id:order.vendorId,userId:u.id,approvalStatus:'APPROVED'}}))) {s.leave(vendorRoom);s.leave(orderRoom);continue;}
+      if (usesClerk() && u.role === 'DRIVER' && !(await isApprovedRider(u.id))) continue;
       const view = u.role === 'DRIVER' && order.driverId !== u.id ? null : orderView(order, u.role, u.id);
       if (!view) {
         if (s.rooms.has(orderRoom)) s.leave(orderRoom);
@@ -271,8 +294,12 @@ export const recordRiderLocation = async (riderUserId: string, lat: unknown, lng
   if(!result.loc) throw Object.assign(new Error('Location sharing is allowed only during an active assigned delivery.'),{status:409,code:'NO_ACTIVE_DELIVERY'});
   const {loc,driver,active}=result;
   if(ioRef) try {
-    ioRef.to('admins').emit('driver_location_update',{...loc,id:riderUserId,dutyStatus:driver.dutyStatus,approvalStatus:driver.approvalStatus});
-    for(const o of active) ioRef.to([`user_${o.customerId}`,'admins']).emit('rider_location',{orderId:o.id,driverId:riderUserId,lat:loc.lat,lng:loc.lng,heading:loc.heading,at:loc.lastUpdated.toISOString()});
+    for(const socket of await ioRef.in('admins').fetchSockets()) if(await revalidateSocket(socket)) socket.emit('driver_location_update',{...loc,id:riderUserId,dutyStatus:driver.dutyStatus,approvalStatus:driver.approvalStatus});
+    for(const o of active) for(const socket of await ioRef.in([`user_${o.customerId}`,'admins']).fetchSockets()) {
+      if(!(await revalidateSocket(socket)))continue;
+      const viewer=socket.data.user as SocketUser;
+      if(viewer.role==='ADMIN'||(viewer.role==='STUDENT'&&viewer.id===o.customerId)) socket.emit('rider_location',{orderId:o.id,driverId:riderUserId,lat:loc.lat,lng:loc.lng,heading:loc.heading,at:loc.lastUpdated.toISOString()});
+    }
   }catch{console.error('Active-delivery location fan-out failed.');}
   return loc;
 };

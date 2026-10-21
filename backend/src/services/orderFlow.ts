@@ -987,7 +987,12 @@ const sameOtp = (given: string, stored: string | null) => {
 
 // Delivered orders keep only an HMAC of (order id, code): enough to recognise the rider's retry of the SAME code,
 // useless for anything else. The plain code is gone (otpCode = 'USED').
-const proofKey = () => process.env.JWT_SECRET || (process.env.NODE_ENV === 'test' ? 'kraveo_vit_bhopal_super_secret_jwt_key_2026' : 'kraveo-otp-proof');
+const proofKey = () => {
+  if (process.env.DELIVERY_PROOF_SECRET) return process.env.DELIVERY_PROOF_SECRET;
+  // Preserve legacy delivery receipts during transition. Clerk mode requires an independent key.
+  if (process.env.AUTH_MODE && process.env.AUTH_MODE !== 'legacy') throw new Error('DELIVERY_PROOF_SECRET is required in Clerk mode.');
+  return process.env.JWT_SECRET || (process.env.NODE_ENV === 'test' ? 'kraveo_vit_bhopal_super_secret_jwt_key_2026' : 'kraveo-otp-proof');
+};
 const otpProof = (orderId: string, otp: string) => createHmac('sha256', proofKey()).update(`${orderId}:${otp}`).digest('hex');
 const proofMatches = (orderId: string, otp: string, stored: string | null) => {
   if (!stored) return false;

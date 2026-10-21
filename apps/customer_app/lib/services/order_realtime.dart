@@ -1,3 +1,4 @@
+import 'package:kraveo_ui/kraveo_ui.dart' show GrozoAuthConfig, ClerkSessions;
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
@@ -45,7 +46,11 @@ class SocketOrderRealtime implements OrderRealtime {
       ApiConfig.socketUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
-          .setAuth({'token': raw})
+          .setAuthFn((callback) async {
+              if (!GrozoAuthConfig.usesClerk) { callback({'token': raw}); return; }
+              try { callback({'token': await ClerkSessions.instance.token(forceRefresh:true) ?? ''}); }
+              catch (_) { callback({'token':''}); }
+            })
           .disableAutoConnect()
           .enableForceNew()
           .enableReconnection()
@@ -54,6 +59,7 @@ class SocketOrderRealtime implements OrderRealtime {
           .build(),
     );
     socket.onConnect((_) => onConnected());
+    socket.onDisconnect((reason) { if (reason == 'io server disconnect' && identical(_socket,socket)) socket.connect(); });
     socket.onConnectError((e) => debugPrint('[Order socket] connect error (REST polling continues)'));
     socket.on('order_updated', onOrderUpdated);
     socket.on('rider_location', onRiderLocation);

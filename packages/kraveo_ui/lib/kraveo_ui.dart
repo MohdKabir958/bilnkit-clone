@@ -22,3 +22,5 @@ export 'src/widgets/avatar.dart';
 export 'src/security/session_tokens.dart';
 export 'src/widgets/support_center.dart';
 export 'src/widgets/product_media.dart';
+export 'src/auth/clerk_sessions.dart';
+export 'src/auth/clerk_entry.dart';

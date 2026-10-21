@@ -8,7 +8,7 @@
 
     <application
         android:label="@string/app_name"
-        android:name="${applicationName}"
+        android:name="com.grozo.clerk.GrozoClerkApplication"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules">
@@ -20,6 +20,9 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}"/>
 
+        <meta-data android:name="in.grozo.AUTH_MODE" android:value="${GROZO_AUTH_MODE}"/>
+        <meta-data android:name="in.grozo.CLERK_PUBLISHABLE_KEY" android:value="${CLERK_PUBLISHABLE_KEY}"/>
+        <activity android:name="com.grozo.clerk.GrozoClerkAuthActivity" android:exported="false" android:theme="@android:style/Theme.Material.Light.NoActionBar"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

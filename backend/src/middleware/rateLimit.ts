@@ -1,3 +1,5 @@
+import { usesClerk } from '../config/authMode';
+import { getAuth } from '@clerk/express';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
@@ -180,6 +182,7 @@ export const __rateLimitKeyCount = () => windows.size;
 
 /** Who is calling, from the signature alone (no database): the handler's own requireAuth still decides about access. */
 const userKey = (req: Request): string | null => {
+  if (usesClerk()) { try { return getAuth(req).userId ?? null; } catch { return null; } }
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) return null;
   try {
