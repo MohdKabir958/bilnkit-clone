@@ -1,0 +1,5 @@
+# FUTURE CLERK INTEGRATION WORKSHEET. Current app does not read Clerk settings yet.
+# Vite: use VITE_, not NEXT_PUBLIC_. Never put CLERK_SECRET_KEY in frontend settings.
+VITE_CLERK_PUBLISHABLE_KEY=
+VITE_API_BASE_URL=http://localhost:5000
+VITE_SOCKET_URL=http://localhost:5000

@@ -1,0 +1,38 @@
+{
+  "recordedAt": "2026-10-21T05:30:07.419399+00:00",
+  "baselineCommit": "0d2b149887bad33e8db1a7e91898d72f6904b9e6",
+  "flutter": {
+    "command": [
+      "/workspace/.tools/flutter/bin/flutter",
+      "--version",
+      "--machine"
+    ],
+    "exitCode": 0,
+    "output": "{\n  \"frameworkVersion\": \"3.44.9\",\n  \"channel\": \"[user-branch]\",\n  \"repositoryUrl\": \"unknown source\",\n  \"frameworkRevision\": \"6b182d2c7585eba26d4edce0f97630effd256c33\",\n  \"frameworkCommitDate\": \"2026-08-05 10:04:07 -0700\",\n  \"engineRevision\": \"5a2a6a42cce67f965cf540fcecf616faca624aa1\",\n  \"engineCommitDate\": \"2026-07-31 18:31:59.000Z\",\n  \"engineContentHash\": \"b9499e4c25212536ba3a4eec4f5c1905fb3214fe\",\n  \"engineBuildDate\": \"2026-07-31 20:30:03.301\",\n  \"dartSdkVersion\": \"3.12.2\",\n  \"devToolsVersion\": \"2.57.0\",\n  \"flutterVersion\": \"3.44.9\",\n  \"flutterRoot\": \"/workspace/.tools/flutter\"\n}"
+  },
+  "node": {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exitCode": 0,
+    "output": "v24.19.0"
+  },
+  "java": {
+    "command": [
+      "/workspace/.tools/jdk/java-21-openjdk-amd64/bin/java",
+      "-version"
+    ],
+    "exitCode": 0,
+    "output": "openjdk version \"21.0.12.1\" 2026-08-18\nOpenJDK Runtime Environment (build 21.0.12.1+1-1-deb13u1-Debian)\nOpenJDK 64-Bit Server VM (build 21.0.12.1+1-1-deb13u1-Debian, mixed mode, sharing)"
+  },
+  "hardware": {
+    "devKvmExists": false,
+    "usbBusExists": false,
+    "physicalDeviceAuthenticationVerified": false
+  },
+  "providerRetryOutsideSandbox": {
+    "exitCode": 2,
+    "result": "Network proxy still denied public Clerk endpoint with CONNECT 403; no authenticated request sent."
+  }
+}

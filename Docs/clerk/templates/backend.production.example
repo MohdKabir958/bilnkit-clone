@@ -1,0 +1,20 @@
+# FUTURE CLERK CUTOVER WORKSHEET. Not loaded by the current legacy backend.
+# Render Starter + persistent disk incurs paid costs. No resource creation is authorized by this file.
+NODE_ENV=production
+DATABASE_URL=postgresql://USER:PASSWORD@NEON-POOLED-HOST/neondb?sslmode=require&connection_limit=5&pool_timeout=10
+MIGRATION_DATABASE_URL=postgresql://USER:PASSWORD@NEON-DIRECT-HOST/neondb?sslmode=require
+CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+CLERK_WEBHOOK_SIGNING_SECRET=
+CLERK_ISSUER=https://YOUR-PRODUCTION-CLERK-DOMAIN
+CLERK_AUTHORIZED_PARTIES=https://YOUR-ADMIN-DOMAIN
+CLERK_ADMIN_USER_IDS=
+ADMIN_URL=https://YOUR-ADMIN-DOMAIN
+PUBLIC_BASE_URL=https://YOUR-API-DOMAIN
+UPLOAD_DIR=/var/data/grozo/uploads
+PAYMENT_PROVIDER=razorpay
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+PAYOUT_ENC_KEY=
+# Preserve separately managed Firebase configuration. No Firebase auth migration.

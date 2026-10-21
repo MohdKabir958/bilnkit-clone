@@ -1,0 +1,33 @@
+{
+  "app": "driver",
+  "sdk": "com.clerk:clerk-android-api:1.2.1",
+  "command": [
+    "/workspace/bilnkit-clone/apps/driver_app/android/gradlew",
+    ":app:compileDebugKotlin",
+    "-PdisableFirebase=true",
+    "--console=plain",
+    "--init-script",
+    "<temporary-init-script>"
+  ],
+  "workingDirectory": "apps/driver_app/android",
+  "exitCode": 0,
+  "durationSeconds": 68.572,
+  "firebase": "Disabled explicitly for this local debug compilation only; source integration retained.",
+  "minimumAndroidApi": "24 for this temporary probe only; existing app configuration unchanged.",
+  "productionSourceModified": false,
+  "apkBuilt": false,
+  "providerLoginVerified": false,
+  "realDeviceVerified": false,
+  "environmentVariableNames": [
+    "ANALYZER_STATE_LOCATION_OVERRIDE",
+    "ANDROID_HOME",
+    "ANDROID_SDK_ROOT",
+    "ANDROID_USER_HOME",
+    "DASH__SUPPRESS_ANALYTICS",
+    "GRADLE_USER_HOME",
+    "JAVA_HOME",
+    "PUB_CACHE",
+    "XDG_CACHE_HOME",
+    "XDG_CONFIG_HOME"
+  ]
+}

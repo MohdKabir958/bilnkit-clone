@@ -1,0 +1,12 @@
+test_archive_checksum_mismatch_fails_before_extraction (test_feasibility.ProbeSafetyTest.test_archive_checksum_mismatch_fails_before_extraction) ... ok
+test_native_probe_path_does_not_allow_groovy_interpolation (test_feasibility.ProbeSafetyTest.test_native_probe_path_does_not_allow_groovy_interpolation) ... ok
+test_network_proxy_failure_is_distinguished_from_provider_auth_rejection (test_feasibility.ProbeSafetyTest.test_network_proxy_failure_is_distinguished_from_provider_auth_rejection) ... ok
+test_non_public_and_live_keys_are_rejected (test_feasibility.ProbeSafetyTest.test_non_public_and_live_keys_are_rejected) ... ok
+test_only_clerk_owned_development_hosts_are_contacted (test_feasibility.ProbeSafetyTest.test_only_clerk_owned_development_hosts_are_contacted) ... ok
+test_probe_errors_do_not_disclose_arbitrary_sdk_or_http_details (test_feasibility.ProbeSafetyTest.test_probe_errors_do_not_disclose_arbitrary_sdk_or_http_details) ... ok
+test_successful_public_connectivity_never_claims_login_or_clears_gate (test_feasibility.ProbeSafetyTest.test_successful_public_connectivity_never_claims_login_or_clears_gate) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.002s
+
+OK

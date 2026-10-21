@@ -1,0 +1,5 @@
+# FUTURE CLERK INTEGRATION WORKSHEET. Current app does not read Clerk settings yet.
+# Set at Vercel project web/super_admin after reviewed cutover.
+VITE_CLERK_PUBLISHABLE_KEY=
+VITE_API_BASE_URL=https://YOUR-API-DOMAIN
+VITE_SOCKET_URL=https://YOUR-API-DOMAIN

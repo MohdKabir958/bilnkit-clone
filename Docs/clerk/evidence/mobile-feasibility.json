@@ -1,0 +1,94 @@
+{
+  "scope": "Public SDK source/artifact review and unauthenticated connectivity only",
+  "secretKeyUsed": false,
+  "authenticationPerformed": false,
+  "mobileGateCleared": false,
+  "status": "BLOCKED_PENDING_MOBILE_VALIDATION",
+  "checks": {
+    "flutterBeta": {
+      "artifacts": [
+        {
+          "package": "clerk_flutter",
+          "version": "0.0.18-beta",
+          "url": "https://pub.dev/api/archives/clerk_flutter-0.0.18-beta.tar.gz",
+          "sha256": "f5531673ed9953a8a9db88a98cd99e9b0ba89cb06860d42a5f491382c52dcf26",
+          "environment": {
+            "sdk": ">=3.6.2 <4.0.0",
+            "flutter": ">=3.27.4"
+          }
+        },
+        {
+          "package": "clerk_auth",
+          "version": "0.0.18-beta",
+          "url": "https://pub.dev/api/archives/clerk_auth-0.0.18-beta.tar.gz",
+          "sha256": "91a2d479573c331b991a695d0d69c1a74d28a19e42076f981e41058f890335fd",
+          "environment": {
+            "sdk": ">=3.6.2 <4.0.0"
+          }
+        }
+      ],
+      "defaultPersistence": "Plain JSON file; default is unsuitable for session credentials.",
+      "persistenceEvidence": {
+        "path": "lib/src/clerk_auth/persistor.dart",
+        "line": 117,
+        "symbol": "_cacheFile.writeAsString(data)"
+      },
+      "credentialPersistenceEvidence": {
+        "path": "lib/src/clerk_api/token_cache.dart",
+        "line": 108,
+        "symbol": "persistor.write(_clientTokenKey, token)"
+      },
+      "googleFlow": "Embedded WebView with custom user agent; not selected for Grozo.",
+      "googleEvidence": {
+        "path": "lib/src/clerk_auth_state.dart",
+        "line": 510,
+        "symbol": "controller.setUserAgent(clerk.ClerkConstants.userAgent)"
+      },
+      "decision": "Reject defaults. Evaluate official Android SDK through MethodChannel instead.",
+      "caveat": "The beta exposes custom persistence and authentication extension points; these findings concern its defaults, not every possible integration."
+    },
+    "officialAndroid": {
+      "artifact": "com.clerk:clerk-android-api:1.2.1",
+      "sourceUrl": "https://repo.maven.apache.org/maven2/com/clerk/clerk-android-api/1.2.1/clerk-android-api-1.2.1-sources.jar",
+      "sourceSha256": "ca2edb3a49aa7ed2e29c6f038730857432c915aadb9b0eca35f4fa11271d7ce3",
+      "storageEvidence": {
+        "path": "com/clerk/api/storage/StorageCipher.kt",
+        "line": 44,
+        "symbol": "KeyStore.getInstance(ANDROID_KEYSTORE)"
+      },
+      "encryptionEvidence": {
+        "path": "com/clerk/api/storage/StorageCipher.kt",
+        "line": 105,
+        "symbol": "\"AES/GCM/NoPadding\""
+      },
+      "storageFailureEvidence": {
+        "path": "com/clerk/api/storage/StorageHelper.kt",
+        "line": 119,
+        "symbol": "Encrypted storage is unavailable, ignoring save"
+      },
+      "refreshEvidence": {
+        "path": "com/clerk/api/auth/Auth.kt",
+        "line": 960,
+        "symbol": "public suspend fun getToken("
+      },
+      "signOutEvidence": {
+        "path": "com/clerk/api/auth/Auth.kt",
+        "line": 739,
+        "symbol": "public suspend fun signOut("
+      },
+      "decision": "Candidate for Android-first bridge; compilation and real lifecycle checks required."
+    },
+    "providerConnectivity": {
+      "reachable": false,
+      "reason": "NETWORK_PROXY_DENIED",
+      "authenticated": false
+    }
+  },
+  "errors": [],
+  "unverified": [
+    "Real Android sign-up/sign-in/email verification/Google/password recovery",
+    "Cold-start secure persistence, refresh after token expiry, revocation and account switch",
+    "OAuth callbacks for all three package IDs and owned signing certificates",
+    "Real-device SDK lifecycle and logout, including offline/error behavior"
+  ]
+}

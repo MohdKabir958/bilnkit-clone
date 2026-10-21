@@ -1,0 +1,17 @@
+# FUTURE CLERK CUTOVER WORKSHEET. Not loaded by the current legacy backend.
+# Never commit filled secrets. Use only a dedicated local/staging database and test Clerk instance.
+NODE_ENV=development
+DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/grozo_clerk_development
+MIGRATION_DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/grozo_clerk_development
+CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+CLERK_WEBHOOK_SIGNING_SECRET=
+CLERK_ISSUER=https://YOUR-DEV-INSTANCE.clerk.accounts.dev
+CLERK_AUTHORIZED_PARTIES=http://localhost:3000
+CLERK_ADMIN_USER_IDS=
+ADMIN_URL=http://localhost:3000
+PUBLIC_BASE_URL=http://localhost:5000
+UPLOAD_DIR=var/uploads
+# Existing restriction: disabled payments only in local development.
+PAYMENT_PROVIDER=disabled
+# Keep independent payout/Firebase configuration private; do not invent provider credentials.
