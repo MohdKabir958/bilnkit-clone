@@ -1381,9 +1381,13 @@ describe('Payments adversarial audit', () => {
       const paid = await mkOrder({ paid: true });
       const old = await mkOrder({});
       await prisma.payment.updateMany({ where: { orderId: old.id }, data: { createdAt: new Date(Date.now() - 7 * 3_600_000) } });
-      await runOrderMaintenance(minutesFromNow(3));
+      // Concurrent inserts may share a timestamp. Force this production case
+      // and advance one captured clock by exactly a minute (no wall-clock boundary flake).
+      const tick = minutesFromNow(3);
+      await prisma.payment.updateMany({ where: { orderId: { in: orders.map(o => o.id) } }, data: { createdAt: new Date(tick.getTime() - 4 * 60_000) } });
+      await runOrderMaintenance(tick);
       expect(P.calls.orderPayments.length).toBe(20);
-      await runOrderMaintenance(minutesFromNow(4));
+      await runOrderMaintenance(new Date(tick.getTime() + 60_000));
       const asked = fetchedIds();
       for (const o of orders) expect(asked.has(o.rzp)).toBe(true); // everyone was asked within two ticks
       expect(asked.has(paid.rzp)).toBe(false);
