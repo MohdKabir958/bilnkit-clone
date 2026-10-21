@@ -9,6 +9,7 @@ Docs/clerk/07_neon_render_vercel_deployment.md
 Docs/clerk/08_testing_and_verification.md
 Docs/clerk/09_remaining_configuration.md
 Docs/clerk/10_android_manual_test_guide.md
+Docs/clerk/11_admin_staging_quickstart.md
 Docs/clerk/README.md
 Docs/clerk/android-artifacts.md
 Docs/clerk/android-preview-public.json
