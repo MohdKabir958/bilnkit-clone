@@ -35,6 +35,8 @@ clerkWebhookRouter.post('/webhooks/clerk', clerkOnly, async (req,res) => {
       const user = await tx.user.findUnique({where:{clerkUserId:subject}});
       if (!user) return {duplicate:false,userId:null};
       if (deleted || suspended) {
+        await tx.deviceToken.updateMany({where:{userId:user.id,disabledAt:null},data:{disabledAt:new Date(),disabledReason:'CLERK_IDENTITY_DISABLED'}});
+        if (suspended) await tx.user.update({where:{id:user.id},data:{fcmToken:null}});
         await tx.driverPartner.updateMany({where:{userId:user.id},data:{dutyStatus:'OFFLINE'}});
         await tx.vendor.updateMany({where:{userId:user.id},data:{isAcceptingOrders:false}});
       }

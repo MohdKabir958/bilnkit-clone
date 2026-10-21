@@ -7,7 +7,7 @@ import supertest from 'supertest';
 import {io,Socket} from 'socket.io-client';
 import {startTestServer,stopTestServer,TestServerInstance} from '../harness/app';
 import {prisma,cleanTestOrders,cleanTestUsers,seedTestDatabase} from '../harness/db';
-import {linkClerkIdentity,provisionClerkAdmin,resolveClerkSession,setClerkTestTransport,verifiedClerkClaims} from '../../src/services/clerkIdentity';
+import {linkClerkIdentity,provisionClerkAdmin,resolveClerkSession,retryClerkDeletions,setClerkTestTransport,verifiedClerkClaims} from '../../src/services/clerkIdentity';
 import {authMode} from '../../src/config/authMode';
 
 const issuer='https://grozo-clerk-fixture.clerk.accounts.dev',party='https://admin.grozo.test';
@@ -15,7 +15,7 @@ const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048});
 const original={...process.env};
 const webhookBytes=randomBytes(32);
 const sessions=new Map<string,string>(),revoked=new Set<string>(),banned=new Set<string>();
-let offline=false,server:TestServerInstance,request:ReturnType<typeof supertest>;
+let offline=false,deletionDown=false,server:TestServerInstance,request:ReturnType<typeof supertest>;
 const sockets:Socket[]=[];
 function token(subject='user_CustomerA',overrides:Record<string,unknown>={}) {
   const sid=`sess_${subject.slice(5)}`;sessions.set(sid,subject);
@@ -34,7 +34,7 @@ beforeAll(async()=>{
   setClerkTestTransport({
     user:async id=>{if(offline)throw Error('fixture network outage');return {id,banned:banned.has(id),firstName:'Synthetic',lastName:'Tester'};},
     session:async id=>{if(offline)throw Error('fixture network outage');if(!sessions.has(id))throw Object.assign(Error('missing'),{status:404});return {id,userId:sessions.get(id)!,status:revoked.has(id)?'revoked':'active'};},
-    revoke:async id=>{revoked.add(id);},deleteUser:async()=>({}),
+    revoke:async id=>{revoked.add(id);},deleteUser:async()=>{if(deletionDown) throw new Error('Explicit provider deletion outage fixture');return {};},
   });
   await cleanTestOrders();await cleanTestUsers();await seedTestDatabase();
   await prisma.clerkWebhookDelivery.deleteMany();await prisma.clerkIdentityState.deleteMany();
@@ -190,7 +190,13 @@ test('linking two subjects to one existing UUID has one winner and preserves the
 });
 test('Clerk account deletion retains the internal UUID and blocks subsequent access',async()=>{
   const subject='user_DeleteCustomer';const session=await resolveClerkSession(token(subject));
+  await prisma.deviceToken.create({data:{userId:session.id,token:'synthetic-delete-device-token',app:'CUSTOMER',platform:'android'}});
+  deletionDown=true;
   const response=await request.delete('/api/auth/account').set(header(subject));expect(response.status).toBe(200);
   const record=await prisma.user.findUniqueOrThrow({where:{id:session.id}});expect(record.deletedAt).not.toBeNull();expect(record.clerkUserId).toBe(subject);
   await expect(resolveClerkSession(token(subject))).rejects.toMatchObject({status:401});
+  expect((await prisma.clerkIdentityState.findUniqueOrThrow({where:{clerkUserId:subject}})).deleteRequested).toBe(true);
+  expect(await prisma.deviceToken.count({where:{userId:session.id,disabledAt:null}})).toBe(0);
+  deletionDown=false;await retryClerkDeletions();
+  expect((await prisma.clerkIdentityState.findUniqueOrThrow({where:{clerkUserId:subject}})).deleted).toBe(true);
 });

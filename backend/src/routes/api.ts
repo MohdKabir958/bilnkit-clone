@@ -471,14 +471,18 @@ apiRouter.delete('/auth/account', requireAuth, requireRole('STUDENT'), async (re
       const cases=await tx.supportCase.findMany({where:{customerId:userId},select:{id:true}});
       await tx.supportNote.updateMany({where:{caseId:{in:cases.map((c)=>c.id)}},data:{message:'[Removed after account deletion]'}});
       await tx.supportCase.updateMany({where:{customerId:userId},data:{subject:'Deleted account',description:'[Removed after account deletion]',resolution:'Account deleted',status:'RESOLVED'}});
-      await tx.user.update({
+      const deletedUser = await tx.user.update({
         where: { id: userId },
         data: {
           name: 'Deleted user', phone: null, email: null, googleSub: null, passwordHash: null, avatarId: null, isStudent: null, hostelBlock: null, fcmToken: null, upiId: null, kraveoCoins: 0,
           deletedAt: new Date(),
           tokenVersion: { increment: 1 }, // every token issued before is dead from now on
         },
+        select: { clerkUserId: true },
       });
+      // Commit deletion, device invalidation and provider retry intent atomically.
+      await tx.deviceToken.updateMany({where:{userId,disabledAt:null},data:{disabledAt:new Date(),disabledReason:'ACCOUNT_DELETED'}});
+      if (deletedUser.clerkUserId) await tx.clerkIdentityState.upsert({where:{clerkUserId:deletedUser.clerkUserId},create:{clerkUserId:deletedUser.clerkUserId,deleteRequested:true},update:{deleteRequested:true}});
       return false;
     });
     if (blocked) {
