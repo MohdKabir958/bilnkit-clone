@@ -77,6 +77,7 @@ Docs/clerk/evidence/mobile/vendor-full-summary.json
 Docs/clerk/evidence/mobile/vendor-full-tests.jsonl
 Docs/clerk/evidence/terminology.txt
 Docs/clerk/migration-inventory.json
+Docs/clerk/provision-existing-admin.sql
 Docs/clerk/templates/admin.development.example
 Docs/clerk/templates/admin.production.example
 Docs/clerk/templates/backend.development.example
@@ -86,6 +87,7 @@ Docs/clerk/templates/mobile.production.json
 Docs/demo/hosted-catalog-quickstart.md
 Docs/demo/seed-hosted-catalog.sql
 Docs/qa/admin-clerk-startup.md
+Docs/qa/admin-sql-provisioning.json
 Docs/qa/backend-full-run-summary.json
 Docs/qa/backend-full-run.json
 Docs/qa/backend-full-run.log
@@ -182,6 +184,7 @@ scripts/qa/render_migration_config.test.mjs
 scripts/qa/render_port_binding.test.mjs
 scripts/qa/run_full_backend.mjs
 scripts/qa/terminology-allowances.json
+scripts/qa/test_admin_provisioning.mjs
 scripts/qa/test_hosted_catalog.mjs
 web/super_admin/.env.example
 web/super_admin/package-lock.json

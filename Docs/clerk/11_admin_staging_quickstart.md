@@ -32,6 +32,12 @@ The CLI verifies the identity with Clerk, requires the explicit allowlist and re
 
 Sign in through the deployed Clerk form. Only the provisioned account should enter the console; other authenticated accounts must be refused. A verification code requested by Clerk is sent through the configured verification method, not a Grozo shared code.
 
+### Neon SQL Editor alternative for an already signed-in account
+
+If you have added your exact user ID to Render but the portal still says the account is not approved, the allowlist step alone is insufficient: the existing Grozo user still needs its database ADMIN role. You can run the operator action through Neon without installing Node locally.
+
+Open [provision-existing-admin.sql](provision-existing-admin.sql), replace its one `PASTE_EXACT_CLERK_USER_ID` placeholder with the exact ID copied from your verified Clerk account and already entered in Render, and run the complete file in the database Render uses. Confirm the result contains your intended account and `role = ADMIN`, then sign out and sign back in to the portal. The script refuses missing/deleted/suspended or partner identities, preserves internal UUIDs and business records, and records one audit on the initial role change. Repeating it does not duplicate the audit. It does not call Clerk; the operator must verify the intended identity in Clerk first. Render's separate allowlist, Clerk session checks and database approval remain enforced by the API. No HTTP bootstrap endpoint or automatic promotion was added.
+
 ## Verification performed for this configuration
 
 The updated Clerk-test admin build passed with the current instance and backend origins. All 822 admin tests passed; the CSP generator/build checks passed all 8 tests. Loading failures now show recovery instructions, and a 30-second stalled initialization offers reload without bypassing authentication. These are local checks, not evidence of hosted Clerk sign-in, a provisioned staging administrator or live backend availability. No cloud settings or user records were changed by this configuration commit.

@@ -4,7 +4,7 @@
   "scope": "Tracked source/config/test files only; no .env, provider secrets, uploads or account records read.",
   "limitations": "Source reference inventory is navigation aid, not proof of authorization. Middleware inside handlers and ownership queries require manual review. Historical migrations are preserved, not renamed.",
   "counts": {
-    "referencedFiles": 227,
+    "referencedFiles": 228,
     "endpoints": 163,
     "mounts": 22
   },
@@ -15973,6 +15973,62 @@
           "kind": "authentication",
           "symbol": "ADMIN_PASSCODE",
           "line": 18
+        }
+      ]
+    },
+    {
+      "path": "scripts/qa/test_admin_provisioning.mjs",
+      "sha256": "80faa2c652311877c2d783f8efecde02d2553e60019580c55de25cdd64fdc101",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 13
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 14
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 15
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 18
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 18
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 19
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 19
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 13
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 14
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 14
         }
       ]
     },

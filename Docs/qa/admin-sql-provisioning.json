@@ -1,0 +1,17 @@
+{
+  "database": "grozo_admin_bootstrap_1792592658886_test",
+  "checks": [
+    "only exact linked account promoted with UUID, balance and tokenVersion preserved and audit recorded",
+    "idempotent rerun creates no duplicate audit",
+    "missing identity refused",
+    "unchanged placeholder refused",
+    "VENDOR identity preserved and refused",
+    "DRIVER identity preserved and refused",
+    "deleted identity refused",
+    "suspended identity refused",
+    "deleteRequested identity refused"
+  ],
+  "passed": 9,
+  "failed": 0,
+  "remoteDatabaseModified": false
+}
