@@ -1,0 +1,782 @@
+Grozo complete backend regression
+Fresh isolated database: grozo_final_1792595050661_test
+Empty database: applying the audited schema baseline. No existing data will be changed.
+Script executed successfully.
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_align_legacy_schema marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_clear_legacy_gate_otps marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_make_order_otp_nullable marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260930_auth_v2_and_indexes marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261001_partner_approval marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261002_order_flow marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261003_hardening marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261005_push_notifications marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261006_campus_dropoints marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261007_user_hostel_no_default marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261008_vendor_location_source marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261009_pricing_catalog marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261010_settlements_payouts marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261011_order_groups marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261012_categories marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792595050661_test", schema "public" at "127.0.0.1:5432"
+
+23 migrations found in prisma/migrations
+
+Applying migration `20261019_india_serviceability`
+Applying migration `20261020_delivery_handover`
+Applying migration `20261020_delivery_operations`
+Applying migration `20261020_grocery_inventory`
+Applying migration `20261020_grocery_price_guard`
+Applying migration `20261020_real_review_scores`
+Applying migration `20261021060000_clerk_identity`
+Applying migration `20261021150000_admin_access`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261019_india_serviceability/
+    └─ migration.sql
+  └─ 20261020_delivery_handover/
+    └─ migration.sql
+  └─ 20261020_delivery_operations/
+    └─ migration.sql
+  └─ 20261020_grocery_inventory/
+    └─ migration.sql
+  └─ 20261020_grocery_price_guard/
+    └─ migration.sql
+  └─ 20261020_real_review_scores/
+    └─ migration.sql
+  └─ 20261021060000_clerk_identity/
+    └─ migration.sql
+  └─ 20261021150000_admin_access/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+FAIL test/e2e/lifecycle_journeys.test.ts (71.109 s)
+  ● Console
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 91747365-d975-40f3-8173-b20a3d4fae3b
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 11fdcd17-5ba1-4e51-95a8-8f741dadbfcf
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+          at async Promise.all (index 1)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 90db5b51-0725-48fc-be19-bf6929214513
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 07904c7e-224e-421f-bd92-39a18a015e27
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 16d29614-5063-4725-93cd-bbf4bfc40f8b
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order c5827c4f-6ae9-4811-aeab-daa6236c1793
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 95c0bf23-f150-48b8-a056-d53c2a3368b3
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order daee548d-98d1-4432-a069-e9c4b30b7614
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 43efa81d-0625-4864-b271-c0d4a83a7615
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order f58a92ff-3aa9-4b24-b2cb-e0c02c69c048
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 42f427e2-6ced-40cf-b0b5-8db9308fc6ed
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order a5b06e92-e51b-47a1-9cd1-60bef70fbb62
+
+      at advanceStatus (src/services/orderFlow.ts:654:63)
+
+    console.error
+      Razorpay order creation failed: Razorpay is down
+
+      282 |     return { success: true, razorpayOrderId: rzpOrder.id, amountInPaise, currency: 'INR', keyId: razorpayKeyId };
+      283 |   } catch (err: any) {
+    > 284 |     console.error('Razorpay order creation failed:', providerErrorMessage(err));
+          |             ^
+      285 |     return { success: false, error: 'Payment provider is unavailable. Please try again.' };
+      286 |   }
+      287 | };
+
+      at createRazorpayOrder (src/services/paymentService.ts:284:13)
+      at src/services/orderFlow.ts:457:20
+      at db_1.prisma.$transaction.maxWait (src/services/orderFlow.ts:109:20)
+      at Proxy._transactionWithCallback (node_modules/@prisma/client/runtime/library.js:130:8000)
+      at src/routes/orders.ts:644:15
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:447:15
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 45d7b515-441b-4f7e-b19c-8098f91ee080 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at src/services/orderMaintenance.ts:102:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:101:3)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1073:45)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 8c14e4a4-3be2-4eec-9d6f-4be8d5a205bb failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:326:15
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 8b65d6db-d111-462c-9baa-2e98c86d4f6f failed (temporary): Could not reach the payment provider (network error).
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:326:15
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order 87b5f0b7-19d4-4807-8fc2-46fb01b7c4eb failed (temporary): Payment provider did not answer within 15000 ms.
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:196:7)
+      at cancelOrder (src/services/orderFlow.ts:794:17)
+      at src/routes/orders.ts:326:15
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      refund for order ca99860e-2275-4baf-8023-1c3b61a27da4 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+          at async Promise.allSettled (index 0)
+      at __waitForBackgroundWork (src/services/refundService.ts:35:29)
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:1145:7)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:167:13)
+
+    console.error
+      Razorpay order creation failed: Payment provider did not answer within 15000 ms.
+
+      282 |     return { success: true, razorpayOrderId: rzpOrder.id, amountInPaise, currency: 'INR', keyId: razorpayKeyId };
+      283 |   } catch (err: any) {
+    > 284 |     console.error('Razorpay order creation failed:', providerErrorMessage(err));
+          |             ^
+      285 |     return { success: false, error: 'Payment provider is unavailable. Please try again.' };
+      286 |   }
+      287 | };
+
+      at createRazorpayOrder (src/services/paymentService.ts:284:13)
+      at src/services/orderFlow.ts:457:20
+      at db_1.prisma.$transaction.maxWait (src/services/orderFlow.ts:109:20)
+      at Proxy._transactionWithCallback (node_modules/@prisma/client/runtime/library.js:130:8000)
+      at src/routes/orders.ts:644:15
+
+  ● Lifecycle journeys › J5 rider / restaurant / admin interventions › rider enters wrong codes concurrently while the right one is also sent: never more than 5 counted, delivery only with the right code
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 1
+    Received length: 0
+    Received array:  []
+
+      839 |       const o = await row(id);
+      840 |       expect(o.otpAttempts).toBeLessThanOrEqual(5);
+    > 841 |       if (o.status === 'DELIVERED') expect(rs.filter((r) => r.status === 200 && /verified successfully/.test(r.body.message))).toHaveLength(1);
+          |                                                                                                                                ^
+      842 |       else expect(o).toMatchObject({ otpLocked: true, status: 'ARRIVED_AT_GATE' });
+      843 |     });
+      844 |   });
+
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:841:128)
+
+Debugger listening on ws://127.0.0.1:9229/71c4d65b-661a-40c7-abb8-ab35216abd45
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+Debugger ending on ws://127.0.0.1:9229/71c4d65b-661a-40c7-abb8-ab35216abd45
+For help, see: https://nodejs.org/learn/getting-started/debugging
+
+Summary of all failing tests
+FAIL test/e2e/lifecycle_journeys.test.ts (71.109 s)
+  ● Lifecycle journeys › J5 rider / restaurant / admin interventions › rider enters wrong codes concurrently while the right one is also sent: never more than 5 counted, delivery only with the right code
+
+    expect(received).toHaveLength(expected)
+
+    Expected length: 1
+    Received length: 0
+    Received array:  []
+
+      839 |       const o = await row(id);
+      840 |       expect(o.otpAttempts).toBeLessThanOrEqual(5);
+    > 841 |       if (o.status === 'DELIVERED') expect(rs.filter((r) => r.status === 200 && /verified successfully/.test(r.body.message))).toHaveLength(1);
+          |                                                                                                                                ^
+      842 |       else expect(o).toMatchObject({ otpLocked: true, status: 'ARRIVED_AT_GATE' });
+      843 |     });
+      844 |   });
+
+      at Object.<anonymous> (test/e2e/lifecycle_journeys.test.ts:841:128)
+
+
+Test Suites: 1 failed, 45 passed, 46 total
+Tests:       1 failed, 1114 passed, 1115 total
+Snapshots:   0 total
+Time:        528.591 s
+Ran all test suites.
+Test results written to: ../Docs/admin-redesign/evidence/backend-full/backend-full-run.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?
+
+FINAL RESULT
+{
+  "database": "grozo_final_1792595050661_test",
+  "databaseHost": "127.0.0.1",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "command": "node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/admin-redesign/evidence/backend-full/backend-full-run.json",
+  "invocations": 1,
+  "passed": 1114,
+  "failed": 1,
+  "skipped": 0,
+  "total": 1115,
+  "suites": 46,
+  "durationMs": 529962,
+  "exitCode": 1,
+  "startedAt": "2026-10-21T15:04:22.981Z",
+  "finishedAt": "2026-10-21T15:13:13.086Z"
+}

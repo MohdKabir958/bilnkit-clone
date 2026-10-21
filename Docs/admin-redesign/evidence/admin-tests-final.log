@@ -1,0 +1,111 @@
+
+> kraveo-super-admin@1.0.0 test
+> vitest run --reporter=default --reporter=json --outputFile=../../Docs/admin-redesign/evidence/admin-tests.json
+
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/EditRestaurantDrawer.test.tsx (28 tests) 2346ms
+ ✓ src/components/CategoriesPanel.test.tsx (32 tests) 4134ms
+   ✓ order > Save order sends every id in the new order and then clears the bar 344ms
+   ✓ small screens > renders and works at 360 px wide (no crash, every control still reachable) 624ms
+ ✓ src/components/SettlementsPanel.test.tsx (24 tests) 7883ms
+   ✓ settlement list > status chips, restaurant and dates go to the server and reset the page 382ms
+   ✓ mark paid > refuses an empty or too short reference: no confirm, no request 303ms
+   ✓ mark paid > an earlier paid date is sent as noon India time 564ms
+   ✓ mark paid > the server refusing (second different reference) is shown and the drawer stays open 713ms
+   ✓ hold and release > hold with a note, then the drawer offers Release and no Mark paid 928ms
+   ✓ adjustments > refuses empty, zero, 3 decimals and a missing reason 1171ms
+   ✓ adjustments > refuses a deduction that would make the payable amount negative 635ms
+   ✓ adjustments > sends a signed amount, a trimmed reason and a request id; a double click adds it once 325ms
+ ✓ src/components/SettingsPanel.test.tsx (24 tests) 1811ms
+ ✓ src/components/ImportMenuWizard.test.tsx (24 tests) 1859ms
+   ✓ step 1: the file > starts with the restaurant from the filter, explains the columns and the 200 row limit, and needs text before it can check 304ms
+ ✓ src/services/taxonomyApi.test.ts (33 tests) 81ms
+ ✓ src/components/OrderGroups.test.tsx (22 tests) 1267ms
+   ✓ order drawer: combined order > shows the badge, the restaurants with their status chips, and loads the group lazily (once) for the group id 324ms
+ ✓ src/components/CatalogDishDrawer.test.tsx (31 tests) 2176ms
+ ✓ src/components/CatalogPanel.bulk.test.tsx (16 tests) 1595ms
+ ✓ src/components/DashboardFixes.test.tsx (14 tests) 875ms
+ ✓ src/services/financeApi.test.ts (14 tests) 130ms
+ ✓ src/components/CatalogDishDrawer.taxonomy.test.tsx (16 tests) 3107ms
+   ✓ category select > create sends the chosen category by id (not typed text) 511ms
+   ✓ category select > editing: a different category is sent as categoryId 373ms
+   ✓ category select > inline create: a small form adds a dishes-only category and selects it 387ms
+   ✓ category select > while the list loads the select says so; if it failed the old free-text field comes back 435ms
+ ✓ src/components/PayoutAccountPanel.test.tsx (15 tests) 500ms
+ ✓ src/components/RidersPanel.test.tsx (14 tests) 1320ms
+ ✓ src/services/api.test.ts (17 tests) 50ms
+ ✓ src/components/VendorLocation.test.tsx (12 tests) 424ms
+ ✓ src/AppGroups.test.tsx (6 tests) 1818ms
+   ✓ combined orders in the app > opening an order loads its group once; clicking a sibling opens that order in the same drawer 498ms
+   ✓ combined orders in the app > cancel: confirm dialog, then the server answer says how many orders were cancelled, and the list is reloaded so the other part shows as cancelled 460ms
+   ✓ combined orders in the app > cancel of an already cancelled group: says nothing changed 346ms
+ ✓ src/App.test.tsx (9 tests) 2872ms
+   ✓ WEB-06 / WEB-05 live socket > never gives up reconnecting, retries after a server-side disconnect, and refreshes vendors and riders on reconnect 1243ms
+   ✓ WEB-04 assigning an offline rider > asks "Assign anyway?", and only on yes sends force: true 416ms
+   ✓ Finance section wiring > the sidebar shows the number of PENDING settlements, and opening Finance shows its tabs with the same number 314ms
+ ✓ src/services/catalogApi.test.ts (10 tests) 102ms
+ ✓ src/components/FinanceOverview.test.tsx (10 tests) 1114ms
+   ✓ FinanceOverview > opens on the last 7 India days and shows every card with rupees (paise only when they exist) 318ms
+ ✓ src/components/CatalogPanel.test.tsx (11 tests) 2276ms
+   ✓ CatalogPanel > opens on the approval queue (status=PENDING, page 1) and shows prices with paise 944ms
+   ✓ CatalogPanel > Add dish opens the empty form 737ms
+ ✓ src/components/ImageUploadField.test.tsx (10 tests) 308ms
+ ✓ src/components/FinanceWiring.test.tsx (10 tests) 1809ms
+   ✓ Finance shell > has Overview, Settlements and Riders tabs; Overview first; Settlements carries the pending count 431ms
+   ✓ Finance shell > switching tabs shows each section, with clicks and arrow keys 536ms
+   ✓ Finance shell > works on a 360 px phone: the tab row scrolls, panels render 404ms
+ ✓ src/components/CategoryMultiSelect.test.tsx (10 tests) 358ms
+ ✓ src/components/AddPartnerDrawer.test.tsx (8 tests) 956ms
+   ✓ AddPartnerDrawer: categories > offers only restaurant categories as a multi-select and sends cuisineIds in order (no free-text category) 301ms
+ ✓ src/components/AdminWorkspace.test.tsx (11 tests) 1547ms
+   ✓ owner grants email access with Administrator as default 320ms
+   ✓ creates a vendor with city and confirmed coordinates, then shows closed-store instructions 300ms
+ ✓ src/CategoriesWiring.test.tsx (4 tests) 1637ms
+   ✓ Categories tab > the sidebar has a Categories entry that opens the panel with the title from the header 528ms
+   ✓ Categories tab > renaming a category reloads the vendors so the new name shows (the server rewrote their text) 341ms
+   ✓ Vendors tab: edit restaurant > saving a profile shows the new values at once and reloads the vendor list 608ms
+ ✓ src/components/GeographyPanel.test.tsx (8 tests) 1450ms
+   ✓ operations delivery coverage > sends delivery fees in paise with exact two-decimal input 543ms
+ ✓ src/auth/ClerkAdmin.test.tsx (11 tests) 1364ms
+   ✓ Clerk admin trust boundary (explicit fixtures) > a stalled provider times out and can recover when the SDK becomes ready 593ms
+ ✓ src/components/CampusMap.test.tsx (6 tests) 474ms
+ ✓ src/components/InventoryPanel.test.tsx (5 tests) 453ms
+ ✓ src/components/SettingsGroups.test.tsx (6 tests) 572ms
+ ✓ src/components/OperationsPanel.test.tsx (4 tests) 409ms
+ ✓ src/components/CommissionEditor.test.tsx (4 tests) 228ms
+ ✓ src/services/api.clerk.test.ts (5 tests) 206ms
+ ✓ src/CatalogBadge.test.tsx (3 tests) 489ms
+   ✓ Catalog sidebar badge > shows total = new dishes + price-change requests 483ms
+ ✓ src/lib/financeParse.test.ts (22 tests) 57ms
+ ✓ src/lib/orderGroups.test.ts (29 tests) 60ms
+ ✓ src/lib/riderMarkers.test.ts (32 tests) 37ms
+ ✓ src/lib/menuCsv.test.ts (33 tests) 57ms
+ ✓ src/AppWorkspace.test.tsx (3 tests) 1300ms
+   ✓ loads live workspace data with Clerk even though the legacy token is empty 392ms
+   ✓ sends selected city to the actual order query and shows owner-only team panel 458ms
+   ✓ overview Add vendor opens a creation form, while later vendor navigation opens the list 448ms
+ ✓ src/lib/financeInput.test.ts (18 tests) 64ms
+ ✓ src/lib/catalogParse.test.ts (26 tests) 26ms
+ ✓ src/lib/dashboardStats.test.ts (17 tests) 38ms
+ ✓ src/lib/categoryParse.test.ts (30 tests) 29ms
+ ✓ src/lib/imageCompress.test.ts (13 tests) 20ms
+ ✓ src/lib/pricing.test.ts (40 tests) 48ms
+ ✓ src/lib/vendorLocation.test.ts (13 tests) 30ms
+ ✓ src/lib/catalogBulkParse.test.ts (12 tests) 13ms
+ ✓ src/lib/vendorProfile.test.ts (23 tests) 12ms
+ ✓ src/lib/locationInput.test.ts (34 tests) 26ms
+ ✓ src/lib/adminMessages.test.ts (7 tests) 8ms
+
+ Test Files  52 passed (52)
+      Tests  839 passed (839)
+   Start at  15:37:14
+   Duration  51.14s (transform 7.87s, setup 0ms, collect 31.88s, tests 51.83s, environment 39.34s, prepare 8.13s)
+
+JSON report written to /workspace/bilnkit-clone/Docs/admin-redesign/evidence/admin-tests.json
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

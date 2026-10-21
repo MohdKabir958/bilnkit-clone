@@ -4,11 +4,29 @@
   "scope": "Tracked source/config/test files only; no .env, provider secrets, uploads or account records read.",
   "limitations": "Source reference inventory is navigation aid, not proof of authorization. Middleware inside handlers and ownership queries require manual review. Historical migrations are preserved, not renamed.",
   "counts": {
-    "referencedFiles": 228,
-    "endpoints": 163,
-    "mounts": 22
+    "referencedFiles": 238,
+    "endpoints": 168,
+    "mounts": 25
   },
   "databaseModels": [
+    {
+      "model": "AdminAccess",
+      "fields": [
+        "id           String            @id @default(uuid())",
+        "email        String?           @unique",
+        "userId       String?           @unique",
+        "clerkUserId  String?           @unique",
+        "displayName  String?",
+        "role         AdminAccessRole   @default(ADMIN)",
+        "status       AdminAccessStatus @default(INVITED)",
+        "invitedById  String?",
+        "acceptedAt   DateTime?",
+        "revokedAt    DateTime?",
+        "createdAt    DateTime          @default(now())",
+        "updatedAt    DateTime          @updatedAt",
+        "user         User?             @relation(fields: [userId], references: [id], onDelete: SetNull)"
+      ]
+    },
     {
       "model": "User",
       "fields": [
@@ -41,7 +59,8 @@
         "deviceTokens    DeviceToken[]",
         "payoutAccount   PayoutAccount?",
         "addresses       Address[]",
-        "supportCases    SupportCase[]"
+        "supportCases    SupportCase[]",
+        "adminAccess     AdminAccess?"
       ]
     },
     {
@@ -226,8 +245,23 @@
       "inlineHandlerLines": []
     },
     {
+      "file": "backend/src/routes/adminTeam.ts",
+      "line": 11,
+      "router": "adminTeamRouter",
+      "method": "USE",
+      "path": "",
+      "middleware": [
+        "base",
+        "requireAuth",
+        "requireRole('ADMIN')"
+      ],
+      "inlineHandlerLines": [
+        11
+      ]
+    },
+    {
       "file": "backend/src/routes/api.ts",
-      "line": 45,
+      "line": 48,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
@@ -238,7 +272,7 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 46,
+      "line": 49,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
@@ -249,7 +283,7 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 47,
+      "line": 50,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
@@ -260,34 +294,12 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 48,
+      "line": 51,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
       "middleware": [
-        "geographyRouter"
-      ],
-      "inlineHandlerLines": []
-    },
-    {
-      "file": "backend/src/routes/api.ts",
-      "line": 49,
-      "router": "apiRouter",
-      "method": "USE",
-      "path": "",
-      "middleware": [
-        "productsRouter"
-      ],
-      "inlineHandlerLines": []
-    },
-    {
-      "file": "backend/src/routes/api.ts",
-      "line": 50,
-      "router": "apiRouter",
-      "method": "USE",
-      "path": "",
-      "middleware": [
-        "operationsRouter"
+        "adminTeamRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -298,7 +310,18 @@
       "method": "USE",
       "path": "",
       "middleware": [
-        "partnerRouter"
+        "adminStoresRouter"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/api.ts",
+      "line": 53,
+      "router": "apiRouter",
+      "method": "USE",
+      "path": "",
+      "middleware": [
+        "geographyRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -309,7 +332,7 @@
       "method": "USE",
       "path": "",
       "middleware": [
-        "orderRouter"
+        "productsRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -318,9 +341,9 @@
       "line": 55,
       "router": "apiRouter",
       "method": "USE",
-      "path": "/v1",
+      "path": "",
       "middleware": [
-        "orderRouter"
+        "operationsRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -331,7 +354,7 @@
       "method": "USE",
       "path": "",
       "middleware": [
-        "deviceRouter"
+        "partnerRouter"
       ],
       "inlineHandlerLines": []
     },
@@ -342,13 +365,46 @@
       "method": "USE",
       "path": "",
       "middleware": [
+        "orderRouter"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/api.ts",
+      "line": 60,
+      "router": "apiRouter",
+      "method": "USE",
+      "path": "/v1",
+      "middleware": [
+        "orderRouter"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/api.ts",
+      "line": 62,
+      "router": "apiRouter",
+      "method": "USE",
+      "path": "",
+      "middleware": [
+        "deviceRouter"
+      ],
+      "inlineHandlerLines": []
+    },
+    {
+      "file": "backend/src/routes/api.ts",
+      "line": 64,
+      "router": "apiRouter",
+      "method": "USE",
+      "path": "",
+      "middleware": [
         "catalogRouter"
       ],
       "inlineHandlerLines": []
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 61,
+      "line": 66,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
@@ -359,7 +415,7 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 63,
+      "line": 68,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
@@ -370,7 +426,7 @@
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 65,
+      "line": 70,
       "router": "apiRouter",
       "method": "USE",
       "path": "",
@@ -427,8 +483,76 @@
       ]
     },
     {
+      "file": "backend/src/routes/adminStores.ts",
+      "line": 12,
+      "router": "adminStoresRouter",
+      "method": "POST",
+      "path": "/v1/admin/stores",
+      "middleware": [
+        "requireAuth",
+        "requireRole('ADMIN')"
+      ],
+      "inlineHandlerLines": [
+        12
+      ]
+    },
+    {
+      "file": "backend/src/routes/adminTeam.ts",
+      "line": 15,
+      "router": "adminTeamRouter",
+      "method": "GET",
+      "path": "",
+      "middleware": [
+        "base"
+      ],
+      "inlineHandlerLines": [
+        15
+      ]
+    },
+    {
+      "file": "backend/src/routes/adminTeam.ts",
+      "line": 21,
+      "router": "adminTeamRouter",
+      "method": "POST",
+      "path": "",
+      "middleware": [
+        "base"
+      ],
+      "inlineHandlerLines": [
+        21
+      ]
+    },
+    {
+      "file": "backend/src/routes/adminTeam.ts",
+      "line": 25,
+      "router": "adminTeamRouter",
+      "method": "PATCH",
+      "path": "",
+      "middleware": [
+        "base+'/:id'",
+        "validParams('id')"
+      ],
+      "inlineHandlerLines": [
+        25
+      ]
+    },
+    {
+      "file": "backend/src/routes/adminTeam.ts",
+      "line": 29,
+      "router": "adminTeamRouter",
+      "method": "DELETE",
+      "path": "",
+      "middleware": [
+        "base+'/:id'",
+        "validParams('id')"
+      ],
+      "inlineHandlerLines": [
+        29
+      ]
+    },
+    {
       "file": "backend/src/routes/api.ts",
-      "line": 94,
+      "line": 99,
       "router": "apiRouter",
       "method": "GET",
       "path": "/drivers",
@@ -437,12 +561,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        94
+        99
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 105,
+      "line": 110,
       "router": "apiRouter",
       "method": "GET",
       "path": "/drivers/locations",
@@ -451,12 +575,12 @@
         "requireRole('DRIVER','ADMIN')"
       ],
       "inlineHandlerLines": [
-        105
+        110
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 127,
+      "line": 132,
       "router": "apiRouter",
       "method": "GET",
       "path": "/campus",
@@ -464,12 +588,12 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        127
+        132
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 129,
+      "line": 134,
       "router": "apiRouter",
       "method": "GET",
       "path": "/drivers/:id",
@@ -479,12 +603,12 @@
         "validParams('id')"
       ],
       "inlineHandlerLines": [
-        129
+        134
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 180,
+      "line": 185,
       "router": "apiRouter",
       "method": "POST",
       "path": "/auth/google",
@@ -492,12 +616,12 @@
         "legacyAuthOnly"
       ],
       "inlineHandlerLines": [
-        180
+        185
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 239,
+      "line": 244,
       "router": "apiRouter",
       "method": "POST",
       "path": "/auth/partner-login",
@@ -505,12 +629,12 @@
         "legacyAuthOnly"
       ],
       "inlineHandlerLines": [
-        239
+        244
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 298,
+      "line": 303,
       "router": "apiRouter",
       "method": "POST",
       "path": "/auth/admin-login",
@@ -518,12 +642,12 @@
         "legacyAuthOnly"
       ],
       "inlineHandlerLines": [
-        298
+        303
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 371,
+      "line": 376,
       "router": "apiRouter",
       "method": "GET",
       "path": "/auth/profile",
@@ -531,12 +655,12 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        371
+        376
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 383,
+      "line": 388,
       "router": "apiRouter",
       "method": "PUT",
       "path": "/auth/profile",
@@ -544,12 +668,12 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        383
+        388
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 440,
+      "line": 445,
       "router": "apiRouter",
       "method": "POST",
       "path": "/auth/logout",
@@ -557,12 +681,12 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        440
+        445
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 462,
+      "line": 467,
       "router": "apiRouter",
       "method": "DELETE",
       "path": "/auth/account",
@@ -571,12 +695,12 @@
         "requireRole('STUDENT')"
       ],
       "inlineHandlerLines": [
-        462
+        467
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 505,
+      "line": 511,
       "router": "apiRouter",
       "method": "POST",
       "path": "/admin/partners",
@@ -586,12 +710,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        505
+        511
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 577,
+      "line": 583,
       "router": "apiRouter",
       "method": "GET",
       "path": "/admin/partners",
@@ -600,12 +724,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        577
+        583
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 592,
+      "line": 598,
       "router": "apiRouter",
       "method": "POST",
       "path": "/notifications/register-token",
@@ -613,23 +737,23 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        592
+        598
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 632,
+      "line": 638,
       "router": "apiRouter",
       "method": "GET",
       "path": "/vendors",
       "middleware": [],
       "inlineHandlerLines": [
-        632
+        638
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 643,
+      "line": 649,
       "router": "apiRouter",
       "method": "GET",
       "path": "/vendors/:id",
@@ -637,12 +761,12 @@
         "validParams('id')"
       ],
       "inlineHandlerLines": [
-        643
+        649
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 658,
+      "line": 664,
       "router": "apiRouter",
       "method": "POST",
       "path": "/vendors",
@@ -651,12 +775,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        658
+        664
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 705,
+      "line": 711,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/admin/vendors/:id/location",
@@ -666,12 +790,12 @@
         "validParams('id')"
       ],
       "inlineHandlerLines": [
-        705
+        711
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 721,
+      "line": 727,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/admin/vendors/:id/profile",
@@ -681,12 +805,12 @@
         "validParams('id')"
       ],
       "inlineHandlerLines": [
-        721
+        727
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 731,
+      "line": 737,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/vendors/:id/status",
@@ -697,12 +821,12 @@
         "requireApprovedPartner"
       ],
       "inlineHandlerLines": [
-        731
+        737
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 751,
+      "line": 757,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/vendors/:id/toggle",
@@ -713,12 +837,12 @@
         "requireApprovedPartner"
       ],
       "inlineHandlerLines": [
-        751
+        757
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 772,
+      "line": 778,
       "router": "apiRouter",
       "method": "POST",
       "path": "/vendors/:id/items",
@@ -729,12 +853,12 @@
         "validParams('id')"
       ],
       "inlineHandlerLines": [
-        772
+        778
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 805,
+      "line": 811,
       "router": "apiRouter",
       "method": "GET",
       "path": "/menus/:vendorId",
@@ -742,12 +866,12 @@
         "validParams('vendorId')"
       ],
       "inlineHandlerLines": [
-        805
+        811
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 822,
+      "line": 828,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/menus/:itemId/toggle",
@@ -758,12 +882,12 @@
         "validParams('itemId')"
       ],
       "inlineHandlerLines": [
-        822
+        828
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 832,
+      "line": 838,
       "router": "apiRouter",
       "method": "GET",
       "path": "/analytics",
@@ -772,12 +896,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        832
+        838
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 884,
+      "line": 890,
       "router": "apiRouter",
       "method": "PATCH",
       "path": "/vendors/items/:itemId",
@@ -788,12 +912,12 @@
         "validParams('itemId')"
       ],
       "inlineHandlerLines": [
-        884
+        890
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 930,
+      "line": 936,
       "router": "apiRouter",
       "method": "POST",
       "path": "/reviews",
@@ -802,12 +926,12 @@
         "requireRole('STUDENT')"
       ],
       "inlineHandlerLines": [
-        930
+        936
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 1065,
+      "line": 1071,
       "router": "apiRouter",
       "method": "POST",
       "path": "/coupons/redeem-coins",
@@ -816,12 +940,12 @@
         "requireRole('STUDENT')"
       ],
       "inlineHandlerLines": [
-        1065
+        1071
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 1120,
+      "line": 1126,
       "router": "apiRouter",
       "method": "GET",
       "path": "/reviews/vendor/:vendorId",
@@ -830,12 +954,12 @@
         "validParams('vendorId')"
       ],
       "inlineHandlerLines": [
-        1120
+        1126
       ]
     },
     {
       "file": "backend/src/routes/api.ts",
-      "line": 1129,
+      "line": 1135,
       "router": "apiRouter",
       "method": "GET",
       "path": "/reviews/driver/:driverId",
@@ -844,7 +968,7 @@
         "validParams('driverId')"
       ],
       "inlineHandlerLines": [
-        1129
+        1135
       ]
     },
     {
@@ -1187,7 +1311,7 @@
     },
     {
       "file": "backend/src/routes/clerk.ts",
-      "line": 9,
+      "line": 10,
       "router": "clerkWebhookRouter",
       "method": "POST",
       "path": "/webhooks/clerk",
@@ -1195,7 +1319,7 @@
         "clerkOnly"
       ],
       "inlineHandlerLines": [
-        9
+        10
       ]
     },
     {
@@ -2057,7 +2181,7 @@
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 270,
+      "line": 274,
       "router": "orderRouter",
       "method": "GET",
       "path": "/orders/available",
@@ -2067,12 +2191,12 @@
         "requireApprovedPartner"
       ],
       "inlineHandlerLines": [
-        270
+        274
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 298,
+      "line": 302,
       "router": "orderRouter",
       "method": "GET",
       "path": "/orders/:id",
@@ -2081,12 +2205,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        298
+        302
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 318,
+      "line": 322,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders/:id/cancel",
@@ -2096,12 +2220,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        318
+        322
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 329,
+      "line": 333,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders/:id/reject",
@@ -2112,12 +2236,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        329
+        333
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 347,
+      "line": 351,
       "router": "orderRouter",
       "method": "PATCH",
       "path": "/orders/:id/status",
@@ -2127,12 +2251,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        347
+        351
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 380,
+      "line": 384,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders/:id/verify-gate-otp",
@@ -2143,12 +2267,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        380
+        384
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 391,
+      "line": 395,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders/:id/accept-driver",
@@ -2159,12 +2283,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        391
+        395
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 400,
+      "line": 404,
       "router": "orderRouter",
       "method": "POST",
       "path": "/orders/:id/release",
@@ -2175,12 +2299,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        400
+        404
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 409,
+      "line": 413,
       "router": "orderRouter",
       "method": "POST",
       "path": "/drivers/location",
@@ -2190,12 +2314,12 @@
         "requireApprovedPartner"
       ],
       "inlineHandlerLines": [
-        409
+        413
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 424,
+      "line": 428,
       "router": "orderRouter",
       "method": "PATCH",
       "path": "/orders/:id/reassign",
@@ -2205,12 +2329,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        424
+        428
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 439,
+      "line": 443,
       "router": "orderRouter",
       "method": "POST",
       "path": "/admin/orders/:id/cancel",
@@ -2220,12 +2344,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        439
+        443
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 452,
+      "line": 456,
       "router": "orderRouter",
       "method": "POST",
       "path": "/admin/orders/:id/reset-otp-lock",
@@ -2235,12 +2359,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        452
+        456
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 462,
+      "line": 466,
       "router": "orderRouter",
       "method": "POST",
       "path": "/admin/orders/:id/retry-refund",
@@ -2250,12 +2374,12 @@
         "validId"
       ],
       "inlineHandlerLines": [
-        462
+        466
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 480,
+      "line": 484,
       "router": "orderRouter",
       "method": "GET",
       "path": "/admin/payments/reconcile",
@@ -2264,12 +2388,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        480
+        484
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 544,
+      "line": 548,
       "router": "orderRouter",
       "method": "GET",
       "path": "/admin/orders/needs-attention",
@@ -2278,12 +2402,12 @@
         "requireRole('ADMIN')"
       ],
       "inlineHandlerLines": [
-        544
+        548
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 634,
+      "line": 638,
       "router": "orderRouter",
       "method": "POST",
       "path": "/payments/create-order",
@@ -2291,12 +2415,12 @@
         "requireAuth"
       ],
       "inlineHandlerLines": [
-        634
+        638
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 657,
+      "line": 661,
       "router": "orderRouter",
       "method": "POST",
       "path": "/payments/verify-signature",
@@ -2305,18 +2429,18 @@
         "requireRole('STUDENT')"
       ],
       "inlineHandlerLines": [
-        657
+        661
       ]
     },
     {
       "file": "backend/src/routes/orders.ts",
-      "line": 710,
+      "line": 714,
       "router": "orderRouter",
       "method": "POST",
       "path": "/payments/webhook",
       "middleware": [],
       "inlineHandlerLines": [
-        710
+        714
       ]
     },
     {
@@ -9008,82 +9132,87 @@
     },
     {
       "path": "backend/prisma/schema.prisma",
-      "sha256": "e8b5ff19db48496e26b8cbfde1a0b54b42c2bdb97c20240c58ff150c0917a987",
+      "sha256": "f93739a37fa1c4e87366d4149655c75508b2c45812bdf5b9619bf46f1ac2cfde",
       "references": [
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 59
+          "line": 34
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 87
         },
         {
           "kind": "identity",
           "symbol": "googleSub",
-          "line": 62
+          "line": 90
         },
         {
           "kind": "identity",
           "symbol": "passwordHash",
-          "line": 63
+          "line": 91
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 96
+          "line": 125
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 106
+          "line": 135
         },
         {
           "kind": "session",
           "symbol": "tokenVersion",
-          "line": 73
+          "line": 101
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 135
+          "line": 164
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 156
+          "line": 185
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 157
+          "line": 186
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 184
+          "line": 213
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 219
+          "line": 248
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 220
+          "line": 249
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 436
+          "line": 465
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 451
+          "line": 480
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 452
+          "line": 481
         }
       ]
     },
@@ -9300,7 +9429,7 @@
     },
     {
       "path": "backend/src/middleware/auth.ts",
-      "sha256": "c4f45a1ebcc1945bd964140a62414a49626a8280cad071788d1f4366de66c00c",
+      "sha256": "44fb5d9d5e916acb4bc603f5962df019169ede947e313b9fc0d9d6907331ad70",
       "references": [
         {
           "kind": "identity",
@@ -9315,37 +9444,32 @@
         {
           "kind": "identity",
           "symbol": "generateToken",
-          "line": 33
-        },
-        {
-          "kind": "identity",
-          "symbol": "Clerk",
           "line": 34
         },
         {
           "kind": "identity",
+          "symbol": "Clerk",
+          "line": 35
+        },
+        {
+          "kind": "identity",
           "symbol": "verifyTokenForAccount",
-          "line": 80
+          "line": 81
         },
         {
           "kind": "identity",
           "symbol": "resolveClerkSession",
-          "line": 81
+          "line": 82
         },
         {
           "kind": "session",
           "symbol": "tokenVersion",
-          "line": 31
+          "line": 32
         },
         {
           "kind": "session",
           "symbol": "tokenVersion",
-          "line": 33
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 35
+          "line": 34
         },
         {
           "kind": "session",
@@ -9355,37 +9479,37 @@
         {
           "kind": "session",
           "symbol": "tokenVersion",
-          "line": 40
+          "line": 37
         },
         {
           "kind": "session",
           "symbol": "tokenVersion",
-          "line": 51
+          "line": 41
         },
         {
           "kind": "session",
-          "symbol": "invalidateAuthCache",
+          "symbol": "tokenVersion",
           "line": 52
         },
         {
           "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 54
+          "symbol": "invalidateAuthCache",
+          "line": 53
         },
         {
           "kind": "session",
-          "symbol": "accountMatchesToken",
+          "symbol": "tokenVersion",
           "line": 55
         },
         {
           "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 60
+          "symbol": "accountMatchesToken",
+          "line": 56
         },
         {
           "kind": "session",
           "symbol": "tokenVersion",
-          "line": 66
+          "line": 61
         },
         {
           "kind": "session",
@@ -9394,33 +9518,38 @@
         },
         {
           "kind": "session",
-          "symbol": "bumpTokenVersion",
-          "line": 71
+          "symbol": "tokenVersion",
+          "line": 68
         },
         {
           "kind": "session",
-          "symbol": "tokenVersion",
+          "symbol": "bumpTokenVersion",
           "line": 72
         },
         {
           "kind": "session",
-          "symbol": "invalidateAuthCache",
+          "symbol": "tokenVersion",
           "line": 73
         },
         {
           "kind": "session",
+          "symbol": "invalidateAuthCache",
+          "line": 74
+        },
+        {
+          "kind": "session",
           "symbol": "tokenVersion",
-          "line": 79
+          "line": 80
         },
         {
           "kind": "session",
           "symbol": "accountMatchesToken",
-          "line": 83
+          "line": 84
         },
         {
           "kind": "session",
           "symbol": "accountMatchesToken",
-          "line": 130
+          "line": 131
         },
         {
           "kind": "authentication",
@@ -9435,22 +9564,12 @@
         {
           "kind": "authentication",
           "symbol": "JWT_SECRET",
-          "line": 22
+          "line": 23
         },
         {
           "kind": "authentication",
           "symbol": "JWT_SECRET",
-          "line": 22
-        },
-        {
-          "kind": "authentication",
-          "symbol": "JWT_SECRET",
-          "line": 25
-        },
-        {
-          "kind": "authentication",
-          "symbol": "JWT_SECRET",
-          "line": 25
+          "line": 23
         },
         {
           "kind": "authentication",
@@ -9459,28 +9578,38 @@
         },
         {
           "kind": "authentication",
-          "symbol": "jwt",
-          "line": 36
+          "symbol": "JWT_SECRET",
+          "line": 26
+        },
+        {
+          "kind": "authentication",
+          "symbol": "JWT_SECRET",
+          "line": 27
         },
         {
           "kind": "authentication",
           "symbol": "jwt",
-          "line": 77
+          "line": 37
+        },
+        {
+          "kind": "authentication",
+          "symbol": "jwt",
+          "line": 78
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 99
+          "line": 100
         },
         {
           "kind": "authentication",
           "symbol": "authenticateJwt",
-          "line": 147
+          "line": 148
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 147
+          "line": 148
         },
         {
           "kind": "authorization",
@@ -9490,12 +9619,7 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 90
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 90
+          "line": 91
         },
         {
           "kind": "authorization",
@@ -9504,28 +9628,33 @@
         },
         {
           "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 92
+        },
+        {
+          "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 99
+          "line": 100
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 150
+          "line": 151
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 151
+          "line": 152
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 109
+          "line": 110
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 112
+          "line": 113
         }
       ]
     },
@@ -9552,7 +9681,7 @@
     },
     {
       "path": "backend/src/middleware/rateLimit.ts",
-      "sha256": "ea791cc41cd37a3890e054d9f7142020c00bf6305b4bf146eb9d7058887a2d3e",
+      "sha256": "b4d9715d5fed5089c61d56f4ed6f4c8eda818ad7bf99415622c749be9acdad97",
       "references": [
         {
           "kind": "identity",
@@ -9562,7 +9691,7 @@
         {
           "kind": "identity",
           "symbol": "getAuth",
-          "line": 185
+          "line": 187
         },
         {
           "kind": "authentication",
@@ -9577,42 +9706,42 @@
         {
           "kind": "authentication",
           "symbol": "/auth/google",
-          "line": 162
+          "line": 164
         },
         {
           "kind": "authentication",
           "symbol": "/auth/partner-login",
-          "line": 162
+          "line": 164
         },
         {
           "kind": "authentication",
           "symbol": "/auth/admin-login",
-          "line": 162
+          "line": 164
         },
         {
           "kind": "authentication",
           "symbol": "/auth/partner-signup",
-          "line": 162
+          "line": 164
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 183
+          "line": 185
         },
         {
           "kind": "authentication",
           "symbol": "JWT_SECRET",
-          "line": 189
+          "line": 191
         },
         {
           "kind": "authentication",
           "symbol": "jwt",
-          "line": 190
+          "line": 192
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 187
+          "line": 189
         }
       ]
     },
@@ -9763,38 +9892,150 @@
       ]
     },
     {
+      "path": "backend/src/routes/adminStores.ts",
+      "sha256": "ba614cd45c07049368357542b8a83df502cb85012a80c6b739d40dc307468bd4",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 21
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 28
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 29
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 3
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 12
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 3
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 3
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 12
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 12
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 31
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 37
+        }
+      ]
+    },
+    {
+      "path": "backend/src/routes/adminTeam.ts",
+      "sha256": "16ce998c80413c8ca711419dd29819ea8151c178603022aaced7c5237c4f6cf7",
+      "references": [
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 4
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 11
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 4
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 4
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 11
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 11
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 15
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 21
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 25
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 29
+        }
+      ]
+    },
+    {
       "path": "backend/src/routes/api.ts",
-      "sha256": "95e7d0752f1368e4be68d04b63090035f029bdba1d27236dbccb89ca638204ea",
+      "sha256": "1988639757f35c3e401d45dc9da2b42e6816f181370d1169bf15c75ffcf02ae8",
       "references": [
         {
           "kind": "identity",
           "symbol": "generateToken",
-          "line": 11
+          "line": 14
         },
         {
           "kind": "identity",
           "symbol": "verifyTokenForAccount",
-          "line": 11
+          "line": 14
         },
         {
           "kind": "identity",
           "symbol": "verifyGoogleIdToken",
-          "line": 33
+          "line": 36
         },
         {
           "kind": "identity",
           "symbol": "verifyTokenForAccount",
-          "line": 82
+          "line": 87
         },
         {
           "kind": "identity",
           "symbol": "verifyGoogleIdToken",
-          "line": 189
-        },
-        {
-          "kind": "identity",
-          "symbol": "googleSub",
-          "line": 200
+          "line": 194
         },
         {
           "kind": "identity",
@@ -9804,442 +10045,432 @@
         {
           "kind": "identity",
           "symbol": "googleSub",
-          "line": 205
+          "line": 210
         },
         {
           "kind": "identity",
           "symbol": "googleSub",
-          "line": 215
+          "line": 210
         },
         {
           "kind": "identity",
           "symbol": "googleSub",
-          "line": 217
+          "line": 220
         },
         {
           "kind": "identity",
           "symbol": "googleSub",
-          "line": 225
+          "line": 222
         },
         {
           "kind": "identity",
-          "symbol": "generateToken",
+          "symbol": "googleSub",
           "line": 230
         },
         {
           "kind": "identity",
-          "symbol": "passwordHash",
-          "line": 261
+          "symbol": "generateToken",
+          "line": 235
         },
         {
           "kind": "identity",
           "symbol": "passwordHash",
-          "line": 262
+          "line": 266
+        },
+        {
+          "kind": "identity",
+          "symbol": "passwordHash",
+          "line": 267
         },
         {
           "kind": "identity",
           "symbol": "generateToken",
-          "line": 281
+          "line": 286
         },
         {
           "kind": "identity",
           "symbol": "generateToken",
-          "line": 345
+          "line": 350
         },
         {
           "kind": "identity",
           "symbol": "googleSub",
-          "line": 477
+          "line": 483
         },
         {
           "kind": "identity",
           "symbol": "passwordHash",
-          "line": 477
+          "line": 483
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 481
+          "line": 487
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 485
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 485
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 485
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 485
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 485
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 492
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 493
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 493
-        },
-        {
-          "kind": "identity",
-          "symbol": "passwordHash",
-          "line": 549
-        },
-        {
-          "kind": "identity",
-          "symbol": "passwordHash",
-          "line": 552
-        },
-        {
-          "kind": "session",
-          "symbol": "invalidateAuthCache",
-          "line": 11
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 230
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 230
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 281
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 281
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 349
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 349
-        },
-        {
-          "kind": "session",
-          "symbol": "tokenVersion",
-          "line": 479
-        },
-        {
-          "kind": "session",
-          "symbol": "invalidateAuthCache",
           "line": 491
         },
         {
-          "kind": "authentication",
-          "symbol": "requireAuth",
-          "line": 11
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 491
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 491
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 491
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 491
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 498
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 499
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 499
+        },
+        {
+          "kind": "identity",
+          "symbol": "passwordHash",
+          "line": 555
+        },
+        {
+          "kind": "identity",
+          "symbol": "passwordHash",
+          "line": 558
+        },
+        {
+          "kind": "session",
+          "symbol": "invalidateAuthCache",
+          "line": 14
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 235
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 235
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 286
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 286
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 354
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 354
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 485
+        },
+        {
+          "kind": "session",
+          "symbol": "invalidateAuthCache",
+          "line": 497
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 94
+          "line": 14
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 105
+          "line": 99
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 127
+          "line": 110
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 129
+          "line": 132
+        },
+        {
+          "kind": "authentication",
+          "symbol": "requireAuth",
+          "line": 134
         },
         {
           "kind": "authentication",
           "symbol": "/auth/google",
-          "line": 180
+          "line": 185
         },
         {
           "kind": "authentication",
           "symbol": "/auth/partner-login",
-          "line": 239
+          "line": 244
         },
         {
           "kind": "authentication",
           "symbol": "/auth/admin-login",
-          "line": 298
+          "line": 303
         },
         {
           "kind": "authentication",
           "symbol": "ADMIN_PASSCODE",
-          "line": 306
+          "line": 311
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 371
+          "line": 376
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 371
+          "line": 376
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 383
+          "line": 388
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 383
+          "line": 388
         },
         {
           "kind": "authentication",
           "symbol": "/auth/logout",
-          "line": 440
+          "line": 445
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 440
+          "line": 445
         },
         {
           "kind": "authentication",
           "symbol": "/auth/account",
-          "line": 462
+          "line": 467
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 462
+          "line": 467
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 505
+          "line": 511
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 577
+          "line": 583
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 592
+          "line": 598
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 658
+          "line": 664
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 705
+          "line": 711
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 721
+          "line": 727
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 731
+          "line": 737
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 751
+          "line": 757
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 772
+          "line": 778
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 822
+          "line": 828
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 832
+          "line": 838
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 884
+          "line": 890
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 930
+          "line": 936
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 1065
+          "line": 1071
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 1120
+          "line": 1126
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 1129
+          "line": 1135
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 11
+          "line": 14
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 11
+          "line": 14
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 40
+          "line": 43
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 70
+          "line": 75
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 73
+          "line": 78
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 74
+          "line": 79
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 88
+          "line": 93
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 89
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 94
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
           "line": 94
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 105
+          "line": 99
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 105
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 112
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 115
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 118
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 118
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 127
+          "line": 99
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 129
+          "line": 110
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 129
+          "line": 110
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 142
+          "line": 117
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 145
+          "line": 120
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 273
+          "line": 123
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 274
+          "line": 123
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 132
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 134
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 134
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 276
+          "line": 147
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 150
         },
         {
           "kind": "authorization",
@@ -10249,237 +10480,252 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 278
+          "line": 279
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 286
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 371
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 383
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 440
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 462
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 462
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 505
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 505
+          "line": 281
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 560
+          "line": 283
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 565
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 577
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 577
+          "line": 283
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 581
+          "line": 291
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 376
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 388
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 445
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 467
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 467
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 511
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 511
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 581
+          "line": 566
         },
         {
           "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 592
-        },
-        {
-          "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 658
-        },
-        {
-          "kind": "authorization",
-          "symbol": "AuthenticatedRequest",
-          "line": 658
+          "symbol": "approvalStatus",
+          "line": 571
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 705
+          "line": 583
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 705
+          "line": 583
         },
         {
           "kind": "authorization",
-          "symbol": "requireRole",
-          "line": 721
+          "symbol": "approvalStatus",
+          "line": 587
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 587
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 721
+          "line": 598
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 731
+          "line": 664
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 664
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 711
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 711
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 727
+        },
+        {
+          "kind": "authorization",
+          "symbol": "AuthenticatedRequest",
+          "line": 727
+        },
+        {
+          "kind": "authorization",
+          "symbol": "requireRole",
+          "line": 737
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 731
+          "line": 737
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 731
+          "line": 737
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 751
+          "line": 757
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 751
+          "line": 757
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 751
+          "line": 757
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 772
+          "line": 778
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 772
+          "line": 778
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 772
+          "line": 778
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 807
+          "line": 813
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 822
+          "line": 828
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 822
+          "line": 828
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 822
+          "line": 828
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 832
+          "line": 838
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 832
+          "line": 838
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 884
+          "line": 890
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 884
+          "line": 890
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 884
+          "line": 890
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 930
+          "line": 936
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 930
+          "line": 936
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 1065
+          "line": 1071
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 1065
+          "line": 1071
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 1120
+          "line": 1126
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 1129
+          "line": 1135
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 80
+          "line": 85
         }
       ]
     },
@@ -10702,27 +10948,22 @@
     },
     {
       "path": "backend/src/routes/clerk.ts",
-      "sha256": "eebbe59efee608ffac188a32b80e064c1f79e583c50cc7805fda2f888e99647f",
+      "sha256": "66863537afcc5e02c6ec62562040037f676373a1334c7fc45dd8bcb1d8fa1fca",
       "references": [
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 28
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
           "line": 29
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 29
+          "line": 30
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 34
+          "line": 30
         },
         {
           "kind": "identity",
@@ -10731,18 +10972,23 @@
         },
         {
           "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 36
+        },
+        {
+          "kind": "identity",
           "symbol": "googleSub",
-          "line": 49
+          "line": 51
         },
         {
           "kind": "identity",
           "symbol": "passwordHash",
-          "line": 49
+          "line": 51
         },
         {
           "kind": "session",
           "symbol": "tokenVersion",
-          "line": 49
+          "line": 51
         }
       ]
     },
@@ -11297,7 +11543,7 @@
     },
     {
       "path": "backend/src/routes/orders.ts",
-      "sha256": "a524658a7f579a78e5c9559975a0d7ab1f2c9007c6fc4bb2020d84098cc195b0",
+      "sha256": "30523baa78bf8e14b9443ead510193d1febcf261e45734a41cb61bf6eac54bae",
       "references": [
         {
           "kind": "authentication",
@@ -11337,87 +11583,87 @@
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 270
+          "line": 274
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 298
+          "line": 302
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 318
+          "line": 322
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 329
+          "line": 333
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 347
+          "line": 351
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 380
+          "line": 384
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 391
+          "line": 395
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 400
+          "line": 404
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 409
+          "line": 413
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 424
+          "line": 428
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 439
+          "line": 443
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 452
+          "line": 456
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 462
+          "line": 466
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 480
+          "line": 484
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 544
+          "line": 548
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 634
+          "line": 638
         },
         {
           "kind": "authentication",
           "symbol": "requireAuth",
-          "line": 657
+          "line": 661
         },
         {
           "kind": "authorization",
@@ -11502,247 +11748,247 @@
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 270
+          "line": 274
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 270
+          "line": 274
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 270
+          "line": 274
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 273
+          "line": 277
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 298
+          "line": 302
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 304
+          "line": 308
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 305
+          "line": 309
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 305
+          "line": 309
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 318
+          "line": 322
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 318
+          "line": 322
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 329
+          "line": 333
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 329
+          "line": 333
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 329
+          "line": 333
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 340
+          "line": 344
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 347
+          "line": 351
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 347
+          "line": 351
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 380
+          "line": 384
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 380
+          "line": 384
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 380
+          "line": 384
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 391
+          "line": 395
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 391
+          "line": 395
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 391
+          "line": 395
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 400
+          "line": 404
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 400
+          "line": 404
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 400
+          "line": 404
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 409
+          "line": 413
         },
         {
           "kind": "authorization",
           "symbol": "requireApprovedPartner",
-          "line": 409
+          "line": 413
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 409
+          "line": 413
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 424
+          "line": 428
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 424
+          "line": 428
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 439
+          "line": 443
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 439
+          "line": 443
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 452
+          "line": 456
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 452
+          "line": 456
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 462
+          "line": 466
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 462
+          "line": 466
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 480
+          "line": 484
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 480
+          "line": 484
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 544
+          "line": 548
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 544
+          "line": 548
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 559
+          "line": 563
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 560
+          "line": 564
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 572
+          "line": 576
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 572
+          "line": 576
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 605
+          "line": 609
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 605
+          "line": 609
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 634
+          "line": 638
         },
         {
           "kind": "authorization",
           "symbol": "requireRole",
-          "line": 657
+          "line": 661
         },
         {
           "kind": "authorization",
           "symbol": "AuthenticatedRequest",
-          "line": 657
+          "line": 661
         }
       ]
     },
@@ -12395,6 +12641,77 @@
       ]
     },
     {
+      "path": "backend/src/services/adminAccess.ts",
+      "sha256": "9dc38811f156afa9f3933165e07506c9f396992b89a8e398b378a51b293937a3",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 27
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 28
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 29
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 32
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 33
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 34
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 41
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 45
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 46
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 49
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 54
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 82
+        },
+        {
+          "kind": "session",
+          "symbol": "tokenVersion",
+          "line": 100
+        }
+      ]
+    },
+    {
       "path": "backend/src/services/catalog.ts",
       "sha256": "da28dbf1235b68cf1cd78499754e15d4521dc2fcb210a3702d9a14eefbcaa10d",
       "references": [
@@ -12529,7 +12846,7 @@
     },
     {
       "path": "backend/src/services/clerkIdentity.ts",
-      "sha256": "ebc3bd533e5eb7e50ff1c40e828bf7e0aef04b36b3fbd348e8c56c0e2b138fab",
+      "sha256": "19d0ad296a1ceccbd7e966f6068d3aae8ad756048b7c8a30739dec8b04f17e74",
       "references": [
         {
           "kind": "identity",
@@ -12539,66 +12856,56 @@
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 23
+          "line": 26
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 37
         },
         {
           "kind": "identity",
           "symbol": "verifiedClerkClaims",
-          "line": 29
+          "line": 41
         },
         {
           "kind": "identity",
           "symbol": "resolveClerkSession",
-          "line": 45
+          "line": 57
         },
         {
           "kind": "identity",
           "symbol": "verifiedClerkClaims",
-          "line": 46
+          "line": 58
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 65
+          "line": 78
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 73
+          "line": 86
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 76
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 80
-        },
-        {
-          "kind": "identity",
-          "symbol": "getAuth",
-          "line": 87
-        },
-        {
-          "kind": "identity",
-          "symbol": "resolveClerkSession",
           "line": 89
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 90
+          "line": 93
         },
         {
           "kind": "identity",
-          "symbol": "linkClerkIdentity",
-          "line": 94
+          "symbol": "getAuth",
+          "line": 100
         },
         {
           "kind": "identity",
-          "symbol": "clerkUserId",
+          "symbol": "resolveClerkSession",
           "line": 102
         },
         {
@@ -12608,43 +12915,23 @@
         },
         {
           "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 105
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 105
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
+          "symbol": "linkClerkIdentity",
           "line": 107
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 108
+          "line": 115
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 109
+          "line": 116
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 109
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 109
-        },
-        {
-          "kind": "identity",
-          "symbol": "provisionClerkAdmin",
-          "line": 112
+          "line": 118
         },
         {
           "kind": "identity",
@@ -12659,22 +12946,42 @@
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 123
+          "line": 121
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 130
+          "line": 122
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 130
+          "line": 122
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 136
+          "line": 122
+        },
+        {
+          "kind": "identity",
+          "symbol": "provisionClerkAdmin",
+          "line": 125
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 132
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 134
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 137
         },
         {
           "kind": "identity",
@@ -12687,29 +12994,54 @@
           "line": 138
         },
         {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 61
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 145
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 145
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 151
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 153
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 153
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 62
+          "line": 74
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 62
+          "line": 75
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 64
+          "line": 75
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 77
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 86
+          "line": 99
         }
       ]
     },
@@ -12957,6 +13289,172 @@
           "kind": "authorization",
           "symbol": "approvalStatus",
           "line": 100
+        }
+      ]
+    },
+    {
+      "path": "backend/test/e2e/admin_access.test.ts",
+      "sha256": "c2dd36b1c3f2da0acd03f136dcba7af898d3478d92f31045d6f71ac2396155f9",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 1
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 28
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 37
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 38
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 50
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 82
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 86
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 95
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 116
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 133
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 138
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 150
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 167
+        },
+        {
+          "kind": "authentication",
+          "symbol": "jwt",
+          "line": 3
+        },
+        {
+          "kind": "authentication",
+          "symbol": "jsonwebtoken",
+          "line": 3
+        },
+        {
+          "kind": "authentication",
+          "symbol": "jwt",
+          "line": 20
+        },
+        {
+          "kind": "authentication",
+          "symbol": "/auth/profile",
+          "line": 22
+        },
+        {
+          "kind": "authentication",
+          "symbol": "/auth/profile",
+          "line": 48
+        },
+        {
+          "kind": "authentication",
+          "symbol": "/auth/profile",
+          "line": 65
+        },
+        {
+          "kind": "authentication",
+          "symbol": "/auth/profile",
+          "line": 71
+        },
+        {
+          "kind": "authentication",
+          "symbol": "/auth/profile",
+          "line": 92
+        },
+        {
+          "kind": "authentication",
+          "symbol": "/auth/profile",
+          "line": 96
+        },
+        {
+          "kind": "authentication",
+          "symbol": "/auth/profile",
+          "line": 117
+        },
+        {
+          "kind": "authentication",
+          "symbol": "/auth/profile",
+          "line": 140
+        },
+        {
+          "kind": "authentication",
+          "symbol": "/auth/account",
+          "line": 145
+        },
+        {
+          "kind": "transports",
+          "symbol": "Authorization",
+          "line": 20
+        },
+        {
+          "kind": "transports",
+          "symbol": "Bearer",
+          "line": 20
+        },
+        {
+          "kind": "transports",
+          "symbol": "Authorization",
+          "line": 54
+        },
+        {
+          "kind": "transports",
+          "symbol": "Bearer",
+          "line": 54
+        },
+        {
+          "kind": "transports",
+          "symbol": "Authorization",
+          "line": 101
+        },
+        {
+          "kind": "transports",
+          "symbol": "join_room",
+          "line": 103
+        },
+        {
+          "kind": "transports",
+          "symbol": "join_room",
+          "line": 106
         }
       ]
     },
@@ -13265,7 +13763,7 @@
     },
     {
       "path": "backend/test/e2e/clerk_migration.test.ts",
-      "sha256": "6ba61688649ff0f27c46fe84ffdb0a5ac416e82efdeaba9f2cc625653a4ea14e",
+      "sha256": "34bb9b5e0f447763c315f392d3736976bf7932dcedc2abc92f65c45ec174c904",
       "references": [
         {
           "kind": "identity",
@@ -13300,47 +13798,47 @@
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 47
+          "line": 45
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 49
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 50
+          "line": 48
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
           "line": 50
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 51
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 51
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 62
+          "line": 63
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 70
+          "line": 71
         },
         {
           "kind": "identity",
           "symbol": "verifiedClerkClaims",
-          "line": 77
+          "line": 78
         },
         {
           "kind": "identity",
           "symbol": "resolveClerkSession",
-          "line": 82
-        },
-        {
-          "kind": "identity",
-          "symbol": "resolveClerkSession",
-          "line": 86
+          "line": 83
         },
         {
           "kind": "identity",
@@ -13349,8 +13847,8 @@
         },
         {
           "kind": "identity",
-          "symbol": "verifiedClerkClaims",
-          "line": 93
+          "symbol": "resolveClerkSession",
+          "line": 88
         },
         {
           "kind": "identity",
@@ -13360,12 +13858,12 @@
         {
           "kind": "identity",
           "symbol": "verifiedClerkClaims",
-          "line": 96
+          "line": 95
         },
         {
           "kind": "identity",
-          "symbol": "linkClerkIdentity",
-          "line": 102
+          "symbol": "verifiedClerkClaims",
+          "line": 97
         },
         {
           "kind": "identity",
@@ -13375,17 +13873,17 @@
         {
           "kind": "identity",
           "symbol": "linkClerkIdentity",
-          "line": 105
+          "line": 104
         },
         {
           "kind": "identity",
           "symbol": "linkClerkIdentity",
-          "line": 107
+          "line": 106
         },
         {
           "kind": "identity",
-          "symbol": "provisionClerkAdmin",
-          "line": 110
+          "symbol": "linkClerkIdentity",
+          "line": 108
         },
         {
           "kind": "identity",
@@ -13394,118 +13892,123 @@
         },
         {
           "kind": "identity",
+          "symbol": "provisionClerkAdmin",
+          "line": 112
+        },
+        {
+          "kind": "identity",
           "symbol": "linkClerkIdentity",
-          "line": 128
+          "line": 129
         },
         {
           "kind": "identity",
           "symbol": "resolveClerkSession",
-          "line": 133
+          "line": 134
         },
         {
           "kind": "identity",
           "symbol": "resolveClerkSession",
-          "line": 139
+          "line": 140
         },
         {
           "kind": "identity",
           "symbol": "resolveClerkSession",
-          "line": 142
-        },
-        {
-          "kind": "identity",
-          "symbol": "clerkUserId",
           "line": 143
         },
         {
           "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 144
+        },
+        {
+          "kind": "identity",
           "symbol": "linkClerkIdentity",
-          "line": 145
+          "line": 146
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 147
+          "line": 148
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 155
+          "line": 156
         },
         {
           "kind": "identity",
           "symbol": "resolveClerkSession",
-          "line": 166
+          "line": 167
         },
         {
           "kind": "identity",
           "symbol": "linkClerkIdentity",
-          "line": 171
+          "line": 172
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 173
+          "line": 174
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 180
+          "line": 181
         },
         {
           "kind": "identity",
           "symbol": "linkClerkIdentity",
-          "line": 188
+          "line": 189
         },
         {
           "kind": "identity",
           "symbol": "linkClerkIdentity",
-          "line": 188
+          "line": 189
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 191
+          "line": 192
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 193
+          "line": 194
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 193
+          "line": 194
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 195
-        },
-        {
-          "kind": "identity",
-          "symbol": "resolveClerkSession",
           "line": 196
         },
         {
           "kind": "identity",
-          "symbol": "clerkUserId",
-          "line": 200
+          "symbol": "resolveClerkSession",
+          "line": 197
         },
         {
           "kind": "identity",
-          "symbol": "resolveClerkSession",
+          "symbol": "clerkUserId",
           "line": 201
         },
         {
           "kind": "identity",
-          "symbol": "clerkUserId",
+          "symbol": "resolveClerkSession",
           "line": 202
         },
         {
           "kind": "identity",
           "symbol": "clerkUserId",
-          "line": 205
+          "line": 203
+        },
+        {
+          "kind": "identity",
+          "symbol": "clerkUserId",
+          "line": 206
         },
         {
           "kind": "authentication",
@@ -13525,87 +14028,82 @@
         {
           "kind": "authentication",
           "symbol": "/auth/google",
-          "line": 62
+          "line": 63
         },
         {
           "kind": "authentication",
           "symbol": "/auth/partner-login",
-          "line": 62
+          "line": 63
         },
         {
           "kind": "authentication",
           "symbol": "/auth/admin-login",
-          "line": 62
+          "line": 63
         },
         {
           "kind": "authentication",
           "symbol": "/auth/partner-signup",
-          "line": 62
+          "line": 63
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 65
+          "line": 66
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 68
+          "line": 69
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 68
+          "line": 69
         },
         {
           "kind": "authentication",
           "symbol": "jwt",
-          "line": 76
+          "line": 77
         },
         {
           "kind": "authentication",
           "symbol": "jwt",
-          "line": 81
+          "line": 82
         },
         {
           "kind": "authentication",
           "symbol": "jwt",
-          "line": 83
+          "line": 84
         },
         {
           "kind": "authentication",
           "symbol": "JWT_SECRET",
-          "line": 83
+          "line": 84
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 90
+          "line": 91
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 95
+          "line": 96
         },
         {
           "kind": "authentication",
           "symbol": "/auth/logout",
-          "line": 165
+          "line": 166
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 167
+          "line": 168
         },
         {
           "kind": "authentication",
           "symbol": "/auth/account",
-          "line": 199
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 121
+          "line": 200
         },
         {
           "kind": "authorization",
@@ -13615,7 +14113,7 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 124
+          "line": 123
         },
         {
           "kind": "authorization",
@@ -13625,17 +14123,22 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 129
+          "line": 126
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 172
+          "line": 130
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 172
+          "line": 173
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 173
         },
         {
           "kind": "transports",
@@ -13650,52 +14153,52 @@
         {
           "kind": "transports",
           "symbol": "Authorization",
-          "line": 68
+          "line": 69
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 68
+          "line": 69
         },
         {
           "kind": "transports",
           "symbol": "Authorization",
-          "line": 68
+          "line": 69
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 68
+          "line": 69
         },
         {
           "kind": "transports",
           "symbol": "Authorization",
-          "line": 83
+          "line": 84
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 83
+          "line": 84
         },
         {
           "kind": "transports",
           "symbol": "Authorization",
-          "line": 95
+          "line": 96
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 95
+          "line": 96
         },
         {
           "kind": "transports",
           "symbol": "join_room",
-          "line": 159
+          "line": 160
         },
         {
           "kind": "transports",
           "symbol": "join_room",
-          "line": 162
+          "line": 163
         }
       ]
     },
@@ -14244,7 +14747,7 @@
     },
     {
       "path": "backend/test/e2e/lifecycle_journeys.test.ts",
-      "sha256": "664b08c90e5657e3dd7edcb0bd0ac7310d78274fb3f66bcf40c423098da5745a",
+      "sha256": "41d0aaaa55f32fd9b0c5724b28f6afa4a67a2aa3215099b9d7fd644850a3374e",
       "references": [
         {
           "kind": "identity",
@@ -14254,22 +14757,22 @@
         {
           "kind": "authentication",
           "symbol": "/auth/account",
-          "line": 1231
+          "line": 1235
         },
         {
           "kind": "authentication",
           "symbol": "/auth/account",
-          "line": 1233
+          "line": 1237
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 1260
+          "line": 1264
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 923
+          "line": 927
         }
       ]
     },
@@ -16054,6 +16557,48 @@
       ]
     },
     {
+      "path": "scripts/ui_ux/admin-redesign/capture.mjs",
+      "sha256": "9b22c0f06ef1fe02561a7f64f8ec706ebfc134c9f975a75bb463182bad4ad1b6",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "path": "scripts/ui_ux/admin-redesign/entry.tsx",
+      "sha256": "4a0e71cbdfcb74662713915f632a74b56c3fbc3c35df60039d395e6d8f0ca90b",
+      "references": [
+        {
+          "kind": "session",
+          "symbol": "installClerkTokenGetter",
+          "line": 10
+        },
+        {
+          "kind": "session",
+          "symbol": "installClerkTokenGetter",
+          "line": 22
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 12
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 12
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 20
+        }
+      ]
+    },
+    {
       "path": "scripts/ui_ux/capture_admin.mjs",
       "sha256": "e0426dd1013ed802d6bb75d3e40dd02b3d646118ffec86859a7de101d4f9cec2",
       "references": [
@@ -16123,112 +16668,112 @@
     },
     {
       "path": "web/super_admin/src/App.tsx",
-      "sha256": "ba3b00ae50959a8d4d978c4d82bb362c6fae7a1a2f44714670d6ceac77c46b74",
+      "sha256": "5274a6fdc9c43aea5ab93101bf0883717fff0d14988439ae74e4af0b610255e1",
       "references": [
         {
           "kind": "session",
           "symbol": "clearAuthToken",
-          "line": 21
+          "line": 23
         },
         {
           "kind": "session",
           "symbol": "getAuthToken",
-          "line": 21
+          "line": 23
         },
         {
           "kind": "session",
           "symbol": "freshAuthToken",
-          "line": 21
+          "line": 23
         },
         {
           "kind": "session",
           "symbol": "clearAuthToken",
-          "line": 101
+          "line": 108
         },
         {
           "kind": "session",
           "symbol": "clearAuthToken",
-          "line": 112
-        },
-        {
-          "kind": "session",
-          "symbol": "getAuthToken",
           "line": 119
         },
         {
           "kind": "session",
           "symbol": "getAuthToken",
-          "line": 128
+          "line": 126
         },
         {
           "kind": "session",
           "symbol": "getAuthToken",
-          "line": 138
+          "line": 135
         },
         {
           "kind": "session",
           "symbol": "getAuthToken",
-          "line": 146
+          "line": 145
         },
         {
           "kind": "session",
           "symbol": "getAuthToken",
-          "line": 165
+          "line": 153
         },
         {
           "kind": "session",
           "symbol": "getAuthToken",
-          "line": 189
+          "line": 172
         },
         {
           "kind": "session",
           "symbol": "getAuthToken",
-          "line": 228
+          "line": 198
+        },
+        {
+          "kind": "session",
+          "symbol": "getAuthToken",
+          "line": 239
         },
         {
           "kind": "session",
           "symbol": "clearAuthToken",
-          "line": 237
+          "line": 248
         },
         {
           "kind": "session",
           "symbol": "freshAuthToken",
-          "line": 256
-        },
-        {
-          "kind": "session",
-          "symbol": "clearAuthToken",
-          "line": 584
-        },
-        {
-          "kind": "session",
-          "symbol": "clearAuthToken",
-          "line": 626
-        },
-        {
-          "kind": "clientFlows",
-          "symbol": "LoginScreen",
-          "line": 22
-        },
-        {
-          "kind": "clientFlows",
-          "symbol": "LoginScreen",
-          "line": 22
-        },
-        {
-          "kind": "clientFlows",
-          "symbol": "LoginScreen",
-          "line": 634
-        },
-        {
-          "kind": "transports",
-          "symbol": "join_room",
           "line": 267
         },
         {
+          "kind": "session",
+          "symbol": "clearAuthToken",
+          "line": 597
+        },
+        {
+          "kind": "session",
+          "symbol": "clearAuthToken",
+          "line": 647
+        },
+        {
+          "kind": "clientFlows",
+          "symbol": "LoginScreen",
+          "line": 24
+        },
+        {
+          "kind": "clientFlows",
+          "symbol": "LoginScreen",
+          "line": 24
+        },
+        {
+          "kind": "clientFlows",
+          "symbol": "LoginScreen",
+          "line": 655
+        },
+        {
           "kind": "transports",
           "symbol": "join_room",
-          "line": 268
+          "line": 278
+        },
+        {
+          "kind": "transports",
+          "symbol": "join_room",
+          "line": 279
         }
       ]
     },
@@ -16249,8 +16794,29 @@
       ]
     },
     {
+      "path": "web/super_admin/src/AppWorkspace.test.tsx",
+      "sha256": "7bf87c3d3a27b4288132a6df267838521b7ad680485297dff0ae767bfd62a0d3",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 16
+        },
+        {
+          "kind": "session",
+          "symbol": "getAuthToken",
+          "line": 5
+        },
+        {
+          "kind": "session",
+          "symbol": "freshAuthToken",
+          "line": 5
+        }
+      ]
+    },
+    {
       "path": "web/super_admin/src/CatalogBadge.test.tsx",
-      "sha256": "9c46be6d99210255fdaad10110662e9abb9eb7b11dfae6e1ec5e73f2f7e99c82",
+      "sha256": "e07e9bc4382392d0a6d7c5e00a85ff7677e9e2767daf784ddc937f53f760ec16",
       "references": [
         {
           "kind": "session",
@@ -16261,7 +16827,7 @@
     },
     {
       "path": "web/super_admin/src/CategoriesWiring.test.tsx",
-      "sha256": "de4235fdfd906947d0884644095ca33c68a846b9e22bc84e939925e2b231d798",
+      "sha256": "6ae125c0d357a7a669064c9a2c2157abaa3ed48849d66469d61d9256ec29b7bd",
       "references": [
         {
           "kind": "session",
@@ -16272,6 +16838,17 @@
           "kind": "session",
           "symbol": "kraveo_admin_token",
           "line": 84
+        }
+      ]
+    },
+    {
+      "path": "web/super_admin/src/auth/AdminWelcome.tsx",
+      "sha256": "05cfef6f368bc65e7cef6a0150732c8725b64e9051621d8d292f4c8ec70a3c9f",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 14
         }
       ]
     },
@@ -16353,32 +16930,32 @@
     },
     {
       "path": "web/super_admin/src/auth/ClerkAdmin.tsx",
-      "sha256": "165c921265db34b6347c60372bf7076086399f3a6cb2dfeb9aa644e23b04a0b8",
+      "sha256": "f6f94d638b205dee185fd1697de9ae3c6a4f50ddd478969e069eaacf3e2a4762",
       "references": [
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 47
+          "line": 49
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 55
+          "line": 57
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 55
+          "line": 57
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 62
+          "line": 64
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 68
+          "line": 70
         },
         {
           "kind": "session",
@@ -16393,12 +16970,7 @@
         {
           "kind": "session",
           "symbol": "clearAuthToken",
-          "line": 47
-        },
-        {
-          "kind": "session",
-          "symbol": "installClerkTokenGetter",
-          "line": 48
+          "line": 49
         },
         {
           "kind": "session",
@@ -16408,7 +16980,12 @@
         {
           "kind": "session",
           "symbol": "installClerkTokenGetter",
-          "line": 57
+          "line": 52
+        },
+        {
+          "kind": "session",
+          "symbol": "installClerkTokenGetter",
+          "line": 59
         }
       ]
     },
@@ -16425,6 +17002,17 @@
           "kind": "identity",
           "symbol": "Clerk",
           "line": 108
+        }
+      ]
+    },
+    {
+      "path": "web/super_admin/src/components/CreateStoreDrawer.tsx",
+      "sha256": "b15e70a116001b24f2d9cdcbceb462a492465af90f359d97a00c96469aaba566",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 29
         }
       ]
     },
@@ -16529,17 +17117,17 @@
     },
     {
       "path": "web/super_admin/src/components/InventoryPanel.tsx",
-      "sha256": "6cd37e9d7b4e2fa4509051040d1c7c6d2d6e3c01c717f8ab38cc55f0cf4655e1",
+      "sha256": "a57895353212cbf054371c1911b625af9ade583c6b91a674d8b37b9df0fe96c8",
       "references": [
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 41
+          "line": 44
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 44
+          "line": 47
         }
       ]
     },
@@ -16551,6 +17139,22 @@
           "kind": "clientFlows",
           "symbol": "LoginScreen",
           "line": 13
+        }
+      ]
+    },
+    {
+      "path": "web/super_admin/src/components/TeamAccessPanel.tsx",
+      "sha256": "b32ff3135e11431dfb539f0ac81532af60ad6c0b9f2346295228cb75c4dc5552",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 23
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 36
         }
       ]
     },
@@ -16567,17 +17171,17 @@
     },
     {
       "path": "web/super_admin/src/components/VendorManager.tsx",
-      "sha256": "dc111c31f9d716ee0da68af7235377e42e27500ae5c90bf3c7a4b3e3e4cabc07",
+      "sha256": "11657c4941fe046bc5501a2985f21ef880a44a88039734b06b187aaf97e6d115",
       "references": [
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 124
+          "line": 131
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 150
+          "line": 157
         }
       ]
     },
@@ -17059,7 +17663,7 @@
     },
     {
       "path": "web/super_admin/src/services/api.ts",
-      "sha256": "e859974579d0543cd29e9b20134d3a465b69c14d2b9b57eee49226069cfacd01",
+      "sha256": "61c735fe70cf50896eb594c849564436c9039e0d399d672a2389e16aaf4b325b",
       "references": [
         {
           "kind": "identity",
@@ -17139,17 +17743,17 @@
         {
           "kind": "session",
           "symbol": "setAuthToken",
-          "line": 284
+          "line": 291
         },
         {
           "kind": "authentication",
           "symbol": "/auth/admin-login",
-          "line": 278
+          "line": 285
         },
         {
           "kind": "authentication",
           "symbol": "/auth/profile",
-          "line": 289
+          "line": 296
         },
         {
           "kind": "transports",
@@ -17350,57 +17954,57 @@
     },
     {
       "path": "web/super_admin/src/types.ts",
-      "sha256": "7e603e0795137536a2e445ba67c24e66d22f30ba85e332eec78f9417cc23a04e",
+      "sha256": "46af12135a5ddef01563899f3c064a9d2c7212dfde60924eb0d3c5efaed2655e",
       "references": [
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 128
+          "line": 132
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 170
+          "line": 174
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 193
+          "line": 197
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 193
+          "line": 197
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 193
+          "line": 197
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 217
+          "line": 222
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 424
+          "line": 432
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 424
+          "line": 432
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 456
+          "line": 465
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 456
+          "line": 465
         }
       ]
     }

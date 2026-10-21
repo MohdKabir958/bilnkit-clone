@@ -10,6 +10,7 @@ CLERK_WEBHOOK_SIGNING_SECRET=
 CLERK_ISSUER=https://YOUR-LIVE-CLERK-DOMAIN
 CLERK_AUTHORIZED_PARTIES=https://YOUR-ADMIN-DOMAIN
 CLERK_ALLOW_NATIVE_WITHOUT_AZP=true
+# First owner / emergency operator recovery only; add subsequent admins by email in Team & access.
 CLERK_ADMIN_USER_IDS=
 CLERK_AUDIENCE=
 # Existing data: preserve old JWT_SECRET value here for delivery-receipt compatibility.

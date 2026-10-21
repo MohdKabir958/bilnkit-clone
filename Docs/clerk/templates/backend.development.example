@@ -9,6 +9,7 @@ CLERK_WEBHOOK_SIGNING_SECRET=
 CLERK_ISSUER=https://YOUR-DEV-INSTANCE.clerk.accounts.dev
 CLERK_AUTHORIZED_PARTIES=http://localhost:3000
 CLERK_ALLOW_NATIVE_WITHOUT_AZP=true
+# First owner / emergency operator recovery only; add subsequent admins by email in Team & access.
 CLERK_ADMIN_USER_IDS=
 CLERK_AUDIENCE=
 DELIVERY_PROOF_SECRET=

@@ -14,7 +14,7 @@ CLERK_OPERATOR_REFERENCE=verified-migration-ticket node scripts/clerk-identity.m
 
 This preserves the UUID and records an audit. Repeating the same association is idempotent; conflicting UUID/subject associations fail. The CLI uses backend credentials and is not a public HTTP endpoint. Do not expose it to untrusted clients.
 
-Initial admin:
+First owner bootstrap (once per environment; later members use Team & access):
 
 1. Create/verify the intended identity in Clerk and record its exact subject ID.
 2. Set backend `CLERK_ADMIN_USER_IDS=user_EXACT_SUBJECT` (comma-separated for several approved operators).
@@ -24,7 +24,7 @@ Initial admin:
 CLERK_OPERATOR_REFERENCE=approved-admin-bootstrap-ticket node scripts/clerk-identity.mjs admin user_EXACT_SUBJECT
 ```
 
-4. Sign in and verify `/api/auth/profile` reports the trusted ADMIN role and `/api/admin/partners` succeeds only for that administrator. A normal Clerk login must return 403 on admin endpoints.
+4. Sign in and verify `/api/auth/profile` reports `role=ADMIN`, `adminRole=OWNER` and the trusted ADMIN role and `/api/admin/partners` succeeds only for that administrator. A normal Clerk login must return 403 on admin endpoints.
 
 Before an existing-data Clerk cutover, copy the previous **JWT_SECRET value securely into DELIVERY_PROOF_SECRET**. Old delivery proof receipts used that value for HMAC; replacing it would invalidate them. Do not publish either value. For a fresh staging database, generate a distinct random secret of at least 32 characters. Keep `PAYOUT_ENC_KEY`, Razorpay secrets and Firebase credentials unchanged. Session JWT issuance itself is disabled in Clerk mode.
 
@@ -50,3 +50,7 @@ flutter build apk --release --split-per-abi --target-platform android-arm64 \
 8. Only after this succeeds, remove the inactive legacy implementation in a separate reviewed cleanup commit. Keeping inactive compatibility source during this handover is intentional; enabling Clerk mode does not fall back to it.
 
 None of these production activation steps was executed by this implementation.
+
+## Additive admin directory migration
+
+`20261021150000_admin_access` adds AdminAccess and its enums/indexes without replacing User UUIDs or business records. Existing explicitly provisioned allowlisted ADMINs establish their OWNER grant on their next verified request. After this, use Team & access → Add administrator → email; do not add each member to Render. Removing the bootstrap environment entry does not revoke a database grant. Revoke through the portal. The operator CLI remains available for reviewed recovery. A rollback to pre-directory auth would no longer honor portal revocations/invitations: do not roll back authentication code blindly. Keep the additive schema and use a reviewed forward fix.

@@ -1,3 +1,5 @@
+> Latest admin RBAC verification (2026-10-21): **1,119 passed, 0 failed, 0 skipped in one complete invocation**. See [the current report](../admin-redesign/verification.md) and [complete log](../admin-redesign/evidence/backend-full/backend-full-run.log). The report below preserves the earlier baseline run.
+
 # Final backend regression — Clerk implementation
 
 Date: 2026-10-21. Tested backend source commit: `1f6cbd4f82e1f3447ba6b4c133762c84c2b81c07` on `feature/india-grocery-platform`. Later handover changes concern documentation/evidence/deployment policy, not the tested backend implementation.

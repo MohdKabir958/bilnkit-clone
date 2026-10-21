@@ -1,10 +1,12 @@
 # Grozo Clerk implementation and handover
 
+> Admin workspace update: Owners can now add administrators by verified email in **Team & access**. The old per-person ID/SQL process is only first-owner bootstrap/recovery. See [the workflow and rollout guide](../admin-redesign/handover.md).
+
 Start with [deployment instructions](07_neon_render_vercel_deployment.md), then [Android installation and manual checks](10_android_manual_test_guide.md).
 
 The code supports isolated `clerk-test` mode across the backend, React admin and three Android applications. The default remains `legacy`; production cutover is **not activated**. Clerk mode never falls back to Grozo JWTs, Google exchange, partner passwords or the admin passcode. Final removal of legacy mode requires successful connected staging/device checks and explicit cutover approval.
 
-The supplied APKs are development-signed ARM64 **authentication previews**. No backend is deployed. They can exercise the native Clerk screens against the configured development instance; grocery operations, admin approval, payments and FCM cannot be demonstrated with these previews. Provider login and real-device behavior remain unverified in this cloud environment. See the verification report for actual automated results.
+The owner has supplied staging endpoints at `https://grozo-backend-3wdf.onrender.com` and `https://grozo-admin.vercel.app`. The latest customer Android staging configuration is recorded in [android-staging-public.json](android-staging-public.json); earlier authentication-preview artifacts remain historical. APKs are development signed. Hosted Clerk sign-in, deployment status and physical-device behavior have not been verified from this workspace. See the current [admin verification report](../admin-redesign/verification.md) and Android handover for the exact checks and limitations.
 
 The previously shared Clerk Secret Key must be rotated in the Clerk dashboard. Its replacement belongs only in secure backend environment settings. The mobile/public key is safe to distribute; no Secret Key was used or added to this implementation.
 

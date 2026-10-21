@@ -15,7 +15,7 @@ These are public frontend values; do not add backend secrets. Root Directory is 
 
 Set Render `ADMIN_URL`, `CLIENT_URL` and `CLERK_AUTHORIZED_PARTIES` to `https://grozo-admin.vercel.app`, without a trailing slash; retain individually approved origins if other clients require them. Configure the corresponding origin/redirects in the same Clerk development instance. Render `CLERK_ISSUER` must be `https://capable-mutt-6.clerk.accounts.dev`, with the publishable key, rotated secret key, webhook signing secret and approved admin identities from that same instance. Changing only the issuer cannot make another instance's credentials work. Redeploy Render after updating its configuration. No owner cloud configuration was changed from this workspace.
 
-## Provision your administrator
+## Provision your first owner (once)
 
 1. Create/verify your intended account in the Clerk development instance. Copy its exact `user_...` ID from Clerk → Users.
 2. Add that ID to Render `CLERK_ADMIN_USER_IDS` and redeploy. This allowlist alone does not grant the database ADMIN role.
@@ -38,6 +38,10 @@ If you have added your exact user ID to Render but the portal still says the acc
 
 Open [provision-existing-admin.sql](provision-existing-admin.sql), replace its one `PASTE_EXACT_CLERK_USER_ID` placeholder with the exact ID copied from your verified Clerk account and already entered in Render, and run the complete file in the database Render uses. Confirm the result contains your intended account and `role = ADMIN`, then sign out and sign back in to the portal. The script refuses missing/deleted/suspended or partner identities, preserves internal UUIDs and business records, and records one audit on the initial role change. Repeating it does not duplicate the audit. It does not call Clerk; the operator must verify the intended identity in Clerk first. Render's separate allowlist, Clerk session checks and database approval remain enforced by the API. No HTTP bootstrap endpoint or automatic promotion was added.
 
-## Verification performed for this configuration
+## Add the rest of your team from the portal
+
+After deploying the admin directory migration, sign in as your first owner. Open **Team & access → Add administrator**, enter an email, and choose Administrator or Owner. Share the admin URL with that person. They sign in/create an account with Clerk and verify that same email. Access activates after verification. You do not repeat SQL, Clerk-ID configuration or Render deployment for each member. This UI action does not send email automatically. Owners alone manage access, and the final active owner cannot be removed. See [the new workspace guide](../admin-redesign/handover.md).
+
+## Historical verification for the staging configuration
 
 The updated Clerk-test admin build passed with the current instance and backend origins. All 822 admin tests passed; the CSP generator/build checks passed all 8 tests. Loading failures now show recovery instructions, and a 30-second stalled initialization offers reload without bypassing authentication. These are local checks, not evidence of hosted Clerk sign-in, a provisioned staging administrator or live backend availability. No cloud settings or user records were changed by this configuration commit.
