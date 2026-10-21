@@ -144,9 +144,13 @@ test('verified webhook duplicates, stale updates and terminal deletion are safe'
   expect(await prisma.address.count({where:{customerId:identity.id}})).toBe(0);
   await expect(linkClerkIdentity(identity.id,'user_Webhook','test')).rejects.toMatchObject({status:409});
 });
-test('unsigned Clerk webhook and unsigned Razorpay webhook are independently rejected',async()=>{
+test('Clerk and Razorpay webhook verification remain independent',async()=>{
   expect((await request.post('/api/webhooks/clerk').send({type:'user.deleted',data:{id:'user_CustomerA'}})).status).toBe(400);
   expect((await request.post('/api/payments/webhook').send({event:'payment.captured'})).status).toBe(400);
+  const body=JSON.stringify({event:'payment.captured',payload:{payment:{entity:{id:'pay_ClerkFixture',order_id:'order_ClerkUnknown',amount:100}}}});
+  const signature=createHmac('sha256',process.env.RAZORPAY_WEBHOOK_SECRET!).update(body).digest('hex');
+  const signed=await request.post('/api/payments/webhook').set('Content-Type','application/json').set('x-razorpay-signature',signature).send(body);
+  expect(signed.status).toBe(200);expect(signed.body.success).toBe(true);
 });
 test('Clerk sockets deny admin and foreign private rooms for a customer, then honor revocation',async()=>{
   const raw=token('user_SocketCustomer');

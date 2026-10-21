@@ -15,7 +15,7 @@ for app,label in [('customer','Customer'),('vendor','Vendor'),('driver','Deliver
     signature=subprocess.check_output([str(SDK/'apksigner'),'verify','--verbose','--print-certs',str(apk)],text=True)
     expected=f'in.grozo.{app}'
     assert f"package: name='{expected}'" in badging
-    assert "versionCode='16'" in badging and "versionName='1.10.0'" in badging
+    assert "versionCode='2016'" in badging and "versionName='1.10.0'" in badging
     assert f'{expected}.callback' in manifest and f'{expected}.oauth' in manifest
     assert 'clerk-test' in manifest and build['publishableKey'] in manifest
     assert 'GrozoClerkApplication' in manifest and 'GrozoClerkAuthActivity' in manifest
@@ -27,7 +27,7 @@ for app,label in [('customer','Customer'),('vendor','Vendor'),('driver','Deliver
             if name.endswith('/'):continue
             if re.search(rb'sk_(?:test|live)_[A-Za-z0-9]{12,}',z.read(name)):
                 raise RuntimeError(f'Potential Clerk Secret Key in APK entry {name}; investigate without printing it.')
-    record={**build,'applicationId':expected,'versionName':'1.10.0','versionCode':16,
+    record={**build,'applicationId':expected,'versionName':'1.10.0','versionCode':2016,'flutterBuildNumber':16,
        'bytes':apk.stat().st_size,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest(),
        'permissions':re.findall(r"uses-permission(?:-sdk-\d+)?: name='([^']+)'",badging),
        'certificateSha256':re.search(r'Signer #1 certificate SHA-256 digest: (\S+)',signature).group(1),
