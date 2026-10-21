@@ -259,7 +259,7 @@ export const apiService = {
     const response = await request<{ token: string; admin: AdminProfile }>('/api/auth/admin-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ passcode: passcode.trim(), username: username?.trim() || 'Campus Dispatch Admin' }),
+      body: JSON.stringify({ passcode: passcode.trim(), username: username?.trim() || 'Grozo Administrator' }),
     });
     if (!response?.token || response.admin?.role !== 'ADMIN') throw new ApiError(401, 'The server did not return a valid admin session.');
     setAuthToken(response.token, response.admin);
@@ -475,7 +475,7 @@ export const apiService = {
     return orderOrNull(await request<any>(`/api/admin/orders/${encodeURIComponent(orderId)}/retry-refund`, { method: 'POST', body: '{}' }));
   },
 
-  /** Clears the 5-wrong-OTP lock; the server sends the customer a new gate code. */
+  /** Clears the 5-wrong-OTP lock; the server sends the customer a new delivery verification code. */
   async resetOtpLock(orderId: string): Promise<Order | null> {
     return orderOrNull(await request<any>(`/api/admin/orders/${encodeURIComponent(orderId)}/reset-otp-lock`, { method: 'POST', body: '{}' }));
   },
@@ -540,7 +540,7 @@ export const apiService = {
     const page = filter.page && filter.page > 0 ? filter.page : 1;
     params.set('page', String(page));
     const parsed = parseDishList(await requestFull<any>(`/api/admin/catalog?${params.toString()}`), page);
-    if (!parsed) throw unexpected('dish list');
+    if (!parsed) throw unexpected('product list');
     return parsed;
   },
 
@@ -624,14 +624,14 @@ export const apiService = {
 
   async fetchFinanceByRestaurant(range: DateRange, limit = 100) {
     const parsed = parseByRestaurant(await requestFull<any>(`/api/admin/finance/by-restaurant?${rangeQuery(range)}&limit=${limit}`), range);
-    if (!parsed) throw unexpected('finance by restaurant');
+    if (!parsed) throw unexpected('finance by store');
     return parsed;
   },
 
   async fetchFinanceByDish(range: DateRange, opts: { sort: DishSort; top: number; vendorId?: string }) {
     const vendor = opts.vendorId ? `&vendorId=${encodeURIComponent(opts.vendorId)}` : '';
     const parsed = parseByDish(await requestFull<any>(`/api/admin/finance/by-dish?${rangeQuery(range)}&sort=${opts.sort}&top=${opts.top}${vendor}`), range);
-    if (!parsed) throw unexpected('finance by dish');
+    if (!parsed) throw unexpected('finance by product');
     return parsed;
   },
 

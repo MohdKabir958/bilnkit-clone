@@ -39,7 +39,7 @@ export const NextStepControl: React.FC<{ order: Order; onAdvance: AdvanceHandler
       <div className={`flex gap-2 ${stacked ? 'flex-col sm:flex-row' : 'items-center'}`}>
         {needsOtp && !order.otpLocked && (
           <input
-            aria-label={`Gate OTP for order ${shortId(order.id)}`}
+            aria-label={`Delivery verification code for order ${shortId(order.id)}`}
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
             onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}

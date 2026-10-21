@@ -29,13 +29,15 @@ enum PushEvent {
 
   /// Events the student must notice even with the app open on another screen (they use the
   /// high-importance `order_attention` channel on the server too).
-  bool get needsAttention => this == riderAtGate || this == orderCancelled || this == orderPickedUp;
+  bool get needsAttention =>
+      this == riderAtGate || this == orderCancelled || this == orderPickedUp;
 
   /// Android channel id, exactly as in the contract (section 5).
-  String get channelId => needsAttention ? PushChannels.orderAttention : PushChannels.orderUpdates;
+  String get channelId =>
+      needsAttention ? PushChannels.orderAttention : PushChannels.orderUpdates;
 
   /// Fallback copy for a locally shown banner when the message carries no notification block.
-  /// Never contains the gate OTP (it is only shown inside the app).
+  /// Never contains the delivery verification code (it is only shown inside the app).
   String get fallbackTitle => switch (this) {
         orderPlaced => 'Order placed',
         orderPreparing => 'Packing your order',
@@ -50,7 +52,8 @@ enum PushEvent {
       };
 
   String get fallbackBody => switch (this) {
-        orderPlaced => 'Your order has been saved. Complete payment to confirm it.',
+        orderPlaced =>
+          'Your order has been saved. Complete payment to confirm it.',
         orderPreparing => 'Your store is packing your items.',
         riderAssigned => 'Open the app to follow your delivery.',
         orderAccepted => 'Your store has accepted the order.',
@@ -97,7 +100,8 @@ class PushPayload {
   }
 
   /// String stored in a locally shown notification so its tap can be routed (same shape as FCM data).
-  String encode() => jsonEncode({'event': event.key, 'orderId': orderId, 'v': version});
+  String encode() =>
+      jsonEncode({'event': event.key, 'orderId': orderId, 'v': version});
 
   /// Reverse of [encode]; null for null, non-JSON or invalid content.
   static PushPayload? tryDecode(String? raw) {

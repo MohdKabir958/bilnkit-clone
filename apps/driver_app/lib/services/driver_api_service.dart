@@ -11,10 +11,12 @@ class DriverApiService {
   static int _tokenEpoch = 0;
 
   /// Shown when the server rejects the saved token (HTTP 401) on an authenticated call.
-  static const String sessionExpiredMessage = 'Session expired. Please log in again.';
+  static const String sessionExpiredMessage =
+      'Session expired. Please log in again.';
 
   /// Shown when the 401 says an admin paused the account (`reason: ACCOUNT_SUSPENDED`).
-  static const String accountPausedMessage = 'Your ${BrandConfig.name} account is paused. Please contact ${BrandConfig.name} support.';
+  static const String accountPausedMessage =
+      'Your ${BrandConfig.name} account is paused. Please contact ${BrandConfig.name} support.';
 
   /// True when a 401 body says the token ended because the account was suspended.
   static bool isSuspendedBody(String body) {
@@ -50,7 +52,8 @@ class DriverApiService {
       } else {
         onUnauthorized?.call();
       }
-    } else if (response.statusCode == 403 && response.body.contains('PARTNER_NOT_APPROVED')) {
+    } else if (response.statusCode == 403 &&
+        response.body.contains('PARTNER_NOT_APPROVED')) {
       onNotApproved?.call();
     }
   }
@@ -96,28 +99,32 @@ class DriverApiService {
       'Content-Type': 'application/json',
     };
     if (token != null && token.isNotEmpty) {
-      headers['Authorization'] = token.startsWith('Bearer ') ? token : 'Bearer $token';
+      headers['Authorization'] =
+          token.startsWith('Bearer ') ? token : 'Bearer $token';
     }
     return headers;
   }
 
   /// Driver updates duty status (ONLINE / OFFLINE) on backend. Used by logout (best effort); the
   /// duty switch itself goes through [RiderOrdersApi.setDuty] so it can tell the rider what failed.
-  /// Order actions (claim, status, gate code, release) and GPS live in `rider_orders_api.dart`.
+  /// Order actions (claim, status, delivery verification code, release) and GPS live in `rider_orders_api.dart`.
   static Future<bool> toggleDutyStatus(bool isOnline) async {
     try {
       final url = Uri.parse('${ApiConfig.baseUrl}/drivers/duty-status');
       final headers = await getAuthHeaders();
 
-      final response = await http.post(
-        url,
-        headers: headers,
-        body: jsonEncode({'isOnline': isOnline}),
-      ).timeout(const Duration(seconds: 4));
+      final response = await http
+          .post(
+            url,
+            headers: headers,
+            body: jsonEncode({'isOnline': isOnline}),
+          )
+          .timeout(const Duration(seconds: 4));
 
       checkAuthResponse(response);
       if (response.statusCode == 200) {
-        debugPrint('🟢 [Driver API] Duty status synced: ${isOnline ? "ONLINE" : "OFFLINE"}');
+        debugPrint(
+            '🟢 [Driver API] Duty status synced: ${isOnline ? "ONLINE" : "OFFLINE"}');
         return true;
       }
     } catch (e) {

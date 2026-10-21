@@ -35,14 +35,17 @@ class RestaurantCart {
 
   Map<String, dynamic> toJson() => {
         'vendorId': vendorId,
-        'items': [for (final i in items) {'itemId': i.itemId, 'quantity': i.quantity}],
+        'items': [
+          for (final i in items) {'itemId': i.itemId, 'quantity': i.quantity}
+        ],
       };
 }
 
 /// The body of `POST /orders/quote`.
 class QuoteRequest {
   final String? addressId;
-  const QuoteRequest({required this.restaurants, this.couponCode, this.addressId});
+  const QuoteRequest(
+      {required this.restaurants, this.couponCode, this.addressId});
 
   final List<RestaurantCart> restaurants;
   final String? couponCode;
@@ -50,12 +53,16 @@ class QuoteRequest {
   Map<String, dynamic> toJson() => {
         'restaurants': [for (final r in restaurants) r.toJson()],
         if (addressId != null) 'addressId': addressId,
-        if (couponCode != null && couponCode!.isNotEmpty) 'couponCode': couponCode,
+        if (couponCode != null && couponCode!.isNotEmpty)
+          'couponCode': couponCode,
       };
 
   /// Same cart + same coupon = same key (used to skip a repeat request and to drop stale answers).
   String get key => [
-        for (final r in restaurants) '${r.vendorId}:${[for (final i in r.items) '${i.itemId}x${i.quantity}'].join(',')}',
+        for (final r in restaurants)
+          '${r.vendorId}:${[
+            for (final i in r.items) '${i.itemId}x${i.quantity}'
+          ].join(',')}',
         (couponCode ?? '').toUpperCase(),
         addressId ?? '',
       ].join('|');
@@ -82,14 +89,19 @@ class CreateGroupRequest {
         'restaurants': [for (final r in restaurants) r.toJson()],
         'dropoffHostel': dropoffHostel,
         if (dropoffNotes.isNotEmpty) 'dropoffNotes': dropoffNotes,
-        if (couponCode != null && couponCode!.isNotEmpty) 'couponCode': couponCode,
+        if (couponCode != null && couponCode!.isNotEmpty)
+          'couponCode': couponCode,
         'clientRequestId': clientRequestId,
       };
 }
 
 /// One restaurant's share of a quote.
 class QuoteLine {
-  const QuoteLine({required this.vendorId, required this.vendorName, required this.subtotal, required this.fee});
+  const QuoteLine(
+      {required this.vendorId,
+      required this.vendorName,
+      required this.subtotal,
+      required this.fee});
 
   final String vendorId;
   final String vendorName;
@@ -139,7 +151,9 @@ class OrderQuote {
     final total = json['total'];
     final subtotal = json['subtotal'];
     if (total is! num || subtotal is! num) return null;
-    final fees = json['fees'] is Map ? Map<String, dynamic>.from(json['fees'] as Map) : const <String, dynamic>{};
+    final fees = json['fees'] is Map
+        ? Map<String, dynamic>.from(json['fees'] as Map)
+        : const <String, dynamic>{};
     final lines = <QuoteLine>[];
     final rawLines = json['perRestaurant'];
     if (rawLines is List) {
@@ -147,15 +161,22 @@ class OrderQuote {
         if (l is! Map) continue;
         final vendorId = _str(l['vendorId']);
         if (vendorId == null) continue;
-        lines.add(QuoteLine(vendorId: vendorId, vendorName: _str(l['vendorName']) ?? 'Restaurant', subtotal: _num(l['subtotal']), fee: _num(l['fee'])));
+        lines.add(QuoteLine(
+            vendorId: vendorId,
+            vendorName: _str(l['vendorName']) ?? 'Grocery store',
+            subtotal: _num(l['subtotal']),
+            fee: _num(l['fee'])));
       }
     }
     final count = json['restaurantCount'];
     final max = json['maxRestaurants'];
     final extras = fees['extraRestaurants'];
-    final feeTotal = fees['total'] is num ? (fees['total'] as num).toDouble() : _num(fees['base']) + _num(fees['extraTotal']);
+    final feeTotal = fees['total'] is num
+        ? (fees['total'] as num).toDouble()
+        : _num(fees['base']) + _num(fees['extraTotal']);
     return OrderQuote(
-      restaurantCount: count is num ? count.toInt() : (lines.isEmpty ? 1 : lines.length),
+      restaurantCount:
+          count is num ? count.toInt() : (lines.isEmpty ? 1 : lines.length),
       subtotal: subtotal.toDouble(),
       baseFee: _num(fees['base']),
       extraRestaurants: extras is num ? extras.toInt() : 0,
@@ -166,7 +187,8 @@ class OrderQuote {
       couponCode: _str(json['couponCode']),
       total: total.toDouble(),
       perRestaurant: List.unmodifiable(lines),
-      maxRestaurants: max is num && max >= 1 ? max.toInt() : kDefaultMaxRestaurants,
+      maxRestaurants:
+          max is num && max >= 1 ? max.toInt() : kDefaultMaxRestaurants,
     );
   }
 }
@@ -211,7 +233,12 @@ class OrderGroupView {
     if (raw is! Map) return null;
     final json = Map<String, dynamic>.from(raw);
     final id = _str(json['id']);
-    final children = json['orders'] is List ? (json['orders'] as List).map(OrderModel.tryParse).whereType<OrderModel>().toList() : <OrderModel>[];
+    final children = json['orders'] is List
+        ? (json['orders'] as List)
+            .map(OrderModel.tryParse)
+            .whereType<OrderModel>()
+            .toList()
+        : <OrderModel>[];
     if (id == null || children.isEmpty) return null;
     final count = json['restaurantCount'];
     return OrderGroupView(

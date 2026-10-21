@@ -143,7 +143,7 @@ class RiderController extends ChangeNotifier {
   bool _actionBusy = false;
   String? _actionError;
 
-  /// Orders whose gate code Grozo locked (5 wrong codes). The value is the `updatedAt` of the first copy of the
+  /// Orders whose delivery verification code Grozo locked (5 wrong codes). The value is the `updatedAt` of the first copy of the
   /// order seen after the lock (null until that copy arrives); a copy newer than that means someone (an admin
   /// resetting the lock) changed the order, so the lock is lifted. The 5th wrong code itself also bumps
   /// `updatedAt`, which is why the baseline is the post-lock copy and not the copy that was on screen.

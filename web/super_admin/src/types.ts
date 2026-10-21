@@ -71,7 +71,7 @@ export interface Order {
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   otpCode?: string | null;
-  /** 5 wrong gate OTPs lock the order until an admin resets it (contract 4). */
+  /** 5 wrong delivery verification codes lock the order until an admin resets it (contract 4). */
   otpLocked?: boolean;
   otpAttempts?: number;
   createdAt: string;
@@ -183,7 +183,7 @@ export const normalizeDriverPin = (raw: any): DriverPin | null => {
   const duty = raw?.dutyStatus;
   return {
     id,
-    name: raw?.driverName || raw?.name || 'Runner',
+    name: raw?.driverName || raw?.name || 'Delivery partner',
     lat,
     lng,
     heading: Number(raw?.heading || 0) || 0,
@@ -366,7 +366,7 @@ export const normalizeOrderPartial = (input: any): Partial<Order> & { id: string
 };
 
 const ORDER_DEFAULTS: Omit<Order, 'id' | 'createdAt'> = {
-  customerName: 'Unknown student',
+  customerName: 'Customer',
   vendorName: 'Unknown vendor',
   items: [],
   itemsCount: 0,
@@ -437,7 +437,7 @@ export const normalizeVendor = (raw: any): Vendor => ({
 export const normalizeDriver = (raw: any): DriverPartner => ({
   id: String(raw?.id || raw?.userId || ''),
   userId: raw?.userId || raw?.user?.id || undefined,
-  name: raw?.name || raw?.user?.name || 'Unnamed runner',
+  name: raw?.name || raw?.user?.name || 'Delivery partner',
   phone: raw?.phone || raw?.user?.phone || '',
   studentRegNo: raw?.studentRegNo || '',
   runnerCode: raw?.runnerCode || '',

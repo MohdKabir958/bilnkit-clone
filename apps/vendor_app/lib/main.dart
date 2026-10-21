@@ -320,7 +320,7 @@ class _SplashScreen extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Semantics(
-          label: 'Loading ${BrandConfig.name} Restaurant Partner',
+          label: 'Loading ${BrandConfig.name} Store Partner',
           child: const Column(mainAxisSize: MainAxisSize.min, children: [
             KBrandMark(height: 72),
             SizedBox(height: 28),

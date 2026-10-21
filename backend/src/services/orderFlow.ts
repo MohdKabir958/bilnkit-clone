@@ -609,7 +609,7 @@ export const advanceStatus = async (orderId: string, actor: Actor, target: strin
       if (order.driverId !== actor.id) throw notFound();
       if (!RIDER_TARGETS.has(target)) throw new OrderFlowError(403, 'ROLE_NOT_ALLOWED', 'Riders can only mark an order PICKED_UP or ARRIVED_AT_GATE (delivery needs the customer code).');
     } else if (actor.role === 'ADMIN') {
-      if (!ADMIN_TARGETS.has(target)) throw new OrderFlowError(400, 'INVALID_STATUS', 'Use the cancel or gate OTP endpoints for that.');
+      if (!ADMIN_TARGETS.has(target)) throw new OrderFlowError(400, 'INVALID_STATUS', 'Use the cancel or delivery verification code endpoints for that.');
     } else {
       throw new OrderFlowError(403, 'ROLE_NOT_ALLOWED', 'You cannot change this order.');
     }
@@ -971,7 +971,7 @@ export const reassignOrder = async (orderId: string, driverIdOrProfileId: string
 };
 
 // ----------------------------------------------------------------------------
-// Gate OTP (section 4)
+// Delivery verification code (section 4)
 // ----------------------------------------------------------------------------
 /** Normalises what the app sent: "0421", 421 (number) -> "0421"; anything else -> null. */
 export const normaliseOtp = (raw: unknown): string | null => {
@@ -997,7 +997,7 @@ const proofMatches = (orderId: string, otp: string, stored: string | null) => {
 };
 
 /**
- * Gate OTP. Docs/22: for a combined order ONE code covers the group: a correct code delivers ALL children atomically (each gets
+ * Delivery verification code. Docs/22: for a combined order ONE code covers the group: a correct code delivers ALL children atomically (each gets
  * deliveredAt, otpCode 'USED' and its own otpProof), wrong attempts and the 5-attempt lock are counted for the whole group (counter and
  * lock written on every child, so resetting the lock on any child resets the group). The retry of the same correct code after delivery
  * is an idempotent success on any child.
@@ -1076,6 +1076,6 @@ export const resetOtpLock = async (orderId: string) => {
     await tx.order.update({ where: { id: order.id }, data: { otpLocked: false, otpAttempts: 0, otpCode: secureOtp(), otpExpiresAt:new Date(Date.now()+10*60000) } });
     return { order: await reload(tx, order.id), before: order, changed: true };
   });
-  await writeAudit('OTP_UNLOCKED', 'ORDER', orderId, `Admin unlocked the gate OTP (was ${result.before.otpLocked ? 'locked' : 'not locked'}, ${result.before.otpAttempts} wrong attempts). The customer sees the new code in the app.`);
+  await writeAudit('OTP_UNLOCKED', 'ORDER', orderId, `Admin unlocked the delivery verification code (was ${result.before.otpLocked ? 'locked' : 'not locked'}, ${result.before.otpAttempts} wrong attempts). The customer sees the new code in the app.`);
   return finishChange(result);
 };

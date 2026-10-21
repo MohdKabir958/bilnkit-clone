@@ -31,7 +31,7 @@ describe('fees: most restaurants in one order', () => {
     expect(select().value).toBe('4');
     expect(Array.from(select().options).map((o) => o.value)).toEqual(['1', '2', '3', '4', '5']);
     expect(Array.from(select().options)[0].textContent).toContain('combined orders off');
-    expect(feesCard()).toContain("Customers can combine up to 4 stores in one checkout: one payment, one rider, one gate code.");
+    expect(feesCard()).toContain("Customers can combine up to 4 stores in one checkout: one payment, one rider, one delivery verification code.");
     expect(feesCard()).toContain('the whole order is cancelled and fully refunded');
     await type(select(), '1');
     expect(feesCard()).toContain("Off: customers can order from one store at a time.");

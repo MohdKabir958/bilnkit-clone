@@ -1233,7 +1233,8 @@ void main() {
       await _pump(tester, const ProfileScreen());
       expect(find.textContaining('50 coins'), findsNothing);
       expect(find.textContaining('off'), findsNothing);
-      expect(find.text('Redeeming soon'), findsOneWidget);
+      expect(find.text('Redeeming soon'), findsNothing);
+      expect(find.textContaining('Grozo Coins'), findsNothing);
     });
 
     testWidgets(

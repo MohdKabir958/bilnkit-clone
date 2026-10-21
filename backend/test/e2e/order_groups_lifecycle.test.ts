@@ -577,7 +577,7 @@ describe('Order groups: lifecycle', () => {
       expect((await kids(pg.g.id)).map((o) => o.otpAttempts)).toEqual([2, 2, 2]);
       // the right code through the THIRD child delivers EVERY child at once
       const done = await api.otp(r1, ids[2], code);
-      expect([done.status, done.body.message]).toEqual([200, 'Gate Handshake OTP verified successfully. Order DELIVERED!']);
+      expect([done.status, done.body.message]).toEqual([200, 'Delivery verification code accepted. Order delivered.']);
       k = await kids(pg.g.id);
       expect(k.map((o) => o.status)).toEqual(['DELIVERED', 'DELIVERED', 'DELIVERED']);
       expect(new Set(k.map((o) => o.deliveredAt!.getTime())).size).toBe(1);

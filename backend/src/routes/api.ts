@@ -44,7 +44,7 @@ apiRouter.use(productsRouter);
 apiRouter.use(operationsRouter);
 // Partner sign-up, applications, approval and admin customer views live in ./partners.
 apiRouter.use(partnerRouter);
-// Orders, payments, rider pool, gate OTP and the admin order tools live in ./orders.
+// Orders, payments, rider pool, delivery verification code and the admin order tools live in ./orders.
 apiRouter.use(orderRouter);
 apiRouter.use('/v1', orderRouter);
 // Push device tokens (POST/DELETE /api/devices).
@@ -1094,7 +1094,7 @@ const reviewPage = async (req: Request, res: Response, where: Record<string, unk
   });
   const hasMore = page.length > limit;
   const rows = hasMore ? page.slice(0, limit) : page;
-  const data = rows.map(({ customer, ...r }) => ({ ...r, reviewer: (customer?.name || 'Student').trim().split(/\s+/)[0] }));
+  const data = rows.map(({ customer, ...r }) => ({ ...r, reviewer: (customer?.name || 'Customer').trim().split(/\s+/)[0] }));
   return res.json({ success: true, count: data.length, nextCursor: hasMore ? rows[rows.length - 1].id : null, data });
 };
 

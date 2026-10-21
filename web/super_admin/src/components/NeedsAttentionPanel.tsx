@@ -91,7 +91,7 @@ export const NeedsAttentionPanel: React.FC<Props> = ({ entries, serverAvailable,
 
   const { confirm, dialog: confirmDialog } = useConfirm();
 
-  // Both actions have side effects (a new gate code goes to the customer; a refund is attempted), so ask first.
+  // Both actions have side effects (a new delivery verification code goes to the customer; a refund is attempted), so ask first.
   const runBusy = (action: (orderId: string) => Promise<boolean>, question: Parameters<typeof confirm>[0]) => async (orderId: string) => {
     if (busyId) return;
     if (!(await confirm(question))) return;
@@ -100,7 +100,7 @@ export const NeedsAttentionPanel: React.FC<Props> = ({ entries, serverAvailable,
   };
   const reset = runBusy(onResetOtpLock, {
     title: 'Reset the OTP lock?',
-    message: 'The customer gets a new gate code and the old one stops working. The rider can then try again.',
+    message: 'The customer gets a new delivery verification code and the old one stops working. The rider can then try again.',
     confirmLabel: 'Reset OTP lock',
   });
   const retry = runBusy(onRetryRefund, {
@@ -154,7 +154,7 @@ export const NeedsAttentionPanel: React.FC<Props> = ({ entries, serverAvailable,
         {!loading && visible.length === 0 && visibleGaps.length === 0 && (
           <div className="k-card xl:col-span-2">
             {entries.length === 0 && locationGaps.length === 0
-              ? <EmptyState icon={CheckCircle2} title="Nothing needs you right now" description="Failed refunds, locked gate OTPs, payment mismatches and stuck orders show up here as soon as they happen." />
+              ? <EmptyState icon={CheckCircle2} title="Nothing needs you right now" description="Failed refunds, locked delivery verification codes, payment mismatches and stuck orders show up here as soon as they happen." />
               : <EmptyState icon={SearchX} title="No problems match" description="Nothing matches the current search." action={<button className="k-btn-ghost" onClick={onClearQuery}>Clear search</button>} />}
           </div>
         )}

@@ -86,8 +86,8 @@ describe('Adversarial Security & Concurrency Stress Test Suite', () => {
   // =========================================================================
   // 1. GATE OTP & CONCURRENCY RACE CONDITIONS
   // =========================================================================
-  describe('1. Gate OTP & Concurrency Stress Testing', () => {
-    test('CONC_01: 20 simultaneous Gate OTP verifications (Double-Tap Storm) maintain DB integrity', async () => {
+  describe('1. Delivery verification code & Concurrency Stress Testing', () => {
+    test('CONC_01: 20 simultaneous Delivery verification code verifications (Double-Tap Storm) maintain DB integrity', async () => {
       const orderId = 'stress-gate-otp-race-01';
       const validOtp = '5829';
 
@@ -120,9 +120,9 @@ describe('Adversarial Security & Concurrency Stress Test Suite', () => {
       // How many of each depends on request timing, so assert on who did the claiming, not on counts of 200.
       const statusCodes = responses.map((r) => r.status);
       expect(statusCodes.every((s) => s === 200 || s === 409)).toBe(true);
-      const claims = responses.filter((r) => r.status === 200 && /verified successfully/i.test(r.body.message ?? ''));
+      const claims = responses.filter((r) => r.status === 200 && r.body.message === 'Delivery verification code accepted. Order delivered.');
       expect(claims).toHaveLength(1);
-      expect(responses.filter((r) => r.status === 200 && !/verified successfully/i.test(r.body.message ?? '')).every((r) => /already DELIVERED/i.test(r.body.message ?? ''))).toBe(true);
+      expect(responses.filter((r) => r.status === 200 && r.body.message !== 'Delivery verification code accepted. Order delivered.').every((r) => /already DELIVERED/i.test(r.body.message ?? ''))).toBe(true);
 
       // Verify DB state is cleanly DELIVERED and OTP is invalidated to 'USED'
       const dbOrder = await prisma.order.findUnique({ where: { id: orderId } });
@@ -170,7 +170,7 @@ describe('Adversarial Security & Concurrency Stress Test Suite', () => {
       await prisma.order.update({ where: { id: orderId }, data: { status: 'DELIVERED' } });
     });
 
-    test('CONC_03: Gate OTP Brute-Force & Race between 1 valid and 10 invalid attempts', async () => {
+    test('CONC_03: Delivery verification code Brute-Force & Race between 1 valid and 10 invalid attempts', async () => {
       const orderId = 'stress-gate-otp-brute-03';
       const realOtp = '8142';
 
@@ -287,7 +287,7 @@ describe('Adversarial Security & Concurrency Stress Test Suite', () => {
       expect(returnedIds).not.toContain(orderB);
     });
 
-    test('AUTH_04: Student A cannot read Student B\'s order or gate OTP', async () => {
+    test('AUTH_04: Student A cannot read Student B\'s order or delivery verification code', async () => {
       const victimOrderId = 'idor-otp-leak-order';
       const secretGateOtp = '9281';
 

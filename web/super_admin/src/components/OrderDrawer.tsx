@@ -109,7 +109,7 @@ const OrderView: React.FC<Omit<Props, 'mode' | 'onModeChange' | 'onClose' | 'onC
     if (resetting) return;
     const ok = await confirm({
       title: 'Reset the OTP lock?',
-      message: 'The customer gets a new gate code and the old one stops working. The rider can then try again.',
+      message: 'The customer gets a new delivery verification code and the old one stops working. The rider can then try again.',
       confirmLabel: 'Reset OTP lock',
     });
     if (!ok) return;
@@ -176,14 +176,14 @@ const OrderView: React.FC<Omit<Props, 'mode' | 'onModeChange' | 'onClose' | 'onC
         <Notice
           tone="danger"
           icon={LockKeyhole}
-          title={`Gate OTP locked${order.otpAttempts ? ` after ${order.otpAttempts} wrong attempts` : ''}`}
+          title={`Delivery verification code locked${order.otpAttempts ? ` after ${order.otpAttempts} wrong attempts` : ''}`}
           action={canResetOtpLock(order) ? (
             <button type="button" className="k-btn-accent !min-h-[38px] text-xs" onClick={reset} disabled={resetting} aria-busy={resetting}>
               {resetting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <KeyRound className="h-4 w-4" aria-hidden="true" />}Reset OTP lock
             </button>
           ) : undefined}
         >
-          <p>The rider cannot complete the delivery. Call the customer first. Resetting the lock sends the customer a <b>new</b> gate code (the old one stops working) and lets the rider try again.</p>
+          <p>The rider cannot complete the delivery. Call the customer first. Resetting the lock sends the customer a <b>new</b> delivery verification code (the old one stops working) and lets the rider try again.</p>
         </Notice>
       )}
 
@@ -213,7 +213,7 @@ const OrderView: React.FC<Omit<Props, 'mode' | 'onModeChange' | 'onClose' | 'onC
               <NextStepControl order={order} onAdvance={onAdvance} stacked />
               {order.group && <p className="mt-2 text-xs text-kraveo-ink3">Combined order: "At doorstep" and "Delivered" apply to all {order.group.size} orders at once, and cooking can start only after every store has accepted.</p>}
               {order.status === 'ARRIVED_AT_GATE' && order.otpCode && (
-                <p className="mt-2 text-xs text-kraveo-ink3">Customer's gate OTP (admin only): <span className="select-all font-mono text-sm font-bold tracking-[0.3em] text-kraveo-ink">{order.otpCode}</span></p>
+                <p className="mt-2 text-xs text-kraveo-ink3">Customer's delivery verification code (admin only): <span className="select-all font-mono text-sm font-bold tracking-[0.3em] text-kraveo-ink">{order.otpCode}</span></p>
               )}
             </div>
             <div>

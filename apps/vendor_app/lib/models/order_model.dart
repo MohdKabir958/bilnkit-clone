@@ -65,10 +65,14 @@ enum OrderStatus {
         OrderStatus.unknown => -1,
       };
 
-  bool get isTerminal => this == OrderStatus.delivered || this == OrderStatus.cancelled;
+  bool get isTerminal =>
+      this == OrderStatus.delivered || this == OrderStatus.cancelled;
 
   /// The states the kitchen works on (after accepting, before the runner collects).
-  bool get isKitchen => this == OrderStatus.accepted || this == OrderStatus.preparing || this == OrderStatus.readyForPickup;
+  bool get isKitchen =>
+      this == OrderStatus.accepted ||
+      this == OrderStatus.preparing ||
+      this == OrderStatus.readyForPickup;
 }
 
 enum PaymentStatus {
@@ -122,7 +126,12 @@ enum CancelledBy {
 }
 
 class OrderItem {
-  const OrderItem({this.id, this.menuItemId, required this.name, required this.quantity, required this.unitPrice});
+  const OrderItem(
+      {this.id,
+      this.menuItemId,
+      required this.name,
+      required this.quantity,
+      required this.unitPrice});
 
   final String? id;
   final String? menuItemId;
@@ -134,13 +143,18 @@ class OrderItem {
 
   static OrderItem? fromJson(Object? raw) {
     if (raw is! Map) return null;
-    final name = raw['name']?.toString().trim() ?? (raw['menuItem'] is Map ? (raw['menuItem'] as Map)['name']?.toString().trim() : null) ?? '';
+    final name = raw['name']?.toString().trim() ??
+        (raw['menuItem'] is Map
+            ? (raw['menuItem'] as Map)['name']?.toString().trim()
+            : null) ??
+        '';
     final qty = _int(raw['quantity']) ?? 0;
     if (name.isEmpty || qty <= 0) return null;
     return OrderItem(
       id: raw['id']?.toString(),
       menuItemId: raw['menuItemId']?.toString(),
-      name: '$name${raw['productSnapshot'] is Map && raw['productSnapshot']['sku'] != null ? ' · ${raw['productSnapshot']['packSize']} ${raw['productSnapshot']['unit']}' : ''}',
+      name:
+          '$name${raw['productSnapshot'] is Map && raw['productSnapshot']['sku'] != null ? ' · ${raw['productSnapshot']['packSize']} ${raw['productSnapshot']['unit']}' : ''}',
       quantity: qty,
       unitPrice: _double(raw['price']) ?? 0,
     );
@@ -160,7 +174,10 @@ class OrderRider {
     final name = raw['name']?.toString().trim() ?? '';
     if (id.isEmpty && name.isEmpty) return null;
     final phone = raw['phone']?.toString().trim();
-    return OrderRider(id: id, name: name.isEmpty ? 'Runner' : name, phone: (phone == null || phone.isEmpty) ? null : phone);
+    return OrderRider(
+        id: id,
+        name: name.isEmpty ? 'Delivery partner' : name,
+        phone: (phone == null || phone.isEmpty) ? null : phone);
   }
 }
 
@@ -183,7 +200,8 @@ class OrderGroup {
     final accepted = raw['allAccepted'];
     if (accepted is! bool) return null;
     final size = _int(raw['size']);
-    return OrderGroup(size: (size == null || size < 2) ? 2 : size, allAccepted: accepted);
+    return OrderGroup(
+        size: (size == null || size < 2) ? 2 : size, allAccepted: accepted);
   }
 }
 
@@ -264,41 +282,57 @@ class OrderModel {
   bool get isGrouped => group != null;
 
   /// A combined order whose other restaurants have not all accepted yet: this kitchen must not start cooking.
-  bool get waitingForGroup => group != null && !group!.allAccepted && !status.isTerminal;
+  bool get waitingForGroup =>
+      group != null && !group!.allAccepted && !status.isTerminal;
 
   /// Short code a cook can read out ("#05EFB9"): '#' + the last 6 characters of the server id, uppercased.
   /// The same rule is used by every Grozo app and the dashboard, so people can match orders by voice.
-  String get shortCode => '#${(id.length <= 6 ? id : id.substring(id.length - 6)).toUpperCase()}';
+  String get shortCode =>
+      '#${(id.length <= 6 ? id : id.substring(id.length - 6)).toUpperCase()}';
 
   String get studentName => customerFirstName ?? 'Customer';
   String get studentLocation => dropoffHostel ?? 'Drop point not given';
-  String? get customerNote => (dropoffNotes == null || dropoffNotes!.trim().isEmpty) ? null : dropoffNotes!.trim();
+  String? get customerNote =>
+      (dropoffNotes == null || dropoffNotes!.trim().isEmpty)
+          ? null
+          : dropoffNotes!.trim();
 
   bool get isPaid => paymentStatus == PaymentStatus.paid;
 
   /// Something the restaurant may legitimately see: paid, or cancelled/refunded after payment.
   /// Unpaid orders never reach the kitchen (contract 1.2); we drop them even if a server bug sends one.
-  bool get isVisibleToVendor => paymentStatus == PaymentStatus.paid || paymentStatus == PaymentStatus.refunded || (status == OrderStatus.cancelled && paymentStatus != PaymentStatus.pending && paymentStatus != PaymentStatus.failed);
+  bool get isVisibleToVendor =>
+      paymentStatus == PaymentStatus.paid ||
+      paymentStatus == PaymentStatus.refunded ||
+      (status == OrderStatus.cancelled &&
+          paymentStatus != PaymentStatus.pending &&
+          paymentStatus != PaymentStatus.failed);
 
   /// A new paid order waiting for Accept / Reject.
   bool get isIncoming => status == OrderStatus.placed && isPaid;
 
   /// When the accept window closes: the server's `acceptBy`; only if it is missing, payment time + 10 minutes.
-  DateTime get acceptDeadline => acceptBy ?? (paidAt ?? createdAt).add(acceptWindow);
+  DateTime get acceptDeadline =>
+      acceptBy ?? (paidAt ?? createdAt).add(acceptWindow);
 
   /// Sum of the items as the server priced them (fallback when `subtotal` is missing).
-  double get itemsTotal => items.fold<double>(0, (sum, it) => sum + it.totalPrice);
+  double get itemsTotal =>
+      items.fold<double>(0, (sum, it) => sum + it.totalPrice);
 
   /// The food value of the order (what the kitchen sold), before fees.
-  double get foodValue => (subtotal != null && subtotal! > 0) ? subtotal! : itemsTotal;
+  double get foodValue =>
+      (subtotal != null && subtotal! > 0) ? subtotal! : itemsTotal;
 
   /// What the restaurant earns ("You earn"). The server's vendor view (Docs/21 section 3) carries the restaurant's
   /// own prices in `price` and `subtotal`/`total` = the earned amount; the customer's total, fees and discounts never
   /// reach the restaurant and the app never shows them. From an OLD server this falls back to the food subtotal.
-  double get earned => (vendorSubtotal != null && vendorSubtotal! > 0) ? vendorSubtotal! : foodValue;
+  double get earned => (vendorSubtotal != null && vendorSubtotal! > 0)
+      ? vendorSubtotal!
+      : foodValue;
 
   /// When the order reached its final state, for sorting history.
-  DateTime get lastEventAt => cancelledAt ?? deliveredAt ?? pickedUpAt ?? updatedAt ?? createdAt;
+  DateTime get lastEventAt =>
+      cancelledAt ?? deliveredAt ?? pickedUpAt ?? updatedAt ?? createdAt;
 
   OrderModel copyWith({OrderStatus? status}) => OrderModel(
         id: id,
@@ -333,9 +367,14 @@ class OrderModel {
   /// True when [incoming] (from a poll, a socket event or an action response) is at least as new
   /// as this copy. The server's `updatedAt` decides; without it, the lifecycle never moves backwards.
   bool isSupersededBy(OrderModel incoming) {
-    if (status.isTerminal && !incoming.status.isTerminal) return false; // a finished order never reopens
+    if (status.isTerminal && !incoming.status.isTerminal) {
+      return false; // a finished order never reopens
+    }
     // Same step, same moment: a poll that started before the live update must not undo "all restaurants accepted".
-    if (incoming.status == status && (group?.allAccepted ?? false) && incoming.group != null && !incoming.group!.allAccepted) {
+    if (incoming.status == status &&
+        (group?.allAccepted ?? false) &&
+        incoming.group != null &&
+        !incoming.group!.allAccepted) {
       final a = updatedAt, b = incoming.updatedAt;
       if (a == null || b == null || !b.isAfter(a)) return false;
     }
@@ -401,7 +440,9 @@ class OrderModel {
       cancelReason: (reason == null || reason.isEmpty) ? null : reason,
       customerFirstName: firstName,
       rider: OrderRider.fromJson(raw['driver']),
-      vendorId: (raw['vendorId'] ?? (raw['vendor'] is Map ? (raw['vendor'] as Map)['id'] : null))?.toString(),
+      vendorId: (raw['vendorId'] ??
+              (raw['vendor'] is Map ? (raw['vendor'] as Map)['id'] : null))
+          ?.toString(),
       acceptBy: _date(raw['acceptBy']),
       refundStatus: raw['refundStatus']?.toString(),
       group: OrderGroup.fromJson(raw['group']),

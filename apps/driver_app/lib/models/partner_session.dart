@@ -69,19 +69,24 @@ class PartnerSession {
 
   /// First name for greetings; falls back to the whole name.
   String get firstName {
-    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
-    return parts.isEmpty ? 'Runner' : parts.first;
+    final parts =
+        name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    return parts.isEmpty ? 'Delivery partner' : parts.first;
   }
 
   /// Parses the `POST /auth/partner-login` body (`user` plus optional `driver`).
   /// Returns null when the body has no usable user.
   static PartnerSession? fromLoginJson(Map<String, dynamic> json) {
     final base = fromUserJson(json['user']);
-    if (base == null) return null;
+    if (base == null) {
+      return null;
+    }
     final approval = PartnerApproval.parse(json['approvalStatus']);
     final reason = json['rejectionReason']?.toString();
     final driver = json['driver'];
-    if (driver is! Map) return base.copyWith(approval: approval, rejectionReason: reason);
+    if (driver is! Map) {
+      return base.copyWith(approval: approval, rejectionReason: reason);
+    }
     return PartnerSession(
       userId: base.userId,
       name: base.name,
@@ -101,9 +106,14 @@ class PartnerSession {
 
   /// Parses `GET /partner/me`, `POST /auth/partner-signup` and `PUT /partner/application`
   /// (all share the same shape). Returns null when the body has no usable user.
-  static PartnerSession? fromMeJson(Map<String, dynamic> json) => fromLoginJson(json);
+  static PartnerSession? fromMeJson(Map<String, dynamic> json) =>
+      fromLoginJson(json);
 
-  PartnerSession copyWith({PartnerApproval? approval, String? rejectionReason, bool clearReason = false}) => PartnerSession(
+  PartnerSession copyWith(
+          {PartnerApproval? approval,
+          String? rejectionReason,
+          bool clearReason = false}) =>
+      PartnerSession(
         userId: userId,
         name: name,
         phone: phone,
@@ -111,7 +121,8 @@ class PartnerSession {
         driverId: driverId,
         runnerCode: runnerCode,
         approval: approval ?? this.approval,
-        rejectionReason: clearReason ? null : (rejectionReason ?? this.rejectionReason),
+        rejectionReason:
+            clearReason ? null : (rejectionReason ?? this.rejectionReason),
         vehicleType: vehicleType,
         vehicleRegNo: vehicleRegNo,
         emergencyPhone: emergencyPhone,
@@ -129,7 +140,8 @@ class PartnerSession {
       userId: id,
       name: name,
       phone: raw['phone']?.toString(),
-      avatarId: raw['avatarId'] is num ? (raw['avatarId'] as num).toInt() : null,
+      avatarId:
+          raw['avatarId'] is num ? (raw['avatarId'] as num).toInt() : null,
     );
   }
 
@@ -185,7 +197,8 @@ class PartnerSession {
       userId: userId,
       name: raw['name']?.toString() ?? '',
       phone: raw['phone']?.toString(),
-      avatarId: raw['avatarId'] is num ? (raw['avatarId'] as num).toInt() : null,
+      avatarId:
+          raw['avatarId'] is num ? (raw['avatarId'] as num).toInt() : null,
       driverId: raw['driverId']?.toString(),
       runnerCode: raw['runnerCode']?.toString(),
       approval: PartnerApproval.parse(raw['approval']),

@@ -733,7 +733,8 @@ void main() {
       expect(find.text('Vikram'), findsOneWidget);
     });
 
-    testWidgets('ONE gate OTP card at the gate (the server code), one total',
+    testWidgets(
+        'ONE delivery verification code card at the gate (the server code), one total',
         (tester) async {
       await show(
           tester,

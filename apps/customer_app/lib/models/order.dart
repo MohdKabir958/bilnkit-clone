@@ -417,7 +417,7 @@ class OrderModel {
   final OrderPlace? dropoff;
   final OrderRider? rider;
 
-  /// The gate OTP. Only ever non-null while [status] is `ARRIVED_AT_GATE` and the server sent it.
+  /// The delivery verification code. Only ever non-null while [status] is `ARRIVED_AT_GATE` and the server sent it.
   final String? otpCode;
 
   /// Server deadline to pay (unpaid PLACED orders only), else null.

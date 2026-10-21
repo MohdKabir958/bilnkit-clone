@@ -105,7 +105,7 @@ const maxRestaurantsHint = (text: string): string => {
   const n = Number(text);
   if (n === 1) return 'Off: customers can order from one store at a time. Orders already placed are not affected.';
   if (Number.isInteger(n) && n > 1 && n <= MAX_RESTAURANTS_PER_ORDER) {
-    return `Customers can combine up to ${n} stores in one checkout: one payment, one rider, one gate code. If any store cannot accept, the whole order is cancelled and fully refunded. 1 turns this off.`;
+    return `Customers can combine up to ${n} stores in one checkout: one payment, one rider, one delivery verification code. If any store cannot accept, the whole order is cancelled and fully refunded. 1 turns this off.`;
   }
   return `Choose a whole number from ${MIN_RESTAURANTS_PER_ORDER} to ${MAX_RESTAURANTS_PER_ORDER}. 1 turns combined orders off.`;
 };

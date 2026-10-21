@@ -1180,7 +1180,8 @@ void main() {
       expect(find.text('aarav@example.com'), findsWidgets);
       expect(find.text('+91 98••• ••210'), findsOneWidget);
       expect(find.text('9876543210'), findsNothing);
-      expect(find.text('120'), findsOneWidget);
+      expect(find.textContaining('Grozo Coins'), findsNothing);
+      expect(find.text('120'), findsNothing);
       expect(find.text('Delivery addresses'), findsOneWidget);
       expect(find.text('Add or select an address'), findsOneWidget);
       expect(find.text('I\'m a customer'), findsNothing);

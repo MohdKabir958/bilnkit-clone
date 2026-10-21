@@ -41,7 +41,9 @@ class CustomerUser {
   factory CustomerUser.fromJson(Map<String, dynamic> json) {
     final coins = json['kraveoCoins'];
     final rawAvatar = json['avatarId'];
-    final avatar = rawAvatar is num ? rawAvatar.round() : int.tryParse('${rawAvatar ?? ''}');
+    final avatar = rawAvatar is num
+        ? rawAvatar.round()
+        : int.tryParse('${rawAvatar ?? ''}');
     final student = json['isStudent'];
     return CustomerUser(
       id: json['id']?.toString() ?? '',
@@ -51,7 +53,9 @@ class CustomerUser {
       role: json['role']?.toString() ?? 'STUDENT',
       isStudent: student is bool ? student : null,
       hostelBlock: _clean(json['hostelBlock']),
-      avatarId: avatar != null && avatar >= 1 && avatar <= kAvatarCount ? avatar : null,
+      avatarId: avatar != null && avatar >= 1 && avatar <= kAvatarCount
+          ? avatar
+          : null,
       kraveoCoins: coins is num ? coins.round() : int.tryParse('$coins') ?? 0,
     );
   }
@@ -72,13 +76,14 @@ class CustomerUser {
         name: name ?? this.name,
         role: role,
         isStudent: isStudent ?? this.isStudent,
-        hostelBlock: clearHostelBlock ? null : (hostelBlock ?? this.hostelBlock),
+        hostelBlock:
+            clearHostelBlock ? null : (hostelBlock ?? this.hostelBlock),
         avatarId: avatarId ?? this.avatarId,
         kraveoCoins: kraveoCoins ?? this.kraveoCoins,
       );
 
   /// Name for display; falls back to a friendly placeholder for accounts without one.
-  String get displayName => name ?? '${BrandConfig.name} student';
+  String get displayName => name ?? '${BrandConfig.name} customer';
 
   String get firstName {
     final n = name;
@@ -88,9 +93,11 @@ class CustomerUser {
 
   /// One or two capital letters for the avatar.
   String get initials {
-    final parts = (name ?? '').split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parts =
+        (name ?? '').split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return 'K';
-    String first(String s) => String.fromCharCodes(s.runes.take(1)).toUpperCase();
+    String first(String s) =>
+        String.fromCharCodes(s.runes.take(1)).toUpperCase();
     if (parts.length == 1) return first(parts.first);
     return first(parts.first) + first(parts.last);
   }
@@ -102,7 +109,9 @@ class CustomerUser {
 /// Masks the middle of an Indian mobile number. Accepts +91 / 91 / 0 prefixes.
 String maskIndianPhone(String raw) {
   var digits = raw.replaceAll(RegExp(r'\D'), '');
-  if (digits.length > 10 && digits.startsWith('91')) digits = digits.substring(digits.length - 10);
+  if (digits.length > 10 && digits.startsWith('91')) {
+    digits = digits.substring(digits.length - 10);
+  }
   if (digits.length != 10) return digits.isEmpty ? '' : '+91 $digits';
   return '+91 ${digits.substring(0, 2)}••• ••${digits.substring(7)}';
 }

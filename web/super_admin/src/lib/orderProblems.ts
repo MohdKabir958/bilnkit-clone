@@ -39,9 +39,9 @@ const CATALOGUE: Record<string, Omit<ProblemMeta, 'code'>> = {
     advice: 'Fix the cause, then retry the refund, or refund by hand in Razorpay (the next retry then marks it done).',
   },
   OTP_LOCKED: {
-    label: 'Gate OTP locked', tone: 'danger', weight: 90, action: 'reset-otp',
-    explain: 'The rider entered a wrong gate OTP 5 times, so delivery is blocked.',
-    advice: 'Call the customer. Resetting the lock sends the customer a new gate code; or cancel the order.',
+    label: 'Delivery verification code locked', tone: 'danger', weight: 90, action: 'reset-otp',
+    explain: 'The rider entered a wrong delivery verification code 5 times, so delivery is blocked.',
+    advice: 'Call the customer. Resetting the lock sends the customer a new delivery verification code; or cancel the order.',
   },
   PAID_AFTER_CANCEL: {
     label: 'Paid after cancellation', tone: 'warning', weight: 80, action: 'open',

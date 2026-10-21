@@ -131,7 +131,7 @@ export const nextStep = (order: Order, otp = ''): NextStep | null => {
   if (status === 'ACCEPTED' && order.paymentStatus !== 'PAID') blockedReason = 'Not paid yet';
   else if (status === 'PICKED_UP' && !order.driverId) blockedReason = 'Assign a rider first';
   else if (status === 'DELIVERED' && order.otpLocked) blockedReason = 'OTP locked: reset it first';
-  else if (status === 'DELIVERED' && !/^\d{4}$/.test(otp)) blockedReason = 'Enter the 4-digit gate OTP';
+  else if (status === 'DELIVERED' && !/^\d{4}$/.test(otp)) blockedReason = 'Enter the 4-digit delivery verification code';
   return { status, blockedReason };
 };
 

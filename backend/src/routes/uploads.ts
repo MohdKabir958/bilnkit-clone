@@ -70,7 +70,7 @@ uploadRouter.post(
   async (req: AuthenticatedRequest, res: Response) => {
     try {
       const purpose = typeof req.query.purpose === 'string' ? req.query.purpose : '';
-      if (!(UPLOAD_PURPOSES as readonly string[]).includes(purpose)) throw new AppError(400, 'BAD_REQUEST', "purpose must be 'banner' or 'dish'.", 'purpose');
+      if (!(UPLOAD_PURPOSES as readonly string[]).includes(purpose)) throw new AppError(400, 'BAD_REQUEST', "Choose a valid image upload purpose.", 'purpose');
       if (req.user?.role === 'VENDOR' && purpose !== 'dish') throw new AppError(400,'BAD_REQUEST','Vendor uploads are for product images.');
       const declared = String(req.headers['content-type'] ?? '').split(';')[0].trim().toLowerCase();
       if (!ALLOWED_TYPES.includes(declared)) {

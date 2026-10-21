@@ -924,7 +924,7 @@ describe('Payments adversarial audit', () => {
       await prisma.order.updateMany({ where: { id: { in: [a.id, b.id] } }, data: { status: 'CANCELLED' } });
     });
 
-    test('PROVE: DELIVERED is unreachable without the gate OTP for every role and for the job / webhook / reassign / retry-refund', async () => {
+    test('PROVE: DELIVERED is unreachable without the delivery verification code for every role and for the job / webhook / reassign / retry-refund', async () => {
       const o = await driveTo('ARRIVED_AT_GATE');
       const vendorTry = await setStatus(o.id, 'DELIVERED', tVendor);
       const studentTry = await setStatus(o.id, 'DELIVERED', tStudent);

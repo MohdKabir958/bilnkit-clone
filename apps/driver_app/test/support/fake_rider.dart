@@ -27,8 +27,10 @@ Map<String, dynamic> orderJson({
   String vendorName = 'FC Night Mess',
   String drop = 'Block 2',
   String? otpCode,
-  Map<String, dynamic>? vendorExtra, // merged into `vendor` (e.g. {'hasLocation': true})
-  Map<String, dynamic>? dropoff, // the additive Docs/19 `dropoff {name,lat,lng}`
+  Map<String, dynamic>?
+      vendorExtra, // merged into `vendor` (e.g. {'hasLocation': true})
+  Map<String, dynamic>?
+      dropoff, // the additive Docs/19 `dropoff {name,lat,lng}`
 }) =>
     {
       'id': id,
@@ -41,9 +43,17 @@ Map<String, dynamic> orderJson({
       'discount': 0.0,
       'dropoffHostel': drop,
       'dropoffNotes': pool ? null : 'Near the blue gate',
-      'createdAt': testNow.subtract(const Duration(minutes: 10)).toUtc().toIso8601String(),
-      'updatedAt': (updatedAt ?? testNow.subtract(const Duration(minutes: 5))).toUtc().toIso8601String(),
-      'paidAt': testNow.subtract(const Duration(minutes: 9)).toUtc().toIso8601String(),
+      'createdAt': testNow
+          .subtract(const Duration(minutes: 10))
+          .toUtc()
+          .toIso8601String(),
+      'updatedAt': (updatedAt ?? testNow.subtract(const Duration(minutes: 5)))
+          .toUtc()
+          .toIso8601String(),
+      'paidAt': testNow
+          .subtract(const Duration(minutes: 9))
+          .toUtc()
+          .toIso8601String(),
       'acceptedAt': null,
       'pickedUpAt': pickedUpAt?.toUtc().toIso8601String(),
       'deliveredAt': deliveredAt?.toUtc().toIso8601String(),
@@ -51,13 +61,35 @@ Map<String, dynamic> orderJson({
       'cancelledBy': cancelledBy,
       'cancelReason': cancelReason,
       'items': [
-        {'id': 'i1', 'menuItemId': 'm1', 'name': 'Veg Thali', 'quantity': 2, 'price': 90.0},
+        {
+          'id': 'i1',
+          'menuItemId': 'm1',
+          'name': 'Veg Thali',
+          'quantity': 2,
+          'price': 90.0
+        },
       ],
       if (dropoff != null) 'dropoff': dropoff,
-      'vendor': {'id': 'v1', 'name': vendorName, 'address': 'Entry Gate 1', 'lat': 23.07, 'lng': 76.85, ...?vendorExtra},
+      'vendor': {
+        'id': 'v1',
+        'name': vendorName,
+        'address': 'Store pickup point',
+        'lat': 23.07,
+        'lng': 76.85,
+        ...?vendorExtra
+      },
       // Real backend: the pool view has customer null; an assigned rider sees name + phone.
-      'customer': pool ? null : {'id': 'c1', 'name': 'Aman Sharma', 'phone': phone, 'hostelBlock': drop},
-      'driver': pool ? null : {'id': driverId, 'name': 'Test Rider', 'phone': '+91 9000000000'},
+      'customer': pool
+          ? null
+          : {
+              'id': 'c1',
+              'name': 'Aman Sharma',
+              'phone': phone,
+              'hostelBlock': drop
+            },
+      'driver': pool
+          ? null
+          : {'id': driverId, 'name': 'Test Rider', 'phone': '+91 9000000000'},
       if (otpCode != null) 'otpCode': otpCode,
     };
 
@@ -96,8 +128,21 @@ OrderView order({
       dropoff: dropoff,
     ))!;
 
-OrderView offer({String id = 'pool-1', String status = 'READY_FOR_PICKUP', double fee = 30, String vendorName = 'Underdoggs Cafe', String drop = 'Block 4', String paymentStatus = 'PAID'}) =>
-    order(id: id, status: status, fee: fee, pool: true, vendorName: vendorName, drop: drop, paymentStatus: paymentStatus);
+OrderView offer(
+        {String id = 'pool-1',
+        String status = 'READY_FOR_PICKUP',
+        double fee = 30,
+        String vendorName = 'Underdoggs Cafe',
+        String drop = 'Block 4',
+        String paymentStatus = 'PAID'}) =>
+    order(
+        id: id,
+        status: status,
+        fee: fee,
+        pool: true,
+        vendorName: vendorName,
+        drop: drop,
+        paymentStatus: paymentStatus);
 
 const offline = ApiResult<Never>.fail(ApiFailure.offline);
 
@@ -109,12 +154,22 @@ class FakeRiderApi implements RiderOrdersApi {
   ApiResult<List<OrderView>> available = const ApiResult.ok([]);
   ApiResult<List<OrderView>> active = const ApiResult.ok([]);
   Map<String, ApiResult<OrderView>> orders = {};
-  ApiResult<OrderPage> Function(String? cursor) onHistory = (_) => const ApiResult.ok(OrderPage([], null));
-  ApiResult<OrderView?> Function(String id) onClaim = (id) => ApiResult.ok(order(id: id, status: 'READY_FOR_PICKUP'));
-  ApiResult<OrderView?> Function(String id) onRelease = (_) => const ApiResult.ok(null);
-  ApiResult<OrderView?> Function(String id, OrderStatus s) onStatus = (id, s) => ApiResult.ok(order(id: id, status: s.wire, updatedAt: testNow));
-  ApiResult<OrderView?> Function(String id, String code) onOtp = (id, _) => ApiResult.ok(order(id: id, status: 'DELIVERED', updatedAt: testNow, deliveredAt: testNow));
-  ApiResult<String?> Function(bool on) onDuty = (on) => ApiResult.ok(on ? 'ONLINE' : 'OFFLINE');
+  ApiResult<OrderPage> Function(String? cursor) onHistory =
+      (_) => const ApiResult.ok(OrderPage([], null));
+  ApiResult<OrderView?> Function(String id) onClaim =
+      (id) => ApiResult.ok(order(id: id, status: 'READY_FOR_PICKUP'));
+  ApiResult<OrderView?> Function(String id) onRelease =
+      (_) => const ApiResult.ok(null);
+  ApiResult<OrderView?> Function(String id, OrderStatus s) onStatus = (id, s) =>
+      ApiResult.ok(order(id: id, status: s.wire, updatedAt: testNow));
+  ApiResult<OrderView?> Function(String id, String code) onOtp = (id, _) =>
+      ApiResult.ok(order(
+          id: id,
+          status: 'DELIVERED',
+          updatedAt: testNow,
+          deliveredAt: testNow));
+  ApiResult<String?> Function(bool on) onDuty =
+      (on) => ApiResult.ok(on ? 'ONLINE' : 'OFFLINE');
   ApiResult<void> location = const ApiResult.ok(null);
 
   /// When set, `fetchAvailable` waits for it (to test races with socket events).
@@ -137,7 +192,8 @@ class FakeRiderApi implements RiderOrdersApi {
   }
 
   @override
-  Future<ApiResult<OrderPage>> fetchHistory({String? cursor, int limit = 30}) async {
+  Future<ApiResult<OrderPage>> fetchHistory(
+      {String? cursor, int limit = 30}) async {
     calls.add('history:${cursor ?? '-'}');
     return onHistory(cursor);
   }
@@ -145,7 +201,8 @@ class FakeRiderApi implements RiderOrdersApi {
   @override
   Future<ApiResult<OrderView>> fetchOrder(String id) async {
     calls.add('order:$id');
-    return orders[id] ?? const ApiResult.fail(ApiFailure.notFound, statusCode: 404);
+    return orders[id] ??
+        const ApiResult.fail(ApiFailure.notFound, statusCode: 404);
   }
 
   @override
@@ -161,7 +218,8 @@ class FakeRiderApi implements RiderOrdersApi {
   }
 
   @override
-  Future<ApiResult<OrderView?>> updateStatus(String id, OrderStatus status) async {
+  Future<ApiResult<OrderView?>> updateStatus(
+      String id, OrderStatus status) async {
     calls.add('status:$id:${status.wire}');
     return onStatus(id, status);
   }
@@ -179,7 +237,8 @@ class FakeRiderApi implements RiderOrdersApi {
   }
 
   @override
-  Future<ApiResult<void>> postLocation(double lat, double lng, {double heading = 0}) async {
+  Future<ApiResult<void>> postLocation(double lat, double lng,
+      {double heading = 0}) async {
     calls.add('location');
     locations.add((lat, lng));
     if (onLocationGate != null) await onLocationGate!.future;
@@ -250,7 +309,10 @@ class FakeLocation implements LocationSource {
   @override
   Stream<LocationReading>? track() {
     if (!streaming) return null;
-    final c = StreamController<LocationReading>(sync: true, onListen: () => trackStarts++, onCancel: () => trackStops++);
+    final c = StreamController<LocationReading>(
+        sync: true,
+        onListen: () => trackStarts++,
+        onCancel: () => trackStops++);
     _stream = c;
     return c.stream;
   }
@@ -259,13 +321,24 @@ class FakeLocation implements LocationSource {
   Future<void> requestPermission() async => permissionRequests++;
 
   @override
-  Future<void> openSettingsFor(LocationProblem problem) async => opened.add(problem);
+  Future<void> openSettingsFor(LocationProblem problem) async =>
+      opened.add(problem);
 }
 
 class FakeRider {
-  FakeRider({Duration poll = const Duration(hours: 1), Duration gps = const Duration(hours: 1), bool streaming = false}) {
+  FakeRider(
+      {Duration poll = const Duration(hours: 1),
+      Duration gps = const Duration(hours: 1),
+      bool streaming = false}) {
     location.streaming = streaming;
-    services = RiderServices(api: api, socket: socket, location: location, pollInterval: poll, locationInterval: gps, clock: () => testNow, uptime: () => uptime);
+    services = RiderServices(
+        api: api,
+        socket: socket,
+        location: location,
+        pollInterval: poll,
+        locationInterval: gps,
+        clock: () => testNow,
+        uptime: () => uptime);
   }
 
   final api = FakeRiderApi();

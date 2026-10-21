@@ -1,6 +1,6 @@
 import { ensureFixtureGeography } from '../harness/geography';
 /**
- * Order flow v1 (Docs/16_order_flow_contract.md): money, status, visibility, realtime, gate OTP, refunds,
+ * Order flow v1 (Docs/16_order_flow_contract.md): money, status, visibility, realtime, delivery verification code, refunds,
  * the maintenance job, and every failure mode of section 7. Runs against a real PostgreSQL and real
  * socket.io-client connections. The payment provider is the in-memory simulator (no network).
  *
@@ -770,9 +770,9 @@ describe('Order flow v1', () => {
   });
 
   // =========================================================================
-  // 7. Gate OTP
+  // 7. Delivery verification code
   // =========================================================================
-  describe('FM7 gate OTP', () => {
+  describe('FM7 delivery verification code', () => {
     test('no OTP: refused and not counted; 5 wrong: locked (423), even the right code; admin unlock issues a new code', async () => {
       const o = await makePaidOrder('ARRIVED_AT_GATE', { driverId: RIDER.id });
       const otpUrl = `/api/orders/${o.id}/verify-gate-otp`;

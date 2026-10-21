@@ -26,11 +26,11 @@ import '../models/drop_point.dart';
 
 /// Live tracking of one real order. Everything comes from the server: `GET /orders/:id` when
 /// shown, every 15 s while visible (polling), and `order_updated` / `rider_location` on the
-/// socket. The gate OTP is the server's and only appears at ARRIVED_AT_GATE.
+/// socket. The delivery verification code is the server's and only appears at ARRIVED_AT_GATE.
 ///
 /// A combined order (Docs/22) is ONE screen: opened with the id of any of its restaurants' parts
 /// (history card, push, Track tab), it shows a row per restaurant with its own status, one rider,
-/// one gate OTP and one total. Cancelling or a failed payment applies to the whole order.
+/// one delivery verification code and one total. Cancelling or a failed payment applies to the whole order.
 class LiveTrackingScreen extends StatefulWidget {
   /// The order to show. Null (the Track tab) shows the student's current order.
   final String? orderId;
@@ -302,7 +302,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
               icon: LucideIcons.bike,
               title: 'No active order',
               message:
-                  'Place an order and its live status, gate OTP and delivery partner show up here.',
+                  'Place an order and its live status, delivery verification code and delivery partner show up here.',
               action: KButton(
                   label: 'Explore stores',
                   icon: LucideIcons.utensils,
@@ -591,7 +591,7 @@ class _StatusHero extends StatelessWidget {
         ],
         const SizedBox(height: 16),
         Text(
-          '${order.title} · ${order.dropoffHostel.isEmpty ? 'Local area gate' : displayDropPoint(order.dropoffHostel)} · ${rupee(order.totalAmount)}',
+          '${order.title} · ${order.dropoffHostel.isEmpty ? 'Delivery address' : displayDropPoint(order.dropoffHostel)} · ${rupee(order.totalAmount)}',
           style: KraveoType.bodySm
               .copyWith(color: k.ink, fontWeight: FontWeight.w700),
         ),
@@ -790,7 +790,7 @@ class _PaymentCard extends StatelessWidget {
   }
 }
 
-/// The server's gate OTP (only at ARRIVED_AT_GATE).
+/// The server's delivery verification code (only at ARRIVED_AT_GATE).
 class _OtpCard extends StatelessWidget {
   const _OtpCard({required this.order});
 
@@ -848,7 +848,7 @@ class _OtpCard extends StatelessWidget {
             kind: KButtonKind.tonal,
             onPressed: () {
               Clipboard.setData(ClipboardData(text: code));
-              showKSnack(context, 'Gate OTP copied.',
+              showKSnack(context, 'Delivery verification code copied.',
                   icon: LucideIcons.copyCheck,
                   duration: const Duration(seconds: 2));
             },

@@ -98,7 +98,7 @@ orderRouter.post('/orders', requireAuth, requireRole('STUDENT'), async (req: Aut
 // ----------------------------------------------------------------------------
 /** `restaurants: [{ vendorId, items:[{itemId,quantity}] }]` -> typed list, or the 400 text. Prices are never read from the client. */
 const parseRestaurants = (raw: unknown): { ok: true; restaurants: GroupRestaurantInput[] } | { ok: false; message: string; field: string; code?: string } => {
-  if (!Array.isArray(raw) || raw.length === 0) return { ok: false, message: 'restaurants must be a non-empty array.', field: 'restaurants' };
+  if (!Array.isArray(raw) || raw.length === 0) return { ok: false, message: 'Choose one or more grocery stores.', field: 'restaurants' };
   if (raw.length > MAX_GROUP_RESTAURANTS_HARD) return { ok: false, message: 'Too many stores in one order.', field: 'restaurants', code: 'TOO_MANY_RESTAURANTS' };
   const restaurants: GroupRestaurantInput[] = [];
   for (let i = 0; i < raw.length; i++) {
@@ -340,7 +340,7 @@ orderRouter.post('/orders/:id/reject', requireAuth, requireRole('VENDOR'), requi
 const deliverResponse = (req: AuthenticatedRequest, res: Response, r: { order: OrderWithRelations; alreadyDelivered: boolean }) =>
   res.json({
     success: true,
-    message: r.alreadyDelivered ? 'Order is already DELIVERED.' : 'Gate Handshake OTP verified successfully. Order DELIVERED!',
+    message: r.alreadyDelivered ? 'Order is already DELIVERED.' : 'Delivery verification code accepted. Order delivered.',
     data: viewFor(req, r.order),
   });
 
@@ -381,7 +381,7 @@ orderRouter.post('/orders/:id/verify-gate-otp', requireAuth, requireRole('DRIVER
   try {
     return deliverResponse(req, res, await verifyGateOtp(req.params.id, actorOf(req), req.body?.otpCode ?? req.body?.otp));
   } catch (err) {
-    return fail(res, err, 'verify gate otp');
+    return fail(res, err, 'verify delivery code');
   }
 });
 
@@ -452,7 +452,7 @@ orderRouter.post('/admin/orders/:id/cancel', requireAuth, requireRole('ADMIN'), 
 orderRouter.post('/admin/orders/:id/reset-otp-lock', requireAuth, requireRole('ADMIN'), validId, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const order = await resetOtpLock(req.params.id);
-    return res.json({ success: true, message: 'Unlocked. A new gate code was sent to the customer.', data: viewFor(req, order) });
+    return res.json({ success: true, message: 'Unlocked. A new delivery verification code was sent to the customer.', data: viewFor(req, order) });
   } catch (err) {
     return fail(res, err, 'reset otp lock');
   }
@@ -530,7 +530,7 @@ const PROBLEM_HINTS: Record<Problem, string> = {
   REFUND_FAILED: 'The refund did not go through. If Razorpay was unreachable the job keeps retrying by itself (waiting 30 seconds, 1, 2, 4 ... up to 60 minutes between tries). If Razorpay refused it (permanent error) the job stops after 3 tries: read the reason, fix the cause, then use retry-refund, or refund by hand in Razorpay.',
   PAID_AFTER_CANCEL: 'Money arrived after the order was cancelled. The automatic refund is still running; it should clear within a minute.',
   REFUND_PENDING: 'A refund started but did not finish. The job retries it; if it stays, check the payment in Razorpay before refunding by hand.',
-  OTP_LOCKED: 'Five wrong gate codes. Call the customer, then reset the OTP lock (a new code is sent to the customer) or cancel the order.',
+  OTP_LOCKED: 'Five wrong delivery verification codes. Call the customer, then reset the OTP lock (a new code is sent to the customer) or cancel the order.',
   STUCK_UNACCEPTED: 'Paid but the store has not accepted. Call the store; otherwise cancel (the refund is automatic).',
   RIDER_NOT_APPROVED: 'The assigned rider is suspended. Reassign the order or cancel it.',
   VENDOR_NOT_APPROVED: 'The store was suspended while this order is open. Cancel (refund) or let it finish.',
@@ -580,7 +580,7 @@ orderRouter.get('/admin/orders/needs-attention', requireAuth, requireRole('ADMIN
       const isOpen = o.status !== 'DELIVERED' && o.status !== 'CANCELLED';
       // Docs/22: the money of a combined order lives on its PRIMARY child (the payment, the refund). Its siblings carry no refund status of their own,
       // so the money problems are reported once, through the primary, with the restaurants named. The same goes for the problems of the rider and the
-      // gate code, which are shared by every child (one rider, one OTP); per-restaurant problems (not accepted, no rider yet) stay per child.
+      // delivery verification code, which are shared by every child (one rider, one OTP); per-restaurant problems (not accepted, no rider yet) stay per child.
       const isSibling = !!o.groupId && o.groupIndex !== 0;
       const groupNote = o.group && o.groupIndex === 0 ? ` Combined order of ${o.group.orders.length} stores (${o.group.orders.map((s) => s.vendor.name).join(', ')}): this one payment covers all of them.` : '';
       for (const p of o.payments) {
@@ -597,7 +597,7 @@ orderRouter.get('/admin/orders/needs-attention', requireAuth, requireRole('ADMIN
         add('PAID_AFTER_CANCEL', o.refundStatus ? 'Payment captured after the order was cancelled; refund in progress.' : 'Cancelled while paid and never refunded (order from before automatic refunds). Refund it in Razorpay.', o.cancelledAt ?? o.updatedAt);
       }
       if (o.refundStatus === 'PENDING' && t(o.updatedAt) < ago(REFUND_PENDING_ALERT_MIN).getTime()) add('REFUND_PENDING', 'Refund started but not finished.', o.updatedAt);
-      if (!isSibling && o.otpLocked && o.status === 'ARRIVED_AT_GATE') add('OTP_LOCKED', `${o.otpAttempts} wrong gate codes.`, o.updatedAt);
+      if (!isSibling && o.otpLocked && o.status === 'ARRIVED_AT_GATE') add('OTP_LOCKED', `${o.otpAttempts} wrong delivery verification codes.`, o.updatedAt);
       if (o.status === 'PLACED' && o.paymentStatus === 'PAID' && (!o.paidAt || t(o.paidAt) < acceptLate.getTime())) {
         add('STUCK_UNACCEPTED', o.paidAt ? `Paid at ${iso(o.paidAt)}, not accepted by the store.` : 'Paid (before payment times were recorded) and never accepted.', o.paidAt ?? o.createdAt);
       }

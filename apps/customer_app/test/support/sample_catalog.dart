@@ -33,7 +33,7 @@ List<Dhaba> sampleDhabas() => [
         eta: '15-20 min',
         bannerUrl: '',
         isAcceptingOrders: true,
-        address: 'VIT Bhopal Entry Gate 1',
+        address: 'VIT Bhopal Store pickup point',
         deliveryFee: 15.0,
         minOrder: 49.0,
         isFavorite: false,

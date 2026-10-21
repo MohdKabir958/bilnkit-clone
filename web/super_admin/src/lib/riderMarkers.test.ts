@@ -124,7 +124,7 @@ describe('normalizeDriverPin', () => {
   it('reads the REST row (driverId) and the socket event (driverId + id)', () => {
     expect(normalizeDriverPin({ driverId: 'u1', driverName: 'Vikram', lat: 23.07, lng: 76.85, heading: 90, lastUpdated: 'x', dutyStatus: 'ONLINE', approvalStatus: 'APPROVED' }))
       .toMatchObject({ id: 'u1', name: 'Vikram', lat: 23.07, lng: 76.85, heading: 90, dutyStatus: 'ONLINE', approvalStatus: 'APPROVED' });
-    expect(normalizeDriverPin({ id: 'u2', driverId: 'u2', lat: '23.07', lng: '76.85' })).toMatchObject({ id: 'u2', name: 'Runner', lat: 23.07 });
+    expect(normalizeDriverPin({ id: 'u2', driverId: 'u2', lat: '23.07', lng: '76.85' })).toMatchObject({ id: 'u2', name: 'Delivery partner', lat: 23.07 });
   });
   it('rejects rows that would add a ghost marker', () => {
     expect(normalizeDriverPin({ lat: 23, lng: 76 })).toBeNull();

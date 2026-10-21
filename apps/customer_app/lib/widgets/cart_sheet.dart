@@ -9,7 +9,6 @@ import '../screens/checkout_screen.dart';
 import 'coupon_box.dart';
 import 'ui/add_stepper.dart';
 import 'ui/bill_breakdown.dart';
-import 'ui/coins_toggle.dart';
 import 'ui/format.dart';
 import 'ui/k_icon_button.dart';
 import 'ui/sheet_chrome.dart';
@@ -96,8 +95,6 @@ class CartSheet extends StatelessWidget {
         const SizedBox(height: 4),
         const CouponBox(),
         const SizedBox(height: 16),
-        CoinsBalance(cart: cart),
-        const SizedBox(height: 16),
         BillBreakdown.cart(cart: cart),
         const SizedBox(height: 4),
       ],
@@ -117,7 +114,7 @@ class CartSheet extends StatelessWidget {
           },
         ),
         const SizedBox(height: 8),
-        Text('Next: choose how to pay. You get your gate OTP right after.',
+        Text('Next: confirm your delivery address and payment at checkout.',
             textAlign: TextAlign.center,
             style:
                 KraveoType.caption.copyWith(color: k.inkFaint, fontSize: 12)),

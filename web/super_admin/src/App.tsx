@@ -469,7 +469,7 @@ export const App: React.FC = () => {
     orderId,
     { otpLocked: false, otpAttempts: 0 },
     () => apiService.resetOtpLock(orderId),
-    { ok: () => ['OTP lock reset', 'The customer got a new gate code; the rider can try again.'], fail: 'OTP lock not reset' },
+    { ok: () => ['OTP lock reset', 'The customer got a new delivery verification code; the rider can try again.'], fail: 'OTP lock not reset' },
   );
 
   // No optimistic patch: whether the refund now succeeds is only known from the server's answer.

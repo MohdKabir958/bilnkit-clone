@@ -3,7 +3,7 @@ import { startTestServer, stopTestServer, TestServerInstance } from '../harness/
 import { prisma, seedTestDatabase, cleanTestOrders, cleanTestUsers } from '../harness/db';
 import { getStudentToken, getVendorToken, getDriverToken, getAdminToken, getAuthHeader } from '../harness/auth';
 
-describe('Empirical Verification: Gate OTP & Delivery Security (Milestone 3 Subtask 2)', () => {
+describe('Empirical Verification: Delivery verification code & Delivery Security (Milestone 3 Subtask 2)', () => {
   let serverInstance: TestServerInstance;
   let request: ReturnType<typeof supertest>;
   let studentToken: string;
@@ -64,7 +64,7 @@ describe('Empirical Verification: Gate OTP & Delivery Security (Milestone 3 Subt
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data.status).toBe('ARRIVED_AT_GATE');
-      // Contract 2.1: the rider must never see the gate OTP (the customer tells it to them).
+      // Contract 2.1: the rider must never see the delivery verification code (the customer tells it to them).
       expect(res.body.data.otpCode).toBeNull();
 
       // Verify Prisma DB record directly
@@ -397,7 +397,7 @@ describe('Empirical Verification: Gate OTP & Delivery Security (Milestone 3 Subt
   // =========================================================================
   // REQUIREMENT 5: POST /api/orders/:id/verify-gate-otp enforces DRIVER/ADMIN authorization
   // =========================================================================
-  describe('Requirement 5: Authorization Enforcement on Dedicated Gate OTP Endpoint', () => {
+  describe('Requirement 5: Authorization Enforcement on Dedicated Delivery verification code Endpoint', () => {
     test('EMP_OTP_12: Unauthenticated request to verify-gate-otp returns HTTP 401 Unauthorized', async () => {
       const orderId = 'gate-otp-test-ord-12';
 

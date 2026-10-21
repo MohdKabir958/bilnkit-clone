@@ -170,7 +170,7 @@ const withCounts = async (client: Tx | typeof prisma, where: Prisma.Sql): Promis
 
 export const listPublicCategories = async (filter: unknown) => {
   if (filter !== undefined && filter !== 'restaurants' && filter !== 'dishes' && filter !== 'home') {
-    throw bad('for', "'for' must be restaurants, dishes or home.");
+    throw bad('for', "Choose a valid category usage filter.");
   }
   const ttl = cacheTtlMs();
   let rows: CategoryWithCounts[];

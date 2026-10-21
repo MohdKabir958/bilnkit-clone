@@ -401,7 +401,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           onChanged: (_) => _clear('address'),
                           onSubmitted: (_) => _ownerFocus.requestFocus(),
                           decoration: _decoration(
-                              hint: 'Near Gate 2, Ashta road',
+                              hint: 'Store building and street address',
                               errorKey: 'address'),
                         ),
                       ),

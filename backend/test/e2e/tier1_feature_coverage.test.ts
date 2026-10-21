@@ -390,7 +390,7 @@ describe('Tier 1: Feature Coverage E2E Test Suite (30 Test Cases Across 6 Featur
   // FEATURE 3: Server-Side 4-Digit Gate Handshake OTP Verification
   // =========================================================================
   describe('Feature 3: Server-Side 4-Digit Gate Handshake OTP Verification', () => {
-    test('T1_OTP_01: Dynamic Gate OTP Generation on Arrival at Gate', async () => {
+    test('T1_OTP_01: Dynamic Delivery verification code Generation on Arrival at Gate', async () => {
       const order = await prisma.order.create({
         data: {
           id: 'test-ord-otp-01',
@@ -418,7 +418,7 @@ describe('Tier 1: Feature Coverage E2E Test Suite (30 Test Cases Across 6 Featur
       expect(dbOrder?.otpCode).toMatch(/^\d{4}$/); // Enforce dynamic 4-digit numeric string
     });
 
-    test('T1_OTP_02: FCM Notification Trigger with Dynamic Gate OTP Code', async () => {
+    test('T1_OTP_02: FCM Notification Trigger with Dynamic Delivery verification code Code', async () => {
       const order = await prisma.order.create({
         data: {
           id: 'test-ord-otp-02',
@@ -472,7 +472,7 @@ describe('Tier 1: Feature Coverage E2E Test Suite (30 Test Cases Across 6 Featur
       expect(dbOrder?.otpCode).toBe('USED'); // Single-use OTP invalidated
     });
 
-    test('T1_OTP_04: Dedicated Gate OTP Verification Endpoint with RBAC & Numeric Coercion', async () => {
+    test('T1_OTP_04: Dedicated Delivery verification code Verification Endpoint with RBAC & Numeric Coercion', async () => {
       const order = await prisma.order.create({
         data: {
           id: 'test-ord-otp-04',

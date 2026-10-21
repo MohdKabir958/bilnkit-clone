@@ -31,7 +31,7 @@ export const assertRuntimeConfig = (env: Record<string, string | undefined>): { 
   const warnings: string[] = [];
   if (paymentsDisabled) warnings.push('Payments are DISABLED for local development. Checkout cannot charge or capture money.');
   for (const key of RECOMMENDED_CONFIG) {
-    if (blank(key)) warnings.push(`${key} is not set: student Google sign-in will answer 503 until it is configured.`);
+    if (blank(key)) warnings.push(`${key} is not set: customer Google sign-in will answer 503 until it is configured.`);
   }
   return { warnings };
 };

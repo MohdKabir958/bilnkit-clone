@@ -31,5 +31,5 @@ export const RefundPill: React.FC<{ order: Order }> = ({ order }) => {
 };
 
 export const OtpLockedPill: React.FC<{ order: Order }> = ({ order }) => (order.otpLocked
-  ? <TonePill tone="danger" icon={LockKeyhole} title={`Gate OTP locked${order.otpAttempts ? ` after ${order.otpAttempts} wrong attempts` : ''}`}>OTP locked</TonePill>
+  ? <TonePill tone="danger" icon={LockKeyhole} title={`Delivery verification code locked${order.otpAttempts ? ` after ${order.otpAttempts} wrong attempts` : ''}`}>OTP locked</TonePill>
   : null);

@@ -76,7 +76,7 @@ Future<String?> showHostelPicker(BuildContext context,
     context,
     builder: (ctx) => KSheetFrame(
       title: 'Where should we deliver?',
-      subtitle: Text('Your delivery partner meets you at this gate.',
+      subtitle: Text('Your delivery partner delivers to your saved address.',
           style: KraveoType.bodySm.copyWith(color: ctx.k.inkMuted)),
       children: [
         DropPointChips(

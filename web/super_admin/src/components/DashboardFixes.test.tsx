@@ -81,7 +81,7 @@ describe('WEB-18 confirm before OTP reset and refund retry', () => {
     const h = await mount(<NeedsAttentionPanel {...p} />);
     await click(byText('button', 'Reset OTP lock', h)!);
     const dialog = document.querySelector('[role="alertdialog"]')!;
-    expect(dialog.textContent).toContain('new gate code');
+    expect(dialog.textContent).toContain('new delivery verification code');
     expect(p.onResetOtpLock).not.toHaveBeenCalled();
     await click(byText('button', 'Cancel', dialog)!);
     expect(document.querySelector('[role="alertdialog"]')).toBeNull();

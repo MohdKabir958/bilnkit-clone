@@ -721,7 +721,7 @@ class _ActiveOrderBar extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: KraveoType.titleMd.copyWith(color: k.onBrand)),
       subtitle: order.otpCode != null
-          ? 'Gate OTP ${order.otpCode}'
+          ? 'Delivery verification code ${order.otpCode}'
           : (order.awaitsPayment
               ? 'Pay by ${clockLabel(order.paymentDeadline)} · ${order.title}'
               : order.title),

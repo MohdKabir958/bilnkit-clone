@@ -1,7 +1,7 @@
 /// The rider's view of a Grozo order (contract `Docs/16_order_flow_contract.md`, section 2.1).
 ///
 /// The server is the only source of truth: this class never invents an id, a price or a status.
-/// It deliberately has **no OTP field**: the gate code belongs to the customer, and even if a
+/// It deliberately has **no OTP field**: the delivery verification code belongs to the customer, and even if a
 /// misconfigured server ever sent `otpCode` to a rider, the app would drop it while parsing.
 library;
 
@@ -516,7 +516,7 @@ class OrderView {
     if (raw is! Map) return null;
     final id = raw['id']?.toString().trim();
     if (id == null || id.isEmpty) return null;
-    // NOTE: `otpCode` is intentionally ignored. A rider must never see the gate code.
+    // NOTE: `otpCode` is intentionally ignored. A rider must never see the delivery verification code.
     return OrderView(
       id: id,
       status: OrderStatus.parse(raw['status']),

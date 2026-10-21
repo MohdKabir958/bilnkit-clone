@@ -387,7 +387,7 @@ void main() {
     });
   });
 
-  group('gate code (OTP)', () {
+  group('delivery verification code (OTP)', () {
     setUp(() => f.api.active = ApiResult.ok(
         [order(status: 'ARRIVED_AT_GATE', phone: '+91 9876500000')]));
 

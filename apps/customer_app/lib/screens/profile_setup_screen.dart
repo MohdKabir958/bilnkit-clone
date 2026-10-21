@@ -343,7 +343,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Text(
-              'Your delivery partner may call this when they reach the gate.',
+              'Your delivery partner may call this when they reach your delivery address.',
               style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
         ),
       KErrorLine(message: _phoneError),

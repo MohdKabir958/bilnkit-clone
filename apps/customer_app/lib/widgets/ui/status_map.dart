@@ -51,7 +51,7 @@ extension OrderStatusUi on OrderProgressStatus {
         OrderProgressStatus.arrivedAtGate =>
           'Tell your rider the OTP below to get your groceries.',
         OrderProgressStatus.delivered =>
-          'All done. Rate your order to earn ${BrandConfig.name} Coins.',
+          'All done. Tell us how your delivery went.',
         OrderProgressStatus.cancelled =>
           'Nothing will be delivered for this order.',
       };

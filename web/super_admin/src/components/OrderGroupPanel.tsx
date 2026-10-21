@@ -107,7 +107,7 @@ export const OrderGroupPanel: React.FC<{ order: Order; state: GroupState; onRelo
         <GroupBadge group={group} />
       </div>
       <p className="mb-3 text-xs text-kraveo-ink2">
-        The customer ordered from {group.size} stores in one checkout: one payment, one rider, one gate code. If one store cannot take its part, the whole order is cancelled and refunded.
+        The customer ordered from {group.size} stores in one checkout: one payment, one rider, one delivery verification code. If one store cannot take its part, the whole order is cancelled and refunded.
         This is order {group.index + 1} of {group.size}{group.primary ? ' (it carries the payment)' : ''}.
       </p>
 

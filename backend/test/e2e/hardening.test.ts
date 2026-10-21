@@ -310,7 +310,7 @@ describe('Backend hardening', () => {
   });
 
   // =========================================================================================
-  // 4. The gate OTP never reaches the logs
+  // 4. The delivery verification code never reaches the logs
   // =========================================================================================
   describe('4. logs', () => {
     test('ARRIVED_AT_GATE: the OTP, the push body and the token are in no console.log / info / warn / error / debug line', async () => {
@@ -928,7 +928,7 @@ describe('Backend hardening', () => {
   });
 
   // =========================================================================================
-  // 16. Claim of a cancelled order, gate OTP on a delivered order
+  // 16. Claim of a cancelled order, delivery verification code on a delivered order
   // =========================================================================================
   describe('16. terminal orders', () => {
     test('a second rider claiming a CANCELLED order that still has a driverId gets ORDER_NOT_AVAILABLE, not ALREADY_TAKEN', async () => {

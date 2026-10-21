@@ -19,7 +19,6 @@ import '../widgets/delivery_confirm_sheet.dart';
 import 'addresses_screen.dart';
 import '../widgets/push_permission.dart';
 import '../widgets/ui/bill_breakdown.dart';
-import '../widgets/ui/coins_toggle.dart';
 import '../widgets/ui/format.dart';
 import '../widgets/ui/k_icon_button.dart';
 import '../widgets/ui/scroll_empty.dart';
@@ -522,8 +521,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          KReveal(index: 2, child: CoinsBalance(cart: cart)),
-          const SizedBox(height: 14),
           KReveal(
               index: 3,
               child: _SectionCard(
@@ -839,7 +836,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _DeliveringToRow(name: chosen, onChange: _chooseDropoff),
       const SizedBox(height: 12),
       Text(
-        'Your delivery partner meets you at your door. After you pay you get a 4-digit OTP: share it only when they arrive.',
+        'Your delivery verification code appears when the delivery partner arrives. Share it only when your order reaches your doorstep.',
         style: KraveoType.bodySm.copyWith(color: k.inkMuted),
       ),
       const SizedBox(height: 14),

@@ -123,10 +123,8 @@ class _ReviewModalState extends State<ReviewModal> {
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(buildKSnack(
-          receipt.coinsEarned > 0
-              ? 'Thanks for rating! +${receipt.coinsEarned} ${BrandConfig.name} Coins added.'
-              : 'Thanks for rating!',
-          icon: LucideIcons.coins,
+          'Thanks for rating!',
+          icon: LucideIcons.check,
           duration: const Duration(seconds: 4),
         ));
       return;
@@ -236,7 +234,7 @@ class _ReviewModalState extends State<ReviewModal> {
       ],
       footer: KButton(
         label: 'Submit rating',
-        icon: LucideIcons.coins,
+        icon: LucideIcons.star,
         loading: _isSubmitting,
         onPressed: _submitReview,
       ),

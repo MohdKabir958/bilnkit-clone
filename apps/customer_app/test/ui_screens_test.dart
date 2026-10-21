@@ -295,8 +295,11 @@ void main() {
         .first;
     await tester.scrollUntilVisible(find.text('Have a coupon?'), 200,
         scrollable: sheetScroll);
-    await tester.scrollUntilVisible(find.textContaining('Grozo Coins'), 200,
-        scrollable: sheetScroll);
+    expect(find.textContaining('Grozo Coins'), findsNothing);
+    expect(find.textContaining('coming soon'), findsNothing);
+    final totalBeforeBalanceChange = cart.grandTotal;
+    cart.setKraveoCoins(9999);
+    expect(cart.grandTotal, totalBeforeBalanceChange);
     await tester.scrollUntilVisible(find.text('To pay'), 200,
         scrollable: sheetScroll);
     expect(find.text('Bill details'), findsOneWidget);

@@ -240,7 +240,7 @@ class _TrackingMapState extends State<TrackingMap>
         builder: (context, _) => AnimatedRiderMap(
           status: widget.order.status,
           hostel: widget.order.dropoffHostel.isEmpty
-              ? 'Local area gate'
+              ? 'Delivery address'
               : displayDropPoint(widget.order.dropoffHostel),
           dhabaName: widget.order.vendorName,
           // The GPS chip only makes sense while the rider carries the food to the student.

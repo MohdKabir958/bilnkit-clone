@@ -73,7 +73,7 @@ class _AnimatedRiderMapState extends State<AnimatedRiderMap>
         OrderProgressStatus.preparing => 'Being cooked',
         OrderProgressStatus.readyForPickup => 'Ready for pickup',
         OrderProgressStatus.pickedUp => 'On the way',
-        OrderProgressStatus.arrivedAtGate => 'At your gate',
+        OrderProgressStatus.arrivedAtGate => 'At your doorstep',
         OrderProgressStatus.delivered => 'Delivered',
         OrderProgressStatus.cancelled => 'Cancelled',
       };
