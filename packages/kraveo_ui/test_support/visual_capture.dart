@@ -7,22 +7,36 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const captureEnabled = bool.fromEnvironment('GROZO_CAPTURE');
-const capturePhase = String.fromEnvironment('GROZO_CAPTURE_PHASE', defaultValue: 'after');
+const capturePhase =
+    String.fromEnvironment('GROZO_CAPTURE_PHASE', defaultValue: 'after');
 final captureKey = GlobalKey();
 
 Future<void> loadVisualFonts() async {
   for (final (family, asset) in [
-    ('packages/kraveo_ui/Bricolage', 'packages/kraveo_ui/assets/fonts/BricolageGrotesque.ttf'),
-    ('packages/kraveo_ui/Jakarta', 'packages/kraveo_ui/assets/fonts/PlusJakartaSans.ttf'),
-    ('packages/lucide_icons_flutter/Lucide', 'packages/lucide_icons_flutter/assets/lucide.ttf'),
-    ('packages/kraveo_ui/NotoDevanagari', 'packages/kraveo_ui/assets/fonts/NotoSansDevanagari-Regular.ttf'),
+    (
+      'packages/kraveo_ui/Bricolage',
+      'packages/kraveo_ui/assets/fonts/BricolageGrotesque.ttf'
+    ),
+    (
+      'packages/kraveo_ui/Jakarta',
+      'packages/kraveo_ui/assets/fonts/PlusJakartaSans.ttf'
+    ),
+    (
+      'packages/lucide_icons_flutter/Lucide',
+      'packages/lucide_icons_flutter/assets/lucide.ttf'
+    ),
+    (
+      'packages/kraveo_ui/NotoDevanagari',
+      'packages/kraveo_ui/assets/fonts/NotoSansDevanagari-Regular.ttf'
+    ),
     ('MaterialIcons', 'fonts/MaterialIcons-Regular.otf'),
   ]) {
     await (FontLoader(family)..addFont(rootBundle.load(asset))).load();
   }
 }
 
-Future<void> prepareVisual(WidgetTester tester, {double width = 390, double height = 844, double scale = 1}) async {
+Future<void> prepareVisual(WidgetTester tester,
+    {double width = 390, double height = 844, double scale = 1}) async {
   tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1;
   tester.platformDispatcher.textScaleFactorTestValue = scale;
@@ -30,12 +44,24 @@ Future<void> prepareVisual(WidgetTester tester, {double width = 390, double heig
   addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 }
 
-Widget captureRoot(Widget child) => RepaintBoundary(key: captureKey, child: child);
+Widget captureRoot(Widget child) =>
+    RepaintBoundary(key: captureKey, child: child);
 
-Future<void> captureVisual(WidgetTester tester, String role, String screen) async {
+Future<void> captureVisual(
+    WidgetTester tester, String role, String screen) async {
   await tester.pump(const Duration(seconds: 2));
   await tester.pump(const Duration(seconds: 2));
-  final boundary = captureKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  // Alternate real engine codec work with fake-clock frame delivery.
+  for (var i = 0; i < 40; i++) {
+    await tester
+        .runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.pump();
+    if (imageCache.pendingImageCount == 0) break;
+  }
+  await tester.pump(const Duration(milliseconds: 400));
+  await tester.pump(const Duration(milliseconds: 400));
+  final boundary =
+      captureKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   await tester.runAsync(() async {
     final image = await boundary.toImage(pixelRatio: 1);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);

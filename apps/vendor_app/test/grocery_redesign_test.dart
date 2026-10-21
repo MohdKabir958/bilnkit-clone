@@ -15,7 +15,8 @@ void main() {
             debugShowCheckedModeBanner: false,
             theme: KraveoTheme.vendor(),
             home: ProductInventoryScreen(
-                vendorId: 'visual-store', api: VisualProductApi()))));
+                vendorId: 'visual-store',
+                api: VisualProductApi(lowStockExample: true)))));
         await tester.pump(const Duration(seconds: 1));
         expect(tester.takeException(), isNull);
         final filter = find.byWidgetPredicate(

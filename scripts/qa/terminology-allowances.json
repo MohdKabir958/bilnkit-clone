@@ -1,0 +1,622 @@
+[
+  {
+    "file": "apps/driver_app/lib/models/drop_point.dart",
+    "value": "^(?:boys\\s+hostel\\s+)?block\\s*[-#]?\\s*(\\d{1,2})$",
+    "reason": "Historical address parser regex for previously saved orders; new addresses use structured geography."
+  },
+  {
+    "file": "apps/driver_app/lib/models/drop_point.dart",
+    "value": "^girls\\s+(?:hostel\\s+)?gate\\s*[-#]?\\s*(\\d{1,2})$",
+    "reason": "Historical address parser regex for previously saved orders; new addresses use structured geography."
+  },
+  {
+    "file": "apps/driver_app/lib/services/rider_orders_api.dart",
+    "value": "/verify-gate-otp",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/driver_app/lib/screens/active_delivery.dart",
+    "value": "navigate-restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/driver_app/lib/screens/active_delivery.dart",
+    "value": "restaurant-location-missing",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/customer_app/lib/models/drop_point.dart",
+    "value": "^(?:boys\\s+hostel\\s+)?block\\s*[-#]?\\s*(\\d{1,2})$",
+    "reason": "Historical address parser regex for previously saved orders; new addresses use structured geography."
+  },
+  {
+    "file": "apps/customer_app/lib/models/drop_point.dart",
+    "value": "^girls\\s+(?:hostel\\s+)?gate\\s*[-#]?\\s*(\\d{1,2})$",
+    "reason": "Historical address parser regex for previously saved orders; new addresses use structured geography."
+  },
+  {
+    "file": "apps/customer_app/lib/models/food_category.dart",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/customer_app/lib/models/order.dart",
+    "value": "Restaurant did not respond",
+    "reason": "Legacy wire/reason sentinel interpreted by released clients; display copy is translated separately."
+  },
+  {
+    "file": "apps/customer_app/lib/models/order.dart",
+    "value": "Another restaurant in your order could not take it",
+    "reason": "Legacy wire/reason sentinel interpreted by released clients; display copy is translated separately."
+  },
+  {
+    "file": "apps/customer_app/lib/models/customer_user.dart",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "apps/customer_app/lib/models/order_group.dart",
+    "value": "restaurants",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/customer_app/lib/services/customer_api_service.dart",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "apps/customer_app/lib/screens/live_tracking_screen.dart",
+    "value": "restaurants",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/customer_app/lib/screens/live_tracking_screen.dart",
+    "value": "runner",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/customer_app/lib/providers/session_provider.dart",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "apps/customer_app/lib/providers/dhaba_provider.dart",
+    "value": "dishes",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/customer_app/lib/widgets/map/google_tracking_map_view.dart",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/customer_app/lib/widgets/ui/category_icons.dart",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/models/settlement.dart",
+    "value": "dishes",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/services/vendor_backend.dart",
+    "value": "/categories?for=dishes",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/services/product_api.dart",
+    "value": "/v1/partner/uploads/image?purpose=dish",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/screens/product_inventory_screen.dart",
+    "value": "/categories?for=dishes",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/screens/stock_manager.dart",
+    "value": "dish-",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/screens/signup_screen.dart",
+    "value": "restaurant-field",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/widgets/order_card.dart",
+    "value": "Restaurant did not respond",
+    "reason": "Legacy wire/reason sentinel interpreted by released clients; display copy is translated separately."
+  },
+  {
+    "file": "apps/vendor_app/lib/widgets/location_sheet.dart",
+    "value": "location-outside-campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/widgets/add_dish_modal.dart",
+    "value": "dish-categories-loading",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/widgets/add_dish_modal.dart",
+    "value": "dish-category-",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/widgets/add_dish_modal.dart",
+    "value": "add-dish-category-error",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/widgets/add_dish_modal.dart",
+    "value": "dish-veg",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/widgets/add_dish_modal.dart",
+    "value": "dish-nonveg",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/widgets/add_dish_modal.dart",
+    "value": "add-dish-price-help",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/widgets/add_dish_modal.dart",
+    "value": "add-dish-approval-note",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/widgets/add_dish_modal.dart",
+    "value": "add-dish-error",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/widgets/ui/dish_status_chip.dart",
+    "value": "dish-status-",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "apps/customer_app/test/ui_visual_capture_test.dart",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/types.ts",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-vendor",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-vendor-msg",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-name",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-name-msg",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-category",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-category-msg",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-categories",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-description",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-description-msg",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-image",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-price",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-price-msg",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-commission-mode",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-commission-value",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-commission-value-msg",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CatalogDishDrawer.tsx",
+    "value": "dish-reject-reason",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/FinanceOverview.tsx",
+    "value": "finance-dish-vendor",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/FinanceOverview.tsx",
+    "value": "finance-dish-top",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/ImageUploadField.tsx",
+    "value": "dish",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/SettlementDrawer.tsx",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/AnalyticsPanel.tsx",
+    "value": "hostel",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CategoryForm.tsx",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CategoryMultiSelect.tsx",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/AddPartnerDrawer.tsx",
+    "value": "../lib/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/AddPartnerDrawer.tsx",
+    "value": "ap-restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/LiveCommandCenter.tsx",
+    "value": "../lib/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/VendorManager.tsx",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/ApplicationsPanel.tsx",
+    "value": "../lib/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/PayoutAccountPanel.tsx",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/CampusMap.tsx",
+    "value": "../lib/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/SettingsPanel.tsx",
+    "value": "fee-max-restaurants",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/SettingsPanel.tsx",
+    "value": "fee-max-restaurants-msg",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/components/VendorLocationEditor.tsx",
+    "value": "../lib/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/services/api.ts",
+    "value": "../lib/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/services/api.ts",
+    "value": "/api/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/services/api.ts",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/services/api.ts",
+    "value": "dish",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/services/api.ts",
+    "value": "/api/admin/finance/by-restaurant?",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/services/api.ts",
+    "value": "/api/admin/finance/by-dish?",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/lib/tokens.ts",
+    "value": "GATE",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/lib/catalogParse.ts",
+    "value": "DISH",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/lib/dashboardStats.ts",
+    "value": "./campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/lib/categoryParse.ts",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/lib/categoryParse.ts",
+    "value": "dishes",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/lib/categoryParse.ts",
+    "value": "restaurants",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/lib/vendorLocation.ts",
+    "value": "./campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "web/super_admin/src/lib/riderMarkers.ts",
+    "value": "Runner",
+    "reason": "Historical missing-name sentinel recognized alongside the new Delivery partner label."
+  },
+  {
+    "file": "web/super_admin/src/lib/menuCsv.ts",
+    "value": "dish",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/types.ts",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "backend/src/routes/uploads.ts",
+    "value": "dish",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/routes/api.ts",
+    "value": "../config/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/routes/api.ts",
+    "value": "/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/routes/api.ts",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "backend/src/routes/orders.ts",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "backend/src/routes/orders.ts",
+    "value": "restaurants",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/routes/orders.ts",
+    "value": "/orders/:id/verify-gate-otp",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/routes/partners.ts",
+    "value": "../config/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/routes/products.ts",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "backend/src/routes/operations.ts",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "backend/src/routes/geography.ts",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "backend/src/routes/finance.ts",
+    "value": "/admin/finance/by-restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/routes/finance.ts",
+    "value": "/admin/finance/by-dish",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/demo/scenario.ts",
+    "value": "dish/2026/",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/demo/scenario.ts",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "backend/src/services/orderGroups.ts",
+    "value": "restaurants",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/services/orderMaintenance.ts",
+    "value": "Restaurant did not respond",
+    "reason": "Legacy wire/reason sentinel interpreted by released clients; display copy is translated separately."
+  },
+  {
+    "file": "backend/src/services/settlement.ts",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/services/catalogBulk.ts",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/services/pricing.ts",
+    "value": "DISH",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "backend/src/services/vendorLocation.ts",
+    "value": "../config/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/services/categories.ts",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/services/categories.ts",
+    "value": "restaurants",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/services/categories.ts",
+    "value": "dishes",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/services/orderView.ts",
+    "value": "../config/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/services/orderView.ts",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "backend/src/services/dispatch.ts",
+    "value": "../config/campus",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/services/orderFlow.ts",
+    "value": "STUDENT",
+    "reason": "Stable API role/status/type enum; not display copy."
+  },
+  {
+    "file": "backend/src/services/orderFlow.ts",
+    "value": "Another restaurant in your order could not take it",
+    "reason": "Legacy wire/reason sentinel interpreted by released clients; display copy is translated separately."
+  },
+  {
+    "file": "backend/src/services/orderFlow.ts",
+    "value": "Invalid Gate OTP",
+    "reason": "Legacy wire/reason sentinel interpreted by released clients; display copy is translated separately."
+  },
+  {
+    "file": "backend/src/utils/catalog.ts",
+    "value": "restaurant",
+    "reason": "Stable API field, query value, route, map marker ID or widget key; not display copy."
+  },
+  {
+    "file": "backend/src/services/push/events.ts",
+    "value": "Another restaurant in your order could not take it",
+    "reason": "Legacy wire/reason sentinel interpreted by released clients; display copy is translated separately."
+  },
+  {
+    "file": "backend/src/services/push/events.ts",
+    "value": "Restaurant did not respond",
+    "reason": "Legacy wire/reason sentinel interpreted by released clients; display copy is translated separately."
+  },
+  {
+    "file": "apps/vendor_app/lib/screens/settlements_screen.dart",
+    "value": "dish-line-$i",
+    "reason": "Stable historical statement-line widget key; financial records are unchanged."
+  },
+  {
+    "file": "backend/src/routes/api.ts",
+    "value": "VIT Student",
+    "reason": "Legacy placeholder rejected by validation; it is not a display fallback."
+  },
+  {
+    "file": "backend/src/routes/orders.ts",
+    "value": "restaurants[",
+    "reason": "Stable validation field path into the legacy JSON array."
+  }
+]

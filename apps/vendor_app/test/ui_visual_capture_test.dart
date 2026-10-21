@@ -13,37 +13,36 @@ import 'package:vendor_app/services/partner_auth_service.dart';
 import 'package:vendor_app/models/dish_model.dart';
 import 'package:vendor_app/models/order_model.dart';
 import '../../../packages/kraveo_ui/test_support/visual_capture.dart';
+import '../../../packages/kraveo_ui/test_support/demo_images.dart';
 import 'support/fakes.dart';
 
 class VisualProductApi extends ProductApi {
-  final products = [
-    for (var i = 0; i < 5; i++)
-      {
-        'id': 'sku-$i',
-        'vendorId': 'visual-store',
-        'name': [
-          'Toned milk',
-          'Whole wheat flour',
-          'Farm eggs',
-          'Rolled oats',
-          'Robusta bananas'
-        ][i],
-        'sku': 'GRO-$i',
-        'unit': 'g',
-        'packSize': '500',
-        'pricePaise': 3200 + i * 1000,
-        'mrpPaise': 4000 + i * 1000,
-        'stockQty': i == 0 ? 3 : 18,
-        'stockVersion': 1,
-        'lowStock': i == 0,
-        'lowStockThreshold': 5,
-        'active': true,
-        'categoryId': 'dairy',
-        'description': 'Test fixture product',
-        'approvalStatus': 'APPROVED',
-        'imageUrls': <String>[]
-      }
-  ];
+  VisualProductApi({this.lowStockExample = false});
+  final bool lowStockExample;
+  List<Map<String, dynamic>> get products => [
+        for (final raw in demoScenario['products'])
+          {
+            'id': 'sku-${raw['id']}',
+            'vendorId': 'visual-store',
+            'name': raw['name'],
+            'sku': 'DEMO-1-${raw['id'].toString().toUpperCase()}',
+            'unit': raw['unit'],
+            'packSize': raw['packSize'],
+            'pricePaise': raw['pricePaise'],
+            'mrpPaise': raw['mrpPaise'],
+            'stockQty':
+                lowStockExample && raw['id'] == 'milk' ? 3 : raw['stockQty'],
+            'stockVersion': 1,
+            'lowStock':
+                lowStockExample && raw['id'] == 'milk' || raw['stockQty'] == 0,
+            'lowStockThreshold': 5,
+            'active': raw['stockQty'] > 0,
+            'categoryId': raw['category'],
+            'description': 'Explicit synthetic demonstration product',
+            'approvalStatus': 'APPROVED',
+            'imageUrls': [demoImageUrl(raw['id'])]
+          }
+      ];
   @override
   Future<Map<String, dynamic>> call(String method, String path,
           [Map<String, dynamic>? body]) async =>
@@ -51,7 +50,10 @@ class VisualProductApi extends ProductApi {
         'success': true,
         'data': path.contains('categories')
             ? [
-                {'id': 'dairy', 'name': 'Dairy'}
+                for (final name in (demoScenario['products'] as List)
+                    .map((p) => p['category'])
+                    .toSet())
+                  {'id': name, 'name': name}
               ]
             : products,
         'nextCursor': null
@@ -64,6 +66,7 @@ void main() {
       'capture vendor production screens with isolated service fixtures',
       (tester) async {
     await prepareVisual(tester);
+    final restoreImages = installDemoImageTransport();
     SharedPreferences.setMockInitialValues({});
     OrderModel visualOrder(String id, String status, {bool milk = true}) {
       final subtotal = milk ? 64.0 : 62.0;
@@ -78,13 +81,13 @@ void main() {
         }
       ])
             ..['subtotal'] = subtotal
-            ..['dropoffHostel'] = 'Indiranagar'
+            ..['dropoffHostel'] = 'Demo Unit C01 · Town Hall area'
             ..['dropoffNotes'] = null
             ..['customer'] = {
               'id': 'visual-customer',
               'name': 'Meera',
               'phone': null,
-              'hostelBlock': 'Indiranagar'
+              'hostelBlock': 'Demo Unit C01 · Town Hall area'
             };
       return OrderModel.fromJson(data)!;
     }
@@ -136,5 +139,6 @@ void main() {
             body: SalesAnalyticsScreen(orders: backend.server.values.toList())),
         'sales');
     controller.dispose();
+    restoreImages();
   }, skip: !captureEnabled);
 }

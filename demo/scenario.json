@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "simulationOnly": true,
+  "namespace": "gzdemo-bengaluru",
+  "city": {
+    "name": "Bengaluru",
+    "state": "Karnataka"
+  },
+  "zone": {
+    "name": "Simulated central Bengaluru service circle",
+    "centerLat": 12.96393155,
+    "centerLng": 77.58425661,
+    "radiusKm": 8,
+    "baseFeePaise": 2500,
+    "perKmFeePaise": 100
+  },
+  "points": [
+    {
+      "label": "Krishnarajendra Market",
+      "lat": 12.96161187,
+      "lng": 77.57527904,
+      "source": "https://github.com/geohacker/bmtc/blob/e9abee5075a214b9ea9706a2860a1af843320c95/data/busstops.geojson",
+      "sourceRecordName": "Krishnarajendra Market",
+      "kind": "published public-transport map anchor; simulation only; not a merchant premises or verified loading entrance",
+      "mapURL": "https://www.openstreetmap.org/?mlat=12.96161187&mlon=77.57527904#map=18/12.96161187/77.57527904"
+    },
+    {
+      "label": "Shivajinagar Bus Station",
+      "lat": 12.98368012,
+      "lng": 77.6035693,
+      "source": "https://github.com/geohacker/bmtc/blob/e9abee5075a214b9ea9706a2860a1af843320c95/data/busstops.geojson",
+      "sourceRecordName": "Shivajinagar Bus Station",
+      "kind": "published public-transport map anchor; simulation only; not a merchant premises or verified loading entrance",
+      "mapURL": "https://www.openstreetmap.org/?mlat=12.98368012&mlon=77.6035693#map=18/12.98368012/77.6035693"
+    },
+    {
+      "label": "Town Hall",
+      "lat": 12.96393155,
+      "lng": 77.58425661,
+      "source": "https://github.com/geohacker/bmtc/blob/e9abee5075a214b9ea9706a2860a1af843320c95/data/busstops.geojson",
+      "sourceRecordName": "Town Hall",
+      "kind": "published public-transport map anchor; simulation only; not a merchant premises or verified loading entrance",
+      "mapURL": "https://www.openstreetmap.org/?mlat=12.96393155&mlon=77.58425661#map=18/12.96393155/77.58425661"
+    }
+  ],
+  "stores": [
+    {
+      "name": "Grozo Demo Market One \u00b7 Simulated",
+      "point": 0,
+      "pinCode": "560002"
+    },
+    {
+      "name": "Grozo Demo Market Two \u00b7 Simulated",
+      "point": 1,
+      "pinCode": "560051"
+    }
+  ],
+  "addresses": [
+    {
+      "point": 2,
+      "pinCode": "560002",
+      "houseNumber": "DEMO Unit C01 (simulated)"
+    },
+    {
+      "point": 1,
+      "pinCode": "560051",
+      "houseNumber": "DEMO Unit C02 (simulated)"
+    }
+  ],
+  "products": [
+    {
+      "id": "milk",
+      "name": "Toned milk",
+      "category": "Dairy",
+      "packSize": "500",
+      "unit": "ml",
+      "pricePaise": 3200,
+      "mrpPaise": 4000,
+      "stockQty": 24
+    },
+    {
+      "id": "bananas",
+      "name": "Bananas",
+      "category": "Fruit and vegetables",
+      "packSize": "500",
+      "unit": "g",
+      "pricePaise": 4500,
+      "mrpPaise": 5000,
+      "stockQty": 24
+    },
+    {
+      "id": "flour",
+      "name": "Whole wheat flour",
+      "category": "Staples",
+      "packSize": "1",
+      "unit": "kg",
+      "pricePaise": 6200,
+      "mrpPaise": 7000,
+      "stockQty": 24
+    },
+    {
+      "id": "eggs",
+      "name": "Farm eggs",
+      "category": "Dairy",
+      "packSize": "6",
+      "unit": "pcs",
+      "pricePaise": 5500,
+      "mrpPaise": 6000,
+      "stockQty": 24
+    },
+    {
+      "id": "rice",
+      "name": "Long grain rice",
+      "category": "Staples",
+      "packSize": "1",
+      "unit": "kg",
+      "pricePaise": 8500,
+      "mrpPaise": 9500,
+      "stockQty": 24
+    },
+    {
+      "id": "bread",
+      "name": "Sandwich bread",
+      "category": "Bakery",
+      "packSize": "400",
+      "unit": "g",
+      "pricePaise": 4500,
+      "mrpPaise": 5000,
+      "stockQty": 24
+    },
+    {
+      "id": "oil",
+      "name": "Cooking oil",
+      "category": "Cooking essentials",
+      "packSize": "1",
+      "unit": "l",
+      "pricePaise": 14500,
+      "mrpPaise": 16000,
+      "stockQty": 24
+    },
+    {
+      "id": "biscuits",
+      "name": "Plain biscuits",
+      "category": "Snacks",
+      "packSize": "200",
+      "unit": "g",
+      "pricePaise": 4000,
+      "mrpPaise": 4500,
+      "stockQty": 24
+    },
+    {
+      "id": "tea",
+      "name": "Black tea leaves",
+      "category": "Beverages",
+      "packSize": "250",
+      "unit": "g",
+      "pricePaise": 12000,
+      "mrpPaise": 13500,
+      "stockQty": 24
+    },
+    {
+      "id": "oranges",
+      "name": "Oranges",
+      "category": "Fruit and vegetables",
+      "packSize": "500",
+      "unit": "g",
+      "pricePaise": 6000,
+      "mrpPaise": 7000,
+      "stockQty": 24
+    },
+    {
+      "id": "cleaner",
+      "name": "Household cleaning spray",
+      "category": "Household essentials",
+      "packSize": "500",
+      "unit": "ml",
+      "pricePaise": 10000,
+      "mrpPaise": 12000,
+      "stockQty": 24
+    },
+    {
+      "id": "tomatoes",
+      "name": "Tomatoes",
+      "category": "Fruit and vegetables",
+      "packSize": "500",
+      "unit": "g",
+      "pricePaise": 2800,
+      "mrpPaise": 3500,
+      "stockQty": 0
+    }
+  ]
+}

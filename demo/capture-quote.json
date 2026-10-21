@@ -1,0 +1,54 @@
+{
+  "source": "Read-only quoteOrder service result from the isolated synthetic demo database. This is not an authenticated customer HTTP session or payment.",
+  "address": {
+    "id": "gzdemo-bengaluru-student-1-address",
+    "customerId": "gzdemo-bengaluru-student-1",
+    "cityId": "gzdemo-bengaluru",
+    "label": "Demo address · Simulated",
+    "country": "IN",
+    "pinCode": "560002",
+    "locality": "Town Hall",
+    "houseNumber": "DEMO Unit C01 (simulated)",
+    "street": "Town Hall",
+    "landmark": null,
+    "instructions": "Simulation only. Do not send a real delivery.",
+    "lat": 12.96393155,
+    "lng": 77.58425661,
+    "isDefault": true,
+    "createdAt": "2026-10-21T04:01:46.810Z",
+    "updatedAt": "2026-10-21T04:01:46.810Z",
+    "city": {
+      "id": "gzdemo-bengaluru",
+      "code": "gzdemo-bengaluru",
+      "name": "Bengaluru",
+      "state": "Karnataka",
+      "country": "IN",
+      "active": true,
+      "createdAt": "2026-10-21T04:01:46.205Z"
+    }
+  },
+  "quote": {
+    "restaurantCount": 1,
+    "subtotal": 77,
+    "fees": {
+      "total": 26.01,
+      "base": 26.01,
+      "baseWaived": false,
+      "extraRestaurants": 0,
+      "extraRestaurantFee": 0,
+      "extraTotal": 0
+    },
+    "discount": 0,
+    "couponCode": null,
+    "total": 103.01,
+    "perRestaurant": [
+      {
+        "vendorId": "gzdemo-bengaluru-store-1",
+        "vendorName": "Grozo Demo Market One · Simulated",
+        "subtotal": 77,
+        "fee": 26.01
+      }
+    ],
+    "maxRestaurants": 3
+  }
+}

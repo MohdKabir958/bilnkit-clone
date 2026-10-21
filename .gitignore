@@ -66,3 +66,8 @@ deploy/secrets/
 
 # Generated local pilot credentials and uploaded images
 backend/var/
+
+# Reproducible QA evidence is intentionally versioned; other logs remain ignored.
+!Docs/qa/backend-full-run.log
+!Docs/qa/backend-initial-attempt.log
+__pycache__/

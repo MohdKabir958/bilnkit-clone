@@ -9,11 +9,13 @@ import 'package:driver_app/screens/active_delivery.dart';
 import 'package:driver_app/screens/earnings_history.dart';
 import 'package:driver_app/services/partner_auth_service.dart';
 import 'package:driver_app/services/rider_orders_api.dart';
+import 'package:driver_app/services/location_source.dart';
 import 'package:driver_app/state/rider_controller.dart';
 import 'package:driver_app/widgets/gate_otp_dialog.dart';
 import 'package:driver_app/widgets/swipe_accept_card.dart';
 import 'package:driver_app/models/order_view.dart';
 import '../../../packages/kraveo_ui/test_support/visual_capture.dart';
+import '../../../packages/kraveo_ui/test_support/demo_images.dart';
 import 'support/fake_rider.dart';
 
 void main() {
@@ -38,7 +40,11 @@ void main() {
             onSubmit: (_, __) async =>
                 const LoginResult.failure(LoginFailure.server)),
         'login');
+    final pickup = demoScenario['points'][0] as Map;
+    final drop = demoScenario['points'][2] as Map;
     final fake = FakeRider();
+    fake.location.reading = LocationReading.fix(
+        (pickup['lat'] as num).toDouble(), (pickup['lng'] as num).toDouble());
     await show(DriverHomeScreen(services: fake.services), 'home');
     await show(
         Scaffold(
@@ -48,8 +54,15 @@ void main() {
                     child: OfferCard(
                         order: OrderView.tryParse(orderJson(
                             pool: true,
-                            vendorName: 'Green Basket Market',
-                            drop: 'Indiranagar')
+                            vendorName: demoScenario['stores'][0]['name'],
+                            drop: 'Demo Unit C01 · Town Hall area',
+                            vendorExtra: {
+                              'address':
+                                  'Simulated pickup — K.R. Market area, Bengaluru 560002',
+                              'lat': pickup['lat'],
+                              'lng': pickup['lng'],
+                              'hasLocation': true
+                            })
                           ..['dispatchOffer'] = {
                             'id': 'isolated-visual-offer',
                             'expiresAt': testNow
@@ -60,15 +73,47 @@ void main() {
                         onAccepted: () {},
                         now: testNow)))),
         'delivery-offer');
-    final active = order(
+    final active = OrderView.tryParse(orderJson(
         status: 'READY_FOR_PICKUP',
-        vendorName: 'Green Basket Market',
-        drop: 'Indiranagar');
+        vendorName: demoScenario['stores'][0]['name'],
+        drop: 'Demo Unit C01 · Town Hall area',
+        vendorExtra: {
+          'address': 'Simulated pickup — K.R. Market area, Bengaluru 560002',
+          'lat': pickup['lat'],
+          'lng': pickup['lng'],
+          'hasLocation': true
+        },
+        dropoff: {
+          'name': 'Demo address · Town Hall area',
+          'lat': drop['lat'],
+          'lng': drop['lng']
+        })
+      ..['addressSnapshot'] = {'lat': drop['lat'], 'lng': drop['lng']})!;
     fake.api.active = ApiResult.ok([active]);
     final controller = RiderController(fake.services, myIds: {'u-rider'});
     await controller.start();
     await show(ActiveDeliveryScreen(controller: controller, onGoHome: () {}),
         'active-delivery');
+    fake.api.active = ApiResult.ok([
+      OrderView.tryParse(orderJson(
+          status: 'PICKED_UP',
+          vendorName: demoScenario['stores'][0]['name'],
+          drop: 'Demo Unit C01 · Town Hall area',
+          vendorExtra: {
+            'address': 'Simulated pickup — K.R. Market area, Bengaluru 560002',
+            'lat': pickup['lat'],
+            'lng': pickup['lng'],
+            'hasLocation': true
+          },
+          dropoff: {
+            'name': 'Demo address · Town Hall area',
+            'lat': drop['lat'],
+            'lng': drop['lng']
+          }))!
+    ]);
+    await controller.refreshActive();
+    await show(ActiveDeliveryScreen(controller: controller, onGoHome: () {}),
+        'delivery-in-transit');
     await show(
         GateOtpDialog(
             orderRef: 'GZ-301',
