@@ -12,6 +12,12 @@
     "overflow": false
   },
   {
+    "visibleProductImages": {
+      "count": 4,
+      "allDecoded": true
+    }
+  },
+  {
     "screen": "inventory",
     "width": 1280,
     "title": "Products and inventory",
@@ -168,15 +174,15 @@
     "metrics": [
       {
         "name": "Nodes",
-        "value": 2186
+        "value": 2642
       },
       {
         "name": "LayoutCount",
-        "value": 341
+        "value": 505
       },
       {
         "name": "JSHeapUsedSize",
-        "value": 21393032
+        "value": 14443000
       }
     ]
   }

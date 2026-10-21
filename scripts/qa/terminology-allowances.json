@@ -618,5 +618,10 @@
     "file": "backend/src/routes/orders.ts",
     "value": "restaurants[",
     "reason": "Stable validation field path into the legacy JSON array."
+  },
+  {
+    "file": "packages/kraveo_ui/lib/src/tokens/colors.dart",
+    "value": "GATE",
+    "reason": "Backend status substring parser; the visible status label is At your door."
   }
 ]

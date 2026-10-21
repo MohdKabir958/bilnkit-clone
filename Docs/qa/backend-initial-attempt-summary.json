@@ -1,0 +1,19 @@
+{
+  "database": "grozo_final_1792554733571_test",
+  "databaseHost": "127.0.0.1",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "16 (local; see setup/migration log)",
+  "command": "node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/qa/backend-full-run.json",
+  "invocations": 1,
+  "passed": 1062,
+  "failed": 2,
+  "skipped": 0,
+  "total": 1064,
+  "suites": 43,
+  "durationMs": 474920,
+  "exitCode": 1,
+  "startedAt": "2026-10-21T03:52:22.875Z",
+  "finishedAt": "2026-10-21T04:00:17.812Z"
+}

@@ -1,0 +1,9 @@
+{
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "node": "v24.19.0",
+  "npm": "11.9.0",
+  "platform": "linux",
+  "arch": "x64",
+  "prisma": "5.22.0",
+  "jest": "30.4.2"
+}

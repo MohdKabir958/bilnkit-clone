@@ -9,7 +9,7 @@ os.chdir(root)
 pattern=re.compile(r'\b(campus|hostels?|restaurants?|kitchens?|students?|runners?|dishes|dish|gate)\b|After you pay you get',re.I)
 excluded={'backend/src/store.ts':'Unreferenced inherited compatibility fixture; not imported by API or the demo seed.', 'backend/src/config/campus.ts':'Historical coordinate lookup for already-stored legacy orders only. New demo orders use structured snapshots.'}
 rows=[]
-paths=list(Path('apps').glob('*/lib/**/*.dart'))+list(Path('apps').glob('*/test/ui_visual_capture_test.dart'))
+paths=list(Path('apps').glob('*/lib/**/*.dart'))+list(Path('packages/kraveo_ui/lib').rglob('*.dart'))+list(Path('apps').glob('*/test/ui_visual_capture_test.dart'))
 for p in paths:
  s=p.read_text()
  for a,b,value in literals(s):

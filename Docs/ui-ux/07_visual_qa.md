@@ -1,3 +1,9 @@
+# Latest final-polish verification
+
+21 October 2026: [complete single backend run](../qa/final-backend-regression.md), [current application verification](../qa/final-app-verification.md), [demo scenario and rights](../demo/README.md). The captures and comparison PDF have been refreshed with decoded product imagery, doorstep wording, selected demo addresses and no coins controls. There are now 28 before and 53 after captures.
+
+The section below records the original 20 October redesign verification; its backend aggregate and APK builds are historical, superseded by the linked current results.
+
 # Visual QA and verification
 
 Verified on 2026-10-20. Baseline: `e1afe6e`. Evidence inventory: [screenshot-manifest.json](screenshot-manifest.json). Machine-readable outcomes: [verification-results.json](verification-results.json).

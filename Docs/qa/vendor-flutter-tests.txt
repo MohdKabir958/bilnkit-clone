@@ -1,0 +1,842 @@
+Resolving dependencies...
+Downloading packages...
+  _flutterfire_internals 1.3.77 (1.3.78 available)
+  archive 4.3.0 (4.5.2 available)
+  cli_util 0.4.2 (0.6.0 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.1.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  file_selector_macos 0.9.5+1 (0.9.5+2 available)
+  firebase_core 4.15.0 (5.0.0 available)
+  firebase_core_web 3.12.0 (4.0.0 available)
+  firebase_messaging 16.7.0 (17.0.0 available)
+  firebase_messaging_platform_interface 4.10.0 (4.11.0 available)
+  firebase_messaging_web 4.2.5 (4.3.0 available)
+  flutter_lints 3.0.2 (6.0.0 available)
+  flutter_local_notifications 22.3.1 (22.3.2 available)
+  flutter_local_notifications_linux 8.0.1 (8.0.2 available)
+  flutter_secure_storage 10.3.4 (11.2.0 available)
+  flutter_secure_storage_darwin 0.3.2 (0.4.3 available)
+  geolocator 11.1.0 (14.1.2 available)
+  geolocator_android 4.6.2 (5.2.1 available)
+  geolocator_apple 2.3.14 (2.4.2 available)
+  geolocator_platform_interface 4.4.0 (4.4.1 available)
+  geolocator_web 3.0.0 (4.1.4 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.10.1 (4.12.0 available)
+  image_picker_ios 0.8.13+10 (0.8.13+12 available)
+  jni 1.0.3 (1.1.0 available)
+  jni_flutter 1.0.3 (1.0.4+1 available)
+  js 0.6.7 (0.7.2 available)
+  lints 3.0.0 (6.1.0 available)
+  lucide_icons_flutter 3.1.20 (4.0.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.0 (1.19.0 available)
+  objective_c 9.5.0 (9.6.2 available)
+  package_info_plus 10.2.1 (10.2.2 available)
+  permission_handler 11.4.0 (13.0.2 available)
+  permission_handler_android 12.1.0 (14.1.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  shared_preferences_android 2.4.28 (2.5.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.0 available)
+  socket_io_client 2.0.3+1 (3.1.6 available)
+  socket_io_common 2.0.3 (3.1.1 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  synchronized 3.4.2 (3.5.0 available)
+  test_api 0.7.11 (0.7.15 available)
+  timezone 0.11.1 (0.11.2 available)
+  vector_math 2.2.0 (2.4.3 available)
+  vm_service 15.3.0 (15.4.0 available)
+  wakelock_plus 1.8.0 (1.8.1 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+54 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart
+00:00 +0: /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart: OrderView parsing a full vendor view parses every field
+00:00 +1: /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart: OrderView parsing customer: first name only, even if a server sends a full name; never a phone
+00:00 +2: /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart: OrderView parsing every status string maps, unknown stays unknown, and the wire value round-trips
+00:00 +3: /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart: OrderView parsing unpaid orders are not visible to the restaurant; cancelled-after-paid ones are
+00:00 +4: /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart: OrderView parsing malformed payloads return null instead of throwing
+00:00 +5: /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart: OrderView parsing merge rule: newer updatedAt wins, older loses, terminal never reopens, equal time never goes back
+00:00 +6: /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart: OrderView parsing menu items parse from GET /menus/:vendorId
+00:00 +7: /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart: fixtures contract-derived vendor samples (test/fixtures/vendor_order_samples.json) parse
+00:00 +8: /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart: fixtures every vendor-facing sample (REST + socket) parses and respects the vendor visibility rules
+00:00 +9: /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart: fixtures other roles' samples parse without crashing; unpaid ones are never shown to the kitchen
+00:00 +10: /workspace/bilnkit-clone/apps/vendor_app/test/order_model_test.dart: fixtures socket sample shapes: new_order_alert is a full OrderView; order_unavailable is just {id}
+00:03 +11: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: (setUpAll)
+00:03 +11: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutAccount (real fixtures) a UPI account: nothing masked, no last 4
+00:03 +12: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutAccount (real fixtures) a verified bank account is only ever "Account ending 7890"
+00:03 +13: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutAccount (real fixtures) even if a server sent a whole number, only the last 4 digits are kept
+00:03 +14: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutAccount (real fixtures) no method or not an object: not an account
+00:03 +15: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutAccount (real fixtures) PayoutInput bodies carry only the fields of their method, and its text never has the number
+00:03 +16: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: payout validation (the server rules) UPI id: trimmed and lower-cased, needs name@handle
+00:03 +17: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: payout validation (the server rules) account holder: 2 to 80 letters, spaces and . ' -; required only for a bank account
+00:03 +18: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: payout validation (the server rules) account number: digits only, 6 to 20; spaces and dashes pasted from a statement are dropped
+00:03 +19: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: payout validation (the server rules) the number must be typed twice and match
+00:03 +20: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: payout validation (the server rules) IFSC: upper-cased, 4 letters + 0 + 6 letters or digits
+00:03 +21: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: payout validation (the server rules) bank name is optional, 2 to 60 characters
+00:03 +22: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: payout validation (the server rules) PayoutForm: UPI builds a clean request; blank holder is left out
+00:03 +23: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: payout validation (the server rules) PayoutForm: bank reports every wrong field, and mismatch only once the number itself is valid
+00:03 +24: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: payout validation (the server rules) PayoutForm: UPI fields typed earlier do not block a bank form (and the other way round)
+00:03 +25: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: Settlement models (real fixtures) the list: statuses, amounts, UTR and paid date
+00:03 +26: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: Settlement models (real fixtures) the detail: dish lines, orders, adjustments
+00:03 +27: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: Settlement models (real fixtures) a word we do not know counts as pending, never as paid; unreadable entries are dropped
+00:03 +28: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: Settlement models (real fixtures) the models have no place for customer prices, fees or commission, even when a server sent them
+00:03 +29: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: India dates an instant is shown as its India (UTC+5:30) date
+00:03 +30: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: India dates the period is one date when it is one India day, else a range
+00:03 +31: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: HTTP: payout API GET /partner/payout-account with the bearer token: {data: null} is a success with nothing saved
+00:04 +32: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: HTTP: payout API GET reads a bank account masked
+00:04 +33: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: HTTP: payout API a 200 without `data` or with an unreadable one is an error, not "nothing saved"
+00:04 +34: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: HTTP: payout API PUT sends exactly the UPI fields and reads the answer (changed + masked account)
+00:04 +35: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: HTTP: payout API PUT bank sends the number once; the answer is masked
+00:04 +36: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: HTTP: payout API 503 PAYOUT_ENCRYPTION_NOT_CONFIGURED becomes the plain "use UPI or try later" text
+00:04 +37: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: HTTP: payout API 400 shows the server sentence; 404 (old server), 403, 429, offline and timeout have their own words
+00:04 +38: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: HTTP: payout API GET /partner/settlements?page&pageSize reads the page; an unreadable entry is counted, not shown
+00:04 +39: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: HTTP: payout API GET /partner/settlements/:id reads the detail; ids are encoded
+00:04 +40: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: HTTP: payout API a 401 goes through the same session hook as every other call
+00:04 +41: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutController load: nothing saved -> missing + banner; saved -> no banner
+00:04 +42: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutController a failed first read is not "missing": no banner, a message, and a retry works
+00:04 +43: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutController a failed re-read keeps the saved account
+00:04 +44: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutController the banner can be closed for this login and does not come back on its own
+00:04 +45: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutController save: stores the masked account, remembers the answer, and the banner goes
+00:04 +46: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutController a bank save keeps only the last 4 digits anywhere in the controller
+00:04 +47: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutController a double tap sends ONE request (the second returns false at once)
+00:04 +48: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutController saving the same details again says "not changed" and keeps a verified account verified
+00:04 +49: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutController saving DIFFERENT details gives an unverified account (verification restarts)
+00:04 +50: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutController 503 encryption missing: the save fails with the plain message and the old details stay
+00:04 +51: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsController load: first page, then older pages appended without duplicates
+00:04 +52: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsController empty list is an empty state, not an error
+00:04 +53: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsController a failed first load keeps loadedOnce false; retry loads; a failed refresh keeps the old list
+00:04 +54: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsController a failed "older" page leaves the list and can be tried again
+00:04 +55: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsController two loads at once make one request
+00:04 +56: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsController detail controller: loads, and reports a failure with a retry
+00:04 +57: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen loading: a spinner until the server answers
+00:06 +58: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen loading: a spinner until the server answers
+00:06 +59: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen loading: a spinner until the server answers
+00:06 +60: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen loading: a spinner until the server answers
+00:06 +61: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen loading: a spinner until the server answers
+00:06 +62: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen loading: a spinner until the server answers
+00:08 +63: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen error: plain message and a Retry that works
+00:08 +64: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen nothing saved: the form with the UPI / Bank choice and no saved card
+00:09 +65: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen UPI: a wrong id is refused before sending; a right one saves and shows the saved card, not verified
+00:10 +66: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login no stored token -> login screen, no network call for the session check
+[Grozo Audio Engine] alarm stopped
+00:11 +67: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen Bank: IFSC is upper-cased as typed, the number must be typed twice, every wrong field is shown
+00:11 +68: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login validation: bad phone and empty password never reach the server
+[Grozo Audio Engine] alarm stopped
+00:12 +69: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login validation: bad phone and empty password never reach the server
+00:12 +70: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen saved + verified: "Verified by Grozo"; Change details warns that verification restarts; Cancel returns without saving
+00:12 +70: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login phone field keeps 10 digits from a pasted +91 number; password can be shown
+[Grozo Audio Engine] alarm stopped
+00:13 +71: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login phone field keeps 10 digits from a pasted +91 number; password can be shown
+00:13 +72: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen changing a verified UPI id to another one shows "Not verified yet" afterwards; the same id says already saved
+00:13 +72: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login success: sends phone + password, saves token and basics, shows the restaurant
+[Grozo Audio Engine] alarm stopped
+00:14 +73: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login success: sends phone + password, saves token and basics, shows the restaurant
+00:14 +74: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login success: sends phone + password, saves token and basics, shows the restaurant
+00:14 +75: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen a server sentence for a refused field is shown plainly
+00:14 +75: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login busy state: button shows progress and a second tap is ignored
+[Grozo Audio Engine] alarm stopped
+00:14 +76: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login busy state: button shows progress and a second tap is ignored
+00:15 +77: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login busy state: button shows progress and a second tap is ignored
+00:15 +78: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen no overflow at 360x640, text x1.3, with the keyboard open (form, bank form, saved card)
+00:15 +78: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login 401: wrong phone or password, password cleared, phone kept
+[Grozo Audio Engine] alarm stopped
+00:15 +79: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen no overflow at 360x640, text x1.3, with the keyboard open (form, bank form, saved card)
+00:15 +79: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login 429: live countdown disables the button, then re-enables
+[Grozo Audio Engine] alarm stopped
+00:16 +80: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen no overflow at 360x640, text x1.3, with the keyboard open (form, bank form, saved card)
+00:16 +80: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login 429: editing to a different number lifts the lock display
+[Grozo Audio Engine] alarm stopped
+00:16 +81: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login 429: editing to a different number lifts the lock display
+00:16 +82: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen no overflow at 360x640, text x2.0, with the keyboard open (form, bank form, saved card)
+00:16 +82: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor login 403 wrong app, offline and server error each get a clear message
+[Grozo Audio Engine] alarm stopped
+00:17 +83: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen no overflow at 360x640, text x2.0, with the keyboard open (form, bank form, saved card)
+00:17 +84: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen no overflow at 360x640, text x2.0, with the keyboard open (form, bank form, saved card)
+00:17 +84: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor session gate 401 on the session check clears the token and shows login
+[Grozo Audio Engine] alarm stopped
+00:17 +85: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutDetailsScreen no overflow at 360x640, text x2.0, with the keyboard open (form, bank form, saved card)
+00:17 +86: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor session gate offline session check keeps the token and offers Retry
+00:17 +87: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen loading: a spinner
+00:17 +87: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor session gate a token that belongs to another role does not open the app
+[Grozo Audio Engine] alarm stopped
+00:17 +88: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor session gate a token that belongs to another role does not open the app
+00:17 +89: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor session gate a token that belongs to another role does not open the app
+00:17 +90: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen error: message + Retry, then the list
+00:17 +90: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor session gate 401 from any authenticated call -> login with a Session expired snackbar
+[Grozo Audio Engine] alarm stopped
+00:17 +91: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor session gate 401 from any authenticated call -> login with a Session expired snackbar
+[Grozo Audio Engine] alarm stopped
+[Grozo Audio Engine] alarm stopped
+00:17 +92: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor session gate 401 from any authenticated call -> login with a Session expired snackbar
+00:18 +93: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen only restaurant-side wording: nothing about customer prices, fees, tax or commission anywhere
+00:18 +93: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor logout help sheet -> Log out -> confirm clears everything and returns to login
+[Grozo Audio Engine] alarm stopped
+00:18 +94: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor logout help sheet -> Log out -> confirm clears everything and returns to login
+00:18 +95: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor logout help sheet -> Log out -> confirm clears everything and returns to login
+00:18 +96: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor logout help sheet -> Log out -> confirm clears everything and returns to login
+[Grozo Audio Engine] alarm stopped
+[Grozo Audio Engine] alarm stopped
+00:18 +97: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen "Show older payouts" loads the next page
+00:18 +98: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor logout "Stay logged in" keeps the session
+[Grozo Audio Engine] alarm stopped
+00:18 +99: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor logout "Stay logged in" keeps the session
+00:19 +100: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor logout "Stay logged in" keeps the session
+00:19 +101: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen detail error: message + Retry (nothing known yet)
+00:19 +102: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: VendorApiService 401 handling a 401 from an authenticated call fires onUnauthorized; a 200 does not
+00:19 +103: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen a truncated order list says so
+00:19 +104: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen a truncated order list says so
+00:19 +105: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen a truncated order list says so
+00:19 +106: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen a truncated order list says so
+00:19 +107: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor auth layout (360x640 @ 1.3x) login with a lock banner, validation errors and shown password does not overflow
+[Grozo Audio Engine] alarm stopped
+00:19 +108: /workspace/bilnkit-clone/apps/vendor_app/test/auth_test.dart: Vendor auth layout (360x640 @ 1.3x) login with a lock banner, validation errors and shown password does not overflow
+00:19 +109: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen no overflow at 360x640, text x2.0 (list, detail, empty, error)
+00:20 +110: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen no overflow at 360x640, text x2.0 (list, detail, empty, error)
+00:20 +111: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen empty state does not overflow at 360x640, text x2
+00:20 +112: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen error state does not overflow at 360x640, text x2
+00:20 +113: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: SettlementsScreen no overflow at 360x640 with the system text at x2 and NO app cap (stress)
+00:20 +114: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutBanner shown while details are missing; closing hides it; "Add payout details" opens the screen
+00:20 +115: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutBanner closing the banner removes it for this session
+00:20 +116: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutBanner not shown when the read failed (unknown is not "missing") or details exist
+00:20 +117: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutBanner no overflow at 360x640, text x1.3
+00:21 +118: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: PayoutBanner no overflow at 360x640, text x2.0
+00:21 +119: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: inside the restaurant app Earnings tab: reminder banner while nothing is saved; no payout call before that tab is opened
+[Grozo Audio Engine] alarm stopped
+00:21 +120: /workspace/bilnkit-clone/apps/vendor_app/test/store_profile_test.dart: loads and saves the owned store profile without exposing admin fields
+00:21 +120: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: inside the restaurant app no banner when details are already saved
+[Grozo Audio Engine] alarm stopped
+00:22 +121: /workspace/bilnkit-clone/apps/vendor_app/test/store_profile_test.dart: loads and saves the owned store profile without exposing admin fields
+00:22 +121: /workspace/bilnkit-clone/apps/vendor_app/test/payout_test.dart: inside the restaurant app the help sheet has "Payout details" and "My settlements", and both open
+[Grozo Audio Engine] alarm stopped
+00:22 +122: /workspace/bilnkit-clone/apps/vendor_app/test/store_profile_test.dart: loads and saves the owned store profile without exposing admin fields
+00:23 +123: loading /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart
+00:23 +123: /workspace/bilnkit-clone/apps/vendor_app/test/store_profile_test.dart: address changes require confirmation; failures retain edits and successful retry explains coverage review
+00:24 +124: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: (setUpAll)
+00:24 +124: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: VE-01 re-sent application (HTTP shape) a 200 WITHOUT a user in the body is a success (the old server shape)
+00:25 +125: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: VE-01 re-sent application (HTTP shape) a 200 WITH a user (the new server shape) is a success and carries the session
+00:25 +126: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: VE-01 re-sent application (HTTP shape) real failures are still failures (401, 400, 5xx, even an empty 200 body counts as accepted)
+00:25 +127: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: VE-01 re-sent application (HTTP shape) sign-up (new account) still needs a token and a user
+00:25 +128: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: VE-01 session after a re-send a 200 without a user keeps the owner signed in, marks the application pending and re-reads the profile
+00:25 +129: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: VE-01 session after a re-send even when the profile re-read fails (offline), the owner is shown as pending, not as an error
+00:25 +130: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: VE-01 session after a re-send the form closes with no "Grozo is having trouble" box when the answer has no user
+00:25 +130: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start server says hasLocation:false: the sheet opens by itself, once; the banner stays after "Not now"
+[Grozo Audio Engine] alarm stopped
+00:27 +131: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start server says hasLocation:false: the sheet opens by itself, once; the banner stays after "Not now"
+00:27 +132: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start server says hasLocation:false: the sheet opens by itself, once; the banner stays after "Not now"
+00:28 +133: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: VE-02 only edited fields are sent; the profile is loaded after login the edit form posts only what the owner changed (the PUT body)
+00:28 +133: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start hasLocation:true: no sheet, no banner
+[Grozo Audio Engine] alarm stopped
+00:28 +134: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start hasLocation:true: no sheet, no banner
+00:28 +135: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: VE-02 only edited fields are sent; the profile is loaded after login the edit form with unknown stored details (a login answer without them) sends no empty category / FSSAI
+00:28 +135: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start an older server that sends no location fields: nobody is nagged (and there is no settings row)
+[Grozo Audio Engine] alarm stopped
+00:29 +136: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: VE-02 only edited fields are sent; the profile is loaded after login the edit form with unknown stored details (a login answer without them) sends no empty category / FSSAI
+00:29 +136: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start a pending application: the sheet and the banner show on the status screen too
+[Grozo Audio Engine] alarm stopped
+00:29 +137: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start a pending application: the sheet and the banner show on the status screen too
+00:29 +138: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start a pending application: the sheet and the banner show on the status screen too
+00:29 +139: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start a pending application: the sheet and the banner show on the status screen too
+00:29 +139: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-03 the session ending while the takeover is open closes it and shows the login screen
+[Grozo Audio Engine] alarm stopped
+00:29 +140: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-03 the session ending while the takeover is open closes it and shows the login screen
+00:29 +140: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start rejected or suspended: nothing about location (the server would refuse the save)
+[Grozo Audio Engine] alarm stopped
+00:29 +141: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-03 the session ending while the takeover is open closes it and shows the login screen
+00:29 +141: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: prompt once per start the banner is the way back in after "Not now"
+[Grozo Audio Engine] alarm stopped
+00:30 +141: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-03 the session ending while the takeover is open closes it and shows the login screen
+[Grozo Audio Engine] alarm stopped
+[Grozo Audio Engine] alarm stopped
+00:31 +142: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-03 the session ending while the takeover is open closes it and shows the login screen
+00:31 +142: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: saving Detect -> check the result -> Save: PUT with lat/lng/accuracy, the profile is refreshed, the banner goes
+[Grozo Audio Engine] alarm stopped
+00:31 +143: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: saving Detect -> check the result -> Save: PUT with lat/lng/accuracy, the profile is refreshed, the banner goes
+00:31 +143: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-03 a takeover whose controller was disposed closes itself (no dead screen)
+[Grozo Audio Engine] alarm stopped
+00:31 +144: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: saving Detect -> check the result -> Save: PUT with lat/lng/accuracy, the profile is refreshed, the banner goes
+00:31 +144: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-04 Grozo cancels an order in the kitchen: a notice tells the cook to stop, and the tray notification is removed
+[Grozo Audio Engine] alarm stopped
+00:32 +145: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: saving Detect -> check the result -> Save: PUT with lat/lng/accuracy, the profile is refreshed, the banner goes
+00:32 +145: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-04 no alert when the restaurant itself declined, or for an order that was never in the kitchen
+[Grozo Audio Engine] alarm stopped
+00:32 +146: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-04 no alert when the restaurant itself declined, or for an order that was never in the kitchen
+00:32 +146: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: saving the pin shows in the app at once even if the profile re-read cannot reach Grozo
+[Grozo Audio Engine] alarm stopped
+00:32 +147: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-04 no alert when the restaurant itself declined, or for an order that was never in the kitchen
+00:32 +147: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: saving the server refuses (400 with a message): the message is shown, nothing changes, the banner stays
+[Grozo Audio Engine] alarm stopped
+00:32 +148: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: saving the server refuses (400 with a message): the message is shown, nothing changes, the banner stays
+00:32 +148: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-06 a new restaurant (closed, empty menu) sees "1. Add a dish  2. Tap OPEN" on the Orders tab
+[Grozo Audio Engine] alarm stopped
+00:33 +149: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: saving the server refuses (400 with a message): the message is shown, nothing changes, the banner stays
+00:33 +149: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-06 opening a store with zero dishes asks first; "Open anyway" opens it
+[Grozo Audio Engine] alarm stopped
+00:33 +150: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-06 opening a store with zero dishes asks first; "Open anyway" opens it
+00:33 +150: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: saving no network: a plain bilingual message, then a retry saves
+[Grozo Audio Engine] alarm stopped
+00:33 +151: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: saving no network: a plain bilingual message, then a retry saves
+00:33 +151: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-06 "Add a dish first" does not open the store and goes to the Menu tab
+[Grozo Audio Engine] alarm stopped
+00:33 +152: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-06 "Add a dish first" does not open the store and goes to the Menu tab
+00:33 +152: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: saving a spot outside India is never sent to the server
+[Grozo Audio Engine] alarm stopped
+00:34 +153: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-06 "Add a dish first" does not open the store and goes to the Menu tab
+00:34 +153: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: account sheet with a location: "Update restaurant location" asks to confirm before it changes where riders go
+[Grozo Audio Engine] alarm stopped
+00:34 +154: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: account sheet with a location: "Update restaurant location" asks to confirm before it changes where riders go
+00:34 +154: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-06 with at least one dish, opening needs no extra question and the card is gone once open
+[Grozo Audio Engine] alarm stopped
+00:34 +155: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: account sheet with a location: "Update restaurant location" asks to confirm before it changes where riders go
+00:34 +155: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-04/06/08/09 small phone (360x640, text x1.3): first-run card, cancel notice, takeover money lines and help sheet do not overflow
+[Grozo Audio Engine] alarm stopped
+00:34 +156: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-04/06/08/09 small phone (360x640, text x1.3): first-run card, cancel notice, takeover money lines and help sheet do not overflow
+00:34 +156: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: account sheet without a location the same row reads "Set restaurant location"
+[Grozo Audio Engine] alarm stopped
+00:34 +157: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-04/06/08/09 small phone (360x640, text x1.3): first-run card, cancel notice, takeover money lines and help sheet do not overflow
+
+Warning: A call to tap() with finder "Found 1 widget with key [<'cancelled-notice-ok'>]: [
+  KButton-[<'cancelled-notice-ok'>](dependencies: [InheritedCupertinoTheme, MediaQuery, _InheritedTheme, _LocalizationsScope-[GlobalKey#1bfea]]),
+]" derived an Offset (Offset(180.0, 822.4)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+Indeed, Offset(180.0, 822.4) is outside the bounds of the root of the render tree, Size(360.0, 640.0).
+The finder corresponds to this RenderBox: RenderOpacity#dee89 relayoutBoundary=up19
+The hit test result at that offset is: HitTestResult(HitTestEntry<HitTestTarget>#40015(_ReusableRenderView#2db7d), HitTestEntry<HitTestTarget>#ce7fd(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      main.<anonymous closure>.<anonymous closure> (file:///workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart:771:20)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+#6      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:34 +157: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: one notice at a time (with push) notifications blocked: the notification banner keeps the slot, the location banner waits
+[Grozo Audio Engine] alarm stopped
+00:35 +158: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-04/06/08/09 small phone (360x640, text x1.3): first-run card, cancel notice, takeover money lines and help sheet do not overflow
+00:35 +159: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: one notice at a time (with push) notifications fine: the location banner replaces the one-time battery hint until the pin exists
+[Grozo Audio Engine] alarm stopped
+00:35 +159: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-08 help opens the persisted support request screen
+[Grozo Audio Engine] alarm stopped
+00:35 +160: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-08 help opens the persisted support request screen
+00:35 +160: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: one notice at a time (with push) never asked about notifications: the explanation comes first, the location sheet only after it
+[Grozo Audio Engine] alarm stopped
+00:35 +161: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: one notice at a time (with push) never asked about notifications: the explanation comes first, the location sheet only after it
+00:35 +161: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-09 the takeover and the Orders card show only "You earn" (no customer total, fees or food split)
+[Grozo Audio Engine] alarm stopped
+00:35 +162: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-09 the takeover and the Orders card show only "You earn" (no customer total, fees or food split)
+00:35 +162: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: one notice at a time (with push) "Not now" on the notification explanation still leads to the location sheet
+[Grozo Audio Engine] alarm stopped
+00:36 +163: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: one notice at a time (with push) "Not now" on the notification explanation still leads to the location sheet
+00:36 +163: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-09 the order card says "You earn" with paise when present
+[Grozo Audio Engine] alarm stopped
+00:36 +164: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-09 the order card says "You earn" with paise when present
+00:36 +164: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: home and sheets do not overflow at 360x640 with 1.3x text
+[Grozo Audio Engine] alarm stopped
+00:36 +165: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: home and sheets do not overflow at 360x640 with 1.3x text
+00:36 +165: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 Back on the home screen asks to press again; a second press within 2 seconds exits
+[Grozo Audio Engine] alarm stopped
+00:36 +166: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 Back on the home screen asks to press again; a second press within 2 seconds exits
+00:36 +166: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: session controller the prompt flag: login asks again, sign-up does not pop a sheet right away, logout clears it
+[Grozo Audio Engine] alarm stopped
+00:36 +167: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 Back on the home screen asks to press again; a second press within 2 seconds exits
+00:36 +167: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: session controller saveRestaurantLocation: success shows the pin locally and re-reads the profile; failure changes nothing
+[Grozo Audio Engine] alarm stopped
+00:36 +168: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 Back on the home screen asks to press again; a second press within 2 seconds exits
+00:36 +168: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: session controller a refresh that only changes the location notifies listeners (so the banner updates)
+[Grozo Audio Engine] alarm stopped
+00:36 +169: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 Back on the home screen asks to press again; a second press within 2 seconds exits
+00:36 +169: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: PartnerSession location fields parsed from /partner/me, kept across a stored round trip
+[Grozo Audio Engine] alarm stopped
+00:36 +170: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 Back on the home screen asks to press again; a second press within 2 seconds exits
+00:36 +170: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: PartnerSession location fields an old server without the fields: hasLocation stays unknown (null), never "false"
+[Grozo Audio Engine] alarm stopped
+00:36 +171: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 Back on the home screen asks to press again; a second press within 2 seconds exits
+00:36 +171: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: PartnerSession location fields hasLocation:false is "needs location"; a non-boolean is ignored
+[Grozo Audio Engine] alarm stopped
+00:36 +172: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 Back on the home screen asks to press again; a second press within 2 seconds exits
+00:36 +172: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: PartnerSession location fields a session stored by an older app version (no location keys) restores with unknown location
+[Grozo Audio Engine] alarm stopped
+00:36 +173: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 Back on the home screen asks to press again; a second press within 2 seconds exits
+00:36 +173: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: PUT /partner/vendor/location sends the caller's coordinates with the JWT and no restaurant id, and reads the answer
+[Grozo Audio Engine] alarm stopped
+00:36 +174: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: PUT /partner/vendor/location sends the caller's coordinates with the JWT and no restaurant id, and reads the answer
+00:36 +174: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+[Grozo Audio Engine] alarm stopped
+00:36 +175: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:36 +175: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: PUT /partner/vendor/location 400 carries the server message; the wording shown is that message
+[Grozo Audio Engine] alarm stopped
+00:36 +176: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:36 +176: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: PUT /partner/vendor/location 403 (not allowed), 429 (rate limit), 404 (old server), 500 and no network all give plain wording
+[Grozo Audio Engine] alarm stopped
+00:36 +177: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:36 +177: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: PUT /partner/vendor/location 401 sends the app to the login screen like every other call
+[Grozo Audio Engine] alarm stopped
+00:36 +178: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:36 +178: /workspace/bilnkit-clone/apps/vendor_app/test/restaurant_location_app_test.dart: PUT /partner/vendor/location a 200 without readable data still counts as saved, with what was sent
+[Grozo Audio Engine] alarm stopped
+00:36 +179: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +180: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +181: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +182: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +183: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +184: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +185: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +186: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +187: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +188: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +189: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +190: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +191: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +192: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +193: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +194: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +195: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +196: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +197: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +198: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +199: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +200: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +201: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +202: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +203: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +204: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +205: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +206: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:37 +207: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:38 +208: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-10 after the 2-second window a single Back only shows the hint again
+00:38 +209: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-11 an order arriving while the app is "inactive" (shade down, permission dialog) still rings; paused does not
+[Grozo Audio Engine] alarm stopped
+00:39 +210: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-11 hidden / paused is background: the in-app alarm stays silent (the system notification rings)
+[Grozo Audio Engine] alarm stopped
+00:39 +211: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: a "Use my current location" button sits under the address, with a bilingual optional hint
+00:39 +211: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: app level VE-15 the wake lock is released when the home screen goes away
+[Grozo Audio Engine] alarm stopped
+00:39 +212: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: a "Use my current location" button sits under the address, with a bilingual optional hint
+00:39 +213: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: a "Use my current location" button sits under the address, with a bilingual optional hint
+00:39 +214: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: a "Use my current location" button sits under the address, with a bilingual optional hint
+00:39 +215: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: a "Use my current location" button sits under the address, with a bilingual optional hint
+00:40 +216: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: a "Use my current location" button sits under the address, with a bilingual optional hint
+00:40 +217: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: a "Use my current location" button sits under the address, with a bilingual optional hint
+00:40 +218: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: a "Use my current location" button sits under the address, with a bilingual optional hint
+00:41 +219: /workspace/bilnkit-clone/apps/vendor_app/test/bugfix_ve_test.dart: VE-07 / VE-08 wording VE-07 a phone already used elsewhere says "another Grozo app or account"
+00:41 +220: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:41 +221: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:41 +222: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:41 +223: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:41 +224: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:41 +225: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:41 +226: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:41 +227: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:41 +228: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:41 +229: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:42 +230: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:43 +231: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:43 +232: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:43 +233: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:43 +234: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:43 +235: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: detect -> check -> "Use this location": a chip "Location captured (about 12 m)" with Change; the signup carries lat/lng/accuracy
+00:44 +236: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: without a location the form works as before and sends no location keys
+00:45 +237: /workspace/bilnkit-clone/apps/vendor_app/test/signup_location_test.dart: Change detects again and replaces the spot
+00:46 +238: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: inventory pages stay separate and load more authenticated products
+00:47 +239: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: inventory pages stay separate and load more authenticated products
+00:47 +240: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: inventory pages stay separate and load more authenticated products
+00:48 +241: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: inventory pages stay separate and load more authenticated products
+00:50 +242: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: inventory pages stay separate and load more authenticated products
+00:50 +243: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: inventory pages stay separate and load more authenticated products
+00:50 +244: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: inventory pages stay separate and load more authenticated products
+00:51 +245: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: inventory pages stay separate and load more authenticated products
+00:51 +246: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: stock retry reuses its request ID and expected version, preserving an offline adjustment
+00:52 +247: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: stock retry reuses its request ID and expected version, preserving an offline adjustment
+00:52 +248: /workspace/bilnkit-clone/apps/vendor_app/test/push_message_test.dart: payload parsing never throws junk in any shape becomes an unknown, non-actionable message
+00:52 +249: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: product write errors preserve the server reason and do not report success
+00:52 +250: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: product write errors preserve the server reason and do not report success
+00:52 +251: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: product write errors preserve the server reason and do not report success
+00:52 +252: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_products_test.dart: product write errors preserve the server reason and do not report success
+00:52 +253: /workspace/bilnkit-clone/apps/vendor_app/test/push_message_test.dart: background handler body NEW_ORDER that already has a notification block is left to Android: no second alarm
+00:52 +254: /workspace/bilnkit-clone/apps/vendor_app/test/push_message_test.dart: background handler body data-only ORDER_CANCELLED_VENDOR shows a quiet update, not the alarm
+00:52 +255: /workspace/bilnkit-clone/apps/vendor_app/test/push_message_test.dart: background handler body unknown event, no order id: nothing shown
+00:52 +256: /workspace/bilnkit-clone/apps/vendor_app/test/push_message_test.dart: background handler body the same order always maps to the same notification id (a repeat replaces, never stacks)
+00:52 +257: /workspace/bilnkit-clone/apps/vendor_app/test/push_message_test.dart: contract constants and Android resources channel ids are the contract ids
+00:52 +258: /workspace/bilnkit-clone/apps/vendor_app/test/push_message_test.dart: contract constants and Android resources the alarm channel is high importance, alarm usage, bundled sound
+00:52 +259: /workspace/bilnkit-clone/apps/vendor_app/test/push_message_test.dart: contract constants and Android resources the native sound, the small icon and the manifest entries exist
+00:54 +260: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: (setUpAll)
+00:54 +260: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+[Grozo Audio Engine] alarm stopped
+00:54 +261: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:54 +262: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:54 +263: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:54 +264: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:54 +265: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +266: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +267: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +268: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +269: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +270: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +271: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +272: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +273: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +274: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +275: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +276: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +277: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +278: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +279: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:55 +280: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: signed-in start registers the device once and shows no notice when everything is allowed
+00:56 +281: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: never asked: the explanation comes first, "Allow" then shows the system dialog
+[Grozo Audio Engine] alarm stopped
+00:56 +282: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: "Not now" on the explanation leaves a persistent banner with an Allow button
+[Grozo Audio Engine] alarm stopped
+00:57 +282: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - AudioAlertService Tests startLoudAlarm and stopAlarm manage alarm flag correctly
+[Grozo Audio Engine] new order alarm ringing
+[Grozo Audio Engine] alarm sound failed to start (MissingPluginException(No implementation found for method getTemporaryDirectory on channel plugins.flutter.io/path_provider)); system beep until it recovers
+[Grozo Audio Engine] alarm stopped
+00:57 +283: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: "Not now" on the explanation leaves a persistent banner with an Allow button
+00:57 +284: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - OrderQueueService one takeover per order: duplicates are ignored, the next order opens when the first closes
+00:57 +284: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: blocked notifications: persistent banner with a button that opens settings; hides again once allowed
+[Grozo Audio Engine] alarm stopped
+00:57 +285: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - OrderQueueService one takeover per order: duplicates are ignored, the next order opens when the first closes
+00:57 +285: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: battery hint: shown once, "Allow" asks the system, and it never comes back
+[Grozo Audio Engine] alarm stopped
+00:57 +286: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - OrderQueueService one takeover per order: duplicates are ignored, the next order opens when the first closes
+00:57 +286: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: banner and battery card do not overflow on a small phone with large text
+[Grozo Audio Engine] alarm stopped
+00:57 +287: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - OrderQueueService one takeover per order: duplicates are ignored, the next order opens when the first closes
+00:57 +287: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: tapping a NEW_ORDER push opens the Orders tab and the takeover for an order that is still PLACED
+[Grozo Audio Engine] alarm stopped
+00:58 +287: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - OrderQueueService one takeover per order: duplicates are ignored, the next order opens when the first closes
+[Grozo Audio Engine] alarm stopped
+00:58 +288: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: tapping a NEW_ORDER push opens the Orders tab and the takeover for an order that is still PLACED
+00:59 +289: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: tapping a NEW_ORDER push opens the Orders tab and the takeover for an order that is still PLACED
+00:59 +290: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - IncomingOrderDialog Widget Test DECLINE needs a reason before it declines, and sends that reason
+00:59 +290: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: a NEW_ORDER tap that started the app from closed is held through login check, then opens the takeover
+[Grozo Audio Engine] alarm stopped
+00:59 +291: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - IncomingOrderDialog Widget Test DECLINE needs a reason before it declines, and sends that reason
+00:59 +291: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: foreground NEW_ORDER: the queue is reloaded once, the in-app alarm rings once, no notification is built
+[Grozo Audio Engine] alarm stopped
+00:59 +292: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: foreground NEW_ORDER: the queue is reloaded once, the in-app alarm rings once, no notification is built
+01:00 +293: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - IncomingOrderDialog Widget Test "Other reason" needs at least 3 letters
+01:00 +293: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: a cancelled order push refreshes the queue and the open takeover explains it
+[Grozo Audio Engine] alarm stopped
+01:00 +294: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - IncomingOrderDialog Widget Test "Other reason" needs at least 3 letters
+01:00 +294: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: malformed pushes (foreground and tapped) change nothing and do not crash
+[Grozo Audio Engine] alarm stopped
+01:00 +295: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - IncomingOrderDialog Widget Test "Other reason" needs at least 3 letters
+01:00 +295: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: Firebase cannot start: the app still loads orders and rings through sockets and polling
+[Grozo Audio Engine] alarm stopped
+[push] Firebase failed to start: StateError
+01:01 +296: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: Firebase cannot start: the app still loads orders and rings through sockets and polling
+01:01 +297: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: Firebase cannot start: the app still loads orders and rings through sockets and polling
+01:01 +298: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: Firebase cannot start: the app still loads orders and rings through sockets and polling
+01:01 +299: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - IncomingOrderDialog Widget Test the order vanishes (server 404) while open: "no longer available"
+01:01 +299: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: logging out from the app: DELETE /devices while the JWT is still saved, then the login screen
+[Grozo Audio Engine] alarm stopped
+01:01 +300: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: logging out from the app: DELETE /devices while the JWT is still saved, then the login screen
+01:02 +301: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: logging out from the app: DELETE /devices while the JWT is still saved, then the login screen
+01:02 +301: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_app_test.dart: Vendor App - OrderQueueService Unit Test OrderQueueService handles clearQueue and queue count
+[Grozo Audio Engine] alarm stopped
+01:02 +302: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: logging out from the app: DELETE /devices while the JWT is still saved, then the login screen
+[Grozo Audio Engine] alarm stopped
+[Grozo Audio Engine] alarm stopped
+01:02 +303: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: the app without a push controller (as in every older test) shows no push UI
+[Grozo Audio Engine] alarm stopped
+01:02 +304: /workspace/bilnkit-clone/apps/vendor_app/test/push_app_flow_test.dart: (tearDownAll)
+01:03 +304: /workspace/bilnkit-clone/apps/vendor_app/test/ui_visual_capture_test.dart: (setUpAll)
+01:03 +304: /workspace/bilnkit-clone/apps/vendor_app/test/ui_visual_capture_test.dart: capture vendor production screens with isolated service fixtures
+01:03 +304 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/ui_visual_capture_test.dart: (tearDownAll)
+01:04 +304 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle an ownership conflict rotates FCM rather than transferring an existing token
+01:04 +305 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle registers the FCM token once after sign-in, with the app version
+01:04 +306 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle signing in again (session listener fires repeatedly) never registers twice
+01:04 +307 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle a refreshed token is registered; the same token again is not
+01:04 +308 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle a refresh before anyone is signed in registers nothing
+01:04 +309 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle a failed registration (network) is retried when the app is resumed
+01:04 +310 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle a 401 or a refusal is not asked again on resume, but a new login tries again
+01:04 +311 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle a token that is not there yet (null) does not crash and registers nothing
+01:04 +312 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle logout: DELETE /devices happens while the JWT is still saved, then deleteToken, then the session is cleared
+01:04 +313 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle logout is never blocked by a failing DELETE /devices
+01:04 +314 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle after logout a token refresh does not register the old login again
+01:04 +315 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle session expiry (no logout call) forgets the token on this phone
+01:04 +316 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: token lifecycle another partner signing in on the same phone registers the token again for that user
+01:04 +317 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: permission state granted: no banner, no explainer
+01:04 +318 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: permission state never asked: explain first; after "Not now" the banner offers Allow
+01:04 +319 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: permission state asked and still denied: persistent blocked banner whose action opens settings
+01:04 +320 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: permission state permanently denied: blocked banner straight away
+01:04 +321 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: permission state allowed in settings, then back to the app: banner disappears
+01:04 +322 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: permission state the token is registered even while notifications are blocked (turning them on later just works)
+01:04 +323 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: permission state a permission answer is remembered: a new controller does not explain again
+01:04 +324 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: permission state battery hint: once, only after notifications are on, never again after any answer
+01:04 +325 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: permission state battery hint is not shown when the phone is already unrestricted, and "Not now" dismisses it for good
+01:04 +326 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: routing foreground NEW_ORDER only reloads the queue: no notification, so no second alarm
+01:04 +327 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: routing foreground ORDER_CANCELLED_VENDOR reloads the queue
+01:04 +328 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: routing tap on NEW_ORDER (background) opens the queue and the order
+01:04 +329 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: routing tap on ORDER_CANCELLED_VENDOR opens the queue only
+01:04 +330 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: routing tap on a notification the app built itself (foreground local notification) is routed the same way
+01:04 +331 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: routing unknown event, missing order id and junk are ignored
+01:04 +332 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: routing a push that arrives while signed out does nothing
+01:04 +333 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: cold start the tap that started the app is held until the home screen exists, then delivered once
+01:04 +334 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: cold start a launch from the app's own notification is routed too
+01:04 +335 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: cold start cold-start tap but the saved login turned out to be gone: dropped, login is shown, nothing replays after login
+01:04 +336 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: Firebase failure initialize() returning false: no token work, no crash, permission handling still works
+01:04 +337 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: Firebase failure initialize() throwing is contained
+[push] Firebase failed to start: StateError
+01:04 +338 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/push_controller_test.dart: Firebase failure channel creation failing does not stop registration
+[push] notification channels unavailable: StateError
+01:05 +339 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: DishModel parsing reads the status words, the restaurant price, the pending price and the reason
+01:05 +340 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: DishModel parsing an old server sends no status: the dish is live and the app knows it has no approval step
+01:05 +341 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: DishModel parsing a waiting price on a live dish counts as a price change; a word we do not know is NOT shown as live
+01:05 +342 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: DishModel parsing the customer price and commission are never read: only `price` (the restaurant price) is
+01:05 +343 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: HTTP: menu-manage with an old-server fallback reads GET /vendors/:id/menu-manage with status, pending price and reason
+01:05 +344 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: HTTP: menu-manage with an old-server fallback an OLD server (404 on menu-manage) falls back to GET /menus/:id and every dish is live
+01:05 +345 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: HTTP: menu-manage with an old-server fallback other failures do NOT fall back: a 500, a 403 and a dead network are reported as they are
+01:05 +346 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: HTTP: menu-manage with an old-server fallback POST answer carries status PENDING; PATCH price answer carries the pending price
+01:05 +347 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: MenuStockController approval flow a new dish is PENDING (sent for approval), is remembered as lastAdded and has no sold-out call
+01:05 +348 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: MenuStockController approval flow price change on a LIVE dish: the old price stays live, the new one is "pending", status CHANGE_PENDING
+01:05 +349 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: MenuStockController approval flow asking for the live price again cancels the pending request
+01:05 +350 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: MenuStockController approval flow a failed price request rolls back to what the server last confirmed, with a message
+01:05 +351 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: MenuStockController approval flow price on a PENDING dish edits it directly (it is not live, so there is nothing to keep)
+01:05 +352 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: MenuStockController approval flow a REJECTED dish is sent again with resubmit: PENDING at once; a failure restores the rejection
+01:05 +353 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: MenuStockController approval flow sold-out is instant and only for live dishes (a price change pending dish is still live)
+01:05 +354 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: MenuStockController approval flow OLD server dishes (no status): the price applies at once, as before
+01:05 +355 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: MenuStockController approval flow a fresh read after the admin decides shows the new state
+01:05 +356 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected live: "Live" chip, "Your price", the sold-out switch
+01:06 +357 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_backend_test.dart: GET /orders?scope=active with the JWT; reads data + nextCursor and the server clock
+01:06 +358 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected pending: "Pending approval", price steppers work, NO sold-out switch
+01:06 +359 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected pending: "Pending approval", price steppers work, NO sold-out switch
+01:06 +360 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected pending: "Pending approval", price steppers work, NO sold-out switch
+01:06 +361 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected pending: "Pending approval", price steppers work, NO sold-out switch
+01:06 +362 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected pending: "Pending approval", price steppers work, NO sold-out switch
+01:06 +363 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected pending: "Pending approval", price steppers work, NO sold-out switch
+01:06 +364 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected pending: "Pending approval", price steppers work, NO sold-out switch
+01:06 +365 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected pending: "Pending approval", price steppers work, NO sold-out switch
+01:06 +366 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected price change pending: the live price stays, the new value + "Sent for approval" is shown, the switch works
+01:07 +367 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected rejected: chip + reason + "Send again" (resubmit with the same price); no steppers, no switch
+01:07 +368 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected rejected: the price sheet says "send again" and always resubmits, even with the same price
+01:08 +369 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected live: the price sheet explains the approval, and "Send for approval" is not sent when nothing changed
+01:08 +370 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected price change pending: the sheet starts from the requested price
+01:08 +371 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: StockCard: status chip, "Your price", pending price, rejected OLD server dish (no status): no chip, no approval wording, the switch and a plain "Save price"
+01:08 +372 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: Menu tab with approval a status chip on every dish, the waiting banner and the filter
+01:10 +373 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 vendor home: Orders, Menu and Earnings tabs
+01:10 +374 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 vendor home: Orders, Menu and Earnings tabs
+01:10 +375 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 vendor home: Orders, Menu and Earnings tabs
+01:10 +376 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 vendor home: Orders, Menu and Earnings tabs
+01:11 +377 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: Menu tab with approval OLD server menu (no status): no chips, no banner, plain "added to menu" message
+01:11 +378 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 incoming order takeover with a long note and many items
+01:11 +379 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: Menu tab with approval the sold-out switch on a live dish saves at once and a rejected dish can be sent again from the list
+01:11 +380 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: Menu tab with approval the sold-out switch on a live dish saves at once and a rejected dish can be sent again from the list
+01:11 +381 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 incoming order takeover in landscape (short screen) scrolls instead of overflowing
+01:11 +382 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 incoming order takeover in landscape (short screen) scrolls instead of overflowing
+01:11 +383 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 incoming order takeover in landscape (short screen) scrolls instead of overflowing
+01:11 +384 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 incoming order takeover in landscape (short screen) scrolls instead of overflowing
+01:11 +385 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: Orders show only what the restaurant earns the order card says "You earn" with the item lines at the restaurant prices; no fees, discount or total
+01:12 +386 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 kitchen queue cards: new, accepted, cooking, late, ready (with and without runner), history
+01:12 +387 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 kitchen queue cards: new, accepted, cooking, late, ready (with and without runner), history
+01:12 +388 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 kitchen queue cards: new, accepted, cooking, late, ready (with and without runner), history
+01:12 +389 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: no overflow at 360x640, text x1.0 menu with a dish in every approval state, then the add-dish sheet
+01:12 +390 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: no overflow at 360x640, text x1.0 menu with a dish in every approval state, then the add-dish sheet
+01:12 +391 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.0 earnings: empty state, then real numbers
+01:12 +392 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: no overflow at 360x640, text x1.0 price sheets (live and rejected dish), empty menu, first-run card
+01:13 +393 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.3 vendor home: Orders, Menu and Earnings tabs
+01:13 +394 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: no overflow at 360x640, text x1.0 order card and takeover with the vendor view and long item names
+01:13 +395 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.3 incoming order takeover with a long note and many items
+01:13 +396 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: no overflow at 360x640, text x1.3 menu with a dish in every approval state, then the add-dish sheet
+01:13 +397 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: no overflow at 360x640, text x1.3 menu with a dish in every approval state, then the add-dish sheet
+01:13 +398 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: no overflow at 360x640, text x1.3 menu with a dish in every approval state, then the add-dish sheet
+01:14 +399 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.3 kitchen queue cards: new, accepted, cooking, late, ready (with and without runner), history
+01:14 +400 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: no overflow at 360x640, text x1.3 price sheets (live and rejected dish), empty menu, first-run card
+01:14 +401 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.3 stock manager list and the add-dish sheet
+01:14 +402 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/catalog_approval_test.dart: no overflow at 360x640, text x1.3 order card and takeover with the vendor view and long item names
+01:14 +403 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: no overflow at 360x640, text x1.3 earnings: empty state, then real numbers
+01:14 +404 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: closing the store asks first; opening does not
+01:15 +405 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_layout_test.dart: (tearDownAll)
+01:15 +405 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: (setUpAll)
+01:15 +405 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: real vendor id everywhere: queue, socket room, store status, menu
+[Grozo Audio Engine] alarm stopped
+01:17 +406 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account login screen offers "Create account" and it opens the sign-up form
+01:17 +406 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: a paid order arriving over the socket rings and opens the takeover; accept -> start packing -> ready
+[Grozo Audio Engine] alarm stopped
+01:17 +406 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account login screen offers "Create account" and it opens the sign-up form
+[Grozo Audio Engine] alarm stopped
+01:20 +407 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: a paid order arriving over the socket rings and opens the takeover; accept -> start packing -> ready
+01:20 +407 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account empty form shows every missing field and sends nothing
+[Grozo Audio Engine] alarm stopped
+01:21 +408 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account empty form shows every missing field and sends nothing
+01:21 +408 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: mark ready fails: the card goes back to Cooking and the cook is told why
+[Grozo Audio Engine] alarm stopped
+01:21 +409 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: mark ready fails: the card goes back to Cooking and the cook is told why
+01:21 +410 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account a bad FSSAI number and a short password are caught on the phone
+01:21 +410 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: app killed and reopened: the waiting order is reloaded and the takeover comes back
+[Grozo Audio Engine] alarm stopped
+01:22 +410 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account a bad FSSAI number and a short password are caught on the phone
+[Grozo Audio Engine] alarm stopped
+01:22 +410 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: app killed and reopened: the waiting order is reloaded and the takeover comes back
+[Grozo Audio Engine] alarm stopped
+01:24 +411 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account a bad FSSAI number and a short password are caught on the phone
+01:24 +411 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: resume from background reloads at once; a failed poll keeps the cards and shows a banner
+[Grozo Audio Engine] alarm stopped
+01:24 +412 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: resume from background reloads at once; a failed poll keeps the cards and shows a banner
+01:24 +412 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account a valid form creates the account and lands on "checking your details"
+[Grozo Audio Engine] alarm stopped
+01:24 +413 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account a valid form creates the account and lands on "checking your details"
+01:24 +413 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: closing the store fails on the server: the switch goes back to OPEN; live orders untouched
+[Grozo Audio Engine] alarm stopped
+01:25 +414 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account a valid form creates the account and lands on "checking your details"
+01:25 +414 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_home_flow_test.dart: an order cancelled while its takeover is open: message, then OK returns to the list
+[Grozo Audio Engine] alarm stopped
+01:25 +415 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account a valid form creates the account and lands on "checking your details"
+01:25 +416 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account server says the number is taken -> the message sits under the phone field
+[Grozo Audio Engine] alarm stopped
+01:26 +417 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+[Grozo Audio Engine] alarm stopped
+01:27 +418 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+01:27 +419 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+01:27 +420 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+01:27 +421 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+01:27 +422 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+01:27 +423 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+01:27 +424 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+01:27 +425 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+01:27 +426 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+01:27 +427 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+01:27 +428 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account offline and rate-limit problems are explained, and the form keeps what was typed
+01:27 +429 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker without a loader it shows the built-in six at once, Main Course picked, Hindi labels as before
+01:27 +429 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Create account the form does not overflow on a small phone at 1.3x text
+[Grozo Audio Engine] alarm stopped
+01:27 +430 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker without a loader it shows the built-in six at once, Main Course picked, Hindi labels as before
+01:27 +431 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker without a loader it shows the built-in six at once, Main Course picked, Hindi labels as before
+01:28 +432 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker without a loader it shows the built-in six at once, Main Course picked, Hindi labels as before
+01:28 +433 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker without a loader it shows the built-in six at once, Main Course picked, Hindi labels as before
+01:28 +434 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Waiting for approval a rejected application shows the reason and an Update button that re-sends the details
+01:28 +435 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Waiting for approval a rejected application shows the reason and an Update button that re-sends the details
+01:28 +436 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker a pick that still exists survives the reload (server spelling); an untouched default that is gone becomes the first category
+01:28 +436 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Waiting for approval a suspended restaurant is told why and can only log out
+[Grozo Audio Engine] alarm stopped
+01:28 +437 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker a pick that still exists survives the reload (server spelling); an untouched default that is gone becomes the first category
+01:29 +438 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker a pick that still exists survives the reload (server spelling); an untouched default that is gone becomes the first category
+01:29 +439 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker a pick that still exists survives the reload (server spelling); an untouched default that is gone becomes the first category
+01:29 +440 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/signup_flow_test.dart: Suspended while the app is open an approved restaurant that gets suspended moves to the status screen, and again on app resume
+[Grozo Audio Engine] alarm stopped
+01:29 +441 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker 404 / failure (null) keeps the built-in six and the form works
+01:29 +442 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker 404 / failure (null) keeps the built-in six and the form works
+01:29 +443 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker 404 / failure (null) keeps the built-in six and the form works
+01:29 +444 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker 404 / failure (null) keeps the built-in six and the form works
+01:29 +445 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker 404 / failure (null) keeps the built-in six and the form works
+01:29 +446 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker 404 / failure (null) keeps the built-in six and the form works
+01:29 +447 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker an empty list keeps the built-in six and the form works
+01:30 +448 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker a throwing loader keeps the built-in six and the form works
+01:30 +449 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker the selected value is sent as the category NAME exactly as the server wrote it
+01:30 +450 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker CATEGORY_UNKNOWN: the server sentence is shown, the form keeps what was typed, the list reloads, a pick that still exists stays
+01:31 +450 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/audio_alert_service_test.dart: the alarm plays the bundled asset (no network source)
+[Grozo Audio Engine] new order alarm ringing
+[Grozo Audio Engine] alarm stopped
+01:31 +451 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker CATEGORY_UNKNOWN: the server sentence is shown, the form keeps what was typed, the list reloads, a pick that still exists stays
+01:31 +451 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/audio_alert_service_test.dart: the asset file exists, is declared in pubspec and is the same tone as the Android channel sound
+[Grozo Audio Engine] alarm stopped
+01:31 +452 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker CATEGORY_UNKNOWN: the server sentence is shown, the form keeps what was typed, the list reloads, a pick that still exists stays
+01:31 +452 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/audio_alert_service_test.dart: starting while it already rings does nothing; stopping releases the player
+[Grozo Audio Engine] new order alarm ringing
+[Grozo Audio Engine] alarm stopped
+[Grozo Audio Engine] alarm stopped
+[Grozo Audio Engine] alarm stopped
+01:31 +453 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker CATEGORY_UNKNOWN: the server sentence is shown, the form keeps what was typed, the list reloads, a pick that still exists stays
+01:31 +453 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/audio_alert_service_test.dart: start, stop, start in a row never leaves a second player ringing
+[Grozo Audio Engine] new order alarm ringing
+[Grozo Audio Engine] new order alarm ringing
+[Grozo Audio Engine] alarm stopped
+[Grozo Audio Engine] alarm stopped
+[Grozo Audio Engine] alarm stopped
+01:31 +454 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker CATEGORY_UNKNOWN: the server sentence is shown, the form keeps what was typed, the list reloads, a pick that still exists stays
+01:31 +454 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/audio_alert_service_test.dart: a player that cannot start leaves the alarm marked ringing (system beep + watchdog retry), never silently off
+[Grozo Audio Engine] new order alarm ringing
+[Grozo Audio Engine] alarm sound failed to start (PlatformException(asset, null, null, null)); system beep until it recovers
+[Grozo Audio Engine] alarm stopped
+[Grozo Audio Engine] alarm stopped
+01:31 +455 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker CATEGORY_UNKNOWN: the server sentence is shown, the form keeps what was typed, the list reloads, a pick that still exists stays
+01:31 +456 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/audio_alert_service_test.dart: watchdog: a healthy alarm is left alone, a stopped one is brought back
+[Grozo Audio Engine] new order alarm ringing
+[Grozo Audio Engine] alarm stopped
+[Grozo Audio Engine] alarm stopped
+01:31 +457 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker CATEGORY_UNKNOWN when the picked category is gone: the pick is cleared, Add asks to choose, nothing is sent
+01:32 +458 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker another failure (offline) does not reload the list
+01:32 +459 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Add-dish picker closing the sheet while the list loads does not throw
+01:32 +460 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Small screen and large font 360x640 at 1.3x text with 40 long category names: no overflow, the sheet scrolls to the Add button
+01:32 +461 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/dish_categories_test.dart: Menu tab end to end the Add-dish sheet from the Menu tab loads the server list; the refusal reloads it
+01:33 +462 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 320.0 at 1.0 text
+01:35 +463 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: first it explains why, in English and Hindi, and nothing is read yet
+01:35 +464 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 320.0 at 2.0 text
+01:35 +465 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: good fix: coordinates, accuracy and a Maps link are shown BEFORE anything is saved
+01:35 +466 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 360.0 at 1.0 text
+01:35 +467 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 360.0 at 1.0 text
+01:35 +468 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: closing the sheet while looking for GPS cancels the read
+01:35 +469 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 360.0 at 2.0 text
+01:36 +470 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 360.0 at 2.0 text
+01:36 +471 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: weak fix accepted after the confirm is saved
+01:36 +472 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 390.0 at 1.0 text
+01:36 +473 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 390.0 at 1.0 text
+01:36 +474 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: problems denied for good: offers the app settings (and Try again), never a dead end
+01:36 +475 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 390.0 at 2.0 text
+01:36 +476 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 390.0 at 2.0 text
+01:36 +477 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: problems timeout: "No GPS signal" with a hint and Try again
+01:36 +478 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 430.0 at 1.0 text
+01:36 +479 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 430.0 at 1.0 text
+01:36 +480 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 430.0 at 1.0 text
+01:36 +481 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: outside India: says so, shows the spot, does NOT offer to save, nothing is saved
+01:36 +482 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 430.0 at 2.0 text
+01:37 +483 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 430.0 at 2.0 text
+01:37 +484 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/grocery_redesign_test.dart: grocery inventory 430.0 at 2.0 text
+01:37 +485 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: save mode: success closes the sheet; a server failure keeps it open with the message and a retry
+01:37 +486 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: changing an existing location asks first; "Go back" saves nothing
+01:37 +487 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: no overflow at 360x640 with 1.3x text intro, detecting, good result, weak result with a save error
+01:37 +488 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: no overflow at 360x640 with 1.3x text problem LocationProblem.serviceOff
+01:37 +489 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: no overflow at 360x640 with 1.3x text problem LocationProblem.permissionDenied
+01:37 +490 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: no overflow at 360x640 with 1.3x text problem LocationProblem.permissionDeniedForever
+01:37 +491 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: no overflow at 360x640 with 1.3x text problem LocationProblem.timeout
+01:37 +492 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: no overflow at 360x640 with 1.3x text problem LocationProblem.unavailable
+01:38 +493 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: no overflow at 360x640 with 1.3x text outside India
+01:38 +494 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/location_sheet_test.dart: no overflow at 360x640 with 1.3x text the confirm sheets
+01:38 +495 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: (setUpAll)
+01:38 +495 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: model: OrderView.group for a restaurant the real shape { size, allAccepted } is read; a single order has no group
+01:38 +496 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: model: OrderView.group for a restaurant anything that is not a map with a real boolean allAccepted is read as "no group": a normal order is never blocked
+01:38 +497 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: model: OrderView.group for a restaurant a finished or cancelled part does not wait for anybody
+01:38 +498 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: model: OrderView.group for a restaurant an old copy that says "not all accepted" never undoes the news "all accepted" (same moment, same step)
+01:38 +499 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: model: OrderView.group for a restaurant nothing about another restaurant is kept, even if a server ever sent it
+01:38 +500 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: controller the live update "all restaurants accepted" reaches the order; an older poll cannot undo it
+01:38 +501 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: controller GROUP_WAITING from the server: nothing starts, the answer carries the server text and code, the order is re-read
+01:38 +502 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: controller the controller does not decide "waiting" itself: the server is the authority (the button is what is disabled)
+01:38 +503 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: controller GROUP_WAITING is worded plainly, in the server's own sentence; without one the same sentence
+01:38 +504 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x1.3 waiting: the note is shown and "Start packing" is off; tapping it sends nothing
+01:39 +505 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/widget_test.dart: Vendor App launches successfully
+01:39 +506 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/widget_test.dart: Vendor App launches successfully
+01:39 +507 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x1.3 the live update switches the note and the button on without a reload
+01:39 +508 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x1.3 the server still answers 409 GROUP_WAITING: its sentence is shown plainly
+01:39 +509 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x1.3 a single-restaurant order has no note and a working "Start packing" (unchanged)
+01:40 +510 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x1.3 cooking and ready parts show the note too; no other restaurant is ever named
+01:40 +511 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x1.3 a part cancelled because another restaurant could not take it shows the server's reason, and no waiting note
+01:40 +512 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x2.0 waiting: the note is shown and "Start packing" is off; tapping it sends nothing
+01:40 +513 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x2.0 all accepted: "All restaurants accepted" and "Start packing" works; a double tap sends ONE request
+01:40 +514 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x2.0 the live update switches the note and the button on without a reload
+01:40 +515 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x2.0 the server still answers 409 GROUP_WAITING: its sentence is shown plainly
+01:40 +516 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x2.0 a single-restaurant order has no note and a working "Start packing" (unchanged)
+01:40 +517 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x2.0 cooking and ready parts show the note too; no other restaurant is ever named
+01:41 +518 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: kitchen cards of a combined order at 360x640, text x2.0 a part cancelled because another restaurant could not take it shows the server's reason, and no waiting note
+01:41 +519 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: GroupNote alone at 360 px wide and a real 1.3x text (no clamp): both states fit
+01:41 +520 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: incoming order takeover of a combined order at 360x640, text x1.3: the note is there, the buttons stay reachable
+01:41 +521 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: GroupNote alone at 360 px wide and a real 2.0x text (no clamp): both states fit
+01:41 +522 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: incoming order takeover of a combined order at 360x640, text x2.0: the note is there, the buttons stay reachable
+01:41 +523 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: push GROUP_READY_TO_COOK is a known, actionable event with the order id
+01:41 +524 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: push GROUP_READY_TO_COOK data-only in the background: a quiet update with the push text (or the contract text), never the loud alarm
+01:41 +525 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: push GROUP_READY_TO_COOK routing in the foreground it reloads the order list (a refresh), no second sound
+01:41 +526 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: push GROUP_READY_TO_COOK routing a tap opens the kitchen queue (where the order's "Start packing" is now on)
+01:41 +527 ~1: /workspace/bilnkit-clone/apps/vendor_app/test/vendor_groups_test.dart: (tearDownAll)
+01:41 +527 ~1: All tests passed!

@@ -1,4 +1,4 @@
-// Actual Chromium screenshots against the local production API and controlled pilot data.
+// Actual Chromium screenshots against the local API and isolated synthetic demo data.
 import {spawn} from 'node:child_process';
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {createRequire} from 'node:module';
@@ -39,7 +39,9 @@ try{
  for(const [name,labels] of [['dashboard',['Operations and support','Overview']],['vendors',['Vendors','Stores']],['inventory',['Products and inventory']],['orders',['Orders']],['riders',['Drivers','Delivery partners']],['finance',['Finance']],['coverage',['Delivery coverage']]]){
   const selected=await evaluate(`(()=>{const names=${JSON.stringify(labels)};const b=[...document.querySelectorAll('nav button')].find(b=>names.some(n=>(b.getAttribute('aria-label')||'').replace(/ \\(.*$/,'')===n));if(b)b.click();return !!b})()`);
   if(!selected)throw Error('Navigation target missing: '+name);
+  if(name==='inventory' && process.env.GROZO_REQUIRE_PRODUCT_IMAGES==='1') await waitFor(`(()=>{const imgs=[...document.querySelectorAll('main img')].filter(i=>i.getBoundingClientRect().top<innerHeight && i.getBoundingClientRect().bottom>0);return imgs.length>0 && imgs.every(i=>i.complete&&i.naturalWidth>0)})()`);
   await shot(name);
+  if(name==='inventory') rows.push({visibleProductImages:await evaluate(`(()=>{const imgs=[...document.querySelectorAll('main img')].filter(i=>i.getBoundingClientRect().top<innerHeight&&i.getBoundingClientRect().bottom>0);return {count:imgs.length,allDecoded:imgs.length>0&&imgs.every(i=>i.complete&&i.naturalWidth>0)}})()`)});
   rows.push({screen:name,width:1280,...JSON.parse(await evaluate('JSON.stringify({title:document.querySelector("h1")?.textContent,overflow:document.documentElement.scrollWidth>innerWidth})'))});
  }
  if(phase==='after') {

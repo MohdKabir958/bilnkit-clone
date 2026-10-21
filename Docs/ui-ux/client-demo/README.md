@@ -1,6 +1,6 @@
 # Grozo client demo
 
-The implemented screens are ready for visual review. Open [the gallery](index.html) or [the four-page before/after PDF](Grozo-before-after.pdf). The four `*-before-after.png` contact sheets are easy to share. All images link back to actual renderer/browser captures under `../before` and `../after`.
+Updated 21 October 2026. The implemented screens are ready for visual review; see [final verification](../../qa/final-app-verification.md) and [isolated scenario setup](../../demo/README.md). Open [the gallery](index.html) or [the four-page before/after PDF](Grozo-before-after.pdf). The four `*-before-after.png` contact sheets are easy to share. All images link back to actual renderer/browser captures under `../before` and `../after`.
 
 ## What the evidence demonstrates
 
@@ -9,7 +9,7 @@ The implemented screens are ready for visual review. Open [the gallery](index.ht
 - Delivery: duty, private offers with server deadlines, active delivery, customer-code verification and earnings.
 - Admin: light operations overview, stores, inventory and edit drawer, orders, delivery partners, finance and coverage using the actual local API/pilot catalog.
 
-Flutter images use production widgets with isolated service fixtures. Their sample products, names, addresses and amounts are test data, not evidence of live customers or sales. Admin data comes from persisted local records. No physical-device or live-payment claim is made.
+Flutter images use production widgets with isolated service fixtures. Their sample products, names, addresses and amounts are test data, not evidence of live customers or sales. Product illustrations are original AI-generated unbranded assets, documented in the [rights inventory](../../demo/product-image-licenses.md). Admin data comes from persisted local records. No physical-device or live-payment claim is made.
 
 ## Suggested walkthrough
 
@@ -22,11 +22,11 @@ Flutter images use production widgets with isolated service fixtures. Their samp
 
 ## Running the current local admin
 
-Use [the setup guide](../../06_setup_guide.md). The backend runs at `127.0.0.1:5000`; the admin dev server runs at `localhost:3000`. Sign in with the locally configured passcode from ignored `backend/.env` without sharing it. This workspace is not a public deployment. If the services stop, run `npm run dev` in backend and admin with the existing environment settings. Do not run backend tests against this development database.
+Use [the setup guide](../../06_setup_guide.md). The isolated demo backend runs at `127.0.0.1:5001`; its admin dev server runs at `localhost:3001`. The previous pilot remains separate. Sign in with the locally configured passcode from ignored `backend/.env` without sharing it. This workspace is not a public deployment. If the services stop, run `npm run dev` in backend and admin with the existing environment settings. Do not run backend tests against this development database.
 
 ## Android handover
 
-The three debug builds verify compilation. Smaller development-signed ARM64 profile APKs are published on the [Android artifact branch](https://github.com/MohdKabir958/bilnkit-clone/tree/artifacts/grozo-android-preview), with direct downloads, hashes and package/signature metadata.
+The previous redesign's three debug builds verified compilation on 20 October; they were not rebuilt in this polish pass. Smaller development-signed ARM64 profile APKs are published on the [Android artifact branch](https://github.com/MohdKabir958/bilnkit-clone/tree/artifacts/grozo-android-preview), with direct downloads, hashes and package/signature metadata.
 
 Those APKs support startup/sign-in screen inspection on compatible Android phones. They retain the emulator API address and have no owned Firebase/OAuth project configured. They do not provide connected phone login, ordering, payments or notifications. Use the gallery/PDF to review screens that require an authenticated service session. A connected phone build needs the real deployed HTTPS backend and owned client configuration; [the deployment guide](../../11_hosted_deployment_and_apk_handover.md) explains the settings.
 

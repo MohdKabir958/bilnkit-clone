@@ -5,9 +5,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/customer/categories.png",
@@ -15,9 +16,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/customer/checkout.png",
@@ -25,9 +27,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/customer/home.png",
@@ -35,9 +38,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/customer/login.png",
@@ -45,9 +49,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/customer/product-details.png",
@@ -55,9 +60,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/customer/tracking.png",
@@ -65,9 +71,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/vendor/add-product.png",
@@ -75,9 +82,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/vendor/dashboard.png",
@@ -85,9 +93,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/vendor/inventory.png",
@@ -95,9 +104,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/vendor/login.png",
@@ -105,9 +115,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/vendor/orders.png",
@@ -115,9 +126,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/vendor/products.png",
@@ -125,9 +137,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/vendor/sales.png",
@@ -135,9 +148,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/delivery/active-delivery.png",
@@ -145,9 +159,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/delivery/delivery-offer.png",
@@ -155,9 +170,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/delivery/delivery-verification.png",
@@ -165,9 +181,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/delivery/earnings.png",
@@ -175,9 +192,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/delivery/home.png",
@@ -185,9 +203,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/delivery/login.png",
@@ -195,9 +214,10 @@
     "phase": "before",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/admin/coverage.png",
@@ -205,9 +225,10 @@
     "phase": "before",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/admin/dashboard.png",
@@ -215,9 +236,10 @@
     "phase": "before",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/admin/finance.png",
@@ -225,9 +247,10 @@
     "phase": "before",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/admin/inventory.png",
@@ -235,9 +258,10 @@
     "phase": "before",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/admin/login.png",
@@ -245,9 +269,10 @@
     "phase": "before",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/admin/orders.png",
@@ -255,9 +280,10 @@
     "phase": "before",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/admin/riders.png",
@@ -265,9 +291,10 @@
     "phase": "before",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "before/admin/vendors.png",
@@ -275,9 +302,10 @@
     "phase": "before",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Historical baseline; see existing UI audit",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Baseline assets/fallbacks"
   },
   {
     "path": "after/customer/cart.png",
@@ -285,9 +313,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/categories.png",
@@ -295,9 +324,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/checkout.png",
@@ -305,9 +335,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/home-empty.png",
@@ -315,9 +346,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/home-loading.png",
@@ -325,9 +357,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/home-offline.png",
@@ -335,9 +368,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/home.png",
@@ -345,9 +379,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/login.png",
@@ -355,9 +390,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/product-details.png",
@@ -365,9 +401,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/product-grid-320-text-1.0.png",
@@ -375,9 +412,10 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/product-grid-320-text-1.3.png",
@@ -385,9 +423,10 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/product-grid-320-text-2.0.png",
@@ -395,9 +434,10 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/product-grid-430-text-1.0.png",
@@ -405,9 +445,10 @@
     "phase": "after",
     "width": 430,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/product-grid-430-text-1.3.png",
@@ -415,9 +456,10 @@
     "phase": "after",
     "width": 430,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/product-grid-430-text-2.0.png",
@@ -425,9 +467,10 @@
     "phase": "after",
     "width": 430,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/customer/tracking.png",
@@ -435,9 +478,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated grocery / HTTP fixtures",
+    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/vendor/add-product.png",
@@ -445,9 +489,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/vendor/dashboard.png",
@@ -455,9 +500,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/vendor/inventory-320-text-1.0.png",
@@ -465,9 +511,10 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/vendor/inventory-320-text-2.0.png",
@@ -475,9 +522,10 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/vendor/inventory.png",
@@ -485,9 +533,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/vendor/login.png",
@@ -495,9 +544,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/vendor/orders.png",
@@ -505,9 +555,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/vendor/products.png",
@@ -515,9 +566,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/vendor/sales.png",
@@ -525,9 +577,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated store / API fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/delivery/active-delivery.png",
@@ -535,9 +588,21 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Flutter production widgets; sourced map pins and simulated GPS/API fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
+  },
+  {
+    "path": "after/delivery/delivery-in-transit.png",
+    "role": "delivery",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter production widgets; sourced map pins and simulated GPS/API fixtures",
+    "physicalDevice": false,
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/delivery/delivery-offer.png",
@@ -545,9 +610,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Flutter production widgets; sourced map pins and simulated GPS/API fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/delivery/delivery-verification.png",
@@ -555,9 +621,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Flutter production widgets; sourced map pins and simulated GPS/API fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/delivery/earnings.png",
@@ -565,9 +632,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Flutter production widgets; sourced map pins and simulated GPS/API fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/delivery/home.png",
@@ -575,9 +643,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Flutter production widgets; sourced map pins and simulated GPS/API fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/delivery/login.png",
@@ -585,9 +654,10 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Flutter production widgets; sourced map pins and simulated GPS/API fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/delivery/offer-320-text-1.0.png",
@@ -595,9 +665,10 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Flutter production widgets; sourced map pins and simulated GPS/API fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/delivery/offer-320-text-2.0.png",
@@ -605,9 +676,10 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter renderer \u00b7 isolated rider / API fixtures",
+    "source": "Flutter production widgets; sourced map pins and simulated GPS/API fixtures",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/coverage-1024.png",
@@ -615,9 +687,10 @@
     "phase": "after",
     "width": 1024,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/coverage-1440.png",
@@ -625,9 +698,10 @@
     "phase": "after",
     "width": 1440,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/coverage-1920.png",
@@ -635,9 +709,10 @@
     "phase": "after",
     "width": 1920,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/coverage.png",
@@ -645,9 +720,10 @@
     "phase": "after",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/dashboard-1024.png",
@@ -655,9 +731,10 @@
     "phase": "after",
     "width": 1024,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/dashboard-1440.png",
@@ -665,9 +742,10 @@
     "phase": "after",
     "width": 1440,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/dashboard-1920.png",
@@ -675,9 +753,10 @@
     "phase": "after",
     "width": 1920,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/dashboard.png",
@@ -685,9 +764,10 @@
     "phase": "after",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/finance.png",
@@ -695,9 +775,10 @@
     "phase": "after",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/inventory-1024.png",
@@ -705,9 +786,10 @@
     "phase": "after",
     "width": 1024,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/inventory-1440.png",
@@ -715,9 +797,10 @@
     "phase": "after",
     "width": 1440,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/inventory-1920.png",
@@ -725,9 +808,10 @@
     "phase": "after",
     "width": 1920,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/inventory-edit-1024.png",
@@ -735,9 +819,10 @@
     "phase": "after",
     "width": 1024,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/inventory-text-200.png",
@@ -745,9 +830,10 @@
     "phase": "after",
     "width": 1024,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/inventory.png",
@@ -755,9 +841,10 @@
     "phase": "after",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/login.png",
@@ -765,9 +852,10 @@
     "phase": "after",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/orders.png",
@@ -775,9 +863,10 @@
     "phase": "after",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/riders.png",
@@ -785,9 +874,10 @@
     "phase": "after",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
     "path": "after/admin/vendors.png",
@@ -795,8 +885,9 @@
     "phase": "after",
     "width": 1280,
     "height": 900,
-    "source": "Chromium \u00b7 actual local API and persisted pilot records",
+    "source": "Actual Chromium; local backend with isolated synthetic demo database",
     "physicalDevice": false,
-    "livePayments": false
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
   }
 ]

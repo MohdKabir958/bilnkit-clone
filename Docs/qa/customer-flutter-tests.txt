@@ -1,0 +1,725 @@
+Resolving dependencies...
+Downloading packages...
+  _flutterfire_internals 1.3.77 (1.3.78 available)
+  archive 4.3.0 (4.5.2 available)
+  cli_util 0.4.2 (0.6.0 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.1.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  dbus 0.7.15 (0.8.0 available)
+  firebase_core 4.15.0 (5.0.0 available)
+  firebase_core_web 3.12.0 (4.0.0 available)
+  firebase_messaging 16.7.0 (17.0.0 available)
+  firebase_messaging_platform_interface 4.10.0 (4.11.0 available)
+  firebase_messaging_web 4.2.5 (4.3.0 available)
+  flutter_lints 3.0.2 (6.0.0 available)
+  flutter_local_notifications 22.3.1 (22.3.2 available)
+  flutter_local_notifications_linux 8.0.1 (8.0.2 available)
+  flutter_secure_storage 10.3.4 (11.2.0 available)
+  flutter_secure_storage_darwin 0.3.2 (0.4.3 available)
+  geolocator 11.1.0 (14.1.2 available)
+  geolocator_android 4.6.2 (5.2.1 available)
+  geolocator_web 3.0.0 (4.1.4 available)
+  google_maps_flutter 2.18.1 (2.19.0 available)
+  google_maps_flutter_ios 2.18.6 (2.18.7 available)
+  google_sign_in_android 7.2.17 (7.2.18 available)
+  google_sign_in_ios 6.3.6 (6.3.8 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.10.1 (4.12.0 available)
+  js 0.6.7 (0.7.2 available)
+  lints 3.0.0 (6.1.0 available)
+  lucide_icons_flutter 3.1.20 (4.0.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.0 (1.19.0 available)
+  objective_c 9.5.0 (9.6.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  shared_preferences_android 2.4.28 (2.5.1 available)
+  shared_preferences_foundation 2.5.7 (2.6.0 available)
+  socket_io_client 2.0.3+1 (3.1.6 available)
+  socket_io_common 2.0.3 (3.1.1 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  test_api 0.7.11 (0.7.15 available)
+  timezone 0.11.1 (0.11.2 available)
+  vector_math 2.2.0 (2.4.3 available)
+  vm_service 15.3.0 (15.4.0 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies!
+46 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart
+00:00 +0: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: (setUpAll)
+00:00 +0: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) a failed catalog shows "Can't load kitchens" with Try again (and never invented kitchens); Try again loads them
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: FormatException
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:01 +0: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: app without push behaves as before (no device calls)
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:02 +1: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: app without push behaves as before (no device calls)
+00:02 +2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) no approved kitchens: "No kitchens are open right now" (not an error)
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:02 +3: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a signed-in student registers the phone with app, platform and version
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:02 +3: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) pull-to-refresh and returning to the app both reload the catalog
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:02 +4: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) pull-to-refresh and returning to the app both reload the catalog
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:03 +4: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: logout removes the device on the server BEFORE the session is cleared, then deletes the local token
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:03 +5: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: logout removes the device on the server BEFORE the session is cleared, then deletes the local token
+00:03 +5: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) a failed pull-to-refresh keeps the kitchens on screen and says so
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:03 +6: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) a failed pull-to-refresh keeps the kitchens on screen and says so
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: FormatException
+00:03 +7: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a failing DELETE /devices never blocks logout
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:03 +7: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) the first-order promo is shown only to a student with no orders; unknown history hides it
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:03 +8: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) the first-order promo is shown only to a student with no orders; unknown history hides it
+00:03 +8: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a hung DELETE /devices is given up on so logout still completes
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+[Session] before-sign-out hook failed (ignored): TimeoutException after 0:00:05.000000: Future not completed
+00:04 +9: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a hung DELETE /devices is given up on so logout still completes
+00:04 +10: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) category chips come from the live menus: no "Night Mess", and every chip lists kitchens
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:04 +10: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: cold start from a RIDER_AT_GATE push opens tracking where the OTP is shown
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:04 +11: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: cold start from a RIDER_AT_GATE push opens tracking where the OTP is shown
+00:04 +11: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) back from Orders / Me / Track returns to the Home tab first
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:05 +12: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) back from Orders / Me / Track returns to the Home tab first
+00:05 +13: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a tap that arrives signed out lands on the normal login and is dropped
+00:05 +14: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Home (CU1-01 / 02 / 03 / 09 / 23) no invented "Min ₹99" on kitchen cards
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:05 +15: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a background tap opens the order once; a second tap on the same order does not stack screens
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:05 +16: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a background tap opens the order once; a second tap on the same order does not stack screens
+00:05 +17: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a background tap opens the order once; a second tap on the same order does not stack screens
+00:06 +18: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a background tap opens the order once; a second tap on the same order does not stack screens
+00:06 +19: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a background tap opens the order once; a second tap on the same order does not stack screens
+00:06 +20: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Checkout (CU1-01 / 03 / 07 / 10 / 11 / 15 / 26) the server refuses the coupon: it is removed, checkout stays open, one line gives the reason and the new total
+00:06 +21: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: tapping a local banner opens that order
+00:07 +22: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: tapping a local banner opens that order
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:07 +23: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: tapping a local banner opens that order
+00:07 +23: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Checkout (CU1-01 / 03 / 07 / 10 / 11 / 15 / 26) a double tap on Pay opens ONE delivery-point sheet; its button is disabled for the first moments
+
+Warning: A call to tap() with finder "Found 1 widget with type "KButton" that are ancestors of widget with text "Pay ₹145": [
+  KButton(dependencies: [InheritedCupertinoTheme, MediaQuery, _InheritedTheme, _LocalizationsScope-[GlobalKey#ec942]]),
+]" derived an Offset (Offset(180.0, 541.6)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderOpacity#a61bf relayoutBoundary=up6
+The hit test result at that offset is: HitTestResult(RenderPointerListener#2eb66@Offset(180.0, 541.6), RenderSemanticsAnnotations#15c94@Offset(180.0, 541.6), RenderCustomPaint#75c4c@Offset(180.0, 541.6), RenderSemanticsAnnotations#9a305@Offset(180.0, 541.6), RenderSemanticsAnnotations#aa168@Offset(180.0, 541.6), RenderSemanticsAnnotations#6936d@Offset(180.0, 541.6), RenderTapRegionSurface#327f9@Offset(180.0, 541.6), RenderSemanticsAnnotations#fa368@Offset(180.0, 541.6), RenderSemanticsAnnotations#75ff9@Offset(180.0, 541.6), HitTestEntry<HitTestTarget>#6f69b(_ReusableRenderView#d639c), HitTestEntry<HitTestTarget>#89572(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      main.<anonymous closure>.<anonymous closure> (file:///workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart:699:20)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+#6      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:07 +24: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: tapping a local banner opens that order
+00:08 +25: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: tapping a local banner opens that order
+00:08 +26: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Checkout (CU1-01 / 03 / 07 / 10 / 11 / 15 / 26) the footer says "pay online" (cards work too), not "pay by UPI"
+00:08 +27: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: malformed tap payloads do nothing and do not crash
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:08 +27: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Checkout (CU1-01 / 03 / 07 / 10 / 11 / 15 / 26) keyboard open on 360x640 at 1.3x text: no overflow, the Pay button stays above the keyboard and the notice moves into the list
+[Catalog] Live catalog unavailable: FormatException
+00:08 +28: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Checkout (CU1-01 / 03 / 07 / 10 / 11 / 15 / 26) keyboard open on 360x640 at 1.3x text: no overflow, the Pay button stays above the keyboard and the notice moves into the list
+00:08 +29: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a foreground message refreshes that order once and does not navigate
+00:08 +29: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Checkout (CU1-01 / 03 / 07 / 10 / 11 / 15 / 26) keyboard open on 360x640 at 2.0x text: no overflow, the Pay button stays above the keyboard and the notice moves into the list
+[Catalog] Live catalog unavailable: FormatException
+00:08 +29: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a foreground message refreshes that order once and does not navigate
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:08 +30: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a foreground message refreshes that order once and does not navigate
+00:08 +31: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a foreground message refreshes that order once and does not navigate
+00:08 +32: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a foreground message refreshes that order once and does not navigate
+00:08 +33: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a foreground message refreshes that order once and does not navigate
+00:09 +34: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: a foreground message refreshes that order once and does not navigate
+00:09 +35: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Order history (CU1-06 / 13 / 27, CU2-10) a non-empty cart is only replaced after the student confirms
+00:09 +35: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: Firebase failing to start leaves the app fully working
+[Push] not available on this device; continuing without push
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:09 +36: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: Firebase failing to start leaves the app fully working
+00:09 +37: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: Firebase failing to start leaves the app fully working
+00:09 +38: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Tracking (CU2-01 / 03 / 04 / 05 / 06 / 07 / 08 / 10 / 17) offline first load: "Couldn't load this order" with Try again; Try again recovers
+00:09 +39: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: notifications off: the tracking screen shows a hint with a button that asks, then opens settings
+00:09 +40: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: notifications off: the tracking screen shows a hint with a button that asks, then opens settings
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:09 +41: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: notifications off: the tracking screen shows a hint with a button that asks, then opens settings
+00:10 +42: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: notifications off: the tracking screen shows a hint with a button that asks, then opens settings
+00:10 +43: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: notifications off: the tracking screen shows a hint with a button that asks, then opens settings
+00:10 +44: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: notifications off: the tracking screen shows a hint with a button that asks, then opens settings
+00:10 +45: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Tracking (CU2-01 / 03 / 04 / 05 / 06 / 07 / 08 / 10 / 17) rider position staleness (CU2-04) and GPS chip (CU2-17) "about N min" disappears by itself when the rider stops reporting, and comes back with a new fix
+00:10 +46: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: permission explanation asks once with a reason; Turn on shows the system dialog
+00:10 +47: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: permission explanation asks once with a reason; Turn on shows the system dialog
+00:10 +48: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: permission explanation asks once with a reason; Turn on shows the system dialog
+00:10 +49: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: permission explanation asks once with a reason; Turn on shows the system dialog
+00:10 +50: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: permission explanation asks once with a reason; Turn on shows the system dialog
+00:11 +51: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Me tab, sign-up and reviews (CU2-06, CU1-13 / 17 / 19) the Me tab opens the authenticated support request screen
+00:11 +52: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: permission explanation Not now asks nothing of the system
+00:11 +53: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: permission explanation Not now asks nothing of the system
+00:11 +54: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_screens_test.dart: Me tab, sign-up and reviews (CU2-06, CU1-13 / 17 / 19) sign-up step 1: hardware back leaves the app; later steps go back one step (never while saving)
+00:11 +55: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: permission explanation does nothing without push support or when already allowed
+00:11 +56: /workspace/bilnkit-clone/apps/customer_app/test/push_app_test.dart: permission explanation does nothing without push support or when already allowed
+00:11 +57: loading /workspace/bilnkit-clone/apps/customer_app/test/groups_push_test.dart
+00:13 +57: /workspace/bilnkit-clone/apps/customer_app/test/groups_push_test.dart: a push for the second restaurant opens the whole combined order; a push for the first does not stack another screen
+00:13 +57 ~1: /workspace/bilnkit-clone/apps/customer_app/test/groups_push_test.dart: a push for the second restaurant opens the whole combined order; a push for the first does not stack another screen
+00:14 +58 ~1: /workspace/bilnkit-clone/apps/customer_app/test/groups_push_test.dart: a push for the second restaurant opens the whole combined order; a push for the first does not stack another screen
+00:14 +59 ~1: /workspace/bilnkit-clone/apps/customer_app/test/groups_push_test.dart: a push for the second restaurant opens the whole combined order; a push for the first does not stack another screen
+00:14 +60 ~1: /workspace/bilnkit-clone/apps/customer_app/test/groups_push_test.dart: a push for the second restaurant opens the whole combined order; a push for the first does not stack another screen
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:15 +61 ~1: /workspace/bilnkit-clone/apps/customer_app/test/groups_push_test.dart: a push for the second restaurant opens the whole combined order; a push for the first does not stack another screen
+00:16 +62 ~1: /workspace/bilnkit-clone/apps/customer_app/test/catalog_pagination_test.dart: initial discovery paints first products without hydrating every product page
+00:16 +63 ~1: /workspace/bilnkit-clone/apps/customer_app/test/catalog_pagination_test.dart: a late product page from a previous address cannot reappear
+00:16 +64 ~1: /workspace/bilnkit-clone/apps/customer_app/test/catalog_pagination_test.dart: debounced search finds a real SKU outside the initially loaded products
+00:16 +65 ~1: /workspace/bilnkit-clone/apps/customer_app/test/catalog_pagination_test.dart: debounced search finds a real SKU outside the initially loaded products
+00:16 +66 ~1: /workspace/bilnkit-clone/apps/customer_app/test/catalog_pagination_test.dart: debounced search finds a real SKU outside the initially loaded products
+00:16 +67 ~1: /workspace/bilnkit-clone/apps/customer_app/test/catalog_pagination_test.dart: debounced search finds a real SKU outside the initially loaded products
+00:18 +68 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +69 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +70 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +71 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +72 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +73 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +74 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +75 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +76 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +77 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +78 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +79 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +80 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +81 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +82 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +83 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +84 ~1: /workspace/bilnkit-clone/apps/customer_app/test/support_center_test.dart: support submits an order-linked request and opens the private reply thread at 360px
+00:20 +85 ~1: /workspace/bilnkit-clone/apps/customer_app/test/customer_app_test.dart: Customer App - SplitBillModal Widget Test SplitBillModal displays correct per-person split
+00:21 +86 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: (setUpAll)
+00:21 +86 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Drop point data the 11 points, in the contract order, with the contract coordinates
+00:21 +87 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Drop point data normalisation table: canonical, legacy, case, spaces, rejects
+00:21 +88 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Drop point data dropPointByName understands legacy names too
+00:21 +89 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Drop point data the saved profile value is shown normalised (SessionProvider)
+00:21 +90 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Geometry distance and the "about N min" estimate
+00:22 +91 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: OrderModel map fields new server: dropoff and vendor hasLocation are parsed
+00:22 +92 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: OrderModel map fields old server: nothing new is sent and nothing breaks
+00:22 +93 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: OrderModel map fields unknown drop point and junk values stay null
+00:22 +94 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Drop point picker lists the 11 points grouped Boys / Girls and marks the current one
+00:23 +95 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Drop point picker lists the 11 points grouped Boys / Girls and marks the current one
+00:23 +96 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: OtpBoxes mirrors typed digits and ignores non-digits
+00:23 +97 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Checkout: delivering to + confirm sheet shows the full delivery address and offers Change without campus choices
+00:23 +98 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: HomeScreen renders header, promo, chips and kitchens without overflow
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:24 +99 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: HomeScreen renders header, promo, chips and kitchens without overflow
+00:25 +100 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: HomeScreen renders header, promo, chips and kitchens without overflow
+00:25 +101 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: HomeScreen renders header, promo, chips and kitchens without overflow
+00:25 +102 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Checkout: delivering to + confirm sheet the sheet appears once per payment attempt: paying or retrying the created order never asks again
+00:25 +102 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: HomeScreen without a chosen drop point shows a neutral Delivery point pill
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:25 +103 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Checkout: delivering to + confirm sheet the sheet appears once per payment attempt: paying or retrying the created order never asks again
+00:25 +104 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: HomeScreen shows an explanatory empty state for no search matches
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:26 +105 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Checkout: delivering to + confirm sheet same cart + same point replays the same idempotency key; a different point gets a new one
+00:26 +105 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: Menu: ADD morphs to a stepper and the cart bar appears
+[Catalog] Live catalog unavailable: FormatException
+00:26 +106 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Checkout: delivering to + confirm sheet same cart + same point replays the same idempotency key; a different point gets a new one
+00:26 +106 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: Menu: sold-out dishes show a Sold out state instead of ADD
+[Catalog] Live catalog unavailable: FormatException
+00:26 +107 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: Menu: sold-out dishes show a Sold out state instead of ADD
+00:26 +108 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Checkout: delivering to + confirm sheet a saved India address is used exactly as selected
+00:26 +109 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: CartSheet lists lines, coupon, coins and a bold total
+00:26 +110 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map map unavailable (no key / no Play services): the animated map is shown, nothing crashes
+00:26 +111 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map map unavailable (no key / no Play services): the animated map is shown, nothing crashes
+00:26 +112 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: LiveTrackingScreen with no order explains what will appear
+00:26 +113 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map building the map throws: the animated map takes over
+00:26 +114 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: LiveTrackingScreen (picked up) shows status, next step, rider and journey but no OTP yet
+00:26 +115 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map onMapCreated never fires: the animated map stays visible meanwhile, then replaces the map after 6 s
+00:26 +116 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: LiveTrackingScreen at the gate shows the server OTP and no customer-side verification
+00:27 +117 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map map ready: the real map replaces the strip; pins come from the order
+00:27 +118 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: LiveTrackingScreen renders cancelled and delivered states
+00:27 +119 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map the restaurant pin is left out without hasLocation (placeholder pin / old server); legacy drop names still map
+00:27 +120 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map the restaurant pin is left out without hasLocation (placeholder pin / old server); legacy drop names still map
+00:27 +121 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: ReviewModal renders rating sections without overflow
+00:27 +122 ~1: /workspace/bilnkit-clone/apps/customer_app/test/ui_screens_test.dart: ReviewModal renders rating sections without overflow
+00:27 +123 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map delivered / cancelled orders do not load a map
+00:27 +124 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map the rider glides between fixes, and a fix does not notify the order provider (no screen rebuild)
+00:27 +125 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map on the way: "Rider is about N min away", labelled as a rough estimate
+00:27 +126 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map before pickup the rider is neither drawn nor timed
+00:27 +127 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Tracking map a stale fix (older than 2 minutes) is not turned into an estimate
+00:27 +128 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Production factory without the native side (tests, desktop, no key) it reports "not available" instead of throwing
+00:27 +129 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Production factory the default tracking screen (no injected factory) shows the animated map in tests
+00:27 +130 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: Production factory normalisation also covers the session helper used by Home and Profile
+00:27 +131 ~1: /workspace/bilnkit-clone/apps/customer_app/test/campus_drop_points_test.dart: (tearDownAll)
+00:28 +131 ~1: /workspace/bilnkit-clone/apps/customer_app/test/order_fixtures_test.dart: the fixtures file exists
+00:28 +132 ~1: /workspace/bilnkit-clone/apps/customer_app/test/order_fixtures_test.dart: every OrderView sample (all viewers, REST and socket) parses
+00:28 +133 ~1: /workspace/bilnkit-clone/apps/customer_app/test/order_fixtures_test.dart: customer views: visibility facts there are customer samples for unpaid, paid, at-gate and refunded
+00:28 +134 ~1: /workspace/bilnkit-clone/apps/customer_app/test/order_fixtures_test.dart: customer views: visibility facts OTP only at ARRIVED_AT_GATE; rider (and phone) only once assigned; no raw columns
+00:28 +135 ~1: /workspace/bilnkit-clone/apps/customer_app/test/order_fixtures_test.dart: customer views: visibility facts unpaid -> payBy deadline from the server; paid & placed -> acceptBy; refunded -> refund wording data
+00:28 +136 ~1: /workspace/bilnkit-clone/apps/customer_app/test/order_fixtures_test.dart: customer views: visibility facts display code is # + last 6 chars, uppercased
+00:28 +137 ~1: /workspace/bilnkit-clone/apps/customer_app/test/order_fixtures_test.dart: rider_location parses exactly as the backend emits it
+00:28 +138 ~1: /workspace/bilnkit-clone/apps/customer_app/test/order_fixtures_test.dart: error samples map to error kinds and keep the server code
+00:28 +139 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: nearby discovery follows the product cursor past the original first 50 rows
+00:28 +140 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +141 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +142 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +143 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +144 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +145 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +146 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +147 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +148 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +149 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +150 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +151 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +152 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +153 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +153 ~1: /workspace/bilnkit-clone/apps/customer_app/test/push_service_test.dart: logout a failing DELETE never blocks the local clean-up or throws
+[Push] could not remove the device token (ignored): StateError
+00:29 +154 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +155 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +156 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +157 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +158 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +159 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +160 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +161 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +162 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +163 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +163 ~1: /workspace/bilnkit-clone/apps/customer_app/test/push_service_test.dart: Firebase unavailable init returning false leaves a working service with no push
+[Push] not available on this device; continuing without push
+00:29 +164 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +164 ~1: /workspace/bilnkit-clone/apps/customer_app/test/push_service_test.dart: Firebase unavailable init throwing is swallowed
+[Push] start failed, push disabled: StateError
+00:29 +165 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +165 ~1: /workspace/bilnkit-clone/apps/customer_app/test/push_service_test.dart: Firebase unavailable init hanging is given up on after the timeout
+[Push] not available on this device; continuing without push
+00:29 +166 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +167 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +168 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +169 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +170 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +171 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +172 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +173 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +174 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +175 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:29 +175 ~1: /workspace/bilnkit-clone/apps/customer_app/test/push_service_test.dart: foreground messages a failing banner never throws
+[Push] could not show a banner (ignored): StateError
+00:29 +176 ~1: /workspace/bilnkit-clone/apps/customer_app/test/grocery_products_test.dart: product details select a real pack, preserve paise and disable unavailable variants
+00:31 +177 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: (setUpAll)
+00:31 +177 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: models and helpers maskedPhone hides the middle digits for any stored format
+00:31 +178 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: models and helpers initials and first name
+00:31 +179 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: models and helpers fromJson parses the v2 user object, including nulls
+00:31 +180 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: models and helpers copyWith can clear the hostel
+00:31 +181 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: models and helpers legacy hostel names map onto the drop-off list
+00:31 +182 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: models and helpers phone normaliser strips country code and formatting
+00:31 +183 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: models and helpers name validation follows the server rule (backend/src/utils/names.ts): any-script letters, marks, digits, space . ' ’ -, 2-60 chars, first a letter
+00:31 +184 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: models and helpers Google failures map to plain sentences and a cancel stays silent
+00:31 +185 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: CustomerApiService googleSignIn posts the ID token, stores the JWT and returns the typed user
+00:31 +186 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: CustomerApiService googleSignIn failures carry the server message and never save a token
+[Customer API] Google sign-in failed: ClientException: offline
+00:31 +187 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: CustomerApiService updateProfile sends only the fields given, with the Bearer token
+00:31 +188 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: CustomerApiService profile errors surface the field so the form can point at the input
+00:31 +189 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: CustomerApiService deleteAccount reports the 409 conflict message
+00:31 +190 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: CustomerApiService HTTP 401 on authenticated calls clears the token and fires onUnauthorized
+00:31 +191 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: CustomerApiService fetchProfile keeps the token when the network is down
+[Customer API] Session validation failed: ClientException: offline
+00:31 +192 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: SessionProvider Google sign-in new account: token saved, status needsProfile, Google name suggested
+00:31 +193 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: SessionProvider Google sign-in returning student goes straight to signedIn and seeds onUserLoaded
+00:31 +194 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: SessionProvider Google sign-in cancelling the Google picker is silent and sends nothing
+00:31 +195 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: SessionProvider Google sign-in Play services / offline / misconfiguration produce messages and no request
+00:31 +196 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: SessionProvider Google sign-in server 401 / 403 / offline / outage show the right text, leave no session, and sign Google out
+[Customer API] Google sign-in failed: ClientException: offline
+00:31 +197 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: SessionProvider Google sign-in a second tap while signing in is ignored
+00:31 +198 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: SessionProvider Google sign-in logout, account deletion and session expiry all sign the Google account out
+00:31 +199 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: SessionProvider Google sign-in a refused deletion keeps the Google account signed in
+00:31 +200 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: SessionProvider Google sign-in structured address selection is isolated to the signed-in account and cleared on logout
+00:31 +201 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +202 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +203 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +204 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +205 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +206 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +207 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +208 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +209 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +210 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +210 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Home chips from the server list loading the real answer gives All + the server list in the server order, with icon keys
+[Categories] dishes unavailable: _Exception
+00:32 +211 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +211 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Home chips from the server list at most 10 server chips are shown after All; names repeated in another case count once
+[Categories] dishes unavailable: _Exception
+00:32 +212 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +212 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Home chips from the server list 404, an empty list, malformed JSON and a failing network all keep the derived chips
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Categories] home unavailable: FormatException
+[Categories] dishes unavailable: _Exception
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Categories] home unavailable: SocketLikeException
+[Categories] dishes unavailable: SocketLikeException
+00:32 +213 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +213 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Home chips from the server list a failed refresh keeps the last good list; an empty refresh returns to the derived chips
+[Categories] dishes unavailable: _Exception
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:32 +214 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +215 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +215 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Home chips from the server list refreshHome (open, resume, pull-to-refresh) also refreshes the categories and tolerates an old server; loadCatalog alone does not
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:32 +216 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +216 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Home chips from the server list concurrent loads share one request pair; disposing during a load does not throw
+[Categories] dishes unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:32 +217 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +218 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +219 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +220 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +221 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +222 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +223 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +223 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Dish category tabs inside a restaurant if only the dishes request fails, the Home list still orders the tabs
+[Categories] dishes unavailable: _Exception
+00:32 +224 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen shows the welcome, one Google button and the privacy line without overflow
+00:32 +225 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Dish category tabs inside a restaurant the menu screen shows its tabs in the admin order
+00:32 +226 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Dish category tabs inside a restaurant the menu screen shows its tabs in the admin order
+00:32 +227 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Dish category tabs inside a restaurant the menu screen shows its tabs in the admin order
+00:32 +227 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthScreen offline after picking an account explains the network problem
+[Customer API] Google sign-in failed: ClientException: offline
+00:32 +228 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Dish category tabs inside a restaurant the menu screen shows its tabs in the admin order
+00:33 +229 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Dish category tabs inside a restaurant the menu screen shows its tabs in the admin order
+00:33 +230 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Dish category tabs inside a restaurant the menu screen shows its tabs in the admin order
+00:33 +231 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen step 1 blocks empty, too-short, non-letter and non-Indian numbers with clear text
+00:33 +232 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Screens Home shows the server chips with their icons, All first, and filters by the chip
+[Categories] dishes unavailable: _Exception
+00:34 +233 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Screens Home shows the server chips with their icons, All first, and filters by the chip
+00:34 +234 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen the second step requires an explicit avatar and never asks for a hostel
+00:34 +234 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Screens on an old server (404) Home still shows the derived chips and the legacy category text
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+00:34 +235 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Screens on an old server (404) Home still shows the derived chips and the legacy category text
+00:34 +236 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen back and forward preserve the name, phone and selected avatar
+00:34 +237 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: Screens the restaurant card and the menu header show cuisines joined with " • " (legacy text when none)
+00:34 +238 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen one authenticated save sends only name, phone and avatar and enters the app
+00:34 +239 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen one authenticated save sends only name, phone and avatar and enters the app
+00:34 +240 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen one authenticated save sends only name, phone and avatar and enters the app
+00:34 +241 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen one authenticated save sends only name, phone and avatar and enters the app
+00:34 +242 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen one authenticated save sends only name, phone and avatar and enters the app
+00:34 +243 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen one authenticated save sends only name, phone and avatar and enters the app
+00:34 +244 ~1: /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: KImage decode size (memory) placeholder, empty-url fallback and error fallback are unchanged
+00:34 +245 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen a customer with an old student flag has the same general profile flow
+00:35 +246 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen a server phone validation error returns to the field and preserves the avatar
+00:35 +247 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen a network failure on Finish preserves data and allows a real retry
+[Customer API] Update profile failed: SocketException: offline
+00:35 +248 ~1: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen a partially completed profile restores its saved details without a student question
+00:36 +248 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen a partially completed profile restores its saved details without a student question
+00:36 +249 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen both profile steps fit 360x640 at text scale 1.3
+00:36 +250 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileSetupScreen both profile steps fit 360x640 at text scale 2.0
+00:36 +251 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen shows avatar, name, e-mail, masked phone, student status, hostel, coins and version
+00:36 +252 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen a non-student sees "chosen at checkout" instead of a hostel row; a missing phone invites adding one
+00:36 +253 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen orders summary counts delivered orders, or explains there are none
+00:36 +254 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen changing the avatar: Save is off until a different one is picked, then PUTs avatarId
+00:37 +255 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout server total differs: shown before paying; cancelled payment offers retry on the SAME order; success opens tracking
+00:37 +256 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout server total differs: shown before paying; cancelled payment offers retry on the SAME order; success opens tracking
+00:37 +257 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout server total differs: shown before paying; cancelled payment offers retry on the SAME order; success opens tracking
+00:38 +258 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout server total differs: shown before paying; cancelled payment offers retry on the SAME order; success opens tracking
+00:38 +259 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout server total differs: shown before paying; cancelled payment offers retry on the SAME order; success opens tracking
+00:38 +259 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen selecting another saved address persists its default and updates the session
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:38 +260 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout server total differs: shown before paying; cancelled payment offers retry on the SAME order; success opens tracking
+00:38 +260 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen closing the picker leaves the current saved address selected and sends no writes
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:38 +261 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout server total differs: shown before paying; cancelled payment offers retry on the SAME order; success opens tracking
+00:39 +262 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen deletion requires confirmation and then chooses the server’s remaining default
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:39 +263 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout same total: payment opens straight away
+00:39 +264 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen a refused address save keeps the old selection and the picker explains why
+00:39 +265 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout server refusals and offline show clear messages and never a stuck spinner
+00:39 +266 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout server refusals and offline show clear messages and never a stuck spinner
+00:39 +267 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen log out asks first, notifies the backend, ends the session and signs Google out
+00:39 +268 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout payment window expired on the server: back to the cart, next tap places a new order
+00:39 +268 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen log out still works when the backend is unreachable
+[Customer API] Logout notice failed (ignored): ClientException: offline
+00:39 +269 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout payment window expired on the server: back to the cart, next tap places a new order
+00:40 +270 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen delete needs an explicit acknowledgement and shows the 409 reason inline
+00:40 +271 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout a kitchen that is not in the live catalog cannot be ordered from
+00:40 +272 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: ProfileScreen confirmed deletion signs out, clears the token and signs Google out
+00:40 +273 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout leaving and re-opening checkout shows the same unpaid order instead of creating another
+00:40 +274 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout leaving and re-opening checkout shows the same unpaid order instead of creating another
+00:40 +275 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: Checkout drop-off a selected structured address is shown in checkout and permits price confirmation
+00:40 +276 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout cancelling the unpaid order at checkout returns to the editable cart
+00:40 +277 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Checkout cancelling the unpaid order at checkout returns to the editable cart
+00:41 +278 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthGate (whole app) brand-new student: Google -> name/phone and avatar -> Home with address selection
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:41 +279 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Tracking states placed + unpaid: retry payment, deadline and cancel; cancelling shows the result
+00:41 +280 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthGate (whole app) returning student skips sign-up; logout resets user state and signs Google out
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:41 +281 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Tracking states placed + paid can be cancelled; accepted cannot
+00:41 +281 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthGate (whole app) a non-student sees "Delivery point" on Home until they choose one at checkout
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:41 +282 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Tracking states placed + paid can be cancelled; accepted cannot
+00:41 +283 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Tracking states placed + paid can be cancelled; accepted cannot
+00:41 +284 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Tracking states placed + paid can be cancelled; accepted cannot
+00:42 +285 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthGate (whole app) HTTP 401 in the middle of a session closes pushed screens and shows the welcome
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:42 +286 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Tracking states restaurant rejection with reason and refund wording only when REFUNDED
+00:42 +287 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthGate (whole app) a 401 during the last sign-up save returns to the welcome
+00:42 +288 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthGate (whole app) a 401 during the last sign-up save returns to the welcome
+00:42 +289 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Tracking states delivered: rating credits the server's coin balance and hides the button
+00:42 +289 ~2: /workspace/bilnkit-clone/apps/customer_app/test/account_flow_test.dart: AuthGate (whole app) unreachable backend keeps the session and offers a retry or another account
+[Customer API] Session validation failed: ClientException: offline
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:42 +290 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Tracking states delivered: rating credits the server's coin balance and hides the button
+00:42 +291 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Order history real empty state after loading
+00:43 +292 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Order history error with retry, then paginated list with load more
+00:43 +293 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: Whole app app start restores the active order from the server; logout clears it
+[Categories] home unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: _Exception
+00:43 +294 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_flow_widgets_test.dart: (tearDownAll)
+00:44 +294 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: OrderModel (contract 2.1) parses a full OrderView
+00:44 +295 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: OrderModel (contract 2.1) the OTP is only kept at ARRIVED_AT_GATE and must look like a code
+00:44 +296 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: OrderModel (contract 2.1) rejects payloads that are not orders and accepts {data: OrderView}
+00:44 +297 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: OrderModel (contract 2.1) unpaid / cancel rules and the 15-minute payment deadline
+00:44 +298 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: OrderModel (contract 2.1) merge rule: newer updatedAt wins; equal timestamps never move backwards
+00:44 +299 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: OrderModel (contract 2.1) rider_location payloads ({orderId, driverId, lat, lng, heading, at})
+00:44 +300 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: checkout idempotency (clientRequestId) an unchanged cart reuses its unpaid order: one POST, same order
+00:44 +301 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: checkout idempotency (clientRequestId) a double tap while the POST is in flight sends one request
+00:44 +302 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: checkout idempotency (clientRequestId) a retry after a timeout sends the SAME key; a changed cart gets a new key
+00:44 +303 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: checkout idempotency (clientRequestId) the request body follows contract 2.2 (dishes summed, coupon, key)
+00:44 +304 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: checkout idempotency (clientRequestId) once the cart's order is cancelled/expired, the next checkout creates a new one
+00:44 +305 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: payment success: create-order -> sheet -> verify -> server copy is PAID
+00:44 +306 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: payment cancelled sheet keeps the order PENDING; retry pays the SAME order (no new POST)
+00:44 +307 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: payment a double tap on Pay opens one payment sheet
+00:44 +308 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: payment verify fails on the network after Razorpay success: "confirming", never "pay again"
+00:44 +309 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: payment server answers PENDING_CONFIRMATION (success but still unpaid): "confirming", then paid when the order flips
+00:44 +310 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: payment create-order refused because the webhook already marked it paid -> paid
+00:44 +311 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: payment create-order refused because the order expired -> orderClosed with the reason
+00:44 +312 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: payment the sheet is never opened for an amount different from the order total
+00:44 +313 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: payment external wallets are refused with a plain message
+00:44 +314 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: polling, socket and merging watching a live order polls it; older answers never overwrite newer ones; finished orders stop polling
+00:44 +315 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: polling, socket and merging unwatching stops the timer
+00:44 +316 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: polling, socket and merging the socket gets the JWT, joins order_<id> on connect, and a late REST answer loses to a newer socket event
+00:44 +317 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: polling, socket and merging rider_location is kept only for an assigned, live order
+00:44 +318 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: polling, socket and merging no token -> no socket (REST polling still works)
+00:44 +319 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: session: restore, history paging, logout, account switch sign-in restores active orders and the first history page; more pages use the cursor
+00:44 +320 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: session: restore, history paging, logout, account switch an old backend that ignores scope cannot resurrect long-finished orders as "current"
+00:44 +321 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: session: restore, history paging, logout, account switch an order created while the active list was loading is not dropped by it
+00:44 +322 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: session: restore, history paging, logout, account switch logout wipes everything and ignores answers that arrive afterwards
+00:44 +323 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: session: restore, history paging, logout, account switch switching account clears the previous student's orders and checkout key
+00:44 +324 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: cancel and review cancel refused (already accepted) loads the latest copy
+00:44 +325 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: cancel and review a review is marked done only when the server accepts it (or says it already has it)
+00:44 +326 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: real backend codes (backend/src/services/orderFlow.ts, routes/orders.ts) PAYMENT_WINDOW_EXPIRED: order closed, and the next checkout uses a new key even before the job cancels it
+00:44 +327 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: real backend codes (backend/src/services/orderFlow.ts, routes/orders.ts) verify ORDER_CANCELLED: shows the automatic refund, takes the server copy from the error body
+00:44 +328 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: real backend codes (backend/src/services/orderFlow.ts, routes/orders.ts) verify DUPLICATE_PAYMENT counts as paid; PAYMENT_AMOUNT_MISMATCH fails without an endless "confirming"
+00:44 +329 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: real backend codes (backend/src/services/orderFlow.ts, routes/orders.ts) ALREADY_PAID on create-order: reload and treat as paid
+00:44 +330 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: real backend codes (backend/src/services/orderFlow.ts, routes/orders.ts) codes map to customer wording
+00:44 +331 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: real backend codes (backend/src/services/orderFlow.ts, routes/orders.ts) isReviewed from the server hides the review; a refused join_room is retried
+00:44 +332 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: real backend codes (backend/src/services/orderFlow.ts, routes/orders.ts) rider_location from a rider who is not assigned to the order is ignored
+00:44 +333 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: HttpOrderApi over HTTP (error mapping, query, body) POST /orders sends the contract body with the Bearer token and parses 201 {data}
+00:44 +334 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: HttpOrderApi over HTTP (error mapping, query, body) GET /orders sends scope/limit/cursor and reads nextCursor
+00:44 +335 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: HttpOrderApi over HTTP (error mapping, query, body) status codes map to error kinds with the server message
+00:44 +336 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: HttpOrderApi over HTTP (error mapping, query, body) offline, garbage 200 and 401 are classified
+[Order API] GET /orders/x: unexpected body (HTTP 200)
+00:44 +337 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: HttpOrderApi over HTTP (error mapping, query, body) create-order: Razorpay params parsed; an amount under ₹1 or missing key is refused
+[Order API] POST /payments/create-order: unexpected body (HTTP 200)
+00:44 +338 ~2: /workspace/bilnkit-clone/apps/customer_app/test/order_provider_test.dart: HttpOrderApi over HTTP (error mapping, query, body) verify-signature succeeds with or without an order in the body
+00:44 +339 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-07 / CU1-27 money formatting whole rupees print without decimals, paise print both digits, thousands are grouped
+00:45 +340 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-07 / CU1-27 money formatting the WELCOME20 example from the report: ₹188 + 25 - 37.60 = ₹175.40, shown the same everywhere
+00:45 +341 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-04 session restore only signs out for 401 / 403 / 404 429, 500, 502, 503 and an HTML error page keep the token and offer a retry
+00:45 +342 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-04 session restore only signs out for 401 / 403 / 404 401, 403 and 404 mean the token / account is no good: token cleared, signed out
+00:45 +343 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-04 session restore only signs out for 401 / 403 / 404 a retry from the unreachable screen signs in once the backend answers
+00:45 +344 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-02 / CU1-03 / CU1-09 the catalog is only what the server returns first load fails -> failed (with retry); success -> ready; an empty answer is "no kitchens", not an error
+[Catalog] Live catalog unavailable: _Exception
+00:45 +345 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-02 / CU1-03 / CU1-09 the catalog is only what the server returns a failed refresh keeps what is on screen; a successful one replaces open / sold-out state
+[Catalog] Live catalog unavailable: FormatException
+00:45 +346 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-02 / CU1-03 / CU1-09 the catalog is only what the server returns concurrent loads share one request
+00:45 +347 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-02 / CU1-03 / CU1-09 the catalog is only what the server returns category chips come from the live menus and every chip matches at least one kitchen
+00:45 +348 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-02 / CU1-03 / CU1-09 the catalog is only what the server returns a selected chip that disappears after a reload falls back to All
+00:45 +349 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU2-01 a cancelled order whose refund is pending stays watched the model: refund in progress = cancelled + paid + refund not failed/done
+00:45 +350 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU2-01 a cancelled order whose refund is pending stays watched cancel event (PAID, refund PENDING) then the REFUNDED event: still polled and joined in between, and the second event is applied
+00:45 +351 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU2-01 a cancelled order whose refund is pending stays watched polling finds the refund result even when the socket is not connected
+00:45 +352 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU2-01 a cancelled order whose refund is pending stays watched the watch is bounded: about 10 minutes after the last update it stops, a failed refund stops at once
+00:45 +353 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU2-01 a cancelled order whose refund is pending stays watched a delivered order and a plain cancelled (unpaid) order are not polled
+00:45 +354 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU2-03 an order that cannot be loaded 404 / 403: the error is remembered and polling stops; Retry works once the order exists
+00:45 +355 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU2-03 an order that cannot be loaded offline: the error is shown (Retry) and polling continues so it recovers by itself
+00:45 +356 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU2-20 the socket can start after a failed token read tokenProvider throws once: no socket, but the next sync tries again (the "connecting" flag is not stuck)
+[Orders] could not read the session token for the socket: StateError
+00:45 +357 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-12 checkout note changes a retry with the same note reuses the key; an edited note (no order exists yet) gets a new key
+00:45 +358 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-12 checkout note changes 409 CLIENT_REQUEST_MISMATCH starts a fresh checkout id and retries once
+00:45 +359 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-12 checkout note changes the code also has customer wording if it ever reaches the screen
+00:45 +360 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-01 first-order coupon is only offered when the student has no earlier order no orders at all -> yes; unknown (history failed) -> no
+00:45 +361 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-01 first-order coupon is only offered when the student has no earlier order a delivered order, a live order, or more history pages -> no; only cancelled orders -> yes (the server releases the code)
+00:45 +362 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-01 first-order coupon is only offered when the student has no earlier order logging out forgets it
+00:45 +363 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU1-11 INVALID_ITEMS wording (no raw ids) quantity, unknown dish and sold-out messages become plain text
+00:45 +364 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU2-05 / CU2-06 phone and e-mail links dialable numbers keep digits and a leading plus
+00:45 +365 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU2-05 / CU2-06 phone and e-mail links dial opens tel: with the cleaned number; support opens mailto: to the support address; failures answer false
+[Links] could not open tel: StateError
+00:45 +366 ~2: /workspace/bilnkit-clone/apps/customer_app/test/bughunt_logic_test.dart: CU2-05 / CU2-06 phone and e-mail links messages that tell the student to contact support carry the address
+00:45 +367 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: OrderModel.group (Docs/22 10.4) a single-restaurant order has no group; a child parses its group, stops included
+00:45 +368 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: OrderModel.group (Docs/22 10.4) never crashes on odd or restaurant-shaped group values
+00:45 +369 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: quote and group responses the real quote shape (Docs/22 10.2) parses
+00:45 +370 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: quote and group responses a quote without the essentials is rejected; a missing max falls back to 3
+00:45 +371 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: quote and group responses GroupView: children in order, payOrderId is the primary; junk is refused
+00:45 +372 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: quote and group responses the requests carry the real fields
+00:45 +373 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: quote and group responses error bodies carry vendorId and maxRestaurants
+00:45 +374 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: composite order (what screens show for a combined order) money adds up to the group total, id is the primary, names are joined
+00:45 +375 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: composite order (what screens show for a combined order) status is the least advanced restaurant; one cancelled restaurant cancels the whole order
+00:45 +376 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: composite order (what screens show for a combined order) canCancel only while EVERY restaurant is still placed
+00:45 +377 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: composite order (what screens show for a combined order) cancelled: the triggering restaurant's reason is used, not the generic sibling text; refund is the primary's
+00:45 +378 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: composite order (what screens show for a combined order) while some restaurants are not loaded the group total stands in for the sum, and the stops name the rest
+00:45 +379 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: composite order (what screens show for a combined order) the OTP is shared by the children (only parsed at the gate)
+00:45 +380 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: CartProvider: several restaurants adding from another restaurant keeps the cart; lines are grouped per restaurant with subtotals
+00:45 +381 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: CartProvider: several restaurants estimate = subtotal + 25 + 15 per extra restaurant - coupon (fallback only)
+00:45 +382 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: CartProvider: several restaurants the limit refuses another restaurant (nothing changes) but not more of a restaurant already in the cart
+00:45 +383 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: CartProvider: several restaurants assumes 3 before the first quote; 1 = feature off = the old "replace the cart" behaviour
+00:45 +384 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: CartProvider: several restaurants remove one restaurant, decrement a restaurant's last dish, clear all; the primary moves on
+00:45 +385 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: CartProvider: several restaurants max quantity per dish still applies across the cart; the same dish at two restaurants is two lines
+00:45 +386 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: CartProvider: several restaurants an old cart keeps working when the limit drops below its size (checkout explains)
+00:45 +387 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: QuoteController a burst of changes sends ONE request (debounce) and ends ready
+00:45 +388 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: QuoteController the same cart and coupon never asks twice; a changed one asks again
+00:46 +389 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_logic_test.dart: QuoteController a stale answer (older cart finishing late) is ignored
+00:46 +390 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +391 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +392 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +393 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +394 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +395 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +396 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +397 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +398 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +399 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +400 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +401 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +402 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +403 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +404 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +405 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +406 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +407 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:46 +408 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: the bill comes from the server quote ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders
+00:47 +409 ~2: /workspace/bilnkit-clone/apps/customer_app/test/grocery_redesign_test.dart: grocery cards and navigation 320.0 px at 1.0 text
+00:48 +410 ~2: /workspace/bilnkit-clone/apps/customer_app/test/grocery_redesign_test.dart: grocery cards and navigation 320.0 px at 1.0 text
+00:48 +411 ~2: /workspace/bilnkit-clone/apps/customer_app/test/grocery_redesign_test.dart: grocery cards and navigation 320.0 px at 1.0 text
+00:48 +412 ~2: /workspace/bilnkit-clone/apps/customer_app/test/grocery_redesign_test.dart: grocery cards and navigation 320.0 px at 1.0 text
+00:48 +413 ~2: /workspace/bilnkit-clone/apps/customer_app/test/grocery_redesign_test.dart: grocery cards and navigation 320.0 px at 1.0 text
+00:48 +414 ~2: /workspace/bilnkit-clone/apps/customer_app/test/grocery_redesign_test.dart: grocery cards and navigation 320.0 px at 1.0 text
+00:48 +415 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order shows each restaurant with its subtotal; one POST /order-groups; payment on the PRIMARY id for the group total; retry, cancel copy, success and tracking
+00:49 +416 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order shows each restaurant with its subtotal; one POST /order-groups; payment on the PRIMARY id for the group total; retry, cancel copy, success and tracking
+00:49 +417 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order shows each restaurant with its subtotal; one POST /order-groups; payment on the PRIMARY id for the group total; retry, cancel copy, success and tracking
+00:49 +418 ~2: /workspace/bilnkit-clone/apps/customer_app/test/grocery_redesign_test.dart: grocery cards and navigation 360.0 px at 1.0 text
+00:49 +419 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order cancelling the unpaid combined order cancels every restaurant (one request) and returns to the cart
+00:49 +420 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order cancelling the unpaid combined order cancels every restaurant (one request) and returns to the cart
+00:49 +421 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order cancelling the unpaid combined order cancels every restaurant (one request) and returns to the cart
+00:49 +422 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order cancelling the unpaid combined order cancels every restaurant (one request) and returns to the cart
+00:49 +423 ~2: /workspace/bilnkit-clone/apps/customer_app/test/grocery_redesign_test.dart: grocery cards and navigation 390.0 px at 1.3 text
+00:49 +424 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order same cart, network failure twice: same idempotency key both times
+00:50 +425 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order same cart, network failure twice: same idempotency key both times
+00:50 +426 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order same cart, network failure twice: same idempotency key both times
+00:50 +427 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order same cart, network failure twice: same idempotency key both times
+00:50 +428 ~2: /workspace/bilnkit-clone/apps/customer_app/test/grocery_redesign_test.dart: grocery cards and navigation 430.0 px at 2.0 text
+00:50 +429 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order a server total that differs from the quote is shown as "Updated total" before any money is taken
+00:50 +430 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order a server total that differs from the quote is shown as "Updated total" before any money is taken
+00:50 +431 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order a closed restaurant is named; an old server (404) switches the cart back to one restaurant
+00:50 +432 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order a restaurant whose live menu has not loaded blocks the order by name
+00:51 +433 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Checkout: combined order 360x640 at 1.3x text: no overflow before and after placing
+00:51 +434 ~2: /workspace/bilnkit-clone/apps/customer_app/test/widget_test.dart: Customer App launches successfully
+00:51 +435 ~2: /workspace/bilnkit-clone/apps/customer_app/test/widget_test.dart: Customer App launches successfully
+00:52 +436 ~2: /workspace/bilnkit-clone/apps/customer_app/test/widget_test.dart: Customer App launches successfully
+00:52 +437 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Cart sheet: several restaurants Clear cart asks first and then empties it
+00:52 +438 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Cart sheet: several restaurants 2x text on a small phone: no overflow
+00:52 +439 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order a row per restaurant, one total, opens from any restaurant's id; cancel is offered while every restaurant is placed
+00:52 +440 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order each restaurant has its own status chip; no cancel once one restaurant accepted
+00:52 +441 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order ONE rider card for the whole order
+00:52 +442 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order ONE delivery verification code card at the gate (the server code), one total
+00:52 +443 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order unpaid: pay again on the primary, and the cancel copy says it cancels the whole order
+00:53 +444 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order cancel: confirmation says whole order, one request, every restaurant cancelled, refund text
+00:53 +445 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order CANNOT_CANCEL from the server is shown plainly
+00:53 +446 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order a restaurant rejected: whole order cancelled with THAT restaurant's reason, refund wording only when refunded
+00:53 +447 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order payment never completed: expired, no money talk
+00:53 +448 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order "Order again" puts every restaurant back in the cart
+00:54 +449 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order 360x640 at 1.3x text: every state without overflow
+00:54 +450 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Tracking a combined order 360x640 at 2.0x text: every state without overflow
+00:55 +451 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Orders list and reorder ONE card per combined order (merged by group id), a lone order stays as it is
+00:55 +452 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Orders list and reorder tapping a live combined order opens the group tracking screen
+00:55 +453 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Orders list and reorder reorder puts every restaurant's dishes back and opens the cart
+00:55 +454 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Orders list and reorder reorder skips a restaurant that is no longer in the app and says so
+00:55 +455 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Orders list and reorder reorder respects the restaurant limit
+00:56 +456 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: Orders list and reorder 2x text on a small phone: no overflow
+00:56 +457 ~2: /workspace/bilnkit-clone/apps/customer_app/test/groups_widgets_test.dart: (tearDownAll)
+00:56 +457 ~2: All tests passed!

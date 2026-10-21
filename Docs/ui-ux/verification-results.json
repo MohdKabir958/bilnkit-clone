@@ -561,5 +561,6 @@
       "totalBytes": 45705857,
       "apkZipSignature": true
     }
-  ]
+  ],
+  "historicalRecord": "20 October redesign verification; superseded by ../qa/app-verification.json and ../qa/backend-full-run-summary.json for final polish."
 }

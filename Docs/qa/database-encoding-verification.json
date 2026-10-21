@@ -1,0 +1,14 @@
+[
+  {
+    "datname": "grozo_final_1792554733571_test",
+    "encoding": "SQL_ASCII",
+    "datcollate": "C",
+    "datctype": "C"
+  },
+  {
+    "datname": "grozo_final_1792555287726_test",
+    "encoding": "UTF8",
+    "datcollate": "C.UTF-8",
+    "datctype": "C.UTF-8"
+  }
+]
