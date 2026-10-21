@@ -8,6 +8,7 @@
     "db:deploy": "node scripts/migrate.mjs",
     "smoke:runtime": "node scripts/smoke.mjs",
     "start": "node dist/index.js",
+    "start:render": "node scripts/migrate-hosted.mjs && node scripts/start-render.mjs",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "test": "jest --runInBand",
     "seed:demo-partners": "node dist/utils/seedDemoPartners.js",
