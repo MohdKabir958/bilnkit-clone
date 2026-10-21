@@ -4,7 +4,7 @@
   "scope": "Tracked source/config/test files only; no .env, provider secrets, uploads or account records read.",
   "limitations": "Source reference inventory is navigation aid, not proof of authorization. Middleware inside handlers and ownership queries require manual review. Historical migrations are preserved, not renamed.",
   "counts": {
-    "referencedFiles": 225,
+    "referencedFiles": 226,
     "endpoints": 163,
     "mounts": 22
   },
@@ -15998,6 +15998,27 @@
       ]
     },
     {
+      "path": "web/super_admin/scripts/check-hosted-auth.mjs",
+      "sha256": "0f5f1512d5bba1e5b6a1eb161f1e63190fc868249130af131ff1c351e76b5cea",
+      "references": [
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 10
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 12
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 26
+        }
+      ]
+    },
+    {
       "path": "web/super_admin/src/App.test.tsx",
       "sha256": "2e7fbe21a2cfc78bb19749ef4c042d3b3790e25de6ff4e078d2a6273d6b13d31",
       "references": [
@@ -16169,7 +16190,7 @@
     },
     {
       "path": "web/super_admin/src/auth/ClerkAdmin.test.tsx",
-      "sha256": "db246ac9fd6a9091bffa19b963f5a7897c50d68596054528e6a044c9342c557a",
+      "sha256": "aa80c30b5965df851ff4fcf0827ad785598614364535d7ea1967854b9d2255ff",
       "references": [
         {
           "kind": "identity",
@@ -16179,78 +16200,83 @@
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 9
+          "line": 12
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 9
+          "line": 12
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 25
+          "line": 29
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 27
+          "line": 43
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 27
+          "line": 54
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 33
+          "line": 54
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 38
+          "line": 60
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 42
+          "line": 65
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 48
+          "line": 69
+        },
+        {
+          "kind": "identity",
+          "symbol": "Clerk",
+          "line": 75
         },
         {
           "kind": "session",
           "symbol": "installClerkTokenGetter",
-          "line": 13
+          "line": 16
         },
         {
           "kind": "session",
           "symbol": "clearAuthToken",
-          "line": 13
+          "line": 16
         }
       ]
     },
     {
       "path": "web/super_admin/src/auth/ClerkAdmin.tsx",
-      "sha256": "caafebd9701682fe7249f440d9c8e2e8f70bee38bb9c1687babca4b3499770ae",
+      "sha256": "e9b1edcfb711fdb7fd76dd1576910ff666e91b2748ba2e682f1c888a69826fb5",
       "references": [
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 17
+          "line": 47
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 30
+          "line": 60
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 36
+          "line": 66
         },
         {
           "kind": "session",
@@ -16265,22 +16291,22 @@
         {
           "kind": "session",
           "symbol": "clearAuthToken",
-          "line": 17
+          "line": 47
         },
         {
           "kind": "session",
           "symbol": "installClerkTokenGetter",
-          "line": 18
+          "line": 48
         },
         {
           "kind": "session",
           "symbol": "installClerkTokenGetter",
-          "line": 20
+          "line": 50
         },
         {
           "kind": "session",
           "symbol": "installClerkTokenGetter",
-          "line": 25
+          "line": 55
         }
       ]
     },

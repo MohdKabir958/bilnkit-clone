@@ -25,7 +25,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; connect-src 'self' https://grozo-backend-3wdf.onrender.com wss://grozo-backend-3wdf.onrender.com https://enhanced-foal-30.clerk.accounts.dev https://clerk-telemetry.com https://challenges.cloudflare.com; script-src 'self' https://enhanced-foal-30.clerk.accounts.dev https://challenges.cloudflare.com; frame-src https://enhanced-foal-30.clerk.accounts.dev https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://grozo-backend-3wdf.onrender.com https://enhanced-foal-30.clerk.accounts.dev https://img.clerk.com ; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+          "value": "default-src 'self'; connect-src 'self' https://grozo-backend-3wdf.onrender.com wss://grozo-backend-3wdf.onrender.com https://capable-mutt-6.clerk.accounts.dev https://clerk-telemetry.com https://challenges.cloudflare.com; script-src 'self' https://capable-mutt-6.clerk.accounts.dev https://challenges.cloudflare.com; frame-src https://capable-mutt-6.clerk.accounts.dev https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://grozo-backend-3wdf.onrender.com https://capable-mutt-6.clerk.accounts.dev https://img.clerk.com ; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
         }
       ]
     }

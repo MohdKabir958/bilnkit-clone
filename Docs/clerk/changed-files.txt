@@ -74,6 +74,7 @@ Docs/clerk/templates/backend.development.example
 Docs/clerk/templates/backend.production.example
 Docs/clerk/templates/mobile.development.json
 Docs/clerk/templates/mobile.production.json
+Docs/qa/admin-clerk-startup.md
 Docs/qa/backend-full-run-summary.json
 Docs/qa/backend-full-run.json
 Docs/qa/backend-full-run.log
@@ -158,6 +159,7 @@ packages/kraveo_ui/lib/src/auth/clerk_sessions.dart
 packages/kraveo_ui/test/clerk_sessions_test.dart
 render.yaml
 scripts/clerk/build_test_apks.py
+scripts/clerk/hosted_admin_build.test.mjs
 scripts/clerk/hosted_admin_config.test.mjs
 scripts/clerk/inventory.mjs
 scripts/clerk/verify_apks.py
@@ -169,6 +171,7 @@ scripts/qa/terminology-allowances.json
 web/super_admin/.env.example
 web/super_admin/package-lock.json
 web/super_admin/package.json
+web/super_admin/scripts/check-hosted-auth.mjs
 web/super_admin/src/App.tsx
 web/super_admin/src/auth/ClerkAdmin.test.tsx
 web/super_admin/src/auth/ClerkAdmin.tsx

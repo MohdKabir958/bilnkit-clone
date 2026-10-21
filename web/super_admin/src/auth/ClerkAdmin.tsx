@@ -1,11 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import { ClerkProvider, SignIn, UserButton, useAuth } from '@clerk/react';
+import { ClerkProvider, ClerkFailed, ClerkLoaded, ClerkLoading, SignIn, UserButton, useAuth } from '@clerk/react';
 import { App } from '../App';
 import { apiService, installClerkTokenGetter, clearAuthToken } from '../services/api';
 import type { AdminProfile } from '../types';
 import { ApiError } from '../services/api';
 
 export const clerkEnabled = (import.meta.env.VITE_AUTH_MODE || 'legacy') !== 'legacy';
+
+function SignInUnavailable({blockedResource = ''}: {blockedResource?: string}) {
+  return <main className="min-h-screen flex flex-col items-center justify-center gap-4 p-8" role="alert">
+    <h1 className="text-3xl">Secure sign-in could not load</h1>
+    <p>Check your connection and browser privacy settings, then reload this page.</p>
+    {blockedResource && <p>{blockedResource}</p>}
+    <p>If this continues, share the first red browser console error with the Grozo operator. Do not share session tokens.</p>
+    <button className="rounded-lg bg-green-800 px-6 py-3 text-white" onClick={() => window.location.reload()}>Reload sign-in</button>
+  </main>;
+}
+
+function SignInLoading() {
+  const [timedOut, setTimedOut] = useState(false);
+  const [blockedResource, setBlockedResource] = useState('');
+  useEffect(() => {
+    const timer = window.setTimeout(() => setTimedOut(true), 30_000);
+    const onPolicyViolation = (event: SecurityPolicyViolationEvent) => {
+      // Show only the origin/directive, never URLs containing session/query data.
+      let origin: string;
+      try { origin = new URL(event.blockedURI).origin; } catch { return; }
+      if (!['script-src', 'script-src-elem', 'connect-src', 'frame-src'].includes(event.effectiveDirective)) return;
+      setBlockedResource(`The browser blocked ${origin} (${event.effectiveDirective}). Contact the Grozo operator to review the site's security policy.`);
+    };
+    document.addEventListener('securitypolicyviolation', onPolicyViolation);
+    return () => { window.clearTimeout(timer); document.removeEventListener('securitypolicyviolation', onPolicyViolation); };
+  }, []);
+  if (timedOut || blockedResource) return <SignInUnavailable blockedResource={blockedResource} />;
+  return <main className="p-8" role="status">Loading secure sign-in…</main>;
+}
+
 function AdminSession() {
   const { isLoaded, isSignedIn, userId, sessionId, getToken, signOut } = useAuth();
   const [admin, setAdmin] = useState<AdminProfile>();
@@ -35,5 +65,9 @@ export function ClerkAdminRoot() {
   if (!['clerk-test','clerk'].includes(mode || '') || !key.startsWith(mode === 'clerk-test' ? 'pk_test_' : 'pk_live_')) {
     return <main role="alert" className="p-8">Clerk configuration is missing or does not match this environment. Contact the Grozo operator.</main>;
   }
-  return <ClerkProvider publishableKey={key} afterSignOutUrl="/"><AdminSession /></ClerkProvider>;
+  return <ClerkProvider publishableKey={key} afterSignOutUrl="/">
+    <ClerkLoading><SignInLoading /></ClerkLoading>
+    <ClerkFailed><SignInUnavailable /></ClerkFailed>
+    <ClerkLoaded><AdminSession /></ClerkLoaded>
+  </ClerkProvider>;
 }

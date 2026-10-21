@@ -4,14 +4,16 @@ The admin passcode screen indicates a legacy build. There is no shared passcode 
 
 ```dotenv
 VITE_AUTH_MODE=clerk-test
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_ZW5oYW5jZWQtZm9hbC0zMC5jbGVyay5hY2NvdW50cy5kZXYk
+VITE_CLERK_PUBLISHABLE_KEY=YOUR_CURRENT_CLERK_DEVELOPMENT_PUBLISHABLE_KEY
 VITE_API_BASE_URL=https://grozo-backend-3wdf.onrender.com
 VITE_SOCKET_URL=https://grozo-backend-3wdf.onrender.com
 ```
 
-These are public frontend values; do not add backend secrets. Root Directory is `web/super_admin`. Deploy the latest `feature/india-grocery-platform` commit after saving the variables; Vite embeds them at build time. Open the new deployment, not the old immutable deployment URL. `vercel.json` is configured for this exact Render origin and public Clerk instance, retaining CSP and SPA rewrites.
+Replace the publishable-key placeholder with the exact value from your current Clerk application's API Keys page. The owner-provided browser error on 2026-10-21 confirms the deployed key uses `capable-mutt-6.clerk.accounts.dev`; the earlier key in this conversation used `enhanced-foal-30.clerk.accounts.dev`. Do not mix their keys. The committed CSP now permits the current `capable-mutt-6` instance. Admin builds check that the selected key's origin and both backend transports are allowed by that policy.
 
-Find the stable admin URL in Vercel → Settings → Domains. Set Render `ADMIN_URL`, `CLIENT_URL` and `CLERK_AUTHORIZED_PARTIES` to that exact HTTPS origin without a path or trailing slash; retain individually approved origins if other clients require them. Configure the corresponding origin/redirects in the same Clerk development instance. Redeploy Render. The changing deployment URL shown in the screenshot is not a confirmed stable domain.
+These are public frontend values; do not add backend secrets. Root Directory is `web/super_admin`. Deploy the latest `main` commit after saving the variables; Vite embeds them at build time. Open the stable URL `https://grozo-admin.vercel.app`, not the old immutable deployment URL. `vercel.json` retains CSP and SPA rewrites. If you change the Clerk application again, regenerate and commit the policy with `scripts/configure_hosted_admin.mjs` before deploying.
+
+Set Render `ADMIN_URL`, `CLIENT_URL` and `CLERK_AUTHORIZED_PARTIES` to `https://grozo-admin.vercel.app`, without a trailing slash; retain individually approved origins if other clients require them. Configure the corresponding origin/redirects in the same Clerk development instance. Render `CLERK_ISSUER` must be `https://capable-mutt-6.clerk.accounts.dev`, with the publishable key, rotated secret key, webhook signing secret and approved admin identities from that same instance. Changing only the issuer cannot make another instance's credentials work. Redeploy Render after updating its configuration. No owner cloud configuration was changed from this workspace.
 
 ## Provision your administrator
 
@@ -32,4 +34,4 @@ Sign in through the deployed Clerk form. Only the provisioned account should ent
 
 ## Verification performed for this configuration
 
-The Clerk-test admin build passed with the four public values above. The two targeted authentication/API test files passed all 12 tests; the CSP generator passed all 3 tests. These are local checks, not evidence of hosted Clerk sign-in, a provisioned staging administrator or live backend availability. No cloud settings or user records were changed by this configuration commit.
+The updated Clerk-test admin build passed with the current instance and backend origins. All 822 admin tests passed; the CSP generator/build checks passed all 8 tests. Loading failures now show recovery instructions, and a 30-second stalled initialization offers reload without bypassing authentication. These are local checks, not evidence of hosted Clerk sign-in, a provisioned staging administrator or live backend availability. No cloud settings or user records were changed by this configuration commit.
