@@ -47,6 +47,7 @@ afterAll(async()=>{
   await cleanTestOrders();await cleanTestUsers();await prisma.clerkWebhookDelivery.deleteMany();await prisma.clerkIdentityState.deleteMany();
   await prisma.driverPartner.deleteMany({where:{user:{clerkUserId:{not:null}},userId:{notIn:['usr-4']}}});
   await prisma.vendor.deleteMany({where:{name:{in:['Simulated Grocery','Synthetic other store']}}});
+  await prisma.category.deleteMany({where:{slug:'vendor-onboarding-fixture'}});
   await prisma.user.deleteMany({where:{id:{notIn:['usr-3','usr-4','usr-5']},OR:[{clerkUserId:{not:null}},{name:{in:['Existing synthetic customer','Other synthetic customer']}}]}});
   await prisma.user.updateMany({where:{clerkUserId:{not:null}},data:{clerkUserId:null}});
   await prisma.city.deleteMany({where:{code:'SYNTHETIC-CLERK-LINK'}});
@@ -117,6 +118,47 @@ test('customer login alone cannot access vendor or rider operations',async()=>{
   expect((await request.get('/api/partner/me').set(header())).status).toBe(403);
   expect((await request.patch('/api/vendors/ven-1/status').set(header()).send({isAcceptingOrders:false})).status).toBe(403);
   expect((await request.post('/api/drivers/duty-status').set(header()).send({isOnline:true})).status).toBe(403);
+});
+test('fresh vendor identity discovers registration without gaining partner access',async()=>{
+  const auth=header('user_NewStoreOwner');
+  expect((await request.get('/api/partner/vendor/onboarding')).status).toBe(401);
+  const response=await request.get('/api/partner/vendor/onboarding').set(auth);
+  expect(response.status).toBe(200);expect(response.body.requiresApplication).toBe(true);
+  expect(response.body.approvalStatus).toBe('PENDING');expect(response.body.vendor).toBeUndefined();
+  expect(response.body.user.role).toBe('STUDENT');expect(response.headers['cache-control']).toBe('no-store');
+  expect((await request.get('/api/partner/me').set(auth)).status).toBe(403);
+  expect(await prisma.vendor.count({where:{userId:response.body.user.id}})).toBe(0);
+});
+test('admin and delivery identities receive actionable onboarding role conflicts',async()=>{
+  expect((await request.get('/api/partner/vendor/onboarding').set(header('user_Admin'))).status).toBe(403);
+  await linkClerkIdentity('usr-4','user_OnboardingDriver','test operator');
+  const response=await request.get('/api/partner/vendor/onboarding').set(header('user_OnboardingDriver'));
+  expect(response.status).toBe(403);expect(response.body.code).toBe('APPLICATION_ROLE_CONFLICT');
+  expect(response.body.message).toContain('separate store-owner account');
+  await prisma.user.update({where:{id:'usr-4'},data:{clerkUserId:null}});
+});
+test('application validates contact and managed category without changing identity role',async()=>{
+  const auth=header('user_CategoryApplicant');
+  const body={role:'VENDOR',name:'Synthetic Owner',phone:'9000000013',restaurantName:'Simulated Grocery',address:'Synthetic store pickup location'};
+  const phone=await request.post('/api/partner/clerk-application').set(auth).send({...body,phone:''});
+  expect(phone.status).toBe(400);expect(phone.body.field).toBe('phone');
+  const category=await request.post('/api/partner/clerk-application').set(auth).send({...body,primaryCategoryId:'not-a-category'});
+  expect(category.status).toBe(400);expect(category.body.field).toBe('category');
+  expect((await prisma.user.findUniqueOrThrow({where:{clerkUserId:'user_CategoryApplicant'}})).role).toBe('STUDENT');
+});
+test('managed store application retains category and public contact, stays closed and pending, rejects duplicate',async()=>{
+  const category=await prisma.category.create({data:{name:'Synthetic grocery category',slug:'vendor-onboarding-fixture',isActive:true,forRestaurants:true}});
+  const auth=header('user_ManagedStoreApplicant');
+  const body={role:'VENDOR',name:'Synthetic Owner',phone:'9000000014',restaurantName:'Simulated Grocery',address:'Synthetic store pickup location',primaryCategoryId:category.id,category:'untrusted text'};
+  const response=await request.post('/api/partner/clerk-application').set(auth).send(body);
+  expect(response.status).toBe(201);expect(response.body.vendor.primaryCategoryId).toBe(category.id);
+  expect(response.body.vendor.publicPhone).toBe('+91 9000000014');
+  expect(response.body.vendor.category).toBe(category.name);expect(response.body.vendor.isAcceptingOrders).toBe(false);
+  const status=await request.get('/api/partner/vendor/onboarding').set(auth);
+  expect(status.status).toBe(200);expect(status.body.requiresApplication).toBe(false);expect(status.body.approvalStatus).toBe('PENDING');
+  expect((await request.post('/api/partner/clerk-application').set(auth).send(body)).status).toBe(403);
+  expect(await prisma.vendor.count({where:{userId:response.body.user.id}})).toBe(1);
+  expect((await request.post('/api/v1/vendors/'+response.body.vendor.id+'/products').set(auth).send({})).status).toBe(403);
 });
 test('new vendor and rider applications are pending, not approved by the body',async()=>{
   const vendor=await request.post('/api/partner/clerk-application').set(header('user_VendorApplicant')).send({role:'VENDOR',name:'Synthetic Owner',phone:'9000000011',restaurantName:'Simulated Grocery',category:'Groceries',address:'Synthetic store pickup location',approvalStatus:'APPROVED'});

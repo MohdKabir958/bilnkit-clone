@@ -35,6 +35,8 @@ class PartnerSession {
     this.approval = PartnerApproval.approved,
     this.rejectionReason,
     this.category,
+    this.primaryCategoryId,
+    this.requiresApplication = false,
     this.address,
     this.fssaiNumber,
     this.hasLocation,
@@ -63,6 +65,10 @@ class PartnerSession {
 
   /// What the restaurant told us when it applied (used to prefill "update details").
   final String? category;
+  final String? primaryCategoryId;
+
+  /// Identity is signed in, but no store application has been submitted. Never grants store access.
+  final bool requiresApplication;
   final String? address;
   final String? fssaiNumber;
 
@@ -83,7 +89,8 @@ class PartnerSession {
   /// True only when the server explicitly says the restaurant has no pin yet.
   bool get needsLocation => hasLocation == false;
 
-  bool get isApproved => approval == PartnerApproval.approved;
+  bool get isApproved =>
+      !requiresApplication && approval == PartnerApproval.approved;
 
   /// What to show as the restaurant's name: the vendor record, else the account name.
   String get restaurantName {
@@ -96,10 +103,18 @@ class PartnerSession {
   static PartnerSession? fromLoginJson(Map<String, dynamic> json) {
     final base = fromUserJson(json['user']);
     if (base == null) return null;
-    final approval = PartnerApproval.parse(json['approvalStatus']);
+    final requiresApplication = json['requiresApplication'] == true;
+    final approval = requiresApplication
+        ? PartnerApproval.pending
+        : PartnerApproval.parse(json['approvalStatus']);
     final reason = json['rejectionReason']?.toString();
     final vendor = json['vendor'];
-    if (vendor is! Map) return base.copyWith(approval: approval, rejectionReason: reason);
+    if (vendor is! Map) {
+      return base.copyWith(
+          approval: approval,
+          rejectionReason: reason,
+          requiresApplication: requiresApplication);
+    }
     return PartnerSession(
       userId: base.userId,
       name: base.name,
@@ -107,29 +122,43 @@ class PartnerSession {
       avatarId: base.avatarId,
       vendorId: vendor['id']?.toString(),
       vendorName: vendor['name']?.toString(),
-      isAcceptingOrders: vendor['isAcceptingOrders'] is bool ? vendor['isAcceptingOrders'] as bool : null,
+      isAcceptingOrders: vendor['isAcceptingOrders'] is bool
+          ? vendor['isAcceptingOrders'] as bool
+          : null,
       approval: approval,
       rejectionReason: reason,
       category: vendor['category']?.toString(),
+      primaryCategoryId: vendor['primaryCategoryId']?.toString(),
       address: vendor['address']?.toString(),
       fssaiNumber: vendor['fssaiNumber']?.toString(),
-      hasLocation: vendor['hasLocation'] is bool ? vendor['hasLocation'] as bool : null,
+      hasLocation:
+          vendor['hasLocation'] is bool ? vendor['hasLocation'] as bool : null,
       lat: _num(vendor['lat']),
       lng: _num(vendor['lng']),
-      locationSource: vendor['locationSource'] is String ? vendor['locationSource'] as String : null,
+      locationSource: vendor['locationSource'] is String
+          ? vendor['locationSource'] as String
+          : null,
       locationSetAt: _date(vendor['locationSetAt']),
       locationAccuracyM: _num(vendor['locationAccuracyM']),
     );
   }
 
-  static double? _num(Object? raw) => raw is num && raw.isFinite ? raw.toDouble() : null;
-  static DateTime? _date(Object? raw) => raw is String ? DateTime.tryParse(raw) : null;
+  static double? _num(Object? raw) =>
+      raw is num && raw.isFinite ? raw.toDouble() : null;
+  static DateTime? _date(Object? raw) =>
+      raw is String ? DateTime.tryParse(raw) : null;
 
   /// Parses `GET /partner/me`, `POST /auth/partner-signup` and `PUT /partner/application`
   /// (all share the same shape). Returns null when the body has no usable user.
-  static PartnerSession? fromMeJson(Map<String, dynamic> json) => fromLoginJson(json);
+  static PartnerSession? fromMeJson(Map<String, dynamic> json) =>
+      fromLoginJson(json);
 
-  PartnerSession copyWith({PartnerApproval? approval, String? rejectionReason, bool clearReason = false}) => PartnerSession(
+  PartnerSession copyWith(
+          {PartnerApproval? approval,
+          String? rejectionReason,
+          bool clearReason = false,
+          bool? requiresApplication}) =>
+      PartnerSession(
         userId: userId,
         name: name,
         phone: phone,
@@ -138,8 +167,11 @@ class PartnerSession {
         vendorName: vendorName,
         isAcceptingOrders: isAcceptingOrders,
         approval: approval ?? this.approval,
-        rejectionReason: clearReason ? null : (rejectionReason ?? this.rejectionReason),
+        rejectionReason:
+            clearReason ? null : (rejectionReason ?? this.rejectionReason),
         category: category,
+        primaryCategoryId: primaryCategoryId,
+        requiresApplication: requiresApplication ?? this.requiresApplication,
         address: address,
         fssaiNumber: fssaiNumber,
         hasLocation: hasLocation,
@@ -151,7 +183,13 @@ class PartnerSession {
       );
 
   /// The same restaurant after a successful `PUT /partner/vendor/location`.
-  PartnerSession withLocation({required double lat, required double lng, String? source, DateTime? setAt, double? accuracyM}) => PartnerSession(
+  PartnerSession withLocation(
+          {required double lat,
+          required double lng,
+          String? source,
+          DateTime? setAt,
+          double? accuracyM}) =>
+      PartnerSession(
         userId: userId,
         name: name,
         phone: phone,
@@ -162,6 +200,8 @@ class PartnerSession {
         approval: approval,
         rejectionReason: rejectionReason,
         category: category,
+        primaryCategoryId: primaryCategoryId,
+        requiresApplication: requiresApplication,
         address: address,
         fssaiNumber: fssaiNumber,
         hasLocation: true,
@@ -182,7 +222,8 @@ class PartnerSession {
       userId: id,
       name: name,
       phone: raw['phone']?.toString(),
-      avatarId: raw['avatarId'] is num ? (raw['avatarId'] as num).toInt() : null,
+      avatarId:
+          raw['avatarId'] is num ? (raw['avatarId'] as num).toInt() : null,
     );
   }
 
@@ -199,6 +240,8 @@ class PartnerSession {
         approval: approval,
         rejectionReason: rejectionReason,
         category: category,
+        primaryCategoryId: primaryCategoryId,
+        requiresApplication: requiresApplication,
         address: address,
         fssaiNumber: fssaiNumber,
         hasLocation: hasLocation,
@@ -220,6 +263,8 @@ class PartnerSession {
         'approval': approval.name,
         'rejectionReason': rejectionReason,
         'category': category,
+        'primaryCategoryId': primaryCategoryId,
+        'requiresApplication': requiresApplication,
         'address': address,
         'fssaiNumber': fssaiNumber,
         'hasLocation': hasLocation,
@@ -238,19 +283,27 @@ class PartnerSession {
       userId: userId,
       name: raw['name']?.toString() ?? '',
       phone: raw['phone']?.toString(),
-      avatarId: raw['avatarId'] is num ? (raw['avatarId'] as num).toInt() : null,
+      avatarId:
+          raw['avatarId'] is num ? (raw['avatarId'] as num).toInt() : null,
       vendorId: raw['vendorId']?.toString(),
       vendorName: raw['vendorName']?.toString(),
-      isAcceptingOrders: raw['isAcceptingOrders'] is bool ? raw['isAcceptingOrders'] as bool : null,
+      isAcceptingOrders: raw['isAcceptingOrders'] is bool
+          ? raw['isAcceptingOrders'] as bool
+          : null,
       approval: PartnerApproval.parse(raw['approval']),
       rejectionReason: raw['rejectionReason']?.toString(),
       category: raw['category']?.toString(),
+      primaryCategoryId: raw['primaryCategoryId']?.toString(),
+      requiresApplication: raw['requiresApplication'] == true,
       address: raw['address']?.toString(),
       fssaiNumber: raw['fssaiNumber']?.toString(),
-      hasLocation: raw['hasLocation'] is bool ? raw['hasLocation'] as bool : null,
+      hasLocation:
+          raw['hasLocation'] is bool ? raw['hasLocation'] as bool : null,
       lat: _num(raw['lat']),
       lng: _num(raw['lng']),
-      locationSource: raw['locationSource'] is String ? raw['locationSource'] as String : null,
+      locationSource: raw['locationSource'] is String
+          ? raw['locationSource'] as String
+          : null,
       locationSetAt: _date(raw['locationSetAt']),
       locationAccuracyM: _num(raw['locationAccuracyM']),
     );

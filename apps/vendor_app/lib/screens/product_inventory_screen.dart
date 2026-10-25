@@ -164,7 +164,7 @@ class _ProductInventoryScreenState extends State<ProductInventoryScreen> {
                                   style: KraveoType.headlineSm),
                               const SizedBox(height: 6),
                               Text(
-                                  'Manage packs, pricing and stock. Product edits go for approval; stock updates apply immediately.',
+                                  'Add a product with a photo, pack size and price. Receive stock, wait for Grozo product approval, then switch your store to OPEN. Stock changes apply immediately.',
                                   style: KraveoType.bodySm
                                       .copyWith(color: k.inkMuted)),
                               const SizedBox(height: 16),

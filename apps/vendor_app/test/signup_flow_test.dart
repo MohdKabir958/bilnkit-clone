@@ -207,9 +207,9 @@ void main() {
       await _tapKey(tester, 'create-account-button');
       await tester.pump(const Duration(milliseconds: 600));
       await _fillSignup(tester);
-      await tester
-          .ensureVisible(find.byKey(const ValueKey('category-Rolls & Wraps')));
-      await tester.tap(find.byKey(const ValueKey('category-Rolls & Wraps')));
+      await tester.ensureVisible(
+          find.byKey(const ValueKey('category-Vegetable shops')));
+      await tester.tap(find.byKey(const ValueKey('category-Vegetable shops')));
       await tester.pump();
       await _tapKey(tester, 'signup-button');
       await _settle(tester);
@@ -218,7 +218,7 @@ void main() {
       final f = auth.signUps.single;
       expect(f.restaurantName, 'Shiv Shakti Dhaba');
       expect(f.phone, '9811100001');
-      expect(f.category, 'Rolls & Wraps');
+      expect(f.category, 'Vegetable shops');
       expect(f.toSignupJson()['role'], 'VENDOR');
 
       expect(find.byType(SignupScreen), findsNothing);

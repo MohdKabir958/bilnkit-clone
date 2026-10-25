@@ -106,7 +106,8 @@ class SessionController extends ChangeNotifier {
   /// restaurant, keep the details we already stored and take only the fresh account + approval fields.
   static PartnerSession _mergeFresh(
       PartnerSession? stored, PartnerSession fresh) {
-    if (stored == null ||
+    if (fresh.requiresApplication ||
+        stored == null ||
         stored.userId != fresh.userId ||
         fresh.vendorId != null) {
       return fresh;
@@ -273,7 +274,9 @@ class SessionController extends ChangeNotifier {
     }
     final fresh = PartnerSession.fromLoginJson(
         Map<String, dynamic>.from(jsonDecode(response.body) as Map));
-    if (fresh == null || fresh.userId != _session?.userId || !fresh.isApproved) {
+    if (fresh == null ||
+        fresh.userId != _session?.userId ||
+        !fresh.isApproved) {
       throw Exception('Store access is unavailable.');
     }
     await _persist(fresh);
@@ -287,7 +290,10 @@ class SessionController extends ChangeNotifier {
   Future<ApiResult<SavedLocation>> saveRestaurantLocation(
       LocationFix fix) async {
     final result = await locationApi.save(
-        lat: fix.lat, lng: fix.lng, accuracyM: fix.accuracyM, vendorId:_session?.vendorId);
+        lat: fix.lat,
+        lng: fix.lng,
+        accuracyM: fix.accuracyM,
+        vendorId: _session?.vendorId);
     final saved = result.data;
     if (!result.ok || saved == null) {
       return result.ok ? const ApiResult.failure(ApiFailure.server) : result;

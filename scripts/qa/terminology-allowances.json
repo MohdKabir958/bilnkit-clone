@@ -678,5 +678,15 @@
     "file": "apps/customer_app/lib/models/grocery_department.dart",
     "value": "kitchen",
     "reason": "User-requested household and kitchen-supplies merchandise department, not legacy food-preparation/campus wording."
+  },
+  {
+    "file": "apps/vendor_app/lib/services/partner_auth_service.dart",
+    "value": "STUDENT",
+    "reason": "Trusted historical database role used only to recognize a new identity that needs a store application; never shown as customer-facing copy."
+  },
+  {
+    "file": "apps/vendor_app/lib/services/store_categories.dart",
+    "value": "/categories?for=restaurants",
+    "reason": "Existing backend store-category filter identifier retained for API compatibility; the UI displays Store category."
   }
 ]

@@ -5,30 +5,37 @@ import '../models/partner_session.dart';
 import '../services/location/location_capture.dart';
 import '../services/location/location_scope.dart';
 import '../services/partner_auth_service.dart';
+import '../services/store_categories.dart';
 import '../widgets/location_sheet.dart';
 import '../widgets/ui/choice_chip.dart';
 import '../widgets/ui/field_block.dart';
 import '../widgets/ui/phone_input.dart';
 import '../widgets/ui/vendor_ui.dart';
 
-/// Kinds of kitchen to pick from. One tap, no typing; the last choice is simply "Other".
+/// Compatibility choices for legacy sign-up only. Clerk uses the managed store catalog.
 const List<(String, String)> kVendorCategories = [
-  ('North Indian', 'उत्तर भारतीय'),
-  ('Rolls & Wraps', 'रोल'),
-  ('Tea & Snacks', 'चाय-नाश्ता'),
-  ('Chinese', 'चाइनीज़'),
-  ('Biryani', 'बिरयानी'),
-  ('South Indian', 'दक्षिण भारतीय'),
+  ('Grocery stores', 'किराना स्टोर'),
+  ('Vegetable shops', 'फल और सब्ज़ियाँ'),
+  ('Meat & fish shops', 'मांस और मछली'),
+  ('Dairy & bakery', 'डेयरी और बेकरी'),
+  ('Cosmetics & personal care', 'सौंदर्य और देखभाल'),
   ('Other', 'अन्य'),
 ];
 
 /// Create a restaurant account (phone + password). With [existing] set it instead edits the details of a
 /// pending or rejected application and sends them again; phone and password are not asked in that case.
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key, required this.onSubmit, this.existing});
+  const SignupScreen(
+      {super.key,
+      required this.onSubmit,
+      this.existing,
+      this.onCancel,
+      this.categoriesLoader});
 
   final Future<SignupResult> Function(PartnerSignupForm form) onSubmit;
   final PartnerSession? existing;
+  final VoidCallback? onCancel;
+  final Future<List<StoreCategory>> Function()? categoriesLoader;
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
@@ -39,8 +46,11 @@ class _SignupScreenState extends State<SignupScreen> {
       TextEditingController(text: widget.existing?.vendorName ?? '');
   late final TextEditingController _address =
       TextEditingController(text: widget.existing?.address ?? '');
-  late final TextEditingController _owner =
-      TextEditingController(text: widget.existing?.name ?? '');
+  late final TextEditingController _owner = TextEditingController(
+      text: widget.existing?.name ??
+          (GrozoAuthConfig.usesClerk
+              ? ClerkSessions.instance.identity.value.name ?? ''
+              : ''));
   final _phone = TextEditingController();
   final _password = TextEditingController();
   late final TextEditingController _fssai =
@@ -52,6 +62,11 @@ class _SignupScreenState extends State<SignupScreen> {
   final _addressFocus = FocusNode();
 
   late String? _category = widget.existing?.category;
+  List<StoreCategory> _storeCategories = const [];
+  late String? _primaryCategoryId = widget.existing?.primaryCategoryId;
+  bool _categoriesLoading = false;
+  String? _categoryProblem;
+  final _scroll = ScrollController();
   bool _showPassword = false;
   bool _showFssai = false;
   bool _busy = false;
@@ -67,6 +82,34 @@ class _SignupScreenState extends State<SignupScreen> {
   void initState() {
     super.initState();
     _showFssai = _fssai.text.isNotEmpty;
+    if (GrozoAuthConfig.usesClerk) _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _categoriesLoading = true;
+      _categoryProblem = null;
+    });
+    try {
+      final rows = await (widget.categoriesLoader ?? loadStoreCategories)();
+      if (!mounted) return;
+      setState(() {
+        _storeCategories = rows;
+        _categoriesLoading = false;
+        if (rows.isEmpty) {
+          _categoryProblem =
+              'No store categories are available. Ask Grozo support to configure them.';
+        }
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _categoriesLoading = false;
+          _categoryProblem =
+              'Could not load store categories. Check your connection and retry.';
+        });
+      }
+    }
   }
 
   @override
@@ -84,6 +127,7 @@ class _SignupScreenState extends State<SignupScreen> {
     for (final f in [_ownerFocus, _phoneFocus, _passwordFocus, _addressFocus]) {
       f.dispose();
     }
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -93,7 +137,7 @@ class _SignupScreenState extends State<SignupScreen> {
       e['restaurantName'] = 'Enter the store name\nस्टोर का नाम डालें';
     }
     if (_address.text.trim().length < 3) {
-      e['address'] = 'Tell us where the store is\nबताएं कि रसोई कहाँ है';
+      e['address'] = 'Tell us where the store is\nबताएं कि स्टोर कहाँ है';
     }
     if (_owner.text.trim().length < 2) {
       e['name'] = 'Enter your name\nअपना नाम डालें';
@@ -106,6 +150,10 @@ class _SignupScreenState extends State<SignupScreen> {
       if (!GrozoAuthConfig.usesClerk && _password.text.length < 8) {
         e['password'] = 'Use at least 8 characters\nकम से कम 8 अक्षर रखें';
       }
+    }
+    if (GrozoAuthConfig.usesClerk &&
+        !_storeCategories.any((c) => c.id == _primaryCategoryId)) {
+      e['category'] = 'Choose an available store category.';
     }
     final fssai = _fssai.text.replaceAll(RegExp(r'\s'), '');
     if (fssai.isNotEmpty && !RegExp(r'^\d{14}$').hasMatch(fssai)) {
@@ -124,7 +172,16 @@ class _SignupScreenState extends State<SignupScreen> {
         _errors
           ..clear()
           ..addAll(errors);
-        _problem = null;
+        _problem =
+            'Please complete the highlighted details: ${errors.keys.map((key) => const {
+                  'restaurantName': 'store name',
+                  'address': 'store address',
+                  'name': 'owner name',
+                  'phone': 'contact number',
+                  'password': 'password',
+                  'category': 'store category',
+                  'fssaiNumber': 'FSSAI licence'
+                }[key] ?? key).join(', ')}.';
       });
       return;
     }
@@ -146,6 +203,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 'restaurantName',
               if (_address.text.trim() != (old.address ?? '')) 'address',
               if (category != (old.category ?? '')) 'category',
+              if (_primaryCategoryId != old.primaryCategoryId)
+                'primaryCategoryId',
               if (fssai != (old.fssaiNumber ?? '')) 'fssaiNumber',
             },
       ownerName: _owner.text.trim(),
@@ -154,6 +213,7 @@ class _SignupScreenState extends State<SignupScreen> {
       restaurantName: _restaurant.text.trim(),
       address: _address.text.trim(),
       category: category,
+      primaryCategoryId: _primaryCategoryId,
       fssaiNumber: fssai,
       lat: _fix?.lat,
       lng: _fix?.lng,
@@ -185,11 +245,14 @@ class _SignupScreenState extends State<SignupScreen> {
                 '${result.message ?? 'Grozo could not use this location.'}\nThe location was removed. Detect it again, or create the account without it.\nलोकेशन हटा दी गई। फिर से पता करें या बिना लोकेशन के अकाउंट बनाएं।';
           } else if (result.field != null && result.message != null) {
             _errors[result.field!] = result.message!;
+            _problem = result.message!;
           } else {
             _problem = result.message ??
                 'Please check the details and try again.\nजानकारी जाँचकर फिर कोशिश करें।';
           }
         case SignupFailure.phoneTaken:
+          _problem =
+              'This contact number is already registered. Use a different business number or contact Grozo support.';
           _errors['phone'] =
               'This number is already registered in another ${BrandConfig.name} app or account. Use a different number, or go back and log in with the right app.\nयह नंबर किसी और ${BrandConfig.name} ऐप या अकाउंट में पहले से है। दूसरा नंबर डालें, या वापस जाकर सही ऐप से लॉग इन करें।';
         case SignupFailure.rateLimited:
@@ -202,8 +265,8 @@ class _SignupScreenState extends State<SignupScreen> {
           _problem =
               'Can\'t reach ${BrandConfig.name}. Check your internet and try again.\nइंटरनेट जाँचें और फिर कोशिश करें।';
         case SignupFailure.server:
-          _problem =
-              '${BrandConfig.name} is having trouble. Please try again in a moment.\nKraveo में दिक्कत है। थोड़ी देर बाद कोशिश करें।';
+          _problem = result.message ??
+              '${BrandConfig.name} is having trouble. Please try again in a moment.\nGrozo में दिक्कत है। थोड़ी देर बाद कोशिश करें।';
       }
     });
   }
@@ -318,19 +381,23 @@ class _SignupScreenState extends State<SignupScreen> {
         backgroundColor: k.bg,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading:
-            _editing && widget.existing?.approval == PartnerApproval.pending
-                ? null
-                : IconButton(
-                    tooltip: 'Back',
-                    icon: Icon(LucideIcons.arrowLeft, color: k.ink, size: 26),
-                    onPressed:
-                        _busy ? null : () => Navigator.of(context).maybePop(),
-                  ),
+        leading: _editing &&
+                widget.existing?.approval == PartnerApproval.pending
+            ? null
+            : IconButton(
+                tooltip: widget.onCancel == null
+                    ? 'Back'
+                    : 'Sign out / change account',
+                icon: Icon(LucideIcons.arrowLeft, color: k.ink, size: 26),
+                onPressed: _busy
+                    ? null
+                    : widget.onCancel ?? () => Navigator.of(context).maybePop(),
+              ),
       ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            controller: _scroll,
             padding:
                 const EdgeInsets.fromLTRB(KSpace.gutter, 0, KSpace.gutter, 32),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -348,14 +415,18 @@ class _SignupScreenState extends State<SignupScreen> {
                               Text(
                                   _editing
                                       ? 'Update your details'
-                                      : 'Create your store account',
+                                      : GrozoAuthConfig.usesClerk
+                                          ? 'Set up your store'
+                                          : 'Create your store account',
                                   style: KraveoType.headline
                                       .copyWith(color: k.ink, fontSize: 28)),
                               const SizedBox(height: 4),
                               Text(
                                   _editing
                                       ? 'जानकारी सुधारें'
-                                      : 'स्टोर अकाउंट बनाएं',
+                                      : GrozoAuthConfig.usesClerk
+                                          ? 'स्टोर की जानकारी जोड़ें'
+                                          : 'स्टोर अकाउंट बनाएं',
                                   style: KraveoType.titleLg.copyWith(
                                       color: k.inkMuted, fontSize: 21)),
                             ]),
@@ -365,7 +436,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     KReveal(
                       index: 1,
                       child: FieldBlock(
-                        label: 'Store NAME',
+                        label: 'STORE NAME',
                         hindi: 'स्टोर का नाम',
                         error: _errors['restaurantName'],
                         child: TextField(
@@ -387,8 +458,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     KReveal(
                       index: 2,
                       child: FieldBlock(
-                        label: 'WHERE IS THE Store?',
-                        hindi: 'रसोई कहाँ है?',
+                        label: 'WHERE IS YOUR STORE?',
+                        hindi: 'स्टोर कहाँ है?',
                         error: _errors['address'],
                         child: TextField(
                           key: const ValueKey('address-field'),
@@ -414,23 +485,60 @@ class _SignupScreenState extends State<SignupScreen> {
                     KReveal(
                       index: 3,
                       child: FieldBlock(
-                        label: 'WHAT DO YOU SERVE?',
-                        hindi: 'क्या बनाते हैं?',
-                        hint: 'Optional  ·  चुनना जरूरी नहीं',
-                        child: Wrap(spacing: 10, runSpacing: 10, children: [
-                          for (final (en, hi) in kVendorCategories)
-                            VChoiceChip(
-                              key: ValueKey('category-$en'),
-                              label: en,
-                              sublabel: hi,
-                              height: 58,
-                              selected: _category == en,
-                              onTap: _busy
-                                  ? () {}
-                                  : () => setState(() =>
-                                      _category = _category == en ? null : en),
-                            ),
-                        ]),
+                        label: 'STORE CATEGORY',
+                        hindi: 'स्टोर की श्रेणी',
+                        error: _errors['category'],
+                        hint: GrozoAuthConfig.usesClerk
+                            ? 'Choose what your store sells'
+                            : 'Optional  ·  चुनना जरूरी नहीं',
+                        child: GrozoAuthConfig.usesClerk
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (_categoriesLoading)
+                                    const LinearProgressIndicator(),
+                                  if (_categoryProblem != null) ...[
+                                    Text(_categoryProblem!),
+                                    TextButton(
+                                        onPressed: _busy || _categoriesLoading
+                                            ? null
+                                            : _loadCategories,
+                                        child: const Text('Retry categories')),
+                                  ],
+                                  Wrap(spacing: 10, runSpacing: 10, children: [
+                                    for (final c in _storeCategories)
+                                      VChoiceChip(
+                                        key: ValueKey('category-${c.id}'),
+                                        label: c.name,
+                                        sublabel: c.hindi,
+                                        height: 68,
+                                        selected: _primaryCategoryId == c.id,
+                                        onTap: _busy
+                                            ? () {}
+                                            : () => setState(() {
+                                                  _primaryCategoryId = c.id;
+                                                  _category = c.name;
+                                                  _errors.remove('category');
+                                                  _problem = null;
+                                                }),
+                                      ),
+                                  ]),
+                                ],
+                              )
+                            : Wrap(spacing: 10, runSpacing: 10, children: [
+                                for (final (en, hi) in kVendorCategories)
+                                  VChoiceChip(
+                                    key: ValueKey('category-$en'),
+                                    label: en,
+                                    sublabel: hi,
+                                    height: 58,
+                                    selected: _category == en,
+                                    onTap: _busy
+                                        ? () {}
+                                        : () => setState(() => _category =
+                                            _category == en ? null : en),
+                                  ),
+                              ]),
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -459,15 +567,18 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                     ),
-                    if (!_editing && !GrozoAuthConfig.usesClerk) ...[
+                    if (!_editing) ...[
                       const SizedBox(height: 18),
                       KReveal(
                         index: 5,
                         child: FieldBlock(
-                          label: 'MOBILE NUMBER',
+                          label: GrozoAuthConfig.usesClerk
+                              ? 'STORE CONTACT NUMBER'
+                              : 'MOBILE NUMBER',
                           hindi: 'मोबाइल नंबर',
-                          hint:
-                              'You will log in with this number  ·  इसी नंबर से लॉग इन होगा',
+                          hint: GrozoAuthConfig.usesClerk
+                              ? 'Customers can call this business number.'
+                              : 'You will log in with this number  ·  इसी नंबर से लॉग इन होगा',
                           error: _errors['phone'],
                           child: TextField(
                             key: const ValueKey('phone-field'),
@@ -485,7 +596,9 @@ class _SignupScreenState extends State<SignupScreen> {
                             style: KraveoType.headlineSm.copyWith(
                                 color: k.ink, letterSpacing: 1, fontSize: 24),
                             onChanged: (_) => _clear('phone'),
-                            onSubmitted: (_) => _passwordFocus.requestFocus(),
+                            onSubmitted: (_) => GrozoAuthConfig.usesClerk
+                                ? _submit()
+                                : _passwordFocus.requestFocus(),
                             decoration: _decoration(
                               hint: '98765 43210',
                               errorKey: 'phone',
@@ -510,55 +623,56 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                       const SizedBox(height: 18),
-                      KReveal(
-                        index: 6,
-                        child: FieldBlock(
-                          label: 'CREATE A PASSWORD',
-                          hindi: 'पासवर्ड बनाएं',
-                          hint: 'At least 8 characters  ·  कम से कम 8 अक्षर',
-                          error: _errors['password'],
-                          child: TextField(
-                            key: const ValueKey('password-field'),
-                            controller: _password,
-                            focusNode: _passwordFocus,
-                            enabled: !_busy,
-                            obscureText: !_showPassword,
-                            enableSuggestions: false,
-                            autocorrect: false,
-                            keyboardType: TextInputType.visiblePassword,
-                            textInputAction: TextInputAction.done,
-                            autofillHints: const [AutofillHints.newPassword],
-                            style: _fieldStyle(k),
-                            onChanged: (_) => _clear('password'),
-                            onSubmitted: (_) => _submit(),
-                            decoration: _decoration(
-                              hint: 'Choose a password',
-                              errorKey: 'password',
-                              suffix: Padding(
-                                padding: const EdgeInsets.only(right: 6),
-                                child: KPressable(
-                                  semanticLabel: _showPassword
-                                      ? 'Hide password'
-                                      : 'Show password',
-                                  onTap: () => setState(
-                                      () => _showPassword = !_showPassword),
-                                  child: SizedBox(
-                                    width: 52,
-                                    height: 52,
-                                    child: ExcludeSemantics(
-                                        child: Icon(
-                                            _showPassword
-                                                ? LucideIcons.eyeOff
-                                                : LucideIcons.eye,
-                                            size: 24,
-                                            color: k.inkMuted)),
+                      if (!GrozoAuthConfig.usesClerk)
+                        KReveal(
+                          index: 6,
+                          child: FieldBlock(
+                            label: 'CREATE A PASSWORD',
+                            hindi: 'पासवर्ड बनाएं',
+                            hint: 'At least 8 characters  ·  कम से कम 8 अक्षर',
+                            error: _errors['password'],
+                            child: TextField(
+                              key: const ValueKey('password-field'),
+                              controller: _password,
+                              focusNode: _passwordFocus,
+                              enabled: !_busy,
+                              obscureText: !_showPassword,
+                              enableSuggestions: false,
+                              autocorrect: false,
+                              keyboardType: TextInputType.visiblePassword,
+                              textInputAction: TextInputAction.done,
+                              autofillHints: const [AutofillHints.newPassword],
+                              style: _fieldStyle(k),
+                              onChanged: (_) => _clear('password'),
+                              onSubmitted: (_) => _submit(),
+                              decoration: _decoration(
+                                hint: 'Choose a password',
+                                errorKey: 'password',
+                                suffix: Padding(
+                                  padding: const EdgeInsets.only(right: 6),
+                                  child: KPressable(
+                                    semanticLabel: _showPassword
+                                        ? 'Hide password'
+                                        : 'Show password',
+                                    onTap: () => setState(
+                                        () => _showPassword = !_showPassword),
+                                    child: SizedBox(
+                                      width: 52,
+                                      height: 52,
+                                      child: ExcludeSemantics(
+                                          child: Icon(
+                                              _showPassword
+                                                  ? LucideIcons.eyeOff
+                                                  : LucideIcons.eye,
+                                              size: 24,
+                                              color: k.inkMuted)),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
                     ],
                     const SizedBox(height: 18),
                     KReveal(
@@ -655,8 +769,16 @@ class _SignupScreenState extends State<SignupScreen> {
                       index: 8,
                       child: KButton(
                         key: const ValueKey('signup-button'),
-                        label: _editing ? 'Send again' : 'Create account',
-                        sublabel: _editing ? 'फिर से भेजें' : 'अकाउंट बनाएं',
+                        label: _editing
+                            ? 'Send again'
+                            : GrozoAuthConfig.usesClerk
+                                ? 'Submit store application'
+                                : 'Create account',
+                        sublabel: _editing
+                            ? 'फिर से भेजें'
+                            : GrozoAuthConfig.usesClerk
+                                ? 'स्टोर की जानकारी भेजें'
+                                : 'अकाउंट बनाएं',
                         icon:
                             _editing ? LucideIcons.send : LucideIcons.userPlus,
                         large: true,

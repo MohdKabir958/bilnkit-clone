@@ -187,7 +187,7 @@ export const requireApprovedPartner = async (req: AuthenticatedRequest, res: Res
 };
 
 const vendorView = (v: any) => v && ({
-  id: v.id, name: v.name, category: v.category, address: v.address, fssaiNumber: v.fssaiNumber ?? null,
+  id: v.id, name: v.name, category: v.category, primaryCategoryId: v.primaryCategoryId ?? null, publicPhone: v.publicPhone ?? null, address: v.address, fssaiNumber: v.fssaiNumber ?? null,
   isAcceptingOrders: v.isAcceptingOrders, approvalStatus: v.approvalStatus, rejectionReason: v.rejectionReason ?? null,
   ...vendorLocationView(v),
   ...cuisineFields(v), // Docs/23: `cuisines` + `tags`
@@ -203,9 +203,10 @@ export const driverView = (d: any) => d && ({
 partnerRouter.post('/partner/clerk-application', requireAuth, async (req: AuthenticatedRequest,res:Response) => {
   if (!usesClerk() || !req.user?.clerkUserId) return res.status(404).json({success:false,message:'Not found.'});
   const b = req.body ?? {}, role = b.role;
-  if (req.user.role !== 'STUDENT' || !['VENDOR','DRIVER'].includes(role)) return res.status(403).json({success:false,message:'This identity cannot create that partner application.'});
+  if (req.user.role !== 'STUDENT' || !['VENDOR','DRIVER'].includes(role)) return res.status(403).json({success:false,code:'APPLICATION_ROLE_CONFLICT',message:'This account already has a Grozo role. Sign out and use a separate store-owner or delivery-partner account, or contact Grozo support.'});
   const name = clean(b.name,60), phone = canonicalPhone(b.phone);
-  if (!NAME_RE.test(name) || !phone) return res.status(400).json({success:false,message:'Enter a full name and valid contact mobile number.'});
+  if (!NAME_RE.test(name)) return res.status(400).json({success:false,field:'name',message:'Enter your full name.'});
+  if (!phone) return res.status(400).json({success:false,field:'phone',message:'Enter a valid 10-digit business contact number.'});
   const details = role === 'VENDOR' ? vendorFields(b) : driverFields(b,phone);
   if (!details.ok) return res.status(400).json({success:false,...details.error});
   const location = role === 'VENDOR' ? signupLocation(b) : ({ok:true,pin:null} as const);
@@ -217,11 +218,15 @@ partnerRouter.post('/partner/clerk-application', requireAuth, async (req: Authen
       if (user.role !== 'STUDENT' || user.deletedAt) throw new Error('APPLICATION_CONFLICT');
       // Do not repurpose an established customer with financial/order history into another role.
       if (await tx.order.count({where:{customerId:user.id}}) || await tx.orderGroup.count({where:{customerId:user.id}})) throw new Error('APPLICATION_CONFLICT');
+      // Older signed clients may omit the managed category; those applications stay pending.
+      const category = role === 'VENDOR' && b.primaryCategoryId != null
+        ? await tx.category.findFirst({where:{id:String(b.primaryCategoryId),isActive:true,forRestaurants:true}}) : null;
+      if (role === 'VENDOR' && b.primaryCategoryId != null && !category) throw new Error('INVALID_STORE_CATEGORY');
       const updated = await tx.user.update({where:{id:user.id},data:{name,phone,role}});
       const now = new Date();
       if (role === 'VENDOR') {
         const d = details.data as any;
-        const vendor = await tx.vendor.create({data:{userId:user.id,name:d.name,category:d.category,address:d.address,fssaiNumber:d.fssaiNumber,bannerImage:DEFAULT_BANNER,isAcceptingOrders:false,approvalStatus:'PENDING',appliedAt:now,...(location.pin?devicePinData(location.pin.lat,location.pin.lng,location.pin.accuracyM):{})}});
+        const vendor = await tx.vendor.create({data:{userId:user.id,name:d.name,category:category?.name ?? d.category,primaryCategoryId:category?.id ?? null,publicPhone:phone,address:d.address,fssaiNumber:d.fssaiNumber,bannerImage:DEFAULT_BANNER,isAcceptingOrders:false,approvalStatus:'PENDING',appliedAt:now,...(location.pin?devicePinData(location.pin.lat,location.pin.lng,location.pin.accuracyM):{})}});
         return {user:updated,vendor:vendorView(vendor)};
       }
       const d = details.data as any;
@@ -230,6 +235,7 @@ partnerRouter.post('/partner/clerk-application', requireAuth, async (req: Authen
     });
     return res.status(201).json({success:true,user:{id:created.user.id,name:created.user.name,phone:created.user.phone,role:created.user.role,avatarId:created.user.avatarId},approvalStatus:'PENDING',...('vendor' in created?{vendor:created.vendor}:{driver:created.driver})});
   } catch(error) {
+    if ((error as Error).message === 'INVALID_STORE_CATEGORY') return res.status(400).json({success:false,field:'category',message:'Choose an available store category, then try again.'});
     if ((error as any)?.code === 'P2002' || (error as Error).message === 'APPLICATION_CONFLICT') return res.status(409).json({success:false,message:'This account already has data or an application. Use a separate partner identity or contact Grozo support.'});
     return res.status(503).json({success:false,message:'Application service is temporarily unavailable.'});
   }
@@ -323,6 +329,28 @@ const loadOwnProfile = async (userId: string, role: Role) => {
   const driver = await prisma.driverPartner.findUnique({ where: { userId } });
   return { vendor: null as any, driver, status: (driver?.approvalStatus ?? (usesClerk() ? 'PENDING' : 'APPROVED')) as ApprovalStatus, reason: driver?.rejectionReason ?? null };
 };
+
+// Read-only onboarding discovery. An identity is not a store or an approval.
+partnerRouter.get('/partner/vendor/onboarding', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  if (!usesClerk() || !req.user?.clerkUserId) return res.status(404).json({success:false,message:'Not found.'});
+  res.set('Cache-Control', 'no-store');
+  try {
+    const user = await prisma.user.findUniqueOrThrow({where:{id:req.user.id}});
+    const basic = {id:user.id,name:user.name,phone:user.phone,role:user.role,avatarId:user.avatarId ?? null};
+    if (user.role === 'VENDOR') {
+      const p = await loadOwnProfile(user.id, user.role);
+      if (!p.vendor) return res.status(409).json({success:false,code:'STORE_LINK_MISSING',message:'No store is linked to this owner account. Contact Grozo support to restore the association.'});
+      return res.json({success:true,user:basic,requiresApplication:false,approvalStatus:p.status,rejectionReason:p.reason,vendor:vendorView(p.vendor)});
+    }
+    if (user.role !== 'STUDENT') return res.status(403).json({success:false,code:'APPLICATION_ROLE_CONFLICT',message:'This account is already an administrator or delivery partner. Sign out and use a separate store-owner account.'});
+    const history = await prisma.order.count({where:{customerId:user.id}}) || await prisma.orderGroup.count({where:{customerId:user.id}});
+    if (history) return res.status(403).json({success:false,code:'APPLICATION_ROLE_CONFLICT',message:'This account has customer order history. Use a separate store-owner account so your existing orders stay intact.'});
+    return res.json({success:true,user:basic,requiresApplication:true,approvalStatus:'PENDING'});
+  } catch (error) {
+    console.error('vendor onboarding discovery failed:', errSummary(error));
+    return res.status(503).json({success:false,message:'Could not load your store status. Check your connection and retry.'});
+  }
+});
 
 // "Where do I stand?" - the apps poll this while the application is pending.
 partnerRouter.get('/partner/me', requireAuth, requireRole('VENDOR', 'DRIVER'), async (req: AuthenticatedRequest, res: Response) => {
@@ -430,9 +458,12 @@ partnerRouter.put('/partner/application', requireAuth, requireRole('VENDOR', 'DR
       const typed = typeof b.category === 'string' ? clean(b.category, 60) : '';
       const shown = String(p.vendor.category ?? '');
       const categoryChanged = !!typed && typed !== clean(shown, 60) && typed !== clean(shown, 10_000);
+      const managedCategory = b.primaryCategoryId != null
+        ? await prisma.category.findFirst({where:{id:String(b.primaryCategoryId),isActive:true,forRestaurants:true}}) : null;
+      if (b.primaryCategoryId != null && !managedCategory) return bad({field:'category',message:'Choose an available store category.'});
       await prisma.$transaction(async (tx) => {
-        if (categoryChanged) await applyOwnerCategoryText(tx, p.vendor.id, typed);
-        await tx.vendor.update({ where: { id: p.vendor.id }, data: { ...vendorData, approvalStatus: 'PENDING', rejectionReason: null, appliedAt: now, reviewedAt: null } });
+        if (categoryChanged && !managedCategory) await applyOwnerCategoryText(tx, p.vendor.id, typed);
+        await tx.vendor.update({ where: { id: p.vendor.id }, data: { ...vendorData, ...(managedCategory ? {primaryCategoryId:managedCategory.id,category:managedCategory.name} : {}), approvalStatus: 'PENDING', rejectionReason: null, appliedAt: now, reviewedAt: null } });
       });
     } else {
       if (!p.driver) return res.status(404).json({ success: false, message: 'No rider profile is linked to this account.' });

@@ -11,12 +11,14 @@ const String kPartnerRole = 'VENDOR';
 enum LoginFailure { invalidCredentials, locked, wrongRole, offline, server }
 
 class LoginResult {
-  const LoginResult.success({required String this.token, required PartnerSession this.session})
+  const LoginResult.success(
+      {required String this.token, required PartnerSession this.session})
       : failure = null,
         message = null,
         retryAfterSeconds = 0;
 
-  const LoginResult.failure(LoginFailure this.failure, {this.message, this.retryAfterSeconds = 0})
+  const LoginResult.failure(LoginFailure this.failure,
+      {this.message, this.retryAfterSeconds = 0})
       : token = null,
         session = null;
 
@@ -36,7 +38,8 @@ class LoginResult {
 enum ProfileOutcome { valid, unauthorized, unreachable }
 
 class ProfileResult {
-  const ProfileResult(this.outcome, [this.session]);
+  const ProfileResult(this.outcome, [this.session, this.message]);
+  final String? message;
   final ProfileOutcome outcome;
 
   /// Account basics from the server (no vendor details) when [outcome] is valid.
@@ -52,6 +55,7 @@ class PartnerSignupForm {
     required this.restaurantName,
     required this.address,
     this.category = '',
+    this.primaryCategoryId,
     this.fssaiNumber = '',
     this.lat,
     this.lng,
@@ -65,6 +69,7 @@ class PartnerSignupForm {
   final String restaurantName;
   final String address;
   final String category;
+  final String? primaryCategoryId;
   final String fssaiNumber;
 
   /// The kitchen's GPS position when the owner tapped "Use my current location" (optional; both or neither).
@@ -88,13 +93,16 @@ class PartnerSignupForm {
         'password': password,
         'restaurantName': restaurantName,
         'category': category,
+        if (primaryCategoryId != null) 'primaryCategoryId': primaryCategoryId,
         'address': address,
         'fssaiNumber': fssaiNumber,
         // Only when detected, and always both coordinates (the server refuses half a location).
         if (hasLocation) ...{
           'lat': lat,
           'lng': lng,
-          if (locationAccuracyM != null && locationAccuracyM!.isFinite) 'locationAccuracyM': double.parse(locationAccuracyM!.toStringAsFixed(1)),
+          if (locationAccuracyM != null && locationAccuracyM!.isFinite)
+            'locationAccuracyM':
+                double.parse(locationAccuracyM!.toStringAsFixed(1)),
         },
       };
 
@@ -109,17 +117,30 @@ class PartnerSignupForm {
       'category': category,
       'fssaiNumber': fssaiNumber,
     };
-    final out = <String, dynamic>{};
+    final out = <String, dynamic>{
+      if (primaryCategoryId != null &&
+          (edited == null || edited!.contains('primaryCategoryId')))
+        'primaryCategoryId': primaryCategoryId,
+    };
     all.forEach((key, value) {
       if (edited != null && !edited!.contains(key)) return;
-      if ((key == 'category' || key == 'fssaiNumber') && value.trim().isEmpty) return;
+      if ((key == 'category' || key == 'fssaiNumber') && value.trim().isEmpty) {
+        return;
+      }
       out[key] = value;
     });
     return out;
   }
 }
 
-enum SignupFailure { invalid, phoneTaken, rateLimited, unauthorized, offline, server }
+enum SignupFailure {
+  invalid,
+  phoneTaken,
+  rateLimited,
+  unauthorized,
+  offline,
+  server
+}
 
 /// Outcome of creating an account or re-sending an application.
 class SignupResult {
@@ -128,7 +149,8 @@ class SignupResult {
         field = null,
         message = null;
 
-  const SignupResult.failure(SignupFailure this.failure, {this.field, this.message})
+  const SignupResult.failure(SignupFailure this.failure,
+      {this.field, this.message})
       : token = null,
         session = null;
 
@@ -166,7 +188,9 @@ abstract class PartnerAuthService {
 }
 
 class ApiPartnerAuthService implements PartnerAuthService {
-  ApiPartnerAuthService();
+  ApiPartnerAuthService({http.Client? client})
+      : _client = client ?? http.Client();
+  final http.Client _client;
 
   static const Duration _loginTimeout = Duration(seconds: 12);
 
@@ -180,24 +204,38 @@ class ApiPartnerAuthService implements PartnerAuthService {
   }
 
   @override
-  Future<LoginResult> login({required String phone, required String password}) async {
+  Future<LoginResult> login(
+      {required String phone, required String password}) async {
     if (GrozoAuthConfig.usesClerk) {
       try {
-        final token=await ClerkSessions.instance.token();
-        if(token==null) return const LoginResult.failure(LoginFailure.invalidCredentials,message:'Sign in with Clerk first.');
-        final result=await fetchProfile(token);
-        if(result.outcome==ProfileOutcome.valid && result.session!=null) return LoginResult.success(token:token,session:result.session!);
-        return const LoginResult.failure(LoginFailure.wrongRole,message:'Grozo partner access could not be verified. Apply for approval, check the connection or change account.');
-      } catch (_) { return const LoginResult.failure(LoginFailure.offline); }
+        final token = await ClerkSessions.instance.token();
+        if (token == null) {
+          return const LoginResult.failure(LoginFailure.invalidCredentials,
+              message: 'Sign in with Clerk first.');
+        }
+        final result = await fetchProfile(token);
+        if (result.outcome == ProfileOutcome.valid && result.session != null) {
+          return LoginResult.success(token: token, session: result.session!);
+        }
+        return LoginResult.failure(
+            result.outcome == ProfileOutcome.unreachable
+                ? LoginFailure.offline
+                : LoginFailure.wrongRole,
+            message: result.message ??
+                'Could not load your store. Check your connection and retry.');
+      } catch (_) {
+        return const LoginResult.failure(LoginFailure.offline);
+      }
     }
 
     final http.Response response;
     try {
-      response = await http
+      response = await _client
           .post(
             Uri.parse('${ApiConfig.baseUrl}/auth/partner-login'),
             headers: const {'Content-Type': 'application/json'},
-            body: jsonEncode({'phone': phone, 'password': password, 'role': kPartnerRole}),
+            body: jsonEncode(
+                {'phone': phone, 'password': password, 'role': kPartnerRole}),
           )
           .timeout(_loginTimeout);
     } catch (_) {
@@ -205,24 +243,28 @@ class ApiPartnerAuthService implements PartnerAuthService {
     }
 
     final json = _decode(response.body);
-    final message = json?['message'] is String ? json!['message'] as String : null;
+    final message =
+        json?['message'] is String ? json!['message'] as String : null;
     switch (response.statusCode) {
       case 200:
         final token = json?['token'];
-        final session = json == null ? null : PartnerSession.fromLoginJson(json);
+        final session =
+            json == null ? null : PartnerSession.fromLoginJson(json);
         if (token is String && token.isNotEmpty && session != null) {
           return LoginResult.success(token: token, session: session);
         }
         return const LoginResult.failure(LoginFailure.server);
       case 400:
       case 401:
-        return LoginResult.failure(LoginFailure.invalidCredentials, message: message);
+        return LoginResult.failure(LoginFailure.invalidCredentials,
+            message: message);
       case 403:
         return LoginResult.failure(LoginFailure.wrongRole, message: message);
       case 429:
         final raw = json?['retryAfterSeconds'];
         final seconds = raw is num ? raw.toInt() : 0;
-        return LoginResult.failure(LoginFailure.locked, message: message, retryAfterSeconds: seconds < 1 ? 60 : seconds);
+        return LoginResult.failure(LoginFailure.locked,
+            message: message, retryAfterSeconds: seconds < 1 ? 60 : seconds);
       default:
         return const LoginResult.failure(LoginFailure.server);
     }
@@ -232,18 +274,35 @@ class ApiPartnerAuthService implements PartnerAuthService {
   Future<SignupResult> signUp(PartnerSignupForm form) async {
     if (GrozoAuthConfig.usesClerk) {
       try {
-        final token=await ClerkSessions.instance.token();
-        if(token==null) return const SignupResult.failure(SignupFailure.unauthorized);
-        final body=form.toSignupJson()..remove('password');
-        final response=await http.post(Uri.parse('${ApiConfig.baseUrl}/partner/clerk-application'),headers:{'Content-Type':'application/json','Authorization':'Bearer $token'},body:jsonEncode(body)).timeout(_loginTimeout);
-        final result=_signupResult(response,expectToken:false);
-        return result.ok && result.session!=null ? SignupResult.success(token:token,session:result.session) : result;
-      } catch (_) { return const SignupResult.failure(SignupFailure.offline); }
+        final token = await ClerkSessions.instance.token();
+        if (token == null) {
+          return const SignupResult.failure(SignupFailure.unauthorized);
+        }
+        final body = form.toSignupJson()..remove('password');
+        final response = await _client
+            .post(Uri.parse('${ApiConfig.baseUrl}/partner/clerk-application'),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer $token'
+                },
+                body: jsonEncode(body))
+            .timeout(_loginTimeout);
+        final result = _signupResult(response, expectToken: false);
+        if (!result.ok) return result;
+        if (result.session?.vendorId == null) {
+          return const SignupResult.failure(SignupFailure.server,
+              message:
+                  'Grozo could not confirm the store application. Retry to check its status.');
+        }
+        return SignupResult.success(token: token, session: result.session);
+      } catch (_) {
+        return const SignupResult.failure(SignupFailure.offline);
+      }
     }
 
     final http.Response response;
     try {
-      response = await http
+      response = await _client
           .post(
             Uri.parse('${ApiConfig.baseUrl}/auth/partner-signup'),
             headers: const {'Content-Type': 'application/json'},
@@ -260,10 +319,13 @@ class ApiPartnerAuthService implements PartnerAuthService {
   Future<SignupResult> resubmit(String token, PartnerSignupForm form) async {
     final http.Response response;
     try {
-      response = await http
+      response = await _client
           .put(
             Uri.parse('${ApiConfig.baseUrl}/partner/application'),
-            headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token'
+            },
             body: jsonEncode(form.toUpdateJson()),
           )
           .timeout(_loginTimeout);
@@ -273,9 +335,11 @@ class ApiPartnerAuthService implements PartnerAuthService {
     return _signupResult(response, expectToken: false);
   }
 
-  SignupResult _signupResult(http.Response response, {required bool expectToken}) {
+  SignupResult _signupResult(http.Response response,
+      {required bool expectToken}) {
     final json = _decode(response.body);
-    final message = json?['message'] is String ? json!['message'] as String : null;
+    final message =
+        json?['message'] is String ? json!['message'] as String : null;
     final field = json?['field'] is String ? json!['field'] as String : null;
     switch (response.statusCode) {
       case 200:
@@ -283,19 +347,31 @@ class ApiPartnerAuthService implements PartnerAuthService {
         final session = json == null ? null : PartnerSession.fromMeJson(json);
         final token = json?['token'];
         if (expectToken) {
-          if (session == null || token is! String || token.isEmpty) return const SignupResult.failure(SignupFailure.server);
+          if (session == null || token is! String || token.isEmpty) {
+            return const SignupResult.failure(SignupFailure.server);
+          }
           return SignupResult.success(token: token, session: session);
         }
         // Re-sent application: the server accepted it (200). A body without a readable `user` is still a success.
         return SignupResult.success(session: session);
       case 400:
-        return SignupResult.failure(SignupFailure.invalid, field: field, message: message);
+        return SignupResult.failure(SignupFailure.invalid,
+            field: field, message: message);
       case 401:
-        return const SignupResult.failure(SignupFailure.unauthorized);
+        return SignupResult.failure(SignupFailure.unauthorized,
+            message: message);
+      case 403:
+        return SignupResult.failure(SignupFailure.invalid,
+            message: message ??
+                'This account cannot apply for a store. Use a separate store-owner account.');
       case 409:
-        return SignupResult.failure(field == 'phone' ? SignupFailure.phoneTaken : SignupFailure.invalid, field: field, message: message);
+        return SignupResult.failure(
+            field == 'phone' ? SignupFailure.phoneTaken : SignupFailure.invalid,
+            field: field,
+            message: message);
       case 429:
-        return SignupResult.failure(SignupFailure.rateLimited, message: message);
+        return SignupResult.failure(SignupFailure.rateLimited,
+            message: message);
       default:
         return const SignupResult.failure(SignupFailure.server);
     }
@@ -304,18 +380,39 @@ class ApiPartnerAuthService implements PartnerAuthService {
   @override
   Future<ProfileResult> fetchProfile(String token) async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/partner/me'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      final response = await _client.get(
+        Uri.parse(
+            '${ApiConfig.baseUrl}${GrozoAuthConfig.usesClerk ? '/partner/vendor/onboarding' : '/partner/me'}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
       ).timeout(const Duration(seconds: 10));
-      if (response.statusCode == 401 || (GrozoAuthConfig.usesClerk && response.statusCode == 403)) return const ProfileResult(ProfileOutcome.unauthorized);
-      if (response.statusCode != 200) return const ProfileResult(ProfileOutcome.unreachable);
       final json = _decode(response.body);
+      final message = json?['message'] as String?;
+      if (response.statusCode == 401 ||
+          response.statusCode == 403 ||
+          response.statusCode == 409) {
+        return ProfileResult(ProfileOutcome.unauthorized, null, message);
+      }
+      if (response.statusCode != 200) {
+        return ProfileResult(ProfileOutcome.unreachable, null, message);
+      }
       final session = json == null ? null : PartnerSession.fromMeJson(json);
-      if (session == null) return const ProfileResult(ProfileOutcome.unreachable);
+      if (session == null) {
+        return const ProfileResult(ProfileOutcome.unreachable);
+      }
       // A token that belongs to another role must not open this app.
       final role = (json!['user'] as Map)['role']?.toString();
-      if (role != null && role != kPartnerRole) return const ProfileResult(ProfileOutcome.unauthorized);
+      if (session.requiresApplication) {
+        if (!GrozoAuthConfig.usesClerk ||
+            role != 'STUDENT' ||
+            session.vendorId != null) {
+          return const ProfileResult(ProfileOutcome.unauthorized);
+        }
+      } else if (role != null && role != kPartnerRole) {
+        return const ProfileResult(ProfileOutcome.unauthorized);
+      }
       return ProfileResult(ProfileOutcome.valid, session);
     } catch (_) {
       return const ProfileResult(ProfileOutcome.unreachable);
@@ -325,9 +422,12 @@ class ApiPartnerAuthService implements PartnerAuthService {
   @override
   Future<void> logout(String token) async {
     try {
-      await http.post(
+      await _client.post(
         Uri.parse('${ApiConfig.baseUrl}/auth/logout'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
       ).timeout(const Duration(seconds: 4));
     } catch (_) {}
   }

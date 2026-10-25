@@ -367,7 +367,10 @@ class _VendorHomeScreenState extends State<VendorHomeScreen>
       );
       if (!mounted) return;
       if (!open) {
-        setState(() => _currentIndex = 1);
+        setState(() {
+          _productsVisited = true;
+          _currentIndex = 1;
+        });
         return;
       }
     }
@@ -552,7 +555,8 @@ class _VendorHomeScreenState extends State<VendorHomeScreen>
                     onPressed: () async {
                       Navigator.of(sheetContext).pop();
                       await Navigator.of(context).push(MaterialPageRoute<void>(
-                          builder: (_) => StoreProfileScreen(vendorId:_vendorId)));
+                          builder: (_) =>
+                              StoreProfileScreen(vendorId: _vendorId)));
                       if (mounted) {
                         await SessionScope.maybeOf(context)?.refreshApproval();
                       }
@@ -756,8 +760,10 @@ class _VendorHomeScreenState extends State<VendorHomeScreen>
                                   waitingApproval: waiting,
                                   hasDishes: !noDishes,
                                   isOpen: !closed,
-                                  onAddDish: () =>
-                                      setState(() => _currentIndex = 1),
+                                  onAddDish: () => setState(() {
+                                    _productsVisited = true;
+                                    _currentIndex = 1;
+                                  }),
                                   onOpenStore: () =>
                                       _toggleStoreStatusWithConfirmation(true),
                                 );

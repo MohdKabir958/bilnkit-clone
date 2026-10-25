@@ -20,6 +20,7 @@ import 'services/push/push_controller.dart';
 import 'services/push/push_permissions.dart';
 import 'services/vendor_backend.dart';
 import 'services/partner_auth_service.dart';
+import 'services/store_categories.dart';
 import 'services/vendor_api_service.dart';
 import 'session/session_controller.dart';
 
@@ -47,6 +48,7 @@ class KraveoVendorApp extends StatefulWidget {
       this.push,
       this.locationServices,
       this.locationApi,
+      this.categoriesLoader,
       this.payoutApi});
 
   /// The phone's GPS + the maps link opener for "Detect my location" (tests pass fakes; null = the real ones).
@@ -62,6 +64,7 @@ class KraveoVendorApp extends StatefulWidget {
   /// the live connection and polling). The caller owns it; the app does not dispose it.
   final PushController? push;
 
+  final Future<List<StoreCategory>> Function()? categoriesLoader;
   final PartnerAuthService? auth;
   final VendorBackend? backend;
   final OrderSocketFactory? socketFactory;
@@ -90,13 +93,16 @@ class _KraveoVendorAppState extends State<KraveoVendorApp> {
       debugShowCheckedModeBanner: false,
       theme: KraveoTheme.vendor(),
       // Respect the device text scale; shared controls grow with their labels.
-      home: GrozoAuthConfig.usesClerk && GrozoAuthConfig.preview ? const ClerkEntryScreen(appName: 'Grozo Vendor',preview:true) : AuthGate(
-          session: _session,
-          push: widget.push,
-          backend: widget.backend,
-          payoutApi: widget.payoutApi,
-          socketFactory: widget.socketFactory,
-          alarm: widget.alarm),
+      home: GrozoAuthConfig.usesClerk && GrozoAuthConfig.preview
+          ? const ClerkEntryScreen(appName: 'Grozo Vendor', preview: true)
+          : AuthGate(
+              session: _session,
+              categoriesLoader: widget.categoriesLoader,
+              push: widget.push,
+              backend: widget.backend,
+              payoutApi: widget.payoutApi,
+              socketFactory: widget.socketFactory,
+              alarm: widget.alarm),
     );
     final push = widget.push;
     return SessionScope(
@@ -115,12 +121,14 @@ class AuthGate extends StatefulWidget {
   const AuthGate(
       {super.key,
       required this.session,
+      this.categoriesLoader,
       this.push,
       this.backend,
       this.payoutApi,
       this.socketFactory,
       this.alarm});
 
+  final Future<List<StoreCategory>> Function()? categoriesLoader;
   final SessionController session;
   final PushController? push;
   final VendorBackend? backend;
@@ -220,10 +228,19 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
   }
 
   /// The sign-up form (new account), or the same form prefilled to fix a pending / rejected application.
-  void _openSignup({PartnerSession? existing}) {
+  void _openSignup({PartnerSession? existing}) async {
+    if (GrozoAuthConfig.usesClerk && existing == null) {
+      final result = await _session.login('', '');
+      if (!mounted || result.ok) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result.message ??
+              'Sign in with a store-owner account and retry.')));
+      return;
+    }
     Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (_) => SignupScreen(
         existing: existing,
+        categoriesLoader: widget.categoriesLoader,
         onSubmit: existing == null ? _session.signUp : _session.resubmit,
       ),
     ));
@@ -288,6 +305,12 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
                 onSubmit: _session.login, onCreateAccount: _openSignup);
           case SessionStatus.signedIn:
             final me = _session.session;
+            if (me?.requiresApplication == true) {
+              return SignupScreen(
+                  onSubmit: _session.signUp,
+                  onCancel: _session.logout,
+                  categoriesLoader: widget.categoriesLoader);
+            }
             // Only an approved restaurant reaches the order screens; everyone else sees where they stand.
             if (me != null && me.approval != PartnerApproval.approved) {
               return ApplicationStatusScreen(
