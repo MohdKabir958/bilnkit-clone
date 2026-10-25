@@ -263,7 +263,8 @@ export const apiService = {
   setCityCash: (id:string,codEnabled:boolean) => request(`/api/v1/admin/cities/${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify({codEnabled})}),
   fetchCash: (after?:string) => requestFull<{success:boolean;data:CashEntry[];nextCursor:string|null}>(`/api/v1/admin/cash${after?'?after='+encodeURIComponent(after):''}`),
   recordCash: (id:string,action:'remit'|'refund',reference:string) => request(`/api/v1/admin/cash/${encodeURIComponent(id)}/${action}`,{method:'POST',body:JSON.stringify({reference})}),
-  createStore: (data: {primaryCategoryId?:string;publicPhone?:string;description?:string;name:string;address:string;cityId:string;pinCode:string;locality:string;lat:number;lng:number;zoneId?:string;ownerEmail?:string}) => request('/api/v1/admin/stores', {method:'POST',body:JSON.stringify(data)}),
+  createRider: (data: {email:string;name:string;phone:string;vehicleType:string;vehicleRegNo:string;emergencyPhone?:string;cityId:string;zoneId:string;approve:boolean}) => request<{id:string}>('/api/v1/admin/riders',{method:'POST',body:JSON.stringify(data)}),
+  createStore: (data: {primaryCategoryId?:string;publicPhone?:string;description?:string;name:string;address:string;cityId:string;pinCode:string;locality:string;lat:number;lng:number;zoneId?:string;ownerEmail?:string}) => request<{id:string}>('/api/v1/admin/stores', {method:'POST',body:JSON.stringify(data)}),
 
   operations: (cityId: string, days: string) => request<any>(`/api/v1/admin/operations?${new URLSearchParams({days,...(cityId?{cityId}:{})})}`),
   dispatchPage: (cityId: string, after='') => requestFull<any>(`/api/v1/admin/dispatch?${new URLSearchParams({limit:'30',...(cityId?{cityId}:{}),...(after?{after}:{})})}`),

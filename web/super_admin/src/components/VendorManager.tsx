@@ -29,6 +29,8 @@ interface VendorManagerProps {
   onToggleVendor: (vendorId: string) => void;
   /** Called after a restaurant (with its owner login) was created, so the list reloads. */
   onCreated?: () => void;
+  onOpenProducts?:(id:string)=>void;
+  onOpenCategories?:()=>void;
   /** Called after an admin saved a restaurant's map pin, so the list (and the live map) use it at once. */
   onLocationSaved?: (vendorId: string, saved: SavedPin) => void;
   /** Called after an admin saved a restaurant's commission, so the list uses it at once. */
@@ -61,7 +63,7 @@ const VendorPayout: React.FC<{ vendor: Vendor; onAuthError?: (error: unknown) =>
 const NO_ORDERS: Order[] = [];
 const NOT_BUSY: ReadonlySet<string> = new Set();
 
-export const VendorManager: React.FC<VendorManagerProps> = ({ vendors, orders = NO_ORDERS, busyVendorIds = NOT_BUSY, onToggleVendor, onCreated, onLocationSaved, onCommissionSaved, onProfileSaved, onAuthError, loading = false, query = '', onClearQuery,createRequested=0,selectedCityId='',onOpenCoverage }) => {
+export const VendorManager: React.FC<VendorManagerProps> = ({ onOpenProducts,onOpenCategories,vendors, orders = NO_ORDERS, busyVendorIds = NOT_BUSY, onToggleVendor, onCreated, onLocationSaved, onCommissionSaved, onProfileSaved, onAuthError, loading = false, query = '', onClearQuery,createRequested=0,selectedCityId='',onOpenCoverage }) => {
   const [showDrawer, setShowDrawer] = useState(false);
   useEffect(()=>{if(createRequested)setShowDrawer(true);},[createRequested]);
   const [filter, setFilter] = useState<VendorFilter>('ALL');
@@ -171,7 +173,7 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ vendors, orders = 
       </div>
 
       {editing && <EditRestaurantDrawer key={editing.id} vendor={editing} onClose={() => setEditing(null)} onSaved={(saved) => onProfileSaved?.(saved)} onAuthError={onAuthError} />}
-      {clerkAuthEnabled ? <CreateStoreDrawer open={showDrawer} onClose={()=>setShowDrawer(false)} onCreated={()=>onCreated?.()} onAuthError={onAuthError} initialCityId={selectedCityId} onOpenCoverage={onOpenCoverage}/> : <AddPartnerDrawer open={showDrawer} kind="VENDOR" onClose={() => setShowDrawer(false)} onCreated={() => onCreated?.()} />}
+      {clerkAuthEnabled ? <CreateStoreDrawer onOpenProducts={onOpenProducts} onOpenCategories={onOpenCategories} open={showDrawer} onClose={()=>setShowDrawer(false)} onCreated={()=>onCreated?.()} onAuthError={onAuthError} initialCityId={selectedCityId} onOpenCoverage={onOpenCoverage}/> : <AddPartnerDrawer open={showDrawer} kind="VENDOR" onClose={() => setShowDrawer(false)} onCreated={() => onCreated?.()} />}
     </div>
   );
 };

@@ -59,6 +59,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
   const [adminProfile, setAdminProfile] = useState<AdminProfile | undefined>(clerkAdmin);
   const [activeTab, setActiveTab] = useState<TabType>('operations');
   const [selectedCity,setSelectedCity]=useState('');
+  const [onboardingStoreId,setOnboardingStoreId]=useState('');
   const [cities,setCities]=useState<DeliveryCity[]>([]);
   const [cityError,setCityError]=useState('');
   const [createVendorRequest,setCreateVendorRequest]=useState(0);
@@ -618,7 +619,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
   }, []);
   const reloadCities=useCallback(async()=>{try{const geo=await apiService.fetchGeography();setCities(geo.cities);setCityError('');}catch{setCityError('Cities could not be loaded.');}},[]);
   useEffect(()=>{if(isAuth)void reloadCities();},[isAuth,reloadCities]);
-  const changeCity=(value:string)=>{olderLoadedRef.current=false;setHasMoreOrders(false);setOrders([]);setSelectedCity(value);};
+  const changeCity=(value:string)=>{setOnboardingStoreId('');olderLoadedRef.current=false;setHasMoreOrders(false);setOrders([]);setSelectedCity(value);};
   const workspaceVendors=useMemo(()=>selectedCity?vendors.filter(v=>v.cityId===selectedCity):vendors,[vendors,selectedCity]);
   const workspaceOrders=useMemo(()=>selectedCity?orders.filter(o=>o.cityId===selectedCity||workspaceVendors.some(v=>v.id===o.vendorId)):orders,[orders,workspaceVendors,selectedCity]);
   const workspaceDrivers=useMemo(()=>selectedCity?driverPartners.filter(d=>d.cityId===selectedCity):driverPartners,[driverPartners,selectedCity]);
@@ -716,15 +717,15 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
               />
             )}
             {activeTab === 'applications' && <ApplicationsPanel refreshKey={applicationsKey} query={searchQuery} onChanged={fetchBackendData} onAuthError={handleSessionError} onLocationSaved={handleVendorLocationSaved} />}
-            {activeTab === 'vendors' && <VendorManager vendors={workspaceVendors} selectedCityId={selectedCity} createRequested={createVendorRequest} onOpenCoverage={()=>handleSelectTab('coverage')} orders={orders} busyVendorIds={busyVendorIds} onToggleVendor={handleToggleVendor} onLocationSaved={handleVendorLocationSaved} onCommissionSaved={handleVendorCommissionSaved} onProfileSaved={handleVendorProfileSaved} onAuthError={handleSessionError} onCreated={fetchBackendData} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} />}
-            {activeTab === 'drivers' && <DriverManager drivers={workspaceDrivers} orders={orders} now={now} onCreated={fetchBackendData} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} />}
+            {activeTab === 'vendors' && <VendorManager onOpenProducts={id=>{setOnboardingStoreId(id);handleSelectTab('inventory');}} onOpenCategories={()=>handleSelectTab('categories')} vendors={workspaceVendors} selectedCityId={selectedCity} createRequested={createVendorRequest} onOpenCoverage={()=>handleSelectTab('coverage')} orders={orders} busyVendorIds={busyVendorIds} onToggleVendor={handleToggleVendor} onLocationSaved={handleVendorLocationSaved} onCommissionSaved={handleVendorCommissionSaved} onProfileSaved={handleVendorProfileSaved} onAuthError={handleSessionError} onCreated={fetchBackendData} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} />}
+            {activeTab === 'drivers' && <DriverManager selectedCityId={selectedCity} onOpenCoverage={()=>handleSelectTab('coverage')} onOpenApplications={()=>handleSelectTab('applications')} onAuthError={handleSessionError} drivers={workspaceDrivers} orders={orders} now={now} onCreated={fetchBackendData} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} />}
             {activeTab === 'customers' && <CustomersPanel query={searchQuery} onClearQuery={clearQuery} onAuthError={handleSessionError} />}
             {activeTab === 'categories' && <CategoriesPanel query={searchQuery} onClearQuery={clearQuery} onAuthError={handleSessionError} onChanged={fetchBackendData} />}
             {activeTab === 'catalog' && <CatalogPanel vendors={vendors} query={searchQuery} onClearQuery={clearQuery} onAuthError={handleSessionError} pendingCounts={pendingDishes} onPendingChanged={refreshPendingDishes} />}
             {activeTab === 'finance' && <FinancePanel vendors={vendors} driverPartners={driverPartners} pendingSettlements={pendingSettlements} onSettlementsChanged={refreshPendingSettlements} onAuthError={handleSessionError} />}
             {activeTab === 'settings' && <SettingsPanel onAuthError={handleSessionError} />}
             {activeTab === 'operations' && <OperationsPanel cityId={selectedCity} onCityChange={changeCity} onNavigate={navigateTask} vendorCount={workspaceVendors.length} cityCount={cities.length} onAuthError={handleSessionError} onOpenOrder={openOrder} />}
-            {activeTab === 'inventory' && <InventoryPanel vendors={workspaceVendors} selectedCityId={selectedCity} onAuthError={handleSessionError} />}
+            {activeTab === 'inventory' && <InventoryPanel initialVendorId={onboardingStoreId} vendors={workspaceVendors} selectedCityId={selectedCity} onAuthError={handleSessionError} />}
             {activeTab === 'coverage' && <GeographyPanel selectedCityId={selectedCity} drivers={driverPartners} vendors={vendors} onChanged={fetchBackendData} onSessionError={handleSessionError} />}
             {activeTab === 'team' && <TeamAccessPanel owner={adminProfile?.adminRole==='OWNER'} onSessionError={handleSessionError} onSelfChanged={()=>{void apiService.validateSession().then(setAdminProfile).catch(handleAuthFailure);}} />}
             {activeTab === 'analytics' && <AnalyticsPanel />}

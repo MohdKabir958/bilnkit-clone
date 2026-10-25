@@ -1,0 +1,42 @@
+import {useEffect,useRef,useState} from 'react';
+import {Bike,CheckCircle2} from 'lucide-react';
+import {Drawer} from './ui/Drawer';
+import {OnboardingSteps} from './ui/OnboardingSteps';
+import {apiService} from '../services/api';
+import type {Geography} from './GeographyPanel';
+const steps=['Identity','Vehicle','Area','Review'];
+export function CreateRiderDrawer({open,onClose,onCreated,onAuthError,onOpenCoverage,onOpenApplications,initialCityId=''}:{open:boolean;onClose:()=>void;onCreated:()=>void;onAuthError?:(e:unknown)=>void;onOpenCoverage?:()=>void;onOpenApplications?:()=>void;initialCityId?:string}) {
+  const blank=()=>({email:'',name:'',phone:'',vehicleType:'Bike',vehicleRegNo:'',emergencyPhone:'',cityId:initialCityId,zoneId:'',approve:false});
+  const [form,setForm]=useState(blank),[step,setStep]=useState(0),[geo,setGeo]=useState<Geography>({cities:[],zones:[],coverage:[]});
+  const [error,setError]=useState(''),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false),[created,setCreated]=useState(false);
+  const saving=useRef(false);
+  const load=async()=>{setLoading(true);try{setGeo(await apiService.fetchGeography());setError('');}catch(e){setError(e instanceof Error?e.message:'Service areas could not load.');onAuthError?.(e);}finally{setLoading(false);}};
+  useEffect(()=>{if(!open)return;setForm(blank());setStep(0);setCreated(false);setError('');void load();},[open]);
+  const go=(value:number)=>{setError('');setStep(value);};
+  const update=(key:keyof typeof form,value:string)=>setForm(f=>({...f,[key]:value,approve:false,...(key==='cityId'?{zoneId:''}:{})}));
+  const field=(key:'email'|'name'|'phone'|'vehicleRegNo'|'emergencyPhone',label:string,required=true)=><label className="block text-sm font-medium">{label}<input className="k-input mt-2 w-full" required={required} type={key==='email'?'email':key.includes('Phone')||key==='phone'?'tel':'text'} maxLength={key==='email'?254:key==='name'?60:20} value={form[key]} onChange={e=>update(key,e.target.value)}/></label>;
+  const submit=async(e:React.FormEvent)=>{e.preventDefault();if(saving.current)return;setError('');
+    try{
+      if(step===0&&(!form.email.trim()||!form.name.trim()||!form.phone.trim()))throw Error('Enter the verified email, rider name and mobile number.');
+      if(step===1&&['Bike','Scooter'].includes(form.vehicleType)&&form.vehicleRegNo.trim().length<4)throw Error('Enter the vehicle registration number.');
+      if(step===2&&(!form.cityId||!form.zoneId))throw Error('Choose an enabled city and delivery zone.');
+      if(step<3){go(step+1);return;}
+      saving.current=true;setBusy(true);await apiService.createRider({...form,email:form.email.trim(),name:form.name.trim(),phone:form.phone.trim(),vehicleRegNo:form.vehicleRegNo.trim()});setCreated(true);onCreated();
+    }catch(e){setError(e instanceof Error?e.message:'Rider could not be created.');onAuthError?.(e);}finally{saving.current=false;setBusy(false);}
+  };
+  const leave=(action:()=>void)=>{onClose();action();};
+  return <Drawer open={open} wide onClose={()=>{if(!busy)onClose();}} title={created?'Rider added':'Add delivery partner'} subtitle={created?'The rider starts offline':'Verified identity → vehicle → service area → review'} icon={Bike}>
+    {created?<div className="space-y-5"><CheckCircle2 className="h-12 w-12 text-kraveo-g700"/><h3 className="text-xl font-bold">{form.name} is {form.approve?'approved':'waiting for approval'}</h3><p className="text-sm">{form.approve?'Ask the partner to sign in to the delivery app, allow location and go on duty.':'Review the partner in Applications before they can receive delivery offers.'} Their city and service area are saved. No password is created or sent.</p>{!form.approve&&onOpenApplications&&<button type="button" className="k-btn-primary w-full" onClick={()=>leave(onOpenApplications)}>Review in Applications</button>}{onOpenCoverage&&<button type="button" className="k-btn-ghost w-full" onClick={()=>leave(onOpenCoverage)}>Review rider service areas</button>}<button type="button" className="k-btn-primary w-full" onClick={onClose}>Back to delivery partners</button></div>:<form className="space-y-6" onSubmit={submit}>
+      <OnboardingSteps steps={steps} step={step} onBack={next=>{if(!busy)go(next);}}/>
+      {error&&<p role="alert" className="rounded-k-md border border-kraveo-danger/30 p-3 text-sm">{error}</p>}
+      {loading&&<p role="status">Loading service areas…</p>}
+      <fieldset disabled={busy||loading} className="space-y-5">
+      {step===0&&<><p className="text-sm text-kraveo-ink2">Ask the partner to sign in to Grozo and verify their email first. Use a separate partner account. Customer accounts never gain rider approval just by signing in.</p>{field('email',"Partner's verified email")}{field('name','Rider full name')}{field('phone','Rider mobile number')}<p className="text-xs text-kraveo-ink2">Existing riders should be managed in Applications or Cities & zones. This form never replaces an account or unsuspends it.</p>{onOpenApplications&&<button type="button" className="k-btn-ghost" onClick={()=>leave(onOpenApplications)}>View existing applications</button>}</>}
+      {step===1&&<><label className="block text-sm font-medium">Vehicle type<select className="k-input mt-2 w-full" value={form.vehicleType} onChange={e=>update('vehicleType',e.target.value)}>{['Bike','Scooter','Cycle','On foot'].map(type=><option key={type}>{type}</option>)}</select></label>{field('vehicleRegNo','Vehicle registration number',['Bike','Scooter'].includes(form.vehicleType))}{field('emergencyPhone','Emergency contact number (optional)',false)}<p className="text-xs text-kraveo-ink2">The emergency contact must be someone other than this rider. Payout details can be completed securely in the partner profile.</p></>}
+      {step===2&&<><label className="block text-sm font-medium">Rider city<select required className="k-input mt-2 w-full" value={form.cityId} onChange={e=>update('cityId',e.target.value)}><option value="">Choose enabled city</option>{geo.cities.filter(c=>c.active).map(c=><option key={c.id} value={c.id}>{c.name}, {c.state}</option>)}</select></label><label className="block text-sm font-medium">Rider delivery zone<select required className="k-input mt-2 w-full" value={form.zoneId} onChange={e=>update('zoneId',e.target.value)}><option value="">Choose enabled zone</option>{geo.zones.filter(z=>z.cityId===form.cityId&&z.active).map(z=><option key={z.id} value={z.id}>{z.name} · {z.radiusKm} km</option>)}</select></label><p className="text-sm text-kraveo-ink2">Offers require approval, matching service area, duty status and fresh GPS. Saving an area does not send offers.</p>{!loading&&!geo.zones.some(z=>z.cityId===form.cityId&&z.active)&&<div className="k-inset p-4 text-sm">No enabled zones in this city. {onOpenCoverage&&<button type="button" className="block underline" onClick={()=>leave(onOpenCoverage)}>Set up Cities & zones</button>}<button type="button" className="block underline" onClick={()=>void load()}>Reload service areas</button></div>}</>}
+      {step===3&&<><dl className="k-inset space-y-3 p-4 text-sm">{[['Identity',form.email],['Name',form.name],['Phone',form.phone],['Vehicle',`${form.vehicleType} ${form.vehicleRegNo}`],['Emergency contact',form.emergencyPhone||'Not provided'],['City',geo.cities.find(c=>c.id===form.cityId)?.name],['Zone',geo.zones.find(z=>z.id===form.zoneId)?.name]].map(([label,value])=><div key={label}><dt className="text-kraveo-ink2">{label}</dt><dd className="break-words font-semibold">{value}</dd></div>)}</dl><label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={form.approve} onChange={e=>setForm(f=>({...f,approve:e.target.checked}))}/>I have completed identity and vehicle checks. Approve this rider now.</label><p className="rounded-k-md bg-kraveo-g50 p-4 text-sm text-kraveo-g800">{form.approve?'The rider will be approved and offline. They must sign in and go on duty themselves.':'The rider will be saved as pending and offline. An administrator must approve them in Applications.'}</p></>}
+      <div className="flex gap-3 border-t border-kraveo-line pt-4">{step>0&&<button type="button" className="k-btn-ghost" onClick={()=>go(step-1)}>Back</button>}<button type="submit" className="k-btn-primary flex-1" disabled={busy||loading}>{busy?'Adding rider…':step===3?form.approve?'Add approved rider':'Save pending rider':`Next: ${steps[step+1]}`}</button></div>
+      </fieldset>
+    </form>}
+  </Drawer>;
+}

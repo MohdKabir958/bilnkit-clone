@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Bike, ChevronRight, Moon, Phone, Plus, SearchX, Truck, Users, Zap } from 'lucide-react';
 import { DriverPartner, Order } from '../types';
 import { tripsTodayByRider } from '../lib/dashboardStats';
+import {CreateRiderDrawer} from './CreateRiderDrawer';
+import {clerkAuthEnabled} from '../services/api';
 import { AddPartnerDrawer } from './AddPartnerDrawer';
 import { AnimatedNumber } from './ui/AnimatedNumber';
 import { ApprovalPill } from './ui/ApprovalPill';
@@ -13,6 +15,10 @@ import { SkeletonCard } from './ui/Skeleton';
 
 interface DriverManagerProps {
   drivers: DriverPartner[];
+  selectedCityId?:string;
+  onOpenCoverage?:()=>void;
+  onOpenApplications?:()=>void;
+  onAuthError?:(e:unknown)=>void;
   /** The loaded orders: "Trips today" is counted from them (deliveries finished today, India time). */
   orders?: Order[];
   /** Current time from the app, so the count rolls over at midnight. */
@@ -53,7 +59,7 @@ const DetailRow: React.FC<{ label: string; children: React.ReactNode }> = ({ lab
 
 const NO_ORDERS: Order[] = [];
 
-export const DriverManager: React.FC<DriverManagerProps> = ({ drivers, orders = NO_ORDERS, now = Date.now(), onCreated, loading = false, query = '', onClearQuery }) => {
+export const DriverManager: React.FC<DriverManagerProps> = ({ selectedCityId='',onOpenCoverage,onOpenApplications,onAuthError,drivers, orders = NO_ORDERS, now = Date.now(), onCreated, loading = false, query = '', onClearQuery }) => {
   const [filter, setFilter] = useState<DutyFilter>('ALL');
   const [showAdd, setShowAdd] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -174,7 +180,7 @@ export const DriverManager: React.FC<DriverManagerProps> = ({ drivers, orders = 
           </div>
         )}
       </Drawer>
-      <AddPartnerDrawer open={showAdd} kind="DRIVER" onClose={() => setShowAdd(false)} onCreated={() => onCreated?.()} />
+      {clerkAuthEnabled?<CreateRiderDrawer open={showAdd} initialCityId={selectedCityId} onClose={()=>setShowAdd(false)} onCreated={()=>onCreated?.()} onAuthError={onAuthError} onOpenCoverage={onOpenCoverage} onOpenApplications={onOpenApplications}/>:<AddPartnerDrawer open={showAdd} kind="DRIVER" onClose={() => setShowAdd(false)} onCreated={() => onCreated?.()} />}
     </div>
   );
 };

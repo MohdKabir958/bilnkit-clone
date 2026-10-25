@@ -339,7 +339,7 @@ orderRouter.post('/orders/:id/reject', requireAuth, requireRole('VENDOR'), requi
     const reason = requiredReason(req.body?.reason);
     if (!reason) return bad(res, 'Tell the customer why (3-200 characters).', 'reason');
     const r = await cancelOrder(req.params.id, actorOf(req), 'VENDOR', reason);
-    return res.json({ success: true, message: r!.idempotent ? 'This order was already cancelled.' : 'Order rejected. The customer will be refunded.', data: viewFor(req, r!.order) });
+    return res.json({ success: true, message: r!.idempotent ? 'This order was already cancelled.' : r!.order.paymentMethod === 'COD' ? 'Order rejected. No cash was collected.' : 'Order rejected. The customer will be refunded.', data: viewFor(req, r!.order) });
   } catch (err) {
     return fail(res, err, 'vendor reject');
   }

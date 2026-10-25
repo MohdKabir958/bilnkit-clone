@@ -8,12 +8,12 @@ type Product = Record<string, any> & { id: string; name: string; vendorId: strin
 const currency = (paise: number) => `₹${(paise / 100).toFixed(2)}`;
 const cls = 'k-input';
 const minor = (value: string) => { if (!/^\d+(\.\d{1,2})?$/.test(value.trim())) throw new Error('Enter a rupee amount with up to two decimals.'); const [whole, fraction = ''] = value.trim().split('.'); return Number(whole) * 100 + Number(fraction.padEnd(2,'0')); };
-export function InventoryPanel({ vendors, onAuthError,selectedCityId }: { selectedCityId?:string; vendors: {id: string; name: string}[]; onAuthError: (e: unknown) => void }) {
+export function InventoryPanel({ vendors, onAuthError,selectedCityId,initialVendorId='' }: { initialVendorId?:string; selectedCityId?:string; vendors: {id: string; name: string}[]; onAuthError: (e: unknown) => void }) {
   const [rows, setRows] = useState<Product[]>([]), [cities, setCities] = useState<{id:string;name:string}[]>([]);
   const [creating,setCreating]=useState(false);
   const [appliedQ,setAppliedQ] = useState('');
-  const [q, setQ] = useState(''), [vendorId, setVendorId] = useState(''), [cityId, setCityId] = useState(selectedCityId??''), [lowStock, setLowStock] = useState(false);
-  useEffect(()=>{if(selectedCityId!==undefined){setCityId(selectedCityId);setVendorId('');}},[selectedCityId]);
+  const [q, setQ] = useState(''), [vendorId, setVendorId] = useState(initialVendorId), [cityId, setCityId] = useState(selectedCityId??''), [lowStock, setLowStock] = useState(false);
+  useEffect(()=>{if(selectedCityId!==undefined){setCityId(selectedCityId);setVendorId(initialVendorId);}},[selectedCityId,initialVendorId]);
   const [cursor, setCursor] = useState<string|null>(null), [error,setError] = useState(''), [busy,setBusy] = useState(false), [notice,setNotice] = useState('');
   const [editing,setEditing] = useState<Product|null>(null), [adjusting,setAdjusting] = useState<Product|null>(null), [history,setHistory] = useState<any[]|null>(null);
   const [delta,setDelta] = useState(''), [reason,setReason] = useState('');

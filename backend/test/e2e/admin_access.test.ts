@@ -39,6 +39,7 @@ afterAll(async()=>{
   await prisma.adminAccess.deleteMany({where:{id:{in:grants.map(g=>g.id)}}});
   const stores=await prisma.vendor.findMany({where:{cityId:{in:[city,otherCity]}},select:{id:true}}),storeIds=stores.map(v=>v.id);
   await prisma.order.deleteMany({where:{vendorId:{in:storeIds}}});await prisma.vendor.deleteMany({where:{id:{in:storeIds}}});
+  await prisma.driverPartner.deleteMany({where:{userId:{in:ids}}});
   await prisma.deliveryZone.deleteMany({where:{cityId:{in:[city,otherCity]}}});await prisma.city.deleteMany({where:{id:{in:[city,otherCity]}}});
   await prisma.adminAuditLog.deleteMany({where:{targetId:{in:[...ids,...storeIds,...grants.map(g=>g.id)]}}});await prisma.user.deleteMany({where:{id:{in:ids}}});
   for(const key of Object.keys(process.env))if(!(key in original))delete process.env[key];Object.assign(process.env,original);await prisma.$disconnect();
@@ -168,4 +169,61 @@ test('concurrent owner demotions cannot remove the final owner',async()=>{
   const responses=await Promise.all([request.patch('/api/v1/admin/team/'+first.id).set(auth()).send({role:'ADMIN'}),request.patch('/api/v1/admin/team/'+second.id).set(auth('user_RbacSecondOwner')).send({role:'ADMIN'})]);
   expect(responses.map(r=>r.status).sort()).toEqual([200,409]);
   expect(await prisma.adminAccess.count({where:{role:'OWNER',status:'ACTIVE',user:{deletedAt:null,role:'ADMIN'}}})).toBe(1);
+});
+
+const riderBody={email:'rider-onboard@team-test.invalid',name:'Synthetic Rider',phone:'9000000881',vehicleType:'Bike',vehicleRegNo:'KA01QA1234',emergencyPhone:'9000000882',cityId:city,zoneId:'rbac-qa-zone'};
+async function riderIdentity(subject:string,email:string,verified=true){identity(subject,email,verified);return request.get('/api/auth/profile').set(auth(subject));}
+test('rider onboarding requires an administrator and ignores client role claims',async()=>{
+ expect((await request.post('/api/v1/admin/riders').send(riderBody)).status).toBe(401);
+ await riderIdentity('user_RbacRiderOrdinary','rider-ordinary@team-test.invalid');
+ expect((await request.post('/api/v1/admin/riders').set(auth('user_RbacRiderOrdinary',{role:'ADMIN'})).send(riderBody)).status).toBe(403);
+});
+test('rider onboarding rejects unverified emails and does not claim email-matching history',async()=>{
+ await riderIdentity('user_RbacRiderUnverified','rider-unverified@team-test.invalid',false);
+ expect((await request.post('/api/v1/admin/riders').set(auth()).send({...riderBody,email:'rider-unverified@team-test.invalid'})).status).toBe(409);
+ identity('user_RbacRiderNoGrozo','rider-history@team-test.invalid');
+ const historical=await prisma.user.create({data:{name:'Rbac rider history',email:'rider-history@team-test.invalid',kraveoCoins:19}});
+ expect((await request.post('/api/v1/admin/riders').set(auth()).send({...riderBody,email:'rider-history@team-test.invalid'})).status).toBe(409);
+ expect((await prisma.user.findUniqueOrThrow({where:{id:historical.id}})).clerkUserId).toBeNull();
+});
+test('pending rider keeps UUID, is offline, and cannot accept duty or offers',async()=>{
+ const first=await riderIdentity('user_RbacRiderPending',riderBody.email);
+ const r=await request.post('/api/v1/admin/riders').set(auth()).send(riderBody);
+ expect(r.status).toBe(201);expect(r.body.data).toMatchObject({userId:first.body.user.id,approvalStatus:'PENDING',dutyStatus:'OFFLINE',cityId:city,serviceZoneId:'rbac-qa-zone'});
+ expect(r.body).not.toHaveProperty('token');expect(r.body.data).not.toHaveProperty('password');
+ expect((await request.post('/api/drivers/duty-status').set(auth('user_RbacRiderPending')).send({isOnline:true})).status).toBe(403);
+ expect((await prisma.user.findUniqueOrThrow({where:{id:first.body.user.id}})).passwordHash).toBeNull();
+});
+test('explicit approval creates an audited approved rider but never goes online',async()=>{
+ await riderIdentity('user_RbacRiderApproved','rider-approved@team-test.invalid');
+ const r=await request.post('/api/v1/admin/riders').set(auth()).send({...riderBody,email:'rider-approved@team-test.invalid',approve:true});
+ expect(r.status).toBe(201);expect(r.body.data.approvalStatus).toBe('APPROVED');expect(r.body.data.dutyStatus).toBe('OFFLINE');expect(r.body.data.availabilityAt).toBeNull();
+ expect(await prisma.adminAuditLog.count({where:{targetId:r.body.data.id,action:'RIDER_ONBOARDED'}})).toBe(1);
+});
+test('rider validation and cross-city zone failure roll back role changes',async()=>{
+ const first=await riderIdentity('user_RbacRiderBad','rider-bad@team-test.invalid');
+ for(const extra of [{zoneId:'rbac-qa-other-zone'},{phone:'123'},{vehicleRegNo:''},{emergencyPhone:riderBody.phone},{approve:'true'}])expect((await request.post('/api/v1/admin/riders').set(auth()).send({...riderBody,email:'rider-bad@team-test.invalid',...extra})).status).toBe(400);
+ expect((await prisma.user.findUniqueOrThrow({where:{id:first.body.user.id}})).role).toBe('STUDENT');
+});
+test('admin, vendor and suspended identities cannot be repurposed as riders',async()=>{
+ expect((await request.post('/api/v1/admin/riders').set(auth()).send({...riderBody,email:'owner@team-test.invalid'})).status).toBe(409);
+ expect((await request.post('/api/v1/admin/riders').set(auth()).send({...riderBody,email:'store-owner@team-test.invalid'})).status).toBe(409);
+ await riderIdentity('user_RbacRiderSuspended','rider-suspended@team-test.invalid');
+ await prisma.clerkIdentityState.upsert({where:{clerkUserId:'user_RbacRiderSuspended'},create:{clerkUserId:'user_RbacRiderSuspended',suspended:true},update:{suspended:true}});
+ expect((await request.post('/api/v1/admin/riders').set(auth()).send({...riderBody,email:'rider-suspended@team-test.invalid',approve:true})).status).toBe(409);
+});
+test('concurrent onboarding creates one rider and never overwrites existing approval',async()=>{
+ const email='rider-concurrent@team-test.invalid';await riderIdentity('user_RbacRiderConcurrent',email);
+ const rs=await Promise.all([false,true].map(approve=>request.post('/api/v1/admin/riders').set(auth()).send({...riderBody,email,approve})));
+ expect(rs.map(r=>r.status).sort()).toEqual([201,409]);
+ const row=rs.find(r=>r.status===201)!.body.data;
+ expect((await request.post('/api/v1/admin/riders').set(auth()).send({...riderBody,email,approve:row.approvalStatus!=='APPROVED'})).status).toBe(409);
+ expect((await prisma.driverPartner.findUniqueOrThrow({where:{id:row.id}})).approvalStatus).toBe(row.approvalStatus);
+});
+
+test('an outstanding administrator invitation cannot be converted into a rider',async()=>{
+ const email='rider-admin-invite@team-test.invalid';await riderIdentity('user_RbacRiderAdminInvite',email);
+ const currentOwner=await prisma.adminAccess.findFirstOrThrow({where:{role:'OWNER',status:'ACTIVE'}});
+ expect((await request.post('/api/v1/admin/team').set(auth(currentOwner.clerkUserId!)).send({email,role:'ADMIN'})).status).toBe(201);
+ expect((await request.post('/api/v1/admin/riders').set(auth()).send({...riderBody,email})).status).toBe(409);
 });

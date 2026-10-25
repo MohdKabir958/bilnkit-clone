@@ -1,12 +1,15 @@
 import { Router } from 'express';
 import { prisma } from '../db';
 import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/auth';
-import { usesClerk } from '../config/authMode';
+import { clerkAdmins, usesClerk } from '../config/authMode';
 import { indianPoint, kmBetween, text } from '../services/geography';
 import { normalizeAdminEmail } from '../services/adminAccess';
 import { verifiedPartnerIdentity } from '../services/clerkIdentity';
 import { AppError } from '../utils/appError';
 import { fail } from '../utils/http';
+import { canonicalPhone } from '../utils/phone';
+import { NAME_RE } from '../utils/names';
+import { validateDriverFields, newRunnerCode } from './partners';
 
 export const adminStoresRouter = Router();
 adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async(req:AuthenticatedRequest,res)=>{
@@ -72,4 +75,33 @@ adminStoresRouter.patch('/v1/admin/stores/:id',requireAuth,requireRole('ADMIN'),
       return updated;
     });res.json({success:true,data:row});
   }catch(e){fail(res,e,'Store configuration could not be saved');}
+});
+
+// Admin onboarding links an already verified provider identity; it never creates sessions/passwords.
+adminStoresRouter.post('/v1/admin/riders',requireAuth,requireRole('ADMIN'),async(req:AuthenticatedRequest,res)=>{
+  try {
+    if(!usesClerk()) throw new AppError(400,'CLERK_REQUIRED','Rider email onboarding requires Clerk.');
+    const b=req.body??{},email=normalizeAdminEmail(b.email),name=text(b.name,'name',60),phone=canonicalPhone(b.phone);
+    if(!NAME_RE.test(name)) throw new AppError(400,'BAD_NAME','Enter the full rider name.','name');
+    if(!phone) throw new AppError(400,'BAD_PHONE','Enter a valid Indian mobile number.','phone');
+    if(b.approve!==undefined&&typeof b.approve!=='boolean') throw new AppError(400,'BAD_APPROVAL','Approval must be explicitly confirmed.','approve');
+    const details=validateDriverFields(b,phone);
+    if(!details.ok) throw new AppError(400,'BAD_RIDER',details.error.message,details.error.field);
+    const identity=await verifiedPartnerIdentity(email,'email');
+    const cityId=text(b.cityId,'cityId',64),zoneId=text(b.zoneId,'zoneId',64);
+    const row=await prisma.$transaction(async tx=>{
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${identity.id},81971))`;
+      const user=await tx.user.findUnique({where:{clerkUserId:identity.id}}),state=await tx.clerkIdentityState.findUnique({where:{clerkUserId:identity.id}});
+      if(!user||user.deletedAt||!['STUDENT','DRIVER'].includes(user.role)||state?.deleted||state?.suspended||state?.deleteRequested||clerkAdmins().includes(identity.id)||await tx.vendor.count({where:{userId:user.id}})||await tx.adminAccess.count({where:{OR:[{clerkUserId:identity.id},{email}],status:{in:['ACTIVE','INVITED']}}})) throw new AppError(409,'RIDER_UNAVAILABLE','Use a separate eligible partner account that has signed in to Grozo first.','email');
+      if(await tx.driverPartner.findUnique({where:{userId:user.id}})) throw new AppError(409,'RIDER_EXISTS','This rider already exists. Review their application or service area instead.','email');
+      const city=await tx.city.findUnique({where:{id:cityId}}),zone=await tx.deliveryZone.findUnique({where:{id:zoneId}});
+      if(!city?.active||!zone?.active||zone.cityId!==cityId) throw new AppError(400,'ZONE_MISMATCH','Choose an enabled delivery zone in the selected enabled city.','zoneId');
+      await tx.user.update({where:{id:user.id},data:{role:'DRIVER'}});
+      const rider=await tx.driverPartner.create({data:{userId:user.id,name,phone,runnerCode:await newRunnerCode(),...details.data,cityId,serviceZoneId:zoneId,approvalStatus:b.approve===true?'APPROVED':'PENDING',appliedAt:new Date(),reviewedAt:b.approve===true?new Date():null,dutyStatus:'OFFLINE'}});
+      await tx.adminAuditLog.create({data:{action:'RIDER_ONBOARDED',targetType:'DRIVER',targetId:rider.id,summary:`Operator ${req.user!.id} created a ${rider.approvalStatus.toLowerCase()} offline rider with verified provider identity and service area.`}});
+      return rider;
+    });
+    req.app.get('io')?.to('admins').emit('partner_application',{kind:'DRIVER',id:row.id});
+    res.status(201).json({success:true,data:row});
+  }catch(e){fail(res,e,'Rider could not be created');}
 });

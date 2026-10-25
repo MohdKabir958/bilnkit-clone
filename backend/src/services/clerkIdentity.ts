@@ -29,12 +29,12 @@ export function setClerkTestTransport(value: ClerkTransport | null) {
 export const deniedSession = () => new AppError(401, 'INVALID_SESSION', 'Invalid or expired authentication session.');
 const unavailable = () => new AppError(503, 'AUTH_UNAVAILABLE', 'Authentication service is temporarily unavailable. Please retry.');
 
-export async function verifiedPartnerIdentity(email: string) {
+export async function verifiedPartnerIdentity(email: string, field = 'ownerEmail') {
   if (!transport.usersByEmail) throw unavailable();
   let rows: ProviderUser[];
   try { rows = await transport.usersByEmail(email); } catch { throw unavailable(); }
   const verified = rows.filter(user => !user.banned && user.emailAddresses?.some(address => address.emailAddress.toLowerCase() === email && address.verification?.status === 'verified'));
-  if (verified.length !== 1) throw new AppError(409,'PARTNER_ACCOUNT_REQUIRED','Ask this partner to create a Clerk account and verify this email first, or leave the owner blank to set up the store.','ownerEmail');
+  if (verified.length !== 1) throw new AppError(409,'PARTNER_ACCOUNT_REQUIRED','Ask this partner to create a Clerk account and verify this email before assignment.',field);
   return verified[0];
 }
 
