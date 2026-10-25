@@ -129,6 +129,13 @@ void main() {
       'preview labels unavailable business operations and uses native auth',
       (tester) async {
     var continued = 0;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async {
+      calls.add(call);
+      return call.method == 'initialize'
+          ? {'ready': true, 'signedIn': false}
+          : state;
+    });
     await tester.pumpWidget(MaterialApp(
         home: ClerkEntryScreen(
             appName: 'Grozo Fixture',
@@ -141,9 +148,9 @@ void main() {
     expect(find.textContaining('staging backend is not configured'),
         findsOneWidget);
     expect(find.byType(TextField), findsNothing);
-    await tester.ensureVisible(find.text('Continue with Clerk'));
+    await tester.ensureVisible(find.text('Create an account'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Continue with Clerk'));
+    await tester.tap(find.text('Create an account'));
     await tester.pumpAndSettle();
     expect(calls.where((c) => c.method == 'authenticate').length, 1);
     expect(continued, 1);

@@ -5467,7 +5467,7 @@
     },
     {
       "path": "apps/driver_app/lib/screens/login_screen.dart",
-      "sha256": "68fc43e38f07c137e41fe4f8d7c309f3bab5cc6c69c9bc9086a27d677ef33f65",
+      "sha256": "ce5ad234e05adb82544836b64201492824858172371909160616fc6f09e047b8",
       "references": [
         {
           "kind": "clientFlows",
@@ -7338,7 +7338,7 @@
     },
     {
       "path": "apps/vendor_app/lib/screens/login_screen.dart",
-      "sha256": "7b52bd64351575239255e60ab456f5b7fc8bd8fb616fe29c5327d0bc4d2ff8d8",
+      "sha256": "24d29feae1430dc69196f6e3008fb4f7c87f7af9deaced3dc8b566656c785dd3",
       "references": [
         {
           "kind": "clientFlows",
@@ -16639,57 +16639,42 @@
     },
     {
       "path": "packages/kraveo_ui/lib/src/auth/clerk_entry.dart",
-      "sha256": "c65d138d5b9c1b27e2191e6505a3b9084863569d4b5a3a0fce8122e2540983ec",
+      "sha256": "a833089298c53775274941db6769b555128ecadf7efdc58beeffc5cac03fb1f3",
       "references": [
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 86
+          "line": 9
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 97
+          "line": 224
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 100
-        },
-        {
-          "kind": "identity",
-          "symbol": "Clerk",
-          "line": 109
-        },
-        {
-          "kind": "identity",
-          "symbol": "Clerk",
-          "line": 119
-        },
-        {
-          "kind": "identity",
-          "symbol": "Clerk",
-          "line": 150
+          "line": 246
         },
         {
           "kind": "session",
           "symbol": "ClerkSessions",
-          "line": 19
+          "line": 24
         },
         {
           "kind": "session",
           "symbol": "ClerkSessions",
-          "line": 25
+          "line": 30
         },
         {
           "kind": "session",
           "symbol": "ClerkSessions",
-          "line": 25
+          "line": 30
         },
         {
           "kind": "session",
           "symbol": "ClerkIdentity",
-          "line": 102
+          "line": 170
         }
       ]
     },

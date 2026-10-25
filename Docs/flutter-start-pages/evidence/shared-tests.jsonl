@@ -1,0 +1,63 @@
+{"protocolVersion":"0.1.1","runnerVersion":null,"pid":817512,"type":"start","time":0}
+{"suite":{"id":0,"platform":"vm","path":"/workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart"},"type":"suite","time":4}
+{"test":{"id":1,"name":"loading /workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart","suiteID":0,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":5}
+{"suite":{"id":2,"platform":"vm","path":"/workspace/bilnkit-clone/packages/kraveo_ui/test/accessibility_test.dart"},"type":"suite","time":12}
+{"test":{"id":3,"name":"loading /workspace/bilnkit-clone/packages/kraveo_ui/test/accessibility_test.dart","suiteID":2,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":12}
+{"count":4,"time":13,"type":"allSuites"}
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":10305}
+{"group":{"id":4,"suiteID":0,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":4,"line":null,"column":null,"url":null},"type":"group","time":10312}
+{"test":{"id":5,"name":"KAvatar renders ids 0..16 (valid, placeholder, out of range) without exceptions","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":8,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart"},"type":"testStart","time":10312}
+{"testID":3,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":13694}
+{"group":{"id":6,"suiteID":2,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":4,"line":null,"column":null,"url":null},"type":"group","time":13695}
+{"test":{"id":7,"name":"pressable supports keyboard activation and disabled actions","suiteID":2,"groupIDs":[6],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":21,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/accessibility_test.dart"},"type":"testStart","time":13696}
+{"testID":5,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":15292}
+{"test":{"id":8,"name":"KAvatar keeps its requested size, with or without ring","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":19,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart"},"type":"testStart","time":15306}
+{"testID":8,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":15612}
+{"test":{"id":9,"name":"KAvatar exposes a semantic label per creature and a placeholder label","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":26,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart"},"type":"testStart","time":15618}
+{"testID":9,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":15971}
+{"test":{"id":10,"name":"KAvatarPicker shows all avatars and reports the tapped id","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":37,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/avatar_test.dart"},"type":"testStart","time":15973}
+{"testID":7,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":16395}
+{"test":{"id":11,"name":"semantic body, muted, faint and primary-action roles meet AA contrast","suiteID":2,"groupIDs":[6],"metadata":{"skip":false,"skipReason":null},"line":37,"column":3,"url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/accessibility_test.dart"},"type":"testStart","time":16395}
+{"testID":11,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":16417}
+{"test":{"id":12,"name":"reduced motion stops shared reveal, number and skeleton animations","suiteID":2,"groupIDs":[6],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":52,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/accessibility_test.dart"},"type":"testStart","time":16417}
+{"testID":10,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":16474}
+{"suite":{"id":13,"platform":"vm","path":"/workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart"},"type":"suite","time":16573}
+{"test":{"id":14,"name":"loading /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart","suiteID":13,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":16573}
+{"testID":12,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":17273}
+{"test":{"id":15,"name":"button grows for enlarged text instead of clipping its action","suiteID":2,"groupIDs":[6],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":72,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/accessibility_test.dart"},"type":"testStart","time":17274}
+{"testID":15,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":17588}
+{"suite":{"id":16,"platform":"vm","path":"/workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_entry_test.dart"},"type":"suite","time":17669}
+{"test":{"id":17,"name":"loading /workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_entry_test.dart","suiteID":16,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":17669}
+{"testID":14,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":20460}
+{"group":{"id":18,"suiteID":13,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":10,"line":null,"column":null,"url":null},"type":"group","time":20461}
+{"test":{"id":19,"name":"initialization reads native identity without requesting a Grozo token","suiteID":13,"groupIDs":[18],"metadata":{"skip":false,"skipReason":null},"line":52,"column":3,"url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart"},"type":"testStart","time":20461}
+{"testID":19,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":20554}
+{"test":{"id":20,"name":"each token request reaches SDK and refresh flag is forwarded","suiteID":13,"groupIDs":[18],"metadata":{"skip":false,"skipReason":null},"line":58,"column":3,"url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart"},"type":"testStart","time":20554}
+{"testID":20,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":20568}
+{"test":{"id":21,"name":"old-account in-flight token is discarded after native session switch","suiteID":13,"groupIDs":[18],"metadata":{"skip":false,"skipReason":null},"line":65,"column":3,"url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart"},"type":"testStart","time":20569}
+{"testID":21,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":20582}
+{"test":{"id":22,"name":"logout clears local identity without falsely claiming remote revocation","suiteID":13,"groupIDs":[18],"metadata":{"skip":false,"skipReason":null},"line":80,"column":3,"url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart"},"type":"testStart","time":20582}
+{"testID":22,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":20598}
+{"test":{"id":23,"name":"native signed-in event cannot silently undo local logout","suiteID":13,"groupIDs":[18],"metadata":{"skip":false,"skipReason":null},"line":89,"column":3,"url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart"},"type":"testStart","time":20598}
+{"testID":23,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":20660}
+{"test":{"id":24,"name":"account cleanup runs before native account selection","suiteID":13,"groupIDs":[18],"metadata":{"skip":false,"skipReason":null},"line":97,"column":3,"url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart"},"type":"testStart","time":20661}
+{"testID":24,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":20672}
+{"test":{"id":25,"name":"cancellation is distinct from a successful sign-in","suiteID":13,"groupIDs":[18],"metadata":{"skip":false,"skipReason":null},"line":106,"column":3,"url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart"},"type":"testStart","time":20672}
+{"testID":25,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":20689}
+{"test":{"id":26,"name":"SDK refresh outage remains an error rather than a fake signed-out response","suiteID":13,"groupIDs":[18],"metadata":{"skip":false,"skipReason":null},"line":113,"column":3,"url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart"},"type":"testStart","time":20690}
+{"testID":26,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":20712}
+{"test":{"id":27,"name":"unsupported flow cannot invoke native authentication","suiteID":13,"groupIDs":[18],"metadata":{"skip":false,"skipReason":null},"line":123,"column":3,"url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart"},"type":"testStart","time":20712}
+{"testID":27,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":20763}
+{"test":{"id":28,"name":"preview labels unavailable business operations and uses native auth","suiteID":13,"groupIDs":[18],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":128,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_sessions_test.dart"},"type":"testStart","time":20764}
+{"testID":17,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":20874}
+{"group":{"id":29,"suiteID":16,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":4,"line":null,"column":null,"url":null},"type":"group","time":20875}
+{"test":{"id":30,"name":"ClerkEntryRole.customer remains usable at narrow width and large text","suiteID":16,"groupIDs":[29],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":57,"root_column":5,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_entry_test.dart"},"type":"testStart","time":20875}
+{"testID":28,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":25373}
+{"testID":30,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":25868}
+{"test":{"id":31,"name":"ClerkEntryRole.vendor remains usable at narrow width and large text","suiteID":16,"groupIDs":[29],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":57,"root_column":5,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_entry_test.dart"},"type":"testStart","time":25869}
+{"testID":31,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":26616}
+{"test":{"id":32,"name":"ClerkEntryRole.delivery remains usable at narrow width and large text","suiteID":16,"groupIDs":[29],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":57,"root_column":5,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_entry_test.dart"},"type":"testStart","time":26617}
+{"testID":32,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":27582}
+{"test":{"id":33,"name":"recovery delegates to native SDK; signed-in continue rechecks Grozo","suiteID":16,"groupIDs":[29],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":79,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/packages/kraveo_ui/test/clerk_entry_test.dart"},"type":"testStart","time":27585}
+{"testID":33,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":28288}
+{"success":true,"type":"done","time":28389}
