@@ -1,0 +1,1 @@
+PASS: active Flutter, admin, backend and demo copy; 216 allowed occurrences covered by 138 exact internal/historical exceptions. Historical regression fixtures are excluded; screenshot fixtures are scanned.

@@ -1,0 +1,16 @@
+{
+  "vendor-final-tests": {
+    "passed": 531,
+    "failed": 0,
+    "skipped": 1,
+    "success": true,
+    "durationMs": 89998
+  },
+  "clerk-onboarding-final-tests": {
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "success": true,
+    "durationMs": 16698
+  }
+}

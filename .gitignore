@@ -81,3 +81,6 @@ __pycache__/
 !Docs/clerk/evidence/clerk-targeted-final/backend-full-run.log
 !Docs/clerk/evidence/android/*-build.log
 **/.flutter-plugins-dependencies
+
+# Isolated vendor registration regression evidence.
+!Docs/vendor-registration-fix/evidence/**/backend-full-run.log

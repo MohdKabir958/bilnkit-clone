@@ -1,0 +1,19 @@
+Implementation commit c5d8636
+Docs/clerk/migration-inventory.json
+apps/vendor_app/lib/main.dart
+apps/vendor_app/lib/models/partner_session.dart
+apps/vendor_app/lib/screens/login_screen.dart
+apps/vendor_app/lib/screens/product_inventory_screen.dart
+apps/vendor_app/lib/screens/signup_screen.dart
+apps/vendor_app/lib/screens/vendor_home.dart
+apps/vendor_app/lib/services/partner_auth_service.dart
+apps/vendor_app/lib/services/store_categories.dart
+apps/vendor_app/lib/session/session_controller.dart
+apps/vendor_app/pubspec.yaml
+apps/vendor_app/test/clerk_vendor_onboarding_test.dart
+apps/vendor_app/test/signup_flow_test.dart
+backend/src/routes/partners.ts
+backend/test/e2e/clerk_migration.test.ts
+scripts/qa/terminology-allowances.json
+
+Handover/evidence: Docs/vendor-registration-fix/, Docs/ui-ux/vendor-registration/, Docs/qa/backend-full-run.*, Docs/qa/final-backend-regression.md, .gitignore

@@ -1,0 +1,10 @@
+{
+  "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/61dc396ad8d61959f9bb62e9a7286e9176c54ce4/clerk-staging/1.14.0-21/Grozo-Vendor-Clerk-Test.apk",
+  "checkedAt": "2026-10-25T17:42:20.515381+00:00",
+  "expectedBytes": 51205925,
+  "expectedSha256": "15608283d120081973a302b66c71303eda97702c3aaa7335e189fe55f1ba4d36",
+  "status": 200,
+  "bytes": 51205925,
+  "sha256": "15608283d120081973a302b66c71303eda97702c3aaa7335e189fe55f1ba4d36",
+  "verified": true
+}
