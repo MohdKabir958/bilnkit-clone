@@ -1,10 +1,20 @@
+# Latest vendor registration fix
+
+**Grozo Vendor 1.14.0+21**
+
+[Download vendor APK](clerk-staging/1.14.0-21/Grozo-Vendor-Clerk-Test.apk) · [Setup and verification](clerk-staging/1.14.0-21/README.md)
+
+Deploy backend source c5d8636 or later first. Store approval and product review remain required.
+
+---
+
 # Latest customer reference UI build
 
 **Grozo Customer 1.13.0+20** implements the supplied home design.
 
 [Download customer APK](clerk-staging/1.13.0-20/Grozo-Customer-Clerk-Test.apk) · [Preview and build details](clerk-staging/1.13.0-20/README.md)
 
-Vendor and delivery remain the connected 1.12.0+19 builds linked below. All are development-signed ARM64/API24+ staging builds. Physical-device/provider checks and owned Firebase configuration remain pending.
+Vendor is now the 1.14.0+21 registration fix linked above; delivery remains 1.12.0+19. All are development-signed ARM64/API24+ staging builds. Physical-device/provider checks and owned Firebase configuration remain pending.
 
 ---
 
