@@ -1,3 +1,13 @@
+# Latest customer reference UI build
+
+**Grozo Customer 1.13.0+20** implements the supplied home design.
+
+[Download customer APK](clerk-staging/1.13.0-20/Grozo-Customer-Clerk-Test.apk) · [Preview and build details](clerk-staging/1.13.0-20/README.md)
+
+Vendor and delivery remain the connected 1.12.0+19 builds linked below. All are development-signed ARM64/API24+ staging builds. Physical-device/provider checks and owned Firebase configuration remain pending.
+
+---
+
 # Latest connected Grozo Android builds
 
 **Customer, Vendor and Delivery: 1.12.0+19**
