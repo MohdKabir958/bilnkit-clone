@@ -352,6 +352,28 @@ partnerRouter.get('/partner/vendor/onboarding', requireAuth, async (req: Authent
   }
 });
 
+// Rider identity discovery is read-only; registering with Clerk never approves a rider.
+partnerRouter.get('/partner/driver/onboarding', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  if (!usesClerk() || !req.user?.clerkUserId) return res.status(404).json({success:false,message:'Not found.'});
+  res.set('Cache-Control', 'no-store');
+  try {
+    const user = await prisma.user.findUniqueOrThrow({where:{id:req.user.id}});
+    const basic = {id:user.id,name:user.name,phone:user.phone,role:user.role,avatarId:user.avatarId ?? null};
+    if (user.role === 'DRIVER') {
+      const p = await loadOwnProfile(user.id, user.role);
+      if (!p.driver) return res.status(409).json({success:false,code:'RIDER_LINK_MISSING',message:'No rider profile is linked to this account. Contact Grozo support to restore the association.'});
+      return res.json({success:true,user:basic,requiresApplication:false,approvalStatus:p.status,rejectionReason:p.reason,driver:driverView(p.driver)});
+    }
+    if (user.role !== 'STUDENT') return res.status(403).json({success:false,code:'APPLICATION_ROLE_CONFLICT',message:'This account is already an administrator or store owner. Sign out and use a separate delivery-partner account.'});
+    const history = await prisma.order.count({where:{customerId:user.id}}) || await prisma.orderGroup.count({where:{customerId:user.id}});
+    if (history) return res.status(403).json({success:false,code:'APPLICATION_ROLE_CONFLICT',message:'This account has customer order history. Use a separate delivery-partner account so your existing orders stay intact.'});
+    return res.json({success:true,user:basic,requiresApplication:true,approvalStatus:'PENDING'});
+  } catch (error) {
+    console.error('rider onboarding discovery failed:', errSummary(error));
+    return res.status(503).json({success:false,message:'Could not load your rider status. Check your connection and retry.'});
+  }
+});
+
 // "Where do I stand?" - the apps poll this while the application is pending.
 partnerRouter.get('/partner/me', requireAuth, requireRole('VENDOR', 'DRIVER'), async (req: AuthenticatedRequest, res: Response) => {
   try {

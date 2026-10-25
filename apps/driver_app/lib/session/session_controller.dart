@@ -22,8 +22,13 @@ enum SessionStatus {
 /// injects it into every request); this keeps the who-am-I basics next to it. A password is
 /// only ever passed straight through to the server and is never stored.
 class SessionController extends ChangeNotifier {
-  SessionController({PartnerAuthService? auth}) : auth = auth ?? ApiPartnerAuthService() {
-    if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = (_) {if (_session != null) unawaited(expire());};
+  SessionController({PartnerAuthService? auth})
+      : auth = auth ?? ApiPartnerAuthService() {
+    if (GrozoAuthConfig.usesClerk) {
+      ClerkSessions.instance.onIdentityChanged = (_) {
+        if (_session != null) unawaited(expire());
+      };
+    }
   }
 
   static const String sessionPrefKey = 'kraveo_driver_session';
@@ -41,7 +46,8 @@ class SessionController extends ChangeNotifier {
 
   /// The duty Grozo reported at the last successful login / profile read, and when that request was sent.
   /// A separate notifier so the work screen can mirror it without rebuilding the whole app on every poll.
-  final ValueNotifier<DutyReading?> dutyReading = ValueNotifier<DutyReading?>(null);
+  final ValueNotifier<DutyReading?> dutyReading =
+      ValueNotifier<DutyReading?>(null);
 
   SessionStatus get status => _status;
   PartnerSession? get session => _session;
@@ -97,8 +103,14 @@ class SessionController extends ChangeNotifier {
 
   /// `GET /partner/me` carries the account, the rider profile and the approval state. If a response ever lacks
   /// the rider profile, keep the details we already stored and take only the fresh account + approval fields.
-  static PartnerSession _mergeFresh(PartnerSession? stored, PartnerSession fresh) {
-    if (stored == null || fresh.driverId != null) return fresh;
+  static PartnerSession _mergeFresh(
+      PartnerSession? stored, PartnerSession fresh) {
+    if (fresh.requiresApplication ||
+        stored == null ||
+        stored.userId != fresh.userId ||
+        fresh.driverId != null) {
+      return fresh;
+    }
     return stored.withUserFrom(fresh).copyWith(
           approval: fresh.approval,
           rejectionReason: fresh.rejectionReason,
@@ -109,7 +121,12 @@ class SessionController extends ChangeNotifier {
   /// App start: validate the stored token, or fall through to the login screen.
   Future<void> restore() async {
     String? token;
-    try { token = await DriverApiService.getSavedToken(); } catch (_) { _set(SessionStatus.unreachable); return; }
+    try {
+      token = await DriverApiService.getSavedToken();
+    } catch (_) {
+      _set(SessionStatus.unreachable);
+      return;
+    }
     if (token == null || token.isEmpty) {
       _set(SessionStatus.signedOut);
       return;
@@ -126,7 +143,9 @@ class SessionController extends ChangeNotifier {
         _set(SessionStatus.signedIn, merged);
       case ProfileOutcome.unauthorized:
         await _clearAll();
-        if (result.suspended) _signOutNotice = DriverApiService.accountPausedMessage;
+        if (result.suspended) {
+          _signOutNotice = DriverApiService.accountPausedMessage;
+        }
         _set(SessionStatus.signedOut);
       case ProfileOutcome.unreachable:
         // Keep the token: a dropped network must not log a rider off mid-shift.
@@ -168,7 +187,9 @@ class SessionController extends ChangeNotifier {
   /// Fixes and re-sends an application that is pending or was rejected.
   Future<SignupResult> resubmit(PartnerSignupForm form) async {
     final token = await DriverApiService.getSavedToken();
-    if (token == null || token.isEmpty) return const SignupResult.failure(SignupFailure.unauthorized);
+    if (token == null || token.isEmpty) {
+      return const SignupResult.failure(SignupFailure.unauthorized);
+    }
     final result = await auth.resubmit(token, form);
     if (result.ok) {
       final answered = result.session;
@@ -198,7 +219,9 @@ class SessionController extends ChangeNotifier {
       case ProfileOutcome.valid:
         final before = _session;
         final fresh = _mergeFresh(before, result.session!);
-        final changed = before == null || before.approval != fresh.approval || before.rejectionReason != fresh.rejectionReason;
+        final changed = before == null ||
+            before.approval != fresh.approval ||
+            before.rejectionReason != fresh.rejectionReason;
         // Details (vehicle, plate, UPI...) that changed also need the screens to hear about it (the "update details"
         // form must not open with stale values), but they are not an "approval changed" answer for the caller.
         final detailsChanged = before == null || !before.sameDetailsAs(fresh);
@@ -218,7 +241,9 @@ class SessionController extends ChangeNotifier {
 
   @override
   void dispose() {
-    if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = null;
+    if (GrozoAuthConfig.usesClerk) {
+      ClerkSessions.instance.onIdentityChanged = null;
+    }
     dutyReading.dispose();
     super.dispose();
   }
@@ -268,7 +293,9 @@ class DutyReading {
 
 /// Makes the [SessionController] reachable from any screen, including pushed routes.
 class SessionScope extends InheritedNotifier<SessionController> {
-  const SessionScope({super.key, required SessionController controller, required super.child}) : super(notifier: controller);
+  const SessionScope(
+      {super.key, required SessionController controller, required super.child})
+      : super(notifier: controller);
 
   /// The controller, or null when there is no scope (screens pumped alone in tests).
   static SessionController? maybeOf(BuildContext context) =>

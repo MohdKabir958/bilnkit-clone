@@ -9,29 +9,40 @@ import '../widgets/ui/phone_input.dart';
 /// Create a rider account (phone + password). With [existing] set it instead edits the details of a
 /// pending or rejected application and sends them again; phone and password are not asked in that case.
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key, required this.onSubmit, this.existing});
+  const SignupScreen(
+      {super.key, required this.onSubmit, this.existing, this.onCancel});
 
   final Future<SignupResult> Function(PartnerSignupForm form) onSubmit;
   final PartnerSession? existing;
+  final VoidCallback? onCancel;
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  late final TextEditingController _name = TextEditingController(text: widget.existing?.name ?? '');
+  late final TextEditingController _name = TextEditingController(
+      text: widget.existing?.name ??
+          (GrozoAuthConfig.usesClerk
+              ? ClerkSessions.instance.identity.value.name ?? ''
+              : ''));
   final _phone = TextEditingController();
   final _password = TextEditingController();
-  late final TextEditingController _plate = TextEditingController(text: widget.existing?.vehicleRegNo ?? '');
-  late final TextEditingController _emergency = TextEditingController(text: _digits(widget.existing?.emergencyPhone));
-  late final TextEditingController _upi = TextEditingController(text: widget.existing?.upiId ?? '');
+  late final TextEditingController _plate =
+      TextEditingController(text: widget.existing?.vehicleRegNo ?? '');
+  late final TextEditingController _emergency =
+      TextEditingController(text: _digits(widget.existing?.emergencyPhone));
+  late final TextEditingController _upi =
+      TextEditingController(text: widget.existing?.upiId ?? '');
 
   final _phoneFocus = FocusNode();
   final _passwordFocus = FocusNode();
 
   /// New account: starts on Bike. Editing an application whose vehicle Grozo did not tell us: nothing is
   /// pre-selected (and nothing is sent) until the rider picks one, so a Cycle rider is never silently turned into a Bike.
-  late String? _vehicle = kVehicleTypes.contains(widget.existing?.vehicleType) ? widget.existing!.vehicleType! : (widget.existing == null ? 'Bike' : null);
+  late String? _vehicle = kVehicleTypes.contains(widget.existing?.vehicleType)
+      ? widget.existing!.vehicleType!
+      : (widget.existing == null ? 'Bike' : null);
   bool get _needsPlate => _vehicle != null && vehicleNeedsPlate(_vehicle!);
   bool _showPassword = false;
   bool _showMore = false;
@@ -66,15 +77,28 @@ class _SignupScreenState extends State<SignupScreen> {
     final e = <String, String>{};
     if (_name.text.trim().length < 2) e['name'] = 'Enter your full name';
     if (!_editing) {
-      if (!isValidIndianMobile(_phone.text.trim())) e['phone'] = 'Enter your 10-digit mobile number';
-      if (!GrozoAuthConfig.usesClerk && _password.text.length < 8) e['password'] = 'Use at least 8 characters';
+      if (!isValidIndianMobile(_phone.text.trim())) {
+        e['phone'] = 'Enter your 10-digit mobile number';
+      }
+      if (!GrozoAuthConfig.usesClerk && _password.text.length < 8) {
+        e['password'] = 'Use at least 8 characters';
+      }
     }
-    if (_needsPlate && _plate.text.trim().length < 4) e['vehicleRegNo'] = 'Enter the number plate of your vehicle';
+    if (_needsPlate && _plate.text.trim().length < 4) {
+      e['vehicleRegNo'] = 'Enter the number plate of your vehicle';
+    }
     final emergency = _emergency.text.trim();
-    if (emergency.isNotEmpty && !isValidIndianMobile(emergency)) e['emergencyPhone'] = 'Enter a valid 10-digit number, or leave it empty';
-    if (emergency.isNotEmpty && emergency == _phone.text.trim()) e['emergencyPhone'] = 'The emergency contact must be someone else';
+    if (emergency.isNotEmpty && !isValidIndianMobile(emergency)) {
+      e['emergencyPhone'] = 'Enter a valid 10-digit number, or leave it empty';
+    }
+    if (emergency.isNotEmpty && emergency == _phone.text.trim()) {
+      e['emergencyPhone'] = 'The emergency contact must be someone else';
+    }
     final upi = _upi.text.trim();
-    if (upi.isNotEmpty && !RegExp(r'^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}$').hasMatch(upi)) e['upiId'] = 'That UPI id does not look right (example: name@upi)';
+    if (upi.isNotEmpty &&
+        !RegExp(r'^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z]{2,}$').hasMatch(upi)) {
+      e['upiId'] = 'That UPI id does not look right (example: name@upi)';
+    }
     return e;
   }
 
@@ -87,8 +111,18 @@ class _SignupScreenState extends State<SignupScreen> {
         _errors
           ..clear()
           ..addAll(errors);
-        _problem = null;
-        if (errors.containsKey('emergencyPhone') || errors.containsKey('upiId')) _showMore = true;
+        _problem =
+            'Please complete the highlighted details: ${errors.keys.map((key) => const {
+                  'name': 'full name',
+                  'phone': 'contact number',
+                  'password': 'password',
+                  'vehicleRegNo': 'vehicle number',
+                  'emergencyPhone': 'emergency contact',
+                  'upiId': 'UPI ID'
+                }[key] ?? key).join(', ')}.';
+        if (errors.containsKey('emergencyPhone') || errors.containsKey('upiId')) {
+          _showMore = true;
+        }
       });
       return;
     }
@@ -128,20 +162,29 @@ class _SignupScreenState extends State<SignupScreen> {
         case SignupFailure.invalid:
           if (result.field != null && result.message != null) {
             _errors[result.field!] = result.message!;
-            if (result.field == 'emergencyPhone' || result.field == 'upiId') _showMore = true;
+            _problem = result.message!;
+            if (result.field == 'emergencyPhone' || result.field == 'upiId') {
+              _showMore = true;
+            }
           } else {
-            _problem = result.message ?? 'Please check the details and try again.';
+            _problem =
+                result.message ?? 'Please check the details and try again.';
           }
         case SignupFailure.phoneTaken:
-          _errors['phone'] = 'This number already has an account. Go back and log in.';
+          _errors['phone'] =
+              'This number already has an account. Go back and log in.';
+          _problem =
+              'This contact number is already registered. Use another number or contact Grozo support.';
         case SignupFailure.rateLimited:
           _problem = 'Too many tries. Please try again in an hour.';
         case SignupFailure.unauthorized:
           _problem = 'Your session ended. Please log in again.';
         case SignupFailure.offline:
-          _problem = 'Can\'t reach ${BrandConfig.name}. Check your internet and try again.';
+          _problem =
+              'Can\'t reach ${BrandConfig.name}. Check your internet and try again.';
         case SignupFailure.server:
-          _problem = '${BrandConfig.name} is having trouble. Please try again in a moment.';
+          _problem = result.message ??
+              '${BrandConfig.name} is having trouble. Please try again in a moment.';
       }
     });
   }
@@ -152,14 +195,21 @@ class _SignupScreenState extends State<SignupScreen> {
     final old = widget.existing!;
     final fields = <String>{};
     if (_name.text.trim() != old.name.trim()) fields.add('name');
-    if (_vehicle != null && _vehicle != old.vehicleType) fields.add('vehicleType');
+    if (_vehicle != null && _vehicle != old.vehicleType) {
+      fields.add('vehicleType');
+    }
     final oldPlate = (old.vehicleRegNo ?? '').trim().toUpperCase();
     if (_needsPlate) {
       if (plate != oldPlate) fields.add('vehicleRegNo');
-    } else if (_vehicle != null && _vehicle != old.vehicleType && oldPlate.isNotEmpty) {
-      fields.add('vehicleRegNo'); // moved to a vehicle without a plate: the old plate goes
+    } else if (_vehicle != null &&
+        _vehicle != old.vehicleType &&
+        oldPlate.isNotEmpty) {
+      fields.add(
+          'vehicleRegNo'); // moved to a vehicle without a plate: the old plate goes
     }
-    if (_digits(_emergency.text) != _digits(old.emergencyPhone)) fields.add('emergencyPhone');
+    if (_digits(_emergency.text) != _digits(old.emergencyPhone)) {
+      fields.add('emergencyPhone');
+    }
     if (_upi.text.trim() != (old.upiId ?? '').trim()) fields.add('upiId');
     return fields;
   }
@@ -173,9 +223,15 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-  InputDecoration _decoration({required String hint, String? errorKey, Widget? suffix, Widget? prefix}) => InputDecoration(
+  InputDecoration _decoration(
+          {required String hint,
+          String? errorKey,
+          Widget? suffix,
+          Widget? prefix}) =>
+      InputDecoration(
         hintText: hint,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
         suffixIcon: suffix,
         suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
         prefixIcon: prefix,
@@ -193,275 +249,374 @@ class _SignupScreenState extends State<SignupScreen> {
         backgroundColor: k.bg,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: _editing && widget.existing?.approval == PartnerApproval.pending
+        leading: _editing &&
+                widget.existing?.approval == PartnerApproval.pending
             ? null
             : IconButton(
-                tooltip: 'Back',
+                tooltip: widget.onCancel == null
+                    ? 'Back'
+                    : 'Sign out / change account',
                 icon: Icon(LucideIcons.arrowLeft, color: k.ink, size: 26),
-                onPressed: _busy ? null : () => Navigator.of(context).maybePop(),
+                onPressed: _busy
+                    ? null
+                    : widget.onCancel ?? () => Navigator.of(context).maybePop(),
               ),
       ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(KSpace.gutter, 0, KSpace.gutter, 32),
+            padding:
+                const EdgeInsets.fromLTRB(KSpace.gutter, 0, KSpace.gutter, 32),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 460),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                KReveal(
-                  child: Semantics(
-                    header: true,
-                    child: Text(_editing ? 'Update your details' : 'Become a delivery partner', style: KraveoType.displayMd.copyWith(color: k.ink, fontSize: 30)),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                KReveal(
-                  index: 1,
-                  child: Text(_editing ? 'Fix what is below and send it again.' : 'Create your account. It takes a minute.',
-                      style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
-                ),
-                const SizedBox(height: 22),
-                KReveal(
-                  index: 2,
-                  child: FieldBlock(
-                    label: 'FULL NAME',
-                    error: _errors['name'],
-                    child: TextField(
-                      key: const ValueKey('name-field'),
-                      controller: _name,
-                      enabled: !_busy,
-                      textCapitalization: TextCapitalization.words,
-                      textInputAction: _editing ? TextInputAction.done : TextInputAction.next,
-                      autofillHints: const [AutofillHints.name],
-                      style: fieldStyle,
-                      onChanged: (_) => _clear('name'),
-                      onSubmitted: (_) => _editing ? FocusScope.of(context).unfocus() : _phoneFocus.requestFocus(),
-                      decoration: _decoration(hint: 'Sunil Verma', errorKey: 'name'),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    KReveal(
+                      child: Semantics(
+                        header: true,
+                        child: Text(
+                            _editing
+                                ? 'Update your details'
+                                : 'Become a delivery partner',
+                            style: KraveoType.displayMd
+                                .copyWith(color: k.ink, fontSize: 30)),
+                      ),
                     ),
-                  ),
-                ),
-                if (!_editing) ...[
-                  const SizedBox(height: 18),
-                  KReveal(
-                    index: 3,
-                    child: FieldBlock(
-                      label: 'MOBILE NUMBER',
-                      hint: GrozoAuthConfig.usesClerk ? 'Contact mobile number' : 'You will log in with this number',
-                      error: _errors['phone'],
-                      child: TextField(
-                        key: const ValueKey('phone-field'),
-                        controller: _phone,
-                        focusNode: _phoneFocus,
-                        enabled: !_busy,
-                        keyboardType: TextInputType.phone,
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.telephoneNumberNational],
-                        inputFormatters: const [IndianPhoneInputFormatter()],
-                        style: KraveoType.headlineSm.copyWith(color: k.ink, letterSpacing: 1, fontSize: 24),
-                        onChanged: (_) => _clear('phone'),
-                        onSubmitted: (_) => _passwordFocus.requestFocus(),
-                        decoration: _decoration(
-                          hint: '98765 43210',
-                          errorKey: 'phone',
-                          prefix: Padding(
-                            padding: const EdgeInsets.only(left: 18, right: 10),
-                            child: Row(mainAxisSize: MainAxisSize.min, children: [
-                              Text('+91', style: KraveoType.headlineSm.copyWith(color: k.inkMuted, fontSize: 24)),
-                              const SizedBox(width: 10),
-                              Container(width: 1.4, height: 28, color: k.line),
-                            ]),
-                          ),
+                    const SizedBox(height: 6),
+                    KReveal(
+                      index: 1,
+                      child: Text(
+                          _editing
+                              ? 'Fix what is below and send it again.'
+                              : GrozoAuthConfig.usesClerk
+                                  ? 'Tell us about yourself and your vehicle. Grozo will review your application.'
+                                  : 'Create your account. It takes a minute.',
+                          style: KraveoType.body
+                              .copyWith(color: k.inkMuted, fontSize: 16)),
+                    ),
+                    const SizedBox(height: 22),
+                    KReveal(
+                      index: 2,
+                      child: FieldBlock(
+                        label: 'FULL NAME',
+                        error: _errors['name'],
+                        child: TextField(
+                          key: const ValueKey('name-field'),
+                          controller: _name,
+                          enabled: !_busy,
+                          textCapitalization: TextCapitalization.words,
+                          textInputAction: _editing
+                              ? TextInputAction.done
+                              : TextInputAction.next,
+                          autofillHints: const [AutofillHints.name],
+                          style: fieldStyle,
+                          onChanged: (_) => _clear('name'),
+                          onSubmitted: (_) => _editing
+                              ? FocusScope.of(context).unfocus()
+                              : _phoneFocus.requestFocus(),
+                          decoration: _decoration(
+                              hint: 'Sunil Verma', errorKey: 'name'),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 18),
-                  if (!GrozoAuthConfig.usesClerk) KReveal(
-                    index: 4,
-                    child: FieldBlock(
-                      label: 'CREATE A PASSWORD',
-                      hint: 'At least 8 characters',
-                      error: _errors['password'],
-                      child: TextField(
-                        key: const ValueKey('password-field'),
-                        controller: _password,
-                        focusNode: _passwordFocus,
-                        enabled: !_busy,
-                        obscureText: !_showPassword,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        keyboardType: TextInputType.visiblePassword,
-                        textInputAction: TextInputAction.done,
-                        autofillHints: const [AutofillHints.newPassword],
-                        style: fieldStyle,
-                        onChanged: (_) => _clear('password'),
-                        onSubmitted: (_) => FocusScope.of(context).unfocus(),
-                        decoration: _decoration(
-                          hint: 'Choose a password',
-                          errorKey: 'password',
-                          suffix: Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: KPressable(
-                              semanticLabel: _showPassword ? 'Hide password' : 'Show password',
-                              onTap: () => setState(() => _showPassword = !_showPassword),
-                              child: SizedBox(
-                                width: 52,
-                                height: 52,
-                                child: ExcludeSemantics(child: Icon(_showPassword ? LucideIcons.eyeOff : LucideIcons.eye, size: 24, color: k.inkMuted)),
+                    if (!_editing) ...[
+                      const SizedBox(height: 18),
+                      KReveal(
+                        index: 3,
+                        child: FieldBlock(
+                          label: 'MOBILE NUMBER',
+                          hint: GrozoAuthConfig.usesClerk
+                              ? 'Contact mobile number'
+                              : 'You will log in with this number',
+                          error: _errors['phone'],
+                          child: TextField(
+                            key: const ValueKey('phone-field'),
+                            controller: _phone,
+                            focusNode: _phoneFocus,
+                            enabled: !_busy,
+                            keyboardType: TextInputType.phone,
+                            textInputAction: TextInputAction.next,
+                            autofillHints: const [
+                              AutofillHints.telephoneNumberNational
+                            ],
+                            inputFormatters: const [
+                              IndianPhoneInputFormatter()
+                            ],
+                            style: KraveoType.headlineSm.copyWith(
+                                color: k.ink, letterSpacing: 1, fontSize: 24),
+                            onChanged: (_) => _clear('phone'),
+                            onSubmitted: (_) => GrozoAuthConfig.usesClerk
+                                ? FocusScope.of(context).unfocus()
+                                : _passwordFocus.requestFocus(),
+                            decoration: _decoration(
+                              hint: '98765 43210',
+                              errorKey: 'phone',
+                              prefix: Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 18, right: 10),
+                                child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('+91',
+                                          style: KraveoType.headlineSm.copyWith(
+                                              color: k.inkMuted, fontSize: 24)),
+                                      const SizedBox(width: 10),
+                                      Container(
+                                          width: 1.4,
+                                          height: 28,
+                                          color: k.line),
+                                    ]),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 18),
-                KReveal(
-                  index: 5,
-                  child: FieldBlock(
-                    label: 'HOW WILL YOU DELIVER?',
-                    child: Wrap(spacing: 10, runSpacing: 10, children: [
-                      for (final v in kVehicleTypes)
-                        KChoiceChip(
-                          key: ValueKey('vehicle-$v'),
-                          label: v,
-                          selected: _vehicle == v,
-                          onTap: _busy
-                              ? () {}
-                              : () => setState(() {
-                                    _vehicle = v;
-                                    _errors.remove('vehicleRegNo');
-                                  }),
-                        ),
-                    ]),
-                  ),
-                ),
-                if (_needsPlate) ...[
-                  const SizedBox(height: 18),
-                  KReveal(
-                    index: 6,
-                    child: FieldBlock(
-                      label: 'NUMBER PLATE',
-                      error: _errors['vehicleRegNo'],
-                      child: TextField(
-                        key: const ValueKey('plate-field'),
-                        controller: _plate,
-                        enabled: !_busy,
-                        textCapitalization: TextCapitalization.characters,
-                        textInputAction: TextInputAction.done,
-                        style: fieldStyle.copyWith(letterSpacing: 1),
-                        onChanged: (_) => _clear('vehicleRegNo'),
-                        decoration: _decoration(hint: 'MP04 AB 1234', errorKey: 'vehicleRegNo'),
-                      ),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 14),
-                KReveal(
-                  index: 7,
-                  child: _showMore
-                      ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          FieldBlock(
-                            label: 'EMERGENCY CONTACT',
-                            hint: 'Optional. Someone we can call if there is a problem.',
-                            error: _errors['emergencyPhone'],
+                      const SizedBox(height: 18),
+                      if (!GrozoAuthConfig.usesClerk)
+                        KReveal(
+                          index: 4,
+                          child: FieldBlock(
+                            label: 'CREATE A PASSWORD',
+                            hint: 'At least 8 characters',
+                            error: _errors['password'],
                             child: TextField(
-                              key: const ValueKey('emergency-field'),
-                              controller: _emergency,
+                              key: const ValueKey('password-field'),
+                              controller: _password,
+                              focusNode: _passwordFocus,
                               enabled: !_busy,
-                              keyboardType: TextInputType.phone,
-                              inputFormatters: const [IndianPhoneInputFormatter()],
-                              style: fieldStyle,
-                              onChanged: (_) => _clear('emergencyPhone'),
-                              decoration: _decoration(hint: '98765 43210', errorKey: 'emergencyPhone'),
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          FieldBlock(
-                            label: 'UPI ID FOR PAYOUTS',
-                            hint: 'Optional. You can add it later.',
-                            error: _errors['upiId'],
-                            child: TextField(
-                              key: const ValueKey('upi-field'),
-                              controller: _upi,
-                              enabled: !_busy,
+                              obscureText: !_showPassword,
+                              enableSuggestions: false,
                               autocorrect: false,
-                              keyboardType: TextInputType.emailAddress,
+                              keyboardType: TextInputType.visiblePassword,
+                              textInputAction: TextInputAction.done,
+                              autofillHints: const [AutofillHints.newPassword],
                               style: fieldStyle,
-                              onChanged: (_) => _clear('upiId'),
-                              decoration: _decoration(hint: 'name@upi', errorKey: 'upiId'),
-                            ),
-                          ),
-                        ])
-                      : KPressable(
-                          semanticLabel: 'Add emergency contact and UPI id (optional)',
-                          onTap: () => setState(() => _showMore = true),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Row(children: [
-                              Icon(LucideIcons.plus, size: 20, color: k.brand),
-                              const SizedBox(width: 8),
-                              Expanded(child: Text('Add emergency contact and UPI id (optional)', style: KraveoType.titleMd.copyWith(color: k.brand, fontSize: 16))),
-                            ]),
-                          ),
-                        ),
-                ),
-                AnimatedSize(
-                  duration: KMotion.base,
-                  curve: KMotion.emphasized,
-                  alignment: Alignment.topCenter,
-                  child: _problem == null
-                      ? const SizedBox(width: double.infinity)
-                      : Semantics(
-                          liveRegion: true,
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 14),
-                            child: Container(
-                              key: const ValueKey('signup-problem'),
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Color.alphaBlend(KraveoPalette.danger.withValues(alpha: 0.12), k.surface),
-                                borderRadius: BorderRadius.circular(KRadius.lg),
-                                border: Border.all(color: KraveoPalette.danger, width: 1.6),
+                              onChanged: (_) => _clear('password'),
+                              onSubmitted: (_) =>
+                                  FocusScope.of(context).unfocus(),
+                              decoration: _decoration(
+                                hint: 'Choose a password',
+                                errorKey: 'password',
+                                suffix: Padding(
+                                  padding: const EdgeInsets.only(right: 6),
+                                  child: KPressable(
+                                    semanticLabel: _showPassword
+                                        ? 'Hide password'
+                                        : 'Show password',
+                                    onTap: () => setState(
+                                        () => _showPassword = !_showPassword),
+                                    child: SizedBox(
+                                      width: 52,
+                                      height: 52,
+                                      child: ExcludeSemantics(
+                                          child: Icon(
+                                              _showPassword
+                                                  ? LucideIcons.eyeOff
+                                                  : LucideIcons.eye,
+                                              size: 24,
+                                              color: k.inkMuted)),
+                                    ),
+                                  ),
+                                ),
                               ),
-                              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                const Icon(LucideIcons.triangleAlert, size: 24, color: KraveoPalette.danger),
-                                const SizedBox(width: 12),
-                                Expanded(child: Text(_problem!, style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16, fontWeight: FontWeight.w700))),
-                              ]),
                             ),
                           ),
                         ),
-                ),
-                const SizedBox(height: 22),
-                KReveal(
-                  index: 8,
-                  child: KButton(
-                    key: const ValueKey('signup-button'),
-                    label: _editing ? 'Send again' : 'Create account',
-                    icon: _editing ? LucideIcons.send : LucideIcons.userPlus,
-                    large: true,
-                    loading: _busy,
-                    onPressed: _submit,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                KReveal(
-                  index: 9,
-                  child: KCard(
-                    color: k.brandSoft,
-                    elevated: false,
-                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Icon(LucideIcons.shieldCheck, size: 24, color: k.brand),
-                      const SizedBox(width: 12),
-                      Expanded(child: Text('${BrandConfig.name} checks every rider before the first order.', style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16))),
-                    ]),
-                  ),
-                ),
-              ]),
+                    ],
+                    const SizedBox(height: 18),
+                    KReveal(
+                      index: 5,
+                      child: FieldBlock(
+                        label: 'HOW WILL YOU DELIVER?',
+                        child: Wrap(spacing: 10, runSpacing: 10, children: [
+                          for (final v in kVehicleTypes)
+                            KChoiceChip(
+                              key: ValueKey('vehicle-$v'),
+                              label: v,
+                              selected: _vehicle == v,
+                              onTap: _busy
+                                  ? () {}
+                                  : () => setState(() {
+                                        _vehicle = v;
+                                        _errors.remove('vehicleRegNo');
+                                      }),
+                            ),
+                        ]),
+                      ),
+                    ),
+                    if (_needsPlate) ...[
+                      const SizedBox(height: 18),
+                      KReveal(
+                        index: 6,
+                        child: FieldBlock(
+                          label: 'NUMBER PLATE',
+                          error: _errors['vehicleRegNo'],
+                          child: TextField(
+                            key: const ValueKey('plate-field'),
+                            controller: _plate,
+                            enabled: !_busy,
+                            textCapitalization: TextCapitalization.characters,
+                            textInputAction: TextInputAction.done,
+                            style: fieldStyle.copyWith(letterSpacing: 1),
+                            onChanged: (_) => _clear('vehicleRegNo'),
+                            decoration: _decoration(
+                                hint: 'MP04 AB 1234', errorKey: 'vehicleRegNo'),
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    KReveal(
+                      index: 7,
+                      child: _showMore
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                  FieldBlock(
+                                    label: 'EMERGENCY CONTACT',
+                                    hint:
+                                        'Optional. Someone we can call if there is a problem.',
+                                    error: _errors['emergencyPhone'],
+                                    child: TextField(
+                                      key: const ValueKey('emergency-field'),
+                                      controller: _emergency,
+                                      enabled: !_busy,
+                                      keyboardType: TextInputType.phone,
+                                      inputFormatters: const [
+                                        IndianPhoneInputFormatter()
+                                      ],
+                                      style: fieldStyle,
+                                      onChanged: (_) =>
+                                          _clear('emergencyPhone'),
+                                      decoration: _decoration(
+                                          hint: '98765 43210',
+                                          errorKey: 'emergencyPhone'),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 18),
+                                  FieldBlock(
+                                    label: 'UPI ID FOR PAYOUTS',
+                                    hint: 'Optional. You can add it later.',
+                                    error: _errors['upiId'],
+                                    child: TextField(
+                                      key: const ValueKey('upi-field'),
+                                      controller: _upi,
+                                      enabled: !_busy,
+                                      autocorrect: false,
+                                      keyboardType: TextInputType.emailAddress,
+                                      style: fieldStyle,
+                                      onChanged: (_) => _clear('upiId'),
+                                      decoration: _decoration(
+                                          hint: 'name@upi', errorKey: 'upiId'),
+                                    ),
+                                  ),
+                                ])
+                          : KPressable(
+                              semanticLabel:
+                                  'Add emergency contact and UPI id (optional)',
+                              onTap: () => setState(() => _showMore = true),
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                child: Row(children: [
+                                  Icon(LucideIcons.plus,
+                                      size: 20, color: k.brand),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                      child: Text(
+                                          'Add emergency contact and UPI id (optional)',
+                                          style: KraveoType.titleMd.copyWith(
+                                              color: k.brand, fontSize: 16))),
+                                ]),
+                              ),
+                            ),
+                    ),
+                    AnimatedSize(
+                      duration: KMotion.base,
+                      curve: KMotion.emphasized,
+                      alignment: Alignment.topCenter,
+                      child: _problem == null
+                          ? const SizedBox(width: double.infinity)
+                          : Semantics(
+                              liveRegion: true,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 14),
+                                child: Container(
+                                  key: const ValueKey('signup-problem'),
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Color.alphaBlend(
+                                        KraveoPalette.danger
+                                            .withValues(alpha: 0.12),
+                                        k.surface),
+                                    borderRadius:
+                                        BorderRadius.circular(KRadius.lg),
+                                    border: Border.all(
+                                        color: KraveoPalette.danger,
+                                        width: 1.6),
+                                  ),
+                                  child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Icon(LucideIcons.triangleAlert,
+                                            size: 24,
+                                            color: KraveoPalette.danger),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                            child: Text(_problem!,
+                                                style: KraveoType.titleMd
+                                                    .copyWith(
+                                                        color: k.ink,
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w700))),
+                                      ]),
+                                ),
+                              ),
+                            ),
+                    ),
+                    const SizedBox(height: 22),
+                    KReveal(
+                      index: 8,
+                      child: KButton(
+                        key: const ValueKey('signup-button'),
+                        label: _editing
+                            ? 'Send again'
+                            : GrozoAuthConfig.usesClerk
+                                ? 'Submit rider application'
+                                : 'Create account',
+                        icon:
+                            _editing ? LucideIcons.send : LucideIcons.userPlus,
+                        large: true,
+                        loading: _busy,
+                        onPressed: _submit,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    KReveal(
+                      index: 9,
+                      child: KCard(
+                        color: k.brandSoft,
+                        elevated: false,
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(LucideIcons.shieldCheck,
+                                  size: 24, color: k.brand),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                  child: Text(
+                                      '${BrandConfig.name} checks every rider before the first order.',
+                                      style: KraveoType.titleMd.copyWith(
+                                          color: k.ink, fontSize: 16))),
+                            ]),
+                      ),
+                    ),
+                  ]),
             ),
           ),
         ),

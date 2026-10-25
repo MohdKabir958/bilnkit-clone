@@ -160,6 +160,58 @@ test('managed store application retains category and public contact, stays close
   expect(await prisma.vendor.count({where:{userId:response.body.user.id}})).toBe(1);
   expect((await request.post('/api/v1/vendors/'+response.body.vendor.id+'/products').set(auth).send({})).status).toBe(403);
 });
+test('fresh rider identity discovers application without receiving delivery permissions',async()=>{
+  const auth=header('user_NewRiderOwner');
+  expect((await request.get('/api/partner/driver/onboarding')).status).toBe(401);
+  const response=await request.get('/api/partner/driver/onboarding').set(auth);
+  expect(response.status).toBe(200);expect(response.body.requiresApplication).toBe(true);expect(response.body.approvalStatus).toBe('PENDING');
+  expect(response.body.user.role).toBe('STUDENT');expect(response.body.driver).toBeUndefined();expect(response.headers['cache-control']).toBe('no-store');
+  expect(await prisma.driverPartner.count({where:{userId:response.body.user.id}})).toBe(0);
+  expect((await request.post('/api/drivers/duty-status').set(auth).send({isOnline:true})).status).toBe(403);
+});
+test('store owners and administrators cannot repurpose their identities as riders',async()=>{
+  expect((await request.get('/api/partner/driver/onboarding').set(header('user_Admin'))).status).toBe(403);
+  await linkClerkIdentity('usr-3','user_OnboardingStoreOwner','test operator');
+  const response=await request.get('/api/partner/driver/onboarding').set(header('user_OnboardingStoreOwner'));
+  expect(response.status).toBe(403);expect(response.body.code).toBe('APPLICATION_ROLE_CONFLICT');expect(response.body.message).toContain('separate delivery-partner account');
+  await prisma.user.update({where:{id:'usr-3'},data:{clerkUserId:null}});
+});
+test('established customer order history is preserved and cannot be converted into rider access',async()=>{
+  const auth=header('user_RiderHistoryCustomer');
+  const profile=await request.get('/api/auth/profile').set(auth);
+  const order=await prisma.order.create({data:{customerId:profile.body.user.id,vendorId:'ven-1',totalAmount:100,dropoffHostel:'Synthetic doorstep address',status:'DELIVERED',paymentStatus:'PAID'}});
+  const response=await request.get('/api/partner/driver/onboarding').set(auth);
+  expect(response.status).toBe(403);expect(response.body.code).toBe('APPLICATION_ROLE_CONFLICT');
+  expect((await prisma.user.findUniqueOrThrow({where:{id:profile.body.user.id}})).role).toBe('STUDENT');
+  expect((await prisma.order.findUniqueOrThrow({where:{id:order.id}})).customerId).toBe(profile.body.user.id);
+});
+test('rider submission is pending and offline, validates vehicle, rejects duplicates and cannot self-approve',async()=>{
+  const auth=header('user_OnboardingRiderApplicant');
+  const body={role:'DRIVER',name:'Synthetic Rider',phone:'9000000015',vehicleType:'Bike',approvalStatus:'APPROVED',dutyStatus:'ONLINE'};
+  const invalid=await request.post('/api/partner/clerk-application').set(auth).send(body);
+  expect(invalid.status).toBe(400);expect(invalid.body.field).toBe('vehicleRegNo');
+  const response=await request.post('/api/partner/clerk-application').set(auth).send({...body,vehicleRegNo:'KA01AB1234'});
+  expect(response.status).toBe(201);expect(response.body.approvalStatus).toBe('PENDING');expect(response.body.driver.dutyStatus).toBe('OFFLINE');
+  expect(response.body.driver.serviceAreaConfigured).toBe(false);
+  expect((await request.post('/api/partner/clerk-application').set(auth).send(body)).status).toBe(403);
+  expect((await request.post('/api/drivers/duty-status').set(auth).send({isOnline:true})).status).toBe(403);
+  const status=await request.get('/api/partner/driver/onboarding').set(auth).query({userId:'usr-4'});
+  expect(status.status).toBe(200);expect(status.body.requiresApplication).toBe(false);expect(status.body.driver.id).toBe(response.body.driver.id);
+  expect(await prisma.driverPartner.count({where:{userId:response.body.user.id}})).toBe(1);
+});
+test('rider onboarding preserves all approval decisions and the owned rider record',async()=>{
+  const user=await prisma.user.findUniqueOrThrow({where:{clerkUserId:'user_OnboardingRiderApplicant'}});
+  const rider=await prisma.driverPartner.findUniqueOrThrow({where:{userId:user.id}});
+  for(const status of ['APPROVED','REJECTED','SUSPENDED'] as const) {
+    await prisma.driverPartner.update({where:{id:rider.id},data:{approvalStatus:status}});
+    const response=await request.get('/api/partner/driver/onboarding').set(header('user_OnboardingRiderApplicant'));
+    if (status === 'SUSPENDED') {
+      expect(response.status).toBe(403);expect(response.body.code).toBe('ACCOUNT_SUSPENDED');
+    } else {
+      expect(response.status).toBe(200);expect(response.body.approvalStatus).toBe(status);expect(response.body.requiresApplication).toBe(false);expect(response.body.driver.id).toBe(rider.id);
+    }
+  }
+});
 test('new vendor and rider applications are pending, not approved by the body',async()=>{
   const vendor=await request.post('/api/partner/clerk-application').set(header('user_VendorApplicant')).send({role:'VENDOR',name:'Synthetic Owner',phone:'9000000011',restaurantName:'Simulated Grocery',category:'Groceries',address:'Synthetic store pickup location',approvalStatus:'APPROVED'});
   expect(vendor.status).toBe(201);expect(vendor.body.approvalStatus).toBe('PENDING');

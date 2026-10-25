@@ -688,5 +688,10 @@
     "file": "apps/vendor_app/lib/services/store_categories.dart",
     "value": "/categories?for=restaurants",
     "reason": "Existing backend store-category filter identifier retained for API compatibility; the UI displays Store category."
+  },
+  {
+    "file": "apps/driver_app/lib/services/partner_auth_service.dart",
+    "value": "STUDENT",
+    "reason": "Existing trusted database role recognized only for a signed-in identity that needs a rider application; not user-facing terminology."
   }
 ]

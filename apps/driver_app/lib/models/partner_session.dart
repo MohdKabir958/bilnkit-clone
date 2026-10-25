@@ -30,6 +30,7 @@ class PartnerSession {
     this.phone,
     this.avatarId,
     this.driverId,
+    this.requiresApplication = false,
     this.runnerCode,
     this.approval = PartnerApproval.approved,
     this.rejectionReason,
@@ -45,6 +46,9 @@ class PartnerSession {
   final String? phone;
   final int? avatarId;
   final String? driverId;
+
+  /// Signed-in identity without a submitted rider application. Never authorizes delivery work.
+  final bool requiresApplication;
 
   /// The rider's public code (shown on the runner pass), e.g. "RUN-8042".
   final String? runnerCode;
@@ -65,7 +69,8 @@ class PartnerSession {
   /// Null when the server did not say (older server). Never stored: it is only meaningful right after an answer.
   final String? dutyStatus;
 
-  bool get isApproved => approval == PartnerApproval.approved;
+  bool get isApproved =>
+      !requiresApplication && approval == PartnerApproval.approved;
 
   /// First name for greetings; falls back to the whole name.
   String get firstName {
@@ -81,11 +86,17 @@ class PartnerSession {
     if (base == null) {
       return null;
     }
-    final approval = PartnerApproval.parse(json['approvalStatus']);
+    final requiresApplication = json['requiresApplication'] == true;
+    final approval = requiresApplication
+        ? PartnerApproval.pending
+        : PartnerApproval.parse(json['approvalStatus']);
     final reason = json['rejectionReason']?.toString();
     final driver = json['driver'];
     if (driver is! Map) {
-      return base.copyWith(approval: approval, rejectionReason: reason);
+      return base.copyWith(
+          approval: approval,
+          rejectionReason: reason,
+          requiresApplication: requiresApplication);
     }
     return PartnerSession(
       userId: base.userId,
@@ -112,13 +123,15 @@ class PartnerSession {
   PartnerSession copyWith(
           {PartnerApproval? approval,
           String? rejectionReason,
-          bool clearReason = false}) =>
+          bool clearReason = false,
+          bool? requiresApplication}) =>
       PartnerSession(
         userId: userId,
         name: name,
         phone: phone,
         avatarId: avatarId,
         driverId: driverId,
+        requiresApplication: requiresApplication ?? this.requiresApplication,
         runnerCode: runnerCode,
         approval: approval ?? this.approval,
         rejectionReason:
@@ -153,6 +166,7 @@ class PartnerSession {
         phone: fresh.phone,
         avatarId: fresh.avatarId,
         driverId: driverId,
+        requiresApplication: requiresApplication,
         runnerCode: runnerCode,
         approval: approval,
         rejectionReason: rejectionReason,
@@ -172,7 +186,8 @@ class PartnerSession {
       emergencyPhone == o.emergencyPhone &&
       upiId == o.upiId &&
       driverId == o.driverId &&
-      runnerCode == o.runnerCode;
+      runnerCode == o.runnerCode &&
+      requiresApplication == o.requiresApplication;
 
   Map<String, dynamic> toJson() => {
         'userId': userId,
@@ -180,6 +195,7 @@ class PartnerSession {
         'phone': phone,
         'avatarId': avatarId,
         'driverId': driverId,
+        'requiresApplication': requiresApplication,
         'runnerCode': runnerCode,
         'approval': approval.name,
         'rejectionReason': rejectionReason,
@@ -200,6 +216,7 @@ class PartnerSession {
       avatarId:
           raw['avatarId'] is num ? (raw['avatarId'] as num).toInt() : null,
       driverId: raw['driverId']?.toString(),
+      requiresApplication: raw['requiresApplication'] == true,
       runnerCode: raw['runnerCode']?.toString(),
       approval: PartnerApproval.parse(raw['approval']),
       rejectionReason: raw['rejectionReason']?.toString(),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:kraveo_ui/kraveo_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -48,7 +49,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool get _locked => _lockLeft > 0;
 
-  static String _clock(int seconds) => '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+  static String _clock(int seconds) =>
+      '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
 
   void _startLock(int seconds) {
     _ticker?.cancel();
@@ -82,7 +84,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final phone = _phoneController.text.trim();
     final password = _passwordController.text;
 
-    final phoneError = isValidIndianMobile(phone) ? null : 'Enter your 10-digit mobile number';
+    final phoneError =
+        isValidIndianMobile(phone) ? null : 'Enter your 10-digit mobile number';
     final passwordError = password.isEmpty ? 'Enter your password' : null;
     if (phoneError != null || passwordError != null) {
       setState(() {
@@ -120,32 +123,61 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _busy = false;
       _problem = _problemFor(result);
-      if (result.failure == LoginFailure.locked) _startLock(result.retryAfterSeconds);
-      if (result.failure == LoginFailure.invalidCredentials) _passwordController.clear();
+      if (result.failure == LoginFailure.locked) {
+        _startLock(result.retryAfterSeconds);
+      }
+      if (result.failure == LoginFailure.invalidCredentials) {
+        _passwordController.clear();
+      }
     });
   }
 
   _LoginProblem _problemFor(LoginResult r) {
     switch (r.failure!) {
       case LoginFailure.invalidCredentials:
-        return _LoginProblem(icon: LucideIcons.keyRound, title: r.message ?? 'Wrong phone or password.');
+        return _LoginProblem(
+            icon: LucideIcons.keyRound,
+            title: r.message ?? 'Wrong phone or password.');
       case LoginFailure.locked:
-        return const _LoginProblem(icon: LucideIcons.lock, title: 'Too many wrong tries.', isLock: true);
+        return const _LoginProblem(
+            icon: LucideIcons.lock,
+            title: 'Too many wrong tries.',
+            isLock: true);
       case LoginFailure.wrongRole:
-        return _LoginProblem(icon: LucideIcons.store, title: r.message ?? 'This number is registered for another ${BrandConfig.name} app.');
+        return _LoginProblem(
+            icon: LucideIcons.store,
+            title: r.message ??
+                'This number is registered for another ${BrandConfig.name} app.');
       case LoginFailure.offline:
-        return const _LoginProblem(icon: LucideIcons.wifiOff, title: 'Can\'t reach ${BrandConfig.name}. Check your internet and try again.');
+        return const _LoginProblem(
+            icon: LucideIcons.wifiOff,
+            title:
+                'Can\'t reach ${BrandConfig.name}. Check your internet and try again.');
       case LoginFailure.server:
-        return const _LoginProblem(icon: LucideIcons.triangleAlert, title: '${BrandConfig.name} is having trouble. Please try again in a moment.');
+        return const _LoginProblem(
+            icon: LucideIcons.triangleAlert,
+            title:
+                '${BrandConfig.name} is having trouble. Please try again in a moment.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (GrozoAuthConfig.usesClerk) { return ClerkEntryScreen(role:ClerkEntryRole.delivery,appName:'Grozo Delivery',onApply:widget.onCreateAccount,onContinue:() async {
-      final result=await widget.onSubmit('','');
-      if(!result.ok) throw StateError(result.message ?? 'Partner access was not authorized.');
-    }); }
+    if (GrozoAuthConfig.usesClerk) {
+      return ClerkEntryScreen(
+          role: ClerkEntryRole.delivery,
+          appName: 'Grozo Delivery',
+          onApply: widget.onCreateAccount,
+          onContinue: () async {
+            final result = await widget.onSubmit('', '');
+            if (!result.ok) {
+              throw PlatformException(
+                  code: 'GROZO_RIDER_ACCESS',
+                  message:
+                      result.message ?? 'Partner access was not authorized.');
+            }
+          });
+    }
     final k = context.k;
     final locked = _locked;
     return Scaffold(
@@ -153,7 +185,8 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 28),
+            padding:
+                const EdgeInsets.fromLTRB(KSpace.gutter, 16, KSpace.gutter, 28),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 460),
@@ -167,13 +200,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       index: 1,
                       child: Semantics(
                         header: true,
-                        child: Text('Delivery partner login', style: KraveoType.displayMd.copyWith(color: k.ink, fontSize: 32)),
+                        child: Text('Delivery partner login',
+                            style: KraveoType.displayMd
+                                .copyWith(color: k.ink, fontSize: 32)),
                       ),
                     ),
                     const SizedBox(height: 6),
                     KReveal(
                       index: 1,
-                      child: Text('Log in to start taking orders.', style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
+                      child: Text('Log in to start taking orders.',
+                          style: KraveoType.body
+                              .copyWith(color: k.inkMuted, fontSize: 16)),
                     ),
                     const SizedBox(height: 24),
                     KReveal(
@@ -190,30 +227,48 @@ class _LoginScreenState extends State<LoginScreen> {
                             enabled: !_busy,
                             keyboardType: TextInputType.phone,
                             textInputAction: TextInputAction.next,
-                            autofillHints: const [AutofillHints.telephoneNumberNational],
-                            inputFormatters: const [IndianPhoneInputFormatter()],
-                            style: KraveoType.headlineSm.copyWith(color: k.ink, letterSpacing: 1, fontSize: 24),
+                            autofillHints: const [
+                              AutofillHints.telephoneNumberNational
+                            ],
+                            inputFormatters: const [
+                              IndianPhoneInputFormatter()
+                            ],
+                            style: KraveoType.headlineSm.copyWith(
+                                color: k.ink, letterSpacing: 1, fontSize: 24),
                             onChanged: (value) => setState(() {
                               _phoneError = null;
                               // Editing the number clears an old error; the lock only applies to the
                               // number that was locked.
-                              if (_locked && value.trim() != _lockedPhone) _clearLock();
+                              if (_locked && value.trim() != _lockedPhone) {
+                                _clearLock();
+                              }
                               if (!_locked) _problem = null;
                             }),
                             onSubmitted: (_) => _passwordFocus.requestFocus(),
                             decoration: InputDecoration(
                               hintText: '98765 43210',
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 18, vertical: 20),
                               prefixIcon: Padding(
-                                padding: const EdgeInsets.only(left: 18, right: 10),
-                                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                                  Text('+91', style: KraveoType.headlineSm.copyWith(color: k.inkMuted, fontSize: 24)),
-                                  const SizedBox(width: 10),
-                                  Container(width: 1.4, height: 28, color: k.line),
-                                ]),
+                                padding:
+                                    const EdgeInsets.only(left: 18, right: 10),
+                                child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('+91',
+                                          style: KraveoType.headlineSm.copyWith(
+                                              color: k.inkMuted, fontSize: 24)),
+                                      const SizedBox(width: 10),
+                                      Container(
+                                          width: 1.4,
+                                          height: 28,
+                                          color: k.line),
+                                    ]),
                               ),
-                              prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-                              enabledBorder: _phoneError != null ? _errorBorder : null,
+                              prefixIconConstraints: const BoxConstraints(
+                                  minWidth: 0, minHeight: 0),
+                              enabledBorder:
+                                  _phoneError != null ? _errorBorder : null,
                             ),
                           ),
                         ),
@@ -239,7 +294,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             keyboardType: TextInputType.visiblePassword,
                             textInputAction: TextInputAction.done,
                             autofillHints: const [AutofillHints.password],
-                            style: KraveoType.titleLg.copyWith(color: k.ink, fontSize: 21),
+                            style: KraveoType.titleLg
+                                .copyWith(color: k.ink, fontSize: 21),
                             onChanged: (_) => setState(() {
                               _passwordError = null;
                               if (_problem != null && !_locked) _problem = null;
@@ -247,23 +303,34 @@ class _LoginScreenState extends State<LoginScreen> {
                             onSubmitted: (_) => _submit(),
                             decoration: InputDecoration(
                               hintText: 'Your password',
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 18, vertical: 20),
                               suffixIcon: Padding(
                                 padding: const EdgeInsets.only(right: 6),
                                 child: KPressable(
-                                  semanticLabel: _showPassword ? 'Hide password' : 'Show password',
-                                  onTap: () => setState(() => _showPassword = !_showPassword),
+                                  semanticLabel: _showPassword
+                                      ? 'Hide password'
+                                      : 'Show password',
+                                  onTap: () => setState(
+                                      () => _showPassword = !_showPassword),
                                   child: SizedBox(
                                     width: 52,
                                     height: 52,
                                     child: ExcludeSemantics(
-                                      child: Icon(_showPassword ? LucideIcons.eyeOff : LucideIcons.eye, size: 24, color: k.inkMuted),
+                                      child: Icon(
+                                          _showPassword
+                                              ? LucideIcons.eyeOff
+                                              : LucideIcons.eye,
+                                          size: 24,
+                                          color: k.inkMuted),
                                     ),
                                   ),
                                 ),
                               ),
-                              suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-                              enabledBorder: _passwordError != null ? _errorBorder : null,
+                              suffixIconConstraints: const BoxConstraints(
+                                  minWidth: 0, minHeight: 0),
+                              enabledBorder:
+                                  _passwordError != null ? _errorBorder : null,
                             ),
                           ),
                         ),
@@ -275,7 +342,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       index: 4,
                       child: KButton(
                         key: const ValueKey('login-button'),
-                        label: locked ? 'Try again in ${_clock(_lockLeft)}' : 'Log in',
+                        label: locked
+                            ? 'Try again in ${_clock(_lockLeft)}'
+                            : 'Log in',
                         icon: locked ? LucideIcons.timer : LucideIcons.logIn,
                         large: true,
                         loading: _busy,
@@ -302,18 +371,29 @@ class _LoginScreenState extends State<LoginScreen> {
                         key: const ValueKey('login-support-card'),
                         color: k.brandSoft,
                         elevated: false,
-                        onTap: () => emailSupport(context, subject: '${BrandConfig.name} rider login help'),
-                        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Icon(LucideIcons.mail, size: 24, color: k.brand),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text('Forgot password? Ask ${BrandConfig.name} support.', style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16)),
-                              const SizedBox(height: 2),
-                              Text('Email ${SupportConfig.email}', style: KraveoType.bodySm.copyWith(color: k.brand, fontSize: 14)),
+                        onTap: () => emailSupport(context,
+                            subject: '${BrandConfig.name} rider login help'),
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(LucideIcons.mail, size: 24, color: k.brand),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          'Forgot password? Ask ${BrandConfig.name} support.',
+                                          style: KraveoType.titleMd.copyWith(
+                                              color: k.ink, fontSize: 16)),
+                                      const SizedBox(height: 2),
+                                      Text('Email ${SupportConfig.email}',
+                                          style: KraveoType.bodySm.copyWith(
+                                              color: k.brand, fontSize: 14)),
+                                    ]),
+                              ),
                             ]),
-                          ),
-                        ]),
                       ),
                     ),
                   ],
@@ -333,7 +413,8 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 class _LoginProblem {
-  const _LoginProblem({required this.icon, required this.title, this.isLock = false});
+  const _LoginProblem(
+      {required this.icon, required this.title, this.isLock = false});
   final IconData icon;
   final String title;
   final bool isLock;
@@ -350,7 +431,8 @@ class _FieldBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final k = context.k;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: KraveoType.label.copyWith(color: k.inkMuted, fontSize: 13)),
+      Text(label,
+          style: KraveoType.label.copyWith(color: k.inkMuted, fontSize: 13)),
       const SizedBox(height: 8),
       child,
       AnimatedSize(
@@ -363,11 +445,21 @@ class _FieldBlock extends StatelessWidget {
                 liveRegion: true,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Padding(padding: EdgeInsets.only(top: 2), child: Icon(LucideIcons.circleAlert, size: 18, color: KraveoPalette.danger)),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(error!, style: KraveoType.bodySm.copyWith(color: KraveoPalette.danger, fontSize: 15, fontWeight: FontWeight.w700))),
-                  ]),
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                            padding: EdgeInsets.only(top: 2),
+                            child: Icon(LucideIcons.circleAlert,
+                                size: 18, color: KraveoPalette.danger)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                            child: Text(error!,
+                                style: KraveoType.bodySm.copyWith(
+                                    color: KraveoPalette.danger,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700))),
+                      ]),
                 ),
               ),
       ),
@@ -400,24 +492,38 @@ class _ProblemBanner extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Color.alphaBlend(KraveoPalette.danger.withValues(alpha: 0.14), k.surface),
+                    color: Color.alphaBlend(
+                        KraveoPalette.danger.withValues(alpha: 0.14),
+                        k.surface),
                     borderRadius: BorderRadius.circular(KRadius.lg),
                     border: Border.all(color: KraveoPalette.danger, width: 1.6),
                   ),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Icon(p.icon, size: 26, color: KraveoPalette.danger),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(p.title, style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 17, fontWeight: FontWeight.w800)),
-                        if (p.isLock && lockLeft > 0) ...[
-                          const SizedBox(height: 2),
-                          Text('Try again in ${_LoginScreenState._clock(lockLeft)}',
-                              style: KraveoType.titleMd.copyWith(color: KraveoPalette.danger, fontSize: 17, fontWeight: FontWeight.w800)),
-                        ],
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(p.icon, size: 26, color: KraveoPalette.danger),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(p.title,
+                                    style: KraveoType.titleMd.copyWith(
+                                        color: k.ink,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w800)),
+                                if (p.isLock && lockLeft > 0) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                      'Try again in ${_LoginScreenState._clock(lockLeft)}',
+                                      style: KraveoType.titleMd.copyWith(
+                                          color: KraveoPalette.danger,
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w800)),
+                                ],
+                              ]),
+                        ),
                       ]),
-                    ),
-                  ]),
                 ),
               ),
             ),

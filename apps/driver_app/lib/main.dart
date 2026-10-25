@@ -20,7 +20,9 @@ import 'state/rider_controller.dart';
 Future<String?> _readAppVersion() async {
   try {
     final info = await PackageInfo.fromPlatform();
-    return info.buildNumber.isEmpty ? info.version : '${info.version}+${info.buildNumber}';
+    return info.buildNumber.isEmpty
+        ? info.version
+        : '${info.version}+${info.buildNumber}';
   } catch (_) {
     return null;
   }
@@ -30,7 +32,10 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   // Push is started after the first frame by the controller; if Firebase cannot start, the app still works.
   runApp(KraveoDriverApp(
-    push: PushController(messaging: FirebasePushMessaging(), api: HttpPushDeviceApi(), appVersion: _readAppVersion),
+    push: PushController(
+        messaging: FirebasePushMessaging(),
+        api: HttpPushDeviceApi(),
+        appVersion: _readAppVersion),
   ));
 }
 
@@ -38,7 +43,8 @@ class KraveoDriverApp extends StatefulWidget {
   /// [auth] is the network layer for login / session checks; tests pass a fake.
   /// [riderServices] builds the order API, socket and GPS for the home screen (null = the real ones).
   /// [push] is the notification layer (null = none, as in the screen tests). The app takes ownership of it.
-  const KraveoDriverApp({super.key, this.auth, this.riderServices, this.push, this.payoutApi});
+  const KraveoDriverApp(
+      {super.key, this.auth, this.riderServices, this.push, this.payoutApi});
 
   /// Payout details (tests pass a fake; null = the real API).
   final PayoutApi? payoutApi;
@@ -77,7 +83,12 @@ class _KraveoDriverAppState extends State<KraveoDriverApp> {
           title: BrandConfig.driverName,
           debugShowCheckedModeBanner: false,
           theme: KraveoTheme.driver(),
-          home: GrozoAuthConfig.usesClerk && GrozoAuthConfig.preview ? const ClerkEntryScreen(appName: 'Grozo Delivery',preview:true) : AuthGate(session: _session, riderServices: widget.riderServices, payoutApi: widget.payoutApi),
+          home: GrozoAuthConfig.usesClerk && GrozoAuthConfig.preview
+              ? const ClerkEntryScreen(appName: 'Grozo Delivery', preview: true)
+              : AuthGate(
+                  session: _session,
+                  riderServices: widget.riderServices,
+                  payoutApi: widget.payoutApi),
         ),
       ),
     );
@@ -87,7 +98,8 @@ class _KraveoDriverAppState extends State<KraveoDriverApp> {
 /// Decides between splash, login, the "can't reach Grozo" retry state and the app, and wires
 /// session expiry (HTTP 401 on any authenticated call) to the login screen.
 class AuthGate extends StatefulWidget {
-  const AuthGate({super.key, required this.session, this.riderServices, this.payoutApi});
+  const AuthGate(
+      {super.key, required this.session, this.riderServices, this.payoutApi});
 
   final SessionController session;
   final RiderServices Function()? riderServices;
@@ -114,15 +126,29 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
   @override
   void dispose() {
     _session.removeListener(_showSignOutNotice);
-    if (DriverApiService.onUnauthorized == _handleUnauthorized) DriverApiService.onUnauthorized = null;
-    if (DriverApiService.onSuspended == _handleSuspended) DriverApiService.onSuspended = null;
-    if (DriverApiService.onNotApproved == _handleNotApproved) DriverApiService.onNotApproved = null;
+    if (DriverApiService.onUnauthorized == _handleUnauthorized) {
+      DriverApiService.onUnauthorized = null;
+    }
+    if (DriverApiService.onSuspended == _handleSuspended) {
+      DriverApiService.onSuspended = null;
+    }
+    if (DriverApiService.onNotApproved == _handleNotApproved) {
+      DriverApiService.onNotApproved = null;
+    }
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   /// The sign-up form (new account), or the same form prefilled to fix a pending / rejected application.
-  void _openSignup({PartnerSession? existing}) {
+  void _openSignup({PartnerSession? existing}) async {
+    if (GrozoAuthConfig.usesClerk && existing == null) {
+      final result = await _session.login('', '');
+      if (!mounted || result.ok) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result.message ??
+              'Sign in with a delivery-partner account and retry.')));
+      return;
+    }
     Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (_) => SignupScreen(
         existing: existing,
@@ -141,11 +167,15 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _session.status == SessionStatus.signedIn) _session.refreshApproval();
+    if (state == AppLifecycleState.resumed &&
+        _session.status == SessionStatus.signedIn) {
+      _session.refreshApproval();
+    }
   }
 
   /// A 401 came back from an authenticated call: back to login with an explanation.
-  void _handleUnauthorized() => _endSession(DriverApiService.sessionExpiredMessage);
+  void _handleUnauthorized() =>
+      _endSession(DriverApiService.sessionExpiredMessage);
 
   /// A 401 that says an admin paused this account: same, but with the true reason.
   void _handleSuspended() => _endSession(DriverApiService.accountPausedMessage);
@@ -196,9 +226,14 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
           case SessionStatus.unreachable:
             return _SessionUnreachable(onRetry: _session.retryRestore);
           case SessionStatus.signedOut:
-            return LoginScreen(onSubmit: _session.login, onCreateAccount: _openSignup);
+            return LoginScreen(
+                onSubmit: _session.login, onCreateAccount: _openSignup);
           case SessionStatus.signedIn:
             final me = _session.session;
+            if (me?.requiresApplication == true) {
+              return SignupScreen(
+                  onSubmit: _session.signUp, onCancel: _session.logout);
+            }
             // Only an approved rider reaches the delivery screens; everyone else sees where they stand.
             if (me != null && me.approval != PartnerApproval.approved) {
               return ApplicationStatusScreen(
@@ -210,7 +245,9 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
                 onLogout: _session.logout,
               );
             }
-            return DriverHomeScreen(services: widget.riderServices?.call(), payoutApi: widget.payoutApi);
+            return DriverHomeScreen(
+                services: widget.riderServices?.call(),
+                payoutApi: widget.payoutApi);
         }
       },
     );
@@ -229,7 +266,10 @@ class _SplashScreen extends StatelessWidget {
           child: const Column(mainAxisSize: MainAxisSize.min, children: [
             KBrandMark(height: 64),
             SizedBox(height: 28),
-            SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 3)),
+            SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(strokeWidth: 3)),
           ]),
         ),
       ),
@@ -271,15 +311,26 @@ class _SessionUnreachableState extends State<_SessionUnreachable> {
                 Container(
                   width: 68,
                   height: 68,
-                  decoration: BoxDecoration(color: k.brandSoft, shape: BoxShape.circle),
+                  decoration:
+                      BoxDecoration(color: k.brandSoft, shape: BoxShape.circle),
                   child: Icon(LucideIcons.wifiOff, size: 32, color: k.brand),
                 ),
                 const SizedBox(height: 16),
-                Text('Can\'t reach ${BrandConfig.name}', textAlign: TextAlign.center, style: KraveoType.headline.copyWith(color: k.ink)),
+                Text('Can\'t reach ${BrandConfig.name}',
+                    textAlign: TextAlign.center,
+                    style: KraveoType.headline.copyWith(color: k.ink)),
                 const SizedBox(height: 8),
-                Text('Check your internet. You are still logged in.', textAlign: TextAlign.center, style: KraveoType.body.copyWith(color: k.inkMuted, fontSize: 16)),
+                Text('Check your internet. You are still logged in.',
+                    textAlign: TextAlign.center,
+                    style: KraveoType.body
+                        .copyWith(color: k.inkMuted, fontSize: 16)),
                 const SizedBox(height: 20),
-                KButton(label: 'Retry', icon: LucideIcons.rotateCcw, large: true, loading: _busy, onPressed: _retry),
+                KButton(
+                    label: 'Retry',
+                    icon: LucideIcons.rotateCcw,
+                    large: true,
+                    loading: _busy,
+                    onPressed: _retry),
               ]),
             ),
           ),
