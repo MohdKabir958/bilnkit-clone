@@ -627,6 +627,7 @@ void main() {
       CustomerApiService.httpClientOverride = server.client;
       final p = DhabaProvider();
       await _pump(tester, const HomeScreen(), p);
+      await tester.tap(find.byKey(const ValueKey('all-nearby-stores')));await _settle(tester);
       final chips = tester
           .widgetList<KChoiceChip>(find.byType(KChoiceChip))
           .where((c) => ['All', 'Biryani', 'Chai', 'Mystery'].contains(c.label))
@@ -666,6 +667,7 @@ void main() {
         ];
       CustomerApiService.httpClientOverride = server.client;
       await _pump(tester, const HomeScreen(), DhabaProvider());
+      await tester.tap(find.byKey(const ValueKey('all-nearby-stores')));await _settle(tester);
       expect(
           tester
               .widgetList<KChoiceChip>(find.byType(KChoiceChip))

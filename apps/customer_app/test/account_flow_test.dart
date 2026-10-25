@@ -1698,10 +1698,10 @@ void main() {
       await tester.pump(const Duration(seconds: 5));
 
       expect(server.putBodies, hasLength(1));
-      expect(find.text('DELIVERING TO'), findsOneWidget);
+      expect(find.text('Delivering to'), findsOneWidget);
       expect(find.text('Choose delivery address'), findsWidgets);
-      expect(kAvatarWithId(5), findsWidgets,
-          reason: 'greeting shows the chosen avatar');
+      await tester.tap(find.byIcon(LucideIcons.user).last);await settle(tester);
+      expect(kAvatarWithId(5), findsWidgets,reason:'The selected avatar remains on the profile after sign-up.');
       expect(google.signInCalls, 1);
     });
 
@@ -1715,9 +1715,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 200));
       await tester.pump(const Duration(seconds: 5));
 
-      expect(find.text('DELIVERING TO'), findsOneWidget);
+      expect(find.text('Delivering to'), findsOneWidget);
       expect(find.text('Choose delivery address'), findsWidgets);
-      expect(find.textContaining(', AARAV'), findsOneWidget);
+      expect(find.text('Freshness Delivered'), findsOneWidget);
       final ctx = tester.element(find.byType(Scaffold).first);
       expect(ctx.read<CartProvider>().userKraveoCoins, 120,
           reason: 'seeded from the backend');
@@ -1757,7 +1757,7 @@ void main() {
       await launch(tester);
       await tester.pump(const Duration(seconds: 5));
       expect(find.text('Choose delivery address'), findsOneWidget);
-      expect(find.text('DELIVERING TO'), findsOneWidget);
+      expect(find.text('Delivering to'), findsOneWidget);
     });
 
     testWidgets('a session that still needs a profile lands on sign-up step 1',
@@ -1799,7 +1799,7 @@ void main() {
       final google = FakeGoogleAuth();
       await launch(tester, google: google);
       await tester.pump(const Duration(seconds: 5));
-      expect(find.text('DELIVERING TO'), findsOneWidget);
+      expect(find.text('Delivering to'), findsOneWidget);
 
       OrderResult<Object?>? result;
       await tester.runAsync(() async {
@@ -1867,7 +1867,7 @@ void main() {
       await tester.tap(find.text('Try again'));
       await tester.pump(const Duration(milliseconds: 200));
       await tester.pump(const Duration(seconds: 6));
-      expect(find.text('DELIVERING TO'), findsOneWidget);
+      expect(find.text('Delivering to'), findsOneWidget);
     });
   });
 }

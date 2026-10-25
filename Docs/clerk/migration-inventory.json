@@ -4,7 +4,7 @@
   "scope": "Tracked source/config/test files only; no .env, provider secrets, uploads or account records read.",
   "limitations": "Source reference inventory is navigation aid, not proof of authorization. Middleware inside handlers and ownership queries require manual review. Historical migrations are preserved, not renamed.",
   "counts": {
-    "referencedFiles": 243,
+    "referencedFiles": 245,
     "endpoints": 178,
     "mounts": 26
   },
@@ -3296,28 +3296,39 @@
       ]
     },
     {
-      "path": "apps/customer_app/lib/screens/home_screen.dart",
-      "sha256": "ea867f5a7f17aa9a7146efc90f37acfcdef1632e3797ca77e426b8ab68586719",
+      "path": "apps/customer_app/lib/screens/grocery_browse_screen.dart",
+      "sha256": "da5bf37bb698fe7788c5f06a0d109b3042df7e786f10426fcb0b9838b9304c28",
       "references": [
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 89
+          "line": 70
+        }
+      ]
+    },
+    {
+      "path": "apps/customer_app/lib/screens/home_screen.dart",
+      "sha256": "300a81b2418582fe0fa66517817d56d57a709a1912dee0ed18fa6742f31e13d3",
+      "references": [
+        {
+          "kind": "session",
+          "symbol": "SessionProvider",
+          "line": 86
         },
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 91
+          "line": 88
         },
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 103
+          "line": 100
         },
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 160
+          "line": 153
         }
       ]
     },
@@ -3431,7 +3442,7 @@
     },
     {
       "path": "apps/customer_app/lib/services/customer_api_service.dart",
-      "sha256": "27888fa6b46e950978c0c329ede6124ab490d0a26eb1c2430f353d6c6e78d436",
+      "sha256": "7d206ecaa91430cade2bcb77a9ef03680744832f81011abb556d075c8d17cdc2",
       "references": [
         {
           "kind": "session",
@@ -3501,12 +3512,12 @@
         {
           "kind": "session",
           "symbol": "getSavedToken",
-          "line": 359
+          "line": 360
         },
         {
           "kind": "session",
           "symbol": "saveToken",
-          "line": 402
+          "line": 403
         },
         {
           "kind": "authentication",
@@ -3536,7 +3547,7 @@
         {
           "kind": "authentication",
           "symbol": "/auth/google",
-          "line": 375
+          "line": 376
         },
         {
           "kind": "transports",
@@ -3556,22 +3567,22 @@
         {
           "kind": "transports",
           "symbol": "Authorization",
-          "line": 364
-        },
-        {
-          "kind": "transports",
-          "symbol": "Bearer",
           "line": 365
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 365
+          "line": 366
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 418
+          "line": 366
+        },
+        {
+          "kind": "transports",
+          "symbol": "Bearer",
+          "line": 419
         }
       ]
     },
@@ -3695,7 +3706,7 @@
     },
     {
       "path": "apps/customer_app/test/account_flow_test.dart",
-      "sha256": "8a38e28346d193b8a1cc3c43c72397c72e1c1cb5d84d4acd7a478283ca1edf11",
+      "sha256": "7cb9b9305c12377eeed5527d9d7235516b0ffc800739edd7793108dfee126063",
       "references": [
         {
           "kind": "identity",
@@ -4553,7 +4564,7 @@
     },
     {
       "path": "apps/customer_app/test/bughunt_screens_test.dart",
-      "sha256": "2f3c0a21d03504241f9587bc08b359ce5493bc16807893e2ca911fe0b7d9024b",
+      "sha256": "020b9faadf7a92b5bbf3e234da9c1721da206f3440c9bacb235577d8e8ea6f78",
       "references": [
         {
           "kind": "identity",
@@ -4583,22 +4594,22 @@
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 935
+          "line": 938
         },
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 1243
-        },
-        {
-          "kind": "clientFlows",
-          "symbol": "ProfileSetupScreen",
-          "line": 1248
+          "line": 1246
         },
         {
           "kind": "clientFlows",
           "symbol": "ProfileSetupScreen",
           "line": 1251
+        },
+        {
+          "kind": "clientFlows",
+          "symbol": "ProfileSetupScreen",
+          "line": 1254
         }
       ]
     },
@@ -4661,7 +4672,7 @@
     },
     {
       "path": "apps/customer_app/test/categories_test.dart",
-      "sha256": "5d0f4cd1e58478de104e1692d18dad8a3a5948acec4775cdbc0110c9808703f5",
+      "sha256": "8a984d858959a116b02c8166805ded21e9db0c21530a4773d114197be426fb44",
       "references": [
         {
           "kind": "identity",
@@ -4955,7 +4966,7 @@
     },
     {
       "path": "apps/customer_app/test/push_app_test.dart",
-      "sha256": "54f93710f4289135ffc8984b97461545c07fbad9ca39522dc2ec3c7216a8cd73",
+      "sha256": "9ba8c51ee3a609df0a8a9448c8ff609d58274af028de346b83be4979c65eed13",
       "references": [
         {
           "kind": "identity",
@@ -5060,6 +5071,32 @@
       ]
     },
     {
+      "path": "apps/customer_app/test/reference_home_test.dart",
+      "sha256": "51bbe7ed761ea08e046c7baf26e08835cb4b89a15426d1f8a96792534b6e2526",
+      "references": [
+        {
+          "kind": "session",
+          "symbol": "SessionProvider",
+          "line": 89
+        },
+        {
+          "kind": "session",
+          "symbol": "SessionProvider",
+          "line": 96
+        },
+        {
+          "kind": "session",
+          "symbol": "SessionProvider",
+          "line": 128
+        },
+        {
+          "kind": "session",
+          "symbol": "saveToken",
+          "line": 243
+        }
+      ]
+    },
+    {
       "path": "apps/customer_app/test/session_tokens_test.dart",
       "sha256": "14561224f8340a9221eed6831b8ea5ceafc75476a6cd9f4e18d1979fea10c3af",
       "references": [
@@ -5148,7 +5185,7 @@
     },
     {
       "path": "apps/customer_app/test/ui_screens_test.dart",
-      "sha256": "1873c0696f1180ae4c4eedbb3852183aca33aeeeeb48e1fe989ac47e015a78c1",
+      "sha256": "1c75ebe2528184d15cee6b6c8eabdcc336056842c662e402abc234d7716bdb61",
       "references": [
         {
           "kind": "session",
@@ -5173,7 +5210,7 @@
         {
           "kind": "session",
           "symbol": "SessionProvider",
-          "line": 189
+          "line": 193
         },
         {
           "kind": "clientFlows",
@@ -17122,7 +17159,7 @@
     },
     {
       "path": "scripts/ui_ux/marketplace/entry.tsx",
-      "sha256": "d116dbdb8214e9013e152b0c0f975ad54bf632ab073671f2f55c1d2783da5f26",
+      "sha256": "6fae2f81a8fe4d2d234415351c48c0f41af19bd01ecf9ab5bf1c8c295f484a4b",
       "references": [
         {
           "kind": "session",

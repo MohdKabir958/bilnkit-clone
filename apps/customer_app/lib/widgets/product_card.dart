@@ -4,6 +4,7 @@ import '../models/menu_item.dart';
 import 'ui/add_stepper.dart';
 import 'ui/format.dart';
 import 'ui/k_image.dart';
+import 'grocery_home_components.dart';
 
 /// Grocery SKU, not a recommendation or an invented promotion.
 class ProductCard extends StatelessWidget {
@@ -15,7 +16,12 @@ class ProductCard extends StatelessWidget {
       required this.onDetails,
       required this.onAdd,
       required this.onRemove,
-      this.open = true});
+      this.open = true,
+      this.compact = false,
+      this.saved = false,
+      this.onFavorite});
+  final bool compact, saved;
+  final VoidCallback? onFavorite;
   final MenuItemModel item;
   final String storeName;
   final int quantity;
@@ -23,6 +29,18 @@ class ProductCard extends StatelessWidget {
   final VoidCallback onDetails, onAdd, onRemove;
   @override
   Widget build(BuildContext context) {
+    if (compact) {
+      return GroceryProductCard(
+          item: item,
+          storeName: storeName,
+          quantity: quantity,
+          onDetails: onDetails,
+          onAdd: onAdd,
+          onRemove: onRemove,
+          onFavorite: onFavorite ?? () {},
+          saved: saved,
+          open: open);
+    }
     final k = context.k;
     final available = open && item.isAvailable && item.stockQty != 0;
     final saving = item.savings;

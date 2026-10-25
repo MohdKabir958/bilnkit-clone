@@ -388,6 +388,7 @@ void main() {
 
       await _pump(tester, const HomeScreen(),
           dhabas: sampleCatalogProvider(), orders: await ordersLoaded());
+      await tester.scrollUntilVisible(find.text('WELCOME20'),300,scrollable:find.byType(Scrollable).first);
       expect(find.text('WELCOME20'), findsOneWidget);
 
       await _pump(tester, const HomeScreen(),
@@ -415,6 +416,7 @@ void main() {
       await _pump(tester, const HomeScreen(), dhabas: DhabaProvider());
       expect(find.text('Night Mess'), findsNothing);
       expect(find.text('Parathas'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('all-nearby-stores')));await _settle(tester);
       final chipRow = find.byWidgetPredicate(
           (w) => w is Scrollable && w.axisDirection == AxisDirection.right);
       for (final chip in ['All', 'Thalis', 'Beverages', 'Rolls']) {
@@ -463,6 +465,7 @@ void main() {
       await tester.scrollUntilVisible(find.text('Real Dhaba'), 200,
           scrollable: find.byType(Scrollable).first);
       expect(find.textContaining('Min'), findsNothing);
+      await tester.tap(find.byKey(const ValueKey('all-nearby-stores')));await _settle(tester);
       expect(find.textContaining('Delivery'), findsWidgets);
     });
   });

@@ -169,12 +169,16 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
     await tester.pump(const Duration(milliseconds: 800));
 
-    expect(find.text('DELIVERING TO'), findsOneWidget);
+    expect(find.text('Delivering to'), findsOneWidget);
     expect(find.text('Choose delivery address'), findsWidgets);
+    expect(find.text('Popular Products'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('WELCOME20'),300,scrollable:find.byType(Scrollable).first);
     expect(find.text('WELCOME20'), findsOneWidget);
-    expect(find.text('Shop everyday essentials'), findsOneWidget);
+
     expect(find.text('Home'), findsOneWidget);
 
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('all-nearby-stores')),-300,scrollable:find.byType(Scrollable).first);
+    await tester.tap(find.byKey(const ValueKey('all-nearby-stores')));await tester.pump(const Duration(seconds:1));await tester.pump(const Duration(seconds:1));
     await tester.scrollUntilVisible(
         find.byWidgetPredicate((w) => w is DhabaCard && w.dhaba.id == 'ven-1'),
         200,
@@ -196,7 +200,7 @@ void main() {
     await pumpScreen(tester, const HomeScreen(), session: session);
     await tester.pump(const Duration(seconds: 5));
     await tester.pump(const Duration(milliseconds: 800));
-    expect(find.text('DELIVERING TO'), findsOneWidget);
+    expect(find.text('Delivering to'), findsOneWidget);
     expect(find.text('Choose delivery address'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

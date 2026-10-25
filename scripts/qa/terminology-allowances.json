@@ -668,5 +668,15 @@
     "file": "backend/src/routes/marketplace.ts",
     "value": "STUDENT",
     "reason": "Existing internal customer role enum; server authorization uses the unchanged database contract."
+  },
+  {
+    "file": "apps/customer_app/lib/models/grocery_department.dart",
+    "value": "Home & Kitchen",
+    "reason": "User-requested household and kitchen-supplies merchandise department, not legacy food-preparation/campus wording."
+  },
+  {
+    "file": "apps/customer_app/lib/models/grocery_department.dart",
+    "value": "kitchen",
+    "reason": "User-requested household and kitchen-supplies merchandise department, not legacy food-preparation/campus wording."
   }
 ]

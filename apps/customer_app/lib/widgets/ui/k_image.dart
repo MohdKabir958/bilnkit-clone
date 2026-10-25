@@ -9,8 +9,14 @@ class KImage extends StatelessWidget {
       {super.key,
       this.fit = BoxFit.cover,
       this.grayscale = false,
+      this.backgroundColor,
+      this.zoom = 1,
+      this.alignment = Alignment.center,
       this.fallbackIcon = LucideIcons.package});
 
+  final double zoom;
+  final Color? backgroundColor;
+  final Alignment alignment;
   final String url;
   final BoxFit fit;
   final bool grayscale;
@@ -65,12 +71,13 @@ class KImage extends StatelessWidget {
           MediaQuery.devicePixelRatioOf(context),
         );
         return Stack(fit: StackFit.expand, children: [
-          ColoredBox(color: k.surfaceAlt),
+          ColoredBox(color: backgroundColor ?? k.surfaceAlt),
           Image(
             // Decode no larger than the box needs (aspect ratio kept, never upscaled).
             image: ResizeImage(NetworkImage(url),
                 width: size, height: size, policy: ResizeImagePolicy.fit),
             fit: fit,
+            alignment: alignment,
             width: double.infinity,
             height: double.infinity,
             frameBuilder: (context, child, frame, sync) {
@@ -87,6 +94,11 @@ class KImage extends StatelessWidget {
           ),
         ]);
       });
+    }
+    if (zoom != 1) {
+      body = ClipRect(
+          child:
+              Transform.scale(scale: zoom, alignment: alignment, child: body));
     }
     if (grayscale) {
       body = ColorFiltered(

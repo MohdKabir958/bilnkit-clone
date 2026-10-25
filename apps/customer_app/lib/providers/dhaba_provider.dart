@@ -44,6 +44,28 @@ class DhabaProvider with ChangeNotifier {
     }
   }
 
+  final Set<String> _savedProductIds = {};
+  bool isProductSaved(String id) => _savedProductIds.contains(id);
+  void toggleProductSaved(String id) {
+    if (!_savedProductIds.add(id)) _savedProductIds.remove(id);
+    notifyListeners();
+  }
+
+  List<FoodCategory> _productCategories = const [];
+  List<FoodCategory> get productCategories =>
+      List.unmodifiable(_productCategories);
+
+  /// Remember only genuine products returned for an owned, currently serviceable store.
+  void rememberProducts(String storeId, Iterable<MenuItemModel> items) {
+    if (!isLiveVendor(storeId)) return;
+    _menuItems[storeId] = {
+      for (final item in _menuItems[storeId] ?? <MenuItemModel>[])
+        item.id: item,
+      for (final item in items.where((i) => i.vendorId == storeId))
+        item.id: item
+    }.values.toList();
+  }
+
   String _searchQuery = '';
   String _selectedCategory = _all;
   bool _showFavoritesOnly = false;
@@ -261,9 +283,18 @@ class DhabaProvider with ChangeNotifier {
       }
       return chips;
     }
-    if(_dhabas.any((d)=>d.primaryCategoryId!=null)) {
-      final labels=_dhabas.where((d)=>d.primaryCategoryId!=null&&d.category.trim().isNotEmpty).map((d)=>d.category.trim()).toSet().toList()..sort();
-      return [const CategoryChip(_all),for(final label in labels.take(8)) CategoryChip(label)];
+    if (_dhabas.any((d) => d.primaryCategoryId != null)) {
+      final labels = _dhabas
+          .where((d) =>
+              d.primaryCategoryId != null && d.category.trim().isNotEmpty)
+          .map((d) => d.category.trim())
+          .toSet()
+          .toList()
+        ..sort();
+      return [
+        const CategoryChip(_all),
+        for (final label in labels.take(8)) CategoryChip(label)
+      ];
     }
     final counts = <String, int>{};
     final spelling = <String, String>{};
@@ -419,6 +450,7 @@ class DhabaProvider with ChangeNotifier {
 
   void _applyCategories(List<FoodCategory> home, List<FoodCategory>? dishes) {
     _homeCategories = List.unmodifiable(home);
+    if (dishes != null) _productCategories = List.unmodifiable(dishes);
     // A failed dishes request (null) keeps the order we already know; a successful one replaces it.
     if (dishes != null) _categoryOrder.clear();
     for (final c in [...?dishes, ...home]) {
@@ -490,6 +522,7 @@ class DhabaProvider with ChangeNotifier {
     _searchQuery = '';
     _selectedCategory = _all;
     _showFavoritesOnly = false;
+    _savedProductIds.clear();
     _favoriteDhabaIds
       ..clear()
       ..addAll(_defaultFavoriteIds);

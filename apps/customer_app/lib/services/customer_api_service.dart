@@ -310,12 +310,13 @@ class CustomerApiService {
   /// One serviceable product page. Address ownership and stock remain server-validated.
   static Future<({List<Map<String, dynamic>> items, String? nextCursor})>
       fetchProductPage(String vendorId,
-          {String query = '', String? after}) async {
+          {String query = '', String? after, String? categoryId}) async {
     final addressId = selectedAddressId;
     final params = Uri(queryParameters: {
       'limit': '50',
       if (addressId != null) 'addressId': addressId,
       if (query.isNotEmpty) 'q': query,
+      if (categoryId != null) 'categoryId': categoryId,
       if (after != null) 'after': after
     }).query;
     final response = await authorizedRequest(

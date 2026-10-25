@@ -132,7 +132,7 @@ void main() {
   testWidgets('app without push behaves as before (no device calls)',
       (tester) async {
     await launch(tester);
-    expect(find.text('DELIVERING TO'), findsOneWidget);
+    expect(find.text('Delivering to'), findsOneWidget);
     expect(deviceRequests, isEmpty);
     await disposeApp(tester);
   });
@@ -141,7 +141,7 @@ void main() {
       'a signed-in student registers the phone with app, platform and version',
       (tester) async {
     await launch(tester, push: makePush());
-    expect(find.text('DELIVERING TO'), findsOneWidget);
+    expect(find.text('Delivering to'), findsOneWidget);
     expect(deviceRequests, hasLength(1));
     final r = deviceRequests.single;
     expect(r.method, 'POST');
@@ -271,7 +271,7 @@ void main() {
     local.tapController.add('not json');
     await _settle(tester);
     expect(find.byType(LiveTrackingScreen), findsNothing);
-    expect(find.text('DELIVERING TO'), findsOneWidget);
+    expect(find.text('Delivering to'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await disposeApp(tester);
   });
@@ -294,7 +294,7 @@ void main() {
       (tester) async {
     fcm.initOk = false;
     await launch(tester, push: makePush());
-    expect(find.text('DELIVERING TO'), findsOneWidget);
+    expect(find.text('Delivering to'), findsOneWidget);
     expect(deviceRequests, isEmpty);
     await tester.runAsync(() => sessionOf(tester).logout());
     await _settle(tester);

@@ -7,19 +7,16 @@ import 'package:provider/provider.dart';
 import '../providers/dhaba_provider.dart';
 import '../providers/order_provider.dart';
 import '../providers/session_provider.dart';
-import '../widgets/dhaba_card.dart';
 import '../providers/cart_provider.dart';
-import '../widgets/product_card.dart';
-import '../widgets/product_details.dart';
-import '../widgets/cart_actions.dart';
-import '../widgets/cart_summary_bar.dart';
-import '../widgets/ui/category_icons.dart';
-import '../widgets/ui/display_text.dart';
+import '../widgets/cart_sheet.dart';
+import '../widgets/grocery_home_components.dart';
+import '../widgets/grocery_product_actions.dart';
+import '../models/grocery_department.dart';
+import 'grocery_browse_screen.dart';
 import '../widgets/ui/format.dart';
 import '../widgets/ui/floating_bar.dart';
 import '../models/delivery_address.dart';
 import 'addresses_screen.dart';
-import '../widgets/ui/k_icon_button.dart';
 import '../widgets/ui/snack.dart';
 import '../widgets/ui/status_map.dart';
 import 'dhaba_menu_screen.dart';
@@ -114,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildScaffold(
       BuildContext context, KraveoTokens k, String? selectedHostel) {
     return Scaffold(
-      backgroundColor: k.bg,
+      backgroundColor: groceryCanvas,
       extendBody: true,
       body: IndexedStack(
         index: _currentTab,
@@ -133,6 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       bottomNavigationBar: KGlassNav(
+        dense: true,
         index: _currentTab,
         onChanged: _goToTab,
         items: const [
@@ -145,444 +143,233 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  String _greeting() {
-    final hour = DateTime.now().hour;
-    if (hour >= 5 && hour < 12) return 'Good morning';
-    if (hour >= 12 && hour < 17) return 'Good afternoon';
-    if (hour >= 17 && hour < 22) return 'Good evening';
-    return 'Up late?';
-  }
-
+  void _openStores() => Navigator.push(
+      context, MaterialPageRoute(builder: (_) => const NearbyStoresScreen()));
+  void _openProducts() => Navigator.push(
+      context, MaterialPageRoute(builder: (_) => const GroceryBrowseScreen()));
   Widget _buildHomeFeed(BuildContext context) {
-    final k = context.k;
-    final dhabaProvider = Provider.of<DhabaProvider>(context);
-    final orderProvider = Provider.of<OrderProvider>(context);
+    final catalog = context.watch<DhabaProvider>(),
+        orders = context.watch<OrderProvider>();
     final session = context.watch<SessionProvider>();
-    final selectedHostel = session.deliveryPoint;
-    final activeOrder = orderProvider.activeOrder;
-    final showActiveBar = activeOrder != null && activeOrder.status.isLive;
     final cart = context.watch<CartProvider>();
-    final dhabas = dhabaProvider.dhabas;
-    final query = dhabaProvider.searchQuery.trim().toLowerCase();
-    final category = dhabaProvider.selectedCategoryIndex == 0
+    final stores = catalog.dhabas;
+    final query = catalog.searchQuery.trim().toLowerCase();
+    final selectedCategory = catalog.selectedCategoryIndex == 0
         ? null
-        : dhabaProvider
-            .categoryChips[dhabaProvider.selectedCategoryIndex].label;
+        : catalog.categoryChips[catalog.selectedCategoryIndex].label;
     final products = [
-      for (final store in dhabas)
-        ...dhabaProvider
+      for (final store in stores)
+        ...catalog
             .homeProducts(store.id)
             .where((p) =>
                 (query.isEmpty ||
-                    '${p.name} ${p.description} ${p.sku ?? ''} ${p.packSize} ${p.unit} ${store.name}'
+                    '${p.name} ${p.description} ${p.sku ?? ''} ${store.name}'
                         .toLowerCase()
                         .contains(query)) &&
-                (category == null ||
+                (selectedCategory == null ||
                     store.primaryCategoryId != null ||
-                    p.category.toLowerCase() == category.toLowerCase()))
+                    p.category.toLowerCase() == selectedCategory.toLowerCase()))
             .map((p) => (p, store))
     ];
-    final catalogLoading = dhabaProvider.isCatalogLoading;
-    final catalogFailed = dhabaProvider.hasCatalogFailed;
-    final noKitchens = dhabaProvider.allDhabas.isEmpty;
-    final chips = dhabaProvider.categoryChips;
-    final filtering = dhabaProvider.searchQuery.trim().isNotEmpty ||
-        dhabaProvider.selectedCategoryIndex != 0 ||
-        dhabaProvider.showFavoritesOnly;
-    // With extendBody the scaffold reports the floating nav's height as bottom padding.
+    final candidates = stores
+        .where((s) => s.isAcceptingOrders && s.distanceKm != null)
+        .toList()
+      ..sort((a, b) => a.distanceKm!.compareTo(b.distanceKm!));
+    final bestId = candidates.isEmpty ? null : candidates.first.id;
     final navInset = MediaQuery.paddingOf(context).bottom;
-
-    return Scaffold(
-      backgroundColor: k.bg,
-      body: Stack(children: [
-        RefreshIndicator(
-          onRefresh: _refreshHome,
-          edgeOffset: 76,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverAppBar(
-                pinned: true,
-                toolbarHeight: 76,
-                backgroundColor: k.bg,
-                surfaceTintColor: Colors.transparent,
-                automaticallyImplyLeading: false,
-                titleSpacing: KSpace.gutter,
-                title: Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: _chooseAddress,
-                    icon: const Icon(LucideIcons.mapPin),
-                    label: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('DELIVERING TO',
-                              style: TextStyle(
-                                  fontSize: 10, fontWeight: FontWeight.bold)),
-                          Text(selectedHostel ?? 'Choose delivery address',
-                              maxLines: 1, overflow: TextOverflow.ellipsis)
-                        ]),
-                  ),
-                ),
-                actions: [
-                  KIconButton(
-                    icon: LucideIcons.heart,
-                    semanticLabel: dhabaProvider.showFavoritesOnly
-                        ? 'Show all stores'
-                        : 'Show favourite stores only',
-                    color: dhabaProvider.showFavoritesOnly
-                        ? KraveoPalette.danger
-                        : k.ink,
-                    background: dhabaProvider.showFavoritesOnly
-                        ? KraveoPalette.danger.withValues(alpha: 0.12)
-                        : k.surface,
-                    onTap: dhabaProvider.toggleFavoritesOnly,
-                  ),
-                  const SizedBox(width: KSpace.gutter),
-                ],
-              ),
-              SliverToBoxAdapter(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      KReveal(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                              KSpace.gutter, 8, KSpace.gutter, 0),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(children: [
-                                  if (session.user?.avatarId != null) ...[
-                                    ExcludeSemantics(
-                                        child: KAvatar(
-                                            id: session.user!.avatarId,
-                                            size: 30)),
-                                    const SizedBox(width: 10),
-                                  ],
-                                  Expanded(
-                                    child: Text(
-                                      session.user?.firstName.isNotEmpty == true
-                                          ? '${_greeting()}, ${session.user!.firstName}'
-                                              .toUpperCase()
-                                          : _greeting().toUpperCase(),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: KraveoType.label.copyWith(
-                                          color: k.brand, letterSpacing: 1.2),
-                                    ),
-                                  ),
-                                ]),
-                                const SizedBox(height: 6),
-                                KDisplayText(
-                                    'Everyday essentials,\ncloser to home.',
-                                    style: KraveoType.displayMd
-                                        .copyWith(color: k.ink)),
-                              ]),
-                        ),
-                      ),
-                      KReveal(
-                        index: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                              KSpace.gutter, 18, KSpace.gutter, 0),
-                          child: _SearchField(
-                            controller: _searchController,
-                            onChanged: dhabaProvider.setSearchQuery,
+    final active = orders.activeOrder?.status.isLive == true;
+    final textScale = MediaQuery.textScalerOf(context).scale(12) / 12;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light
+            .copyWith(statusBarColor: Colors.transparent),
+        child: Stack(children: [
+          RefreshIndicator(
+              onRefresh: _refreshHome,
+              child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    SliverToBoxAdapter(
+                        child: GroceryHeader(
+                            address: session.deliveryPoint ??
+                                'Choose delivery address',
+                            cartCount: cart.itemCount,
+                            search: _searchController,
+                            onSearch: catalog.setSearchQuery,
                             onClear: () {
                               _searchController.clear();
-                              dhabaProvider.setSearchQuery('');
+                              catalog.setSearchQuery('');
                             },
-                          ),
-                        ),
-                      ),
-                      // The first-order promo is only shown to a customer who has no earlier order (the
-                      // server refuses WELCOME20 otherwise); while that is unknown it stays hidden.
-                      if (!filtering && orderProvider.isFirstTimeCustomer)
-                        const KReveal(index: 2, child: _PromoCard())
-                      else
-                        const SizedBox(height: 16),
-                      // Chips come from the live catalogs; with nothing to choose between there is no row.
-                      if (chips.length > 1)
-                        KReveal(
-                          index: 3,
-                          child: SizedBox(
-                            height: 60 +
-                                (MediaQuery.textScalerOf(context).scale(13.5) -
-                                        13.5) *
-                                    1.2,
+                            onAddress: _chooseAddress,
+                            onCart: () => CartSheet.show(context,
+                                selectedHostel: session.deliveryPoint),
+                            onSaved: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const GrocerySavedScreen())))),
+                    SliverToBoxAdapter(
+                        child: GrocerySectionTitle('Nearby Stores',
+                            onViewAll: _openStores,
+                            actionKey: const ValueKey('all-nearby-stores'))),
+                    if (catalog.isCatalogLoading)
+                      const SliverToBoxAdapter(
+                          child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 14),
+                              child: KSkeleton(height: 110)))
+                    else if (catalog.hasCatalogFailed &&
+                        catalog.allDhabas.isEmpty)
+                      SliverToBoxAdapter(
+                          child: KEmptyState(
+                              icon: LucideIcons.wifiOff,
+                              title: "Can't load nearby stores",
+                              message:
+                                  'Check your connection, then try again. Pull down to refresh also works.',
+                              action: KButton(
+                                  label: 'Try again',
+                                  onPressed: () =>
+                                      unawaited(catalog.refreshHome()))))
+                    else if (catalog.allDhabas.isEmpty)
+                      SliverToBoxAdapter(
+                          child: KEmptyState(
+                              icon: LucideIcons.store,
+                              title: 'No stores available here yet',
+                              message:
+                                  'Stores near you will appear here when they serve your delivery address. Pull down to check again.',
+                              action: KButton(
+                                  label: 'Refresh', onPressed: _refreshHome)))
+                    else if (stores.isEmpty && !catalog.searchingProducts)
+                      SliverToBoxAdapter(
+                          child: KEmptyState(
+                              icon: LucideIcons.searchX,
+                              title: catalog.showFavoritesOnly
+                                  ? 'No favourites yet'
+                                  : 'No stores match',
+                              message:
+                                  'Try a different search or category, or clear the filters to see every store.',
+                              action: KButton(
+                                  label: 'Clear filters',
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    catalog.setSearchQuery('');
+                                    catalog.setSelectedCategoryIndex(0);
+                                    if (catalog.showFavoritesOnly) {
+                                      catalog.toggleFavoritesOnly();
+                                    }
+                                  })))
+                    else
+                      SliverToBoxAdapter(
+                          child: LayoutBuilder(builder: (context, constraints) {
+                        final width = textScale > 1.25
+                            ? 125.0
+                            : ((constraints.maxWidth - 28 - 21) / 4)
+                                .clamp(78.0, 150.0);
+                        return SizedBox(
+                            height: 104 + (textScale - 1).clamp(0, 2) * 58,
                             child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: KSpace.gutter, vertical: 4),
-                              itemCount: chips.length,
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(width: 8),
-                              itemBuilder: (context, index) {
-                                final chip = chips[index];
-                                return KChoiceChip(
-                                  label: chip.label,
-                                  icon: categoryIcon(
-                                      key: chip.iconKey, label: chip.label),
-                                  selected:
-                                      dhabaProvider.selectedCategoryIndex ==
-                                          index,
-                                  onTap: () => dhabaProvider
-                                      .setSelectedCategoryIndex(index),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                            KSpace.gutter, 22, KSpace.gutter, 14),
-                        child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  dhabaProvider.showFavoritesOnly
-                                      ? 'From your saved stores'
-                                      : 'Shop everyday essentials',
-                                  style: KraveoType.headlineSm
-                                      .copyWith(color: k.ink),
-                                ),
-                              ),
-                              if (!catalogLoading && !catalogFailed)
-                                Text('${products.length} shown',
-                                    style: KraveoType.label.copyWith(
-                                        color: k.inkMuted, fontSize: 13)),
-                            ]),
-                      ),
-                    ]),
-              ),
-              if (catalogLoading)
-                const SliverPadding(
-                    padding: EdgeInsets.symmetric(horizontal: KSpace.gutter),
-                    sliver: _SkeletonList())
-              else if (catalogFailed && noKitchens)
-                SliverToBoxAdapter(
-                  child: KEmptyState(
-                    icon: LucideIcons.wifiOff,
-                    title: 'Can\'t load nearby stores',
-                    message:
-                        'Check your connection, then try again. Pull down to refresh also works.',
-                    action: KButton(
-                      label: 'Try again',
-                      kind: KButtonKind.tonal,
-                      expand: false,
-                      icon: LucideIcons.rotateCcw,
-                      onPressed: () => unawaited(dhabaProvider.refreshHome()),
-                    ),
-                  ),
-                )
-              else if (noKitchens)
-                SliverToBoxAdapter(
-                  child: KEmptyState(
-                    icon: LucideIcons.store,
-                    title: 'No stores available here yet',
-                    message:
-                        'Stores near you will appear here when they serve your delivery address. Pull down to check again.',
-                    action: KButton(
-                      label: 'Refresh',
-                      kind: KButtonKind.tonal,
-                      expand: false,
-                      icon: LucideIcons.rotateCcw,
-                      onPressed: _refreshHome,
-                    ),
-                  ),
-                )
-              else if (dhabas.isEmpty && dhabaProvider.searchingProducts)
-                const SliverToBoxAdapter(
-                    child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator())))
-              else if (dhabas.isEmpty)
-                SliverToBoxAdapter(
-                  child: KEmptyState(
-                    icon: dhabaProvider.showFavoritesOnly
-                        ? LucideIcons.heartOff
-                        : LucideIcons.searchX,
-                    title: dhabaProvider.showFavoritesOnly
-                        ? 'No favourites yet'
-                        : 'No stores match',
-                    message: dhabaProvider.showFavoritesOnly
-                        ? 'Tap the heart on any store to keep it here for quick reorders.'
-                        : 'Try a different search or category, or clear the filters to see every store.',
-                    action: KButton(
-                      label: 'Clear filters',
-                      kind: KButtonKind.tonal,
-                      expand: false,
-                      icon: LucideIcons.rotateCcw,
-                      onPressed: () {
-                        _searchController.clear();
-                        dhabaProvider.setSearchQuery('');
-                        dhabaProvider.setSelectedCategoryIndex(0);
-                        if (dhabaProvider.showFavoritesOnly) {
-                          dhabaProvider.toggleFavoritesOnly();
-                        }
-                      },
-                    ),
-                  ),
-                )
-              else ...[
-                if (products.isNotEmpty)
-                  SliverPadding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: KSpace.gutter),
-                    sliver: SliverLayoutBuilder(
-                        builder: (context, constraints) => SliverGrid(
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: productColumns(
-                                          context, constraints.crossAxisExtent),
-                                      mainAxisExtent: productExtent(context),
-                                      crossAxisSpacing: 12,
-                                      mainAxisSpacing: 12),
-                              delegate:
-                                  SliverChildBuilderDelegate((context, index) {
-                                final (item, store) = products[index];
-                                return ProductCard(
-                                    key: ValueKey(item.id),
-                                    item: item,
-                                    storeName: store.name,
-                                    open: store.isAcceptingOrders,
-                                    quantity:
-                                        cart.getItemQuantityInCart(item.id),
-                                    onAdd: () =>
-                                        addProduct(context, cart, store, item),
-                                    onRemove: () => removeProduct(cart, item),
-                                    onDetails: () async {
-                                      final picked = await showProductDetails(
-                                          context,
-                                          item,
-                                          dhabaProvider
-                                              .getMenuItemsForDhaba(store.id));
-                                      if (picked == null || !context.mounted) {
-                                        return;
-                                      }
-                                      for (var n = 0; n < picked.$2; n++) {
-                                        if (!await addProduct(context, cart,
-                                                store, picked.$1) ||
-                                            !context.mounted) {
-                                          break;
-                                        }
-                                      }
-                                    });
-                              }, childCount: products.length),
-                            )),
-                  ),
-                if (dhabaProvider.searchingProducts)
-                  const SliverToBoxAdapter(
-                      child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: LinearProgressIndicator())),
-                if (dhabaProvider.productSearchFailed)
-                  SliverToBoxAdapter(
-                      child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Text(
-                              'Some products could not be loaded. Pull down to retry.',
-                              style:
-                                  KraveoType.bodySm.copyWith(color: k.error)))),
-                if (dhabaProvider.allDhabas.any((store) =>
-                    dhabaProvider.hasMoreProducts(store.id,
-                        query: dhabaProvider.searchQuery)))
-                  SliverToBoxAdapter(
-                      child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: KButton(
-                              label: 'Load more products',
-                              kind: KButtonKind.tonal,
-                              loading: dhabaProvider.searchingProducts,
-                              onPressed: dhabaProvider.loadMoreHomeProducts))),
-                const SliverToBoxAdapter(
-                    child: KSectionHeader('Stores near you')),
-                SliverPadding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: KSpace.gutter),
-                    sliver: SliverList.builder(
-                        itemCount: dhabas.length,
-                        itemBuilder: (context, index) {
-                          final store = dhabas[index];
-                          return DhabaCard(
-                              dhaba: store,
-                              onFavoriteToggle: () =>
-                                  dhabaProvider.toggleFavorite(store.id),
-                              onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => DhabaMenuScreen(
-                                          dhaba: store,
-                                          selectedHostel: selectedHostel))));
-                        })),
-              ],
-              SliverToBoxAdapter(
-                  child: SizedBox(
-                      height: navInset +
-                          (showActiveBar || cart.itemCount > 0 ? 120 : 24))),
-            ],
-          ),
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: navInset + 8,
-          child: KBarSwitcher(
-            visible: showActiveBar || cart.itemCount > 0,
-            child: showActiveBar
-                ? _ActiveOrderBar(
-                    orderProvider: orderProvider, onTap: () => _goToTab(1))
-                : cart.itemCount > 0
-                    ? CartSummaryBar(cart: cart, address: selectedHostel)
-                    : const SizedBox.shrink(),
-          ),
-        ),
-      ]),
-    );
-  }
-}
-
-class _SearchField extends StatelessWidget {
-  const _SearchField(
-      {required this.controller,
-      required this.onChanged,
-      required this.onClear});
-
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-  final VoidCallback onClear;
-
-  @override
-  Widget build(BuildContext context) {
-    final k = context.k;
-    return Container(
-      decoration: BoxDecoration(
-          borderRadius: KRadius.control, boxShadow: KShadow.soft(k.shadowTint)),
-      child: ValueListenableBuilder<TextEditingValue>(
-        valueListenable: controller,
-        builder: (context, value, _) => TextField(
-          controller: controller,
-          onChanged: onChanged,
-          textInputAction: TextInputAction.search,
-          decoration: InputDecoration(
-            hintText: 'Search milk, fruit, atta and more',
-            prefixIcon: Icon(LucideIcons.search, size: 20, color: k.brand),
-            suffixIcon: value.text.isEmpty
-                ? null
-                : IconButton(
-                    tooltip: 'Clear search',
-                    icon: Icon(LucideIcons.x, size: 18, color: k.inkMuted),
-                    onPressed: onClear,
-                  ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          ),
-        ),
-      ),
-    );
+                                scrollDirection: Axis.horizontal,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 2),
+                                itemCount: stores.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(width: 7),
+                                itemBuilder: (context, index) {
+                                  final store = stores[index];
+                                  return SizedBox(
+                                      width: width,
+                                      child: NearbyStoreTile(
+                                          store: store,
+                                          illustration: index,
+                                          bestChoice: store.id == bestId,
+                                          onTap: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) => DhabaMenuScreen(
+                                                      dhaba: store,
+                                                      selectedHostel: session
+                                                          .deliveryPoint)))));
+                                }));
+                      })),
+                    SliverToBoxAdapter(
+                        child: GrocerySectionTitle('Shop by Category',
+                            actionKey: const ValueKey('all-grocery-categories'),
+                            onViewAll: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const GroceryCategoriesScreen())))),
+                    SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        sliver: SliverGrid(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: textScale > 1.4 ? 3 : 5,
+                                    mainAxisExtent:
+                                        75 + (textScale - 1).clamp(0, 2) * 45,
+                                    crossAxisSpacing: 7,
+                                    mainAxisSpacing: 7),
+                            delegate: SliverChildBuilderDelegate(
+                                (context, index) => GroceryCategoryTile(
+                                    department: GroceryDepartment.all[index],
+                                    onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) => GroceryBrowseScreen(
+                                                department: GroceryDepartment
+                                                    .all[index])))),
+                                childCount: GroceryDepartment.all.length))),
+                    SliverToBoxAdapter(
+                        child: GrocerySectionTitle('Popular Products',
+                            onViewAll: _openProducts,
+                            actionKey: const ValueKey('all-popular-products'))),
+                    if (catalog.searchingProducts)
+                      const SliverToBoxAdapter(
+                          child: LinearProgressIndicator()),
+                    SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        sliver: SliverLayoutBuilder(
+                            builder: (context, constraints) => SliverGrid(
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: groceryColumns(context,
+                                            constraints.crossAxisExtent),
+                                        mainAxisExtent: groceryExtent(context),
+                                        crossAxisSpacing: 8,
+                                        mainAxisSpacing: 8),
+                                delegate: SliverChildBuilderDelegate(
+                                    (context, index) => groceryProduct(context,
+                                        products[index].$1, products[index].$2),
+                                    childCount: products.length)))),
+                    if (catalog.productSearchFailed)
+                      const SliverToBoxAdapter(
+                          child: Padding(
+                              padding: EdgeInsets.all(14),
+                              child: Text(
+                                  'Some products could not be loaded. Pull down to retry.'))),
+                    if (catalog.allDhabas.any((s) => catalog
+                        .hasMoreProducts(s.id, query: catalog.searchQuery)))
+                      SliverToBoxAdapter(
+                          child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: KButton(
+                                  label: 'Load more products',
+                                  onPressed: catalog.loadMoreHomeProducts))),
+                    if (query.isEmpty && orders.isFirstTimeCustomer)
+                      const SliverToBoxAdapter(child: _PromoCard()),
+                    SliverToBoxAdapter(
+                        child:
+                            SizedBox(height: navInset + (active ? 112 : 18))),
+                  ])),
+          Positioned(
+              left: 0,
+              right: 0,
+              bottom: navInset + 8,
+              child: KBarSwitcher(
+                  visible: active,
+                  child: active
+                      ? _ActiveOrderBar(
+                          orderProvider: orders, onTap: () => _goToTab(1))
+                      : const SizedBox.shrink())),
+        ]));
   }
 }
 
@@ -668,30 +455,6 @@ class _PromoCard extends StatelessWidget {
           ]),
         ),
       ),
-    );
-  }
-}
-
-class _SkeletonList extends StatelessWidget {
-  const _SkeletonList();
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverList(
-      delegate: SliverChildListDelegate([
-        for (var i = 0; i < 3; i++)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 18),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              KSkeleton(height: 210, radius: KRadius.xl),
-              SizedBox(height: 12),
-              KSkeleton(width: 190, height: 16),
-              SizedBox(height: 8),
-              KSkeleton(width: 120, height: 12),
-            ]),
-          ),
-      ]),
     );
   }
 }
