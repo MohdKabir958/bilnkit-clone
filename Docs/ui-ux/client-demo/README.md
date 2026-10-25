@@ -1,3 +1,5 @@
+> Latest customer home matches the supplied visual reference. See [customer UI handover](../../customer-reference-ui/README.md), [actual render](../../customer-reference-ui/screenshots/home-390.png) and its updated APK evidence.
+
 # Grozo current client demo gallery
 
 Updated 25 October 2026. Open `index.html` for implemented screens and `Grozo-before-after.pdf` for the regenerated comparison. The original theme is preserved. The latest captures include grocery imagery, single-store checkout, cash-order handling, three role-specific welcome pages and four-step admin vendor/rider onboarding.

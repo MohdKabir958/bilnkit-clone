@@ -1,3 +1,5 @@
+> Latest customer update: **1.13.0+20**, matching the supplied home reference. Use the [new customer APK and UI handover](../customer-reference-ui/README.md). Vendor and delivery remain 1.12.0+19; the earlier combined handover is preserved below.
+
 # Grozo workflow, welcome pages and onboarding handover
 
 Completed 25 October 2026, preserving the existing Grozo theme and architecture. These three tasks were implemented sequentially on separate branches. No production database reset, live payment operation, new paid resource or authentication shortcut was introduced.

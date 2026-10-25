@@ -24,3 +24,7 @@ Source: one original 4×3 asset sheet generated from a prompt specifying unbrand
 All images are 480×480 WebP, aspect-preserving with white padding. Combined size is approximately 159 KB. They live in the repository as server/demo assets, **not Flutter application assets**. `seed:demo` verifies their hashes and copies them to the existing configured upload store using content-derived names. Catalog URLs use the configured local/owned image origin; no remote image hotlinks are required. Existing no-image/error fallbacks remain.
 
 The screenshot harness decodes these same files through a test-only HTTP transport. Actual production image widgets perform the rendering; application screenshots are not generated images. Admin screenshots fetch the files from the real local API. Do not describe these assets as externally licensed brand-packaging photographs or proof of physical product stock.
+
+## Customer category artwork — 25 October 2026
+
+The new reference-matched customer home uses one original, unbranded generated category-icon atlas. It is a decorative navigation asset, not SKU photography. Source, author, file hash and reuse details are recorded in [the category artwork inventory](../customer-reference-ui/artwork.md). Existing product-photo sources are unchanged.
