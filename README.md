@@ -1,3 +1,15 @@
+# Latest connected Grozo Android builds
+
+**Customer, Vendor and Delivery: 1.12.0+19**
+
+[Download all three APKs](clerk-staging/1.12.0-19/README.md) · [SHA-256 checksums](clerk-staging/1.12.0-19/SHA256SUMS) · [Build provenance](clerk-staging/1.12.0-19/manifest.json)
+
+These builds target the deployed Render HTTPS backend. They use development signing, ARM64/API24+, the native Clerk development instance, and have Firebase disabled pending owned configuration. Physical-device and external provider checks remain pending.
+
+---
+
+## Historical builds (preserved)
+
 # Latest customer Android test build
 
 **Grozo Customer 1.10.1** is now configured for the deployed Render backend and current Clerk development instance.

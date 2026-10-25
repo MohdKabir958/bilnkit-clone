@@ -1,0 +1,7 @@
+{
+  "branch": "artifacts/grozo-android-preview",
+  "parentCommit": "3755d3b93e8ef900933bb92c44ac2e832da9caa3",
+  "artifactCommit": "9d9482809a9b7141de9efb2ec89e4b4ec0dc675e",
+  "folder": "clerk-test/1.10.0-16",
+  "sourceCommit": "490b6707b3b09594c24902a5bee1c19314e98040"
+}
