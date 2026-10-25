@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-10-25T18:25:12.258813+00:00",
+  "origin": "https://grozo-backend-3wdf.onrender.com",
+  "/ready": {
+    "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+  },
+  "/api/partner/driver/onboarding": {
+    "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+  }
+}
