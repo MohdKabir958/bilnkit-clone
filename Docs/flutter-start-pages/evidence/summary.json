@@ -1,0 +1,30 @@
+{
+  "shared": {
+    "passed": 22,
+    "failed": 0,
+    "skipped": 0,
+    "success": true,
+    "durationMs": 28389
+  },
+  "customer": {
+    "passed": 463,
+    "failed": 0,
+    "skipped": 2,
+    "success": true,
+    "durationMs": 184283
+  },
+  "vendor": {
+    "passed": 530,
+    "failed": 0,
+    "skipped": 1,
+    "success": true,
+    "durationMs": 207150
+  },
+  "driver": {
+    "passed": 413,
+    "failed": 0,
+    "skipped": 1,
+    "success": true,
+    "durationMs": 173969
+  }
+}

@@ -1,0 +1,9 @@
+00:00 +0: loading /workspace/bilnkit-clone/apps/customer_app/test/ui_visual_capture_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: capture customer production screens using isolated grocery fixtures
+[Categories] restaurants unavailable: _Exception
+[Categories] dishes unavailable: _Exception
+[Catalog] Live catalog unavailable: FormatException
+[Catalog] Live catalog unavailable: FormatException
+00:12 +1: (tearDownAll)
+00:13 +1: All tests passed!
