@@ -1,0 +1,584 @@
+Grozo complete backend regression
+Fresh isolated database: grozo_final_1792610721983_test
+Empty database: applying the audited schema baseline. No existing data will be changed.
+Script executed successfully.
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_align_legacy_schema marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_clear_legacy_gate_otps marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_make_order_otp_nullable marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260930_auth_v2_and_indexes marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261001_partner_approval marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261002_order_flow marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261003_hardening marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261005_push_notifications marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261006_campus_dropoints marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261007_user_hostel_no_default marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261008_vendor_location_source marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261009_pricing_catalog marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261010_settlements_payouts marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261011_order_groups marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261012_categories marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_final_1792610721983_test", schema "public" at "127.0.0.1:5432"
+
+24 migrations found in prisma/migrations
+
+Applying migration `20261019_india_serviceability`
+Applying migration `20261020_delivery_handover`
+Applying migration `20261020_delivery_operations`
+Applying migration `20261020_grocery_inventory`
+Applying migration `20261020_grocery_price_guard`
+Applying migration `20261020_real_review_scores`
+Applying migration `20261021060000_clerk_identity`
+Applying migration `20261021150000_admin_access`
+Applying migration `20261021150000_marketplace_workflow`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261019_india_serviceability/
+    └─ migration.sql
+  └─ 20261020_delivery_handover/
+    └─ migration.sql
+  └─ 20261020_delivery_operations/
+    └─ migration.sql
+  └─ 20261020_grocery_inventory/
+    └─ migration.sql
+  └─ 20261020_grocery_price_guard/
+    └─ migration.sql
+  └─ 20261020_real_review_scores/
+    └─ migration.sql
+  └─ 20261021060000_clerk_identity/
+    └─ migration.sql
+  └─ 20261021150000_admin_access/
+    └─ migration.sql
+  └─ 20261021150000_marketplace_workflow/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+FAIL test/e2e/hardening.test.ts (20.124 s)
+  ● Console
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 66a0f9b9-a76f-4c8d-8670-e72173120398
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 10
+
+      at src/routes/api.ts:1043:35
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 3eab48c7-5f98-4c71-b749-af7590767933
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 20
+
+      at src/routes/api.ts:1043:35
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 171823fe-4e07-46f8-9d37-e6a5c9090e9b
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 30
+
+      at src/routes/api.ts:1043:35
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 7a9eaa65-a5bf-4f84-b943-141504bf0b76
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      🪙 [Grozo Coins Loyalty] User (hd-cust-2) earned +10 Grozo Coins! Total Balance: 10
+
+      at src/routes/api.ts:1043:35
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order edafb9a9-1855-482d-b0dc-281eff5cefc8
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 40
+
+      at src/routes/api.ts:1043:35
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order e4d7eb85-cfab-4346-b44a-60c89e9eedb1
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 46001a57-5b59-4add-b3e4-1d83997b49ac
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+  ● Backend hardening › 13. public catalogue › customers (and anonymous callers) get only what the app needs; the admin and the owner keep the full row
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 4
+
+      Array [
+        "address",
+        "bannerImage",
+        "category",
+        "cuisines",
+    +   "description",
+        "eta",
+        "id",
+        "isAcceptingOrders",
+        "lat",
+        "lng",
+        "menuItems",
+        "name",
+    +   "operatingHours",
+    +   "primaryCategoryId",
+    +   "publicPhone",
+        "rating",
+        "tags",
+        "totalRatingsCount",
+      ]
+
+      837 |         const list = await request.get('/api/vendors').set(headers);
+      838 |         const mine = list.body.data.find((v: any) => v.id === v1.vendorId);
+    > 839 |         expect(Object.keys(mine).sort()).toEqual([...allowedVendor].sort());
+          |                                          ^
+      840 |         expect(mine.menuItems.length).toBeGreaterThan(0);
+      841 |         for (const item of mine.menuItems) expect(Object.keys(item).sort()).toEqual([...allowedItem].sort());
+      842 |         // every restaurant in the list has the public shape, except the viewer's own (the owner keeps the full row)
+
+      at Object.<anonymous> (test/e2e/hardening.test.ts:839:42)
+
+FAIL test/e2e/order_flow_v1.test.ts (21.715 s)
+  ● Console
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order ef007487-1d78-4519-ac27-123ae40f6546
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 989cae68-539b-4cb1-8600-0878ecb96186
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 50af0b18-7942-4aba-b29c-43414a6d705a
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 923390a0-fd63-4785-a1b8-7a4ed65d302f
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 4d6a9e07-1087-48c0-adf1-508defcd567a
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order eb6d9207-1fc7-4781-863c-ef6c9a02c684
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 7bc1c72c-44dd-419d-b03f-413c5d00b6a4
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.error
+      refund for order 40ffa3d5-b0f8-4ca0-ab54-48e88002ff82 failed (temporary): Razorpay is down
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:197:7)
+      at cancelOrder (src/services/orderFlow.ts:805:17)
+      at src/routes/orders.ts:448:15
+
+    console.error
+      refund for order 83d0be48-0191-43f0-908c-a4890a6a090a failed (temporary): Could not reach the payment provider (network error).
+
+      190 |   } catch (err) {
+      191 |     const perr = toProviderError(err);
+    > 192 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      193 |     try {
+      194 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      195 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:192:13)
+      at executeRefund (src/services/refundService.ts:202:106)
+      at finishChange (src/services/orderFlow.ts:197:7)
+      at cancelOrder (src/services/orderFlow.ts:805:17)
+      at src/routes/orders.ts:448:15
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+          at async Promise.all (index 0)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order df326b1f-ab30-4c75-b39c-7c59c4f80e5f
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+          at async Promise.all (index 0)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+
+    console.log
+      order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:168:13)
+
+    console.log
+      🔔 [push] RUNNER_ARRIVED for order 61d703f2-20c9-476a-a32e-85282812e3c1
+
+      at advanceStatus (src/services/orderFlow.ts:665:63)
+
+  ● Order flow v1 › FM10 refund provider outage › refund fails -> FAILED + visible to admin, retried by the job, done once the provider is back
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "+91 9876543212"
+    Received: null
+
+      928 |       expect(row.order.payments[0]).toEqual(expect.objectContaining({ id: expect.any(String), razorpayOrderId: expect.any(String), razorpayPaymentId: expect.any(String), razorpayRefundId: null, amount: 220, status: 'PAID' }));
+      929 |       expect(row.order.refundError).toBe('Razorpay is down');
+    > 930 |       expect(row.order.vendor.phone).toBe(VENDOR.phone); // admin view only
+          |                                      ^
+      931 |       capture('admin_needs_attention_row', row);
+      932 |       expect((await getOrder(o.id, tStudent)).body.data).toMatchObject({ paymentStatus: 'PAID', refundStatus: 'FAILED' });
+      933 |
+
+      at Object.<anonymous> (test/e2e/order_flow_v1.test.ts:930:38)
+
+FAIL test/e2e/restaurant_profile.test.ts
+  ● Restaurant categories and profile edit › payloads: cuisines + tags added, every old field still there, owners never see commission or price data › GET /vendors and /vendors/:id for a customer, the owner and the admin
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 4
+
+      Array [
+        "address",
+        "bannerImage",
+        "category",
+        "cuisines",
+    +   "description",
+        "eta",
+        "id",
+        "isAcceptingOrders",
+        "lat",
+        "lng",
+        "menuItems",
+        "name",
+    +   "operatingHours",
+    +   "primaryCategoryId",
+    +   "publicPhone",
+        "rating",
+        "tags",
+        "totalRatingsCount",
+      ]
+
+      335 |         const list = await (t ? request.get('/api/vendors').set(H(t)) : request.get('/api/vendors'));
+      336 |         const mine = list.body.data.find((v: any) => v.id === `${R}-1`);
+    > 337 |         expect(Object.keys(mine).sort()).toEqual([...OLD_PUBLIC, 'cuisines', 'tags'].sort());
+          |                                          ^
+      338 |         expect(mine.cuisines).toEqual([{ id: a.id, name: `${P} Pay1`, icon: 'restaurant' }, { id: b.id, name: `${P} Pay2`, icon: 'restaurant' }]);
+      339 |         expect(mine.tags).toEqual([`${P} Pay1`, `${P} Pay2`]);
+      340 |         expect(mine.category).toBe(`${P} Pay1 • ${P} Pay2`);
+
+      at Object.<anonymous> (test/e2e/restaurant_profile.test.ts:337:42)
+
+
+Summary of all failing tests
+FAIL test/e2e/hardening.test.ts (20.124 s)
+  ● Backend hardening › 13. public catalogue › customers (and anonymous callers) get only what the app needs; the admin and the owner keep the full row
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 4
+
+      Array [
+        "address",
+        "bannerImage",
+        "category",
+        "cuisines",
+    +   "description",
+        "eta",
+        "id",
+        "isAcceptingOrders",
+        "lat",
+        "lng",
+        "menuItems",
+        "name",
+    +   "operatingHours",
+    +   "primaryCategoryId",
+    +   "publicPhone",
+        "rating",
+        "tags",
+        "totalRatingsCount",
+      ]
+
+      837 |         const list = await request.get('/api/vendors').set(headers);
+      838 |         const mine = list.body.data.find((v: any) => v.id === v1.vendorId);
+    > 839 |         expect(Object.keys(mine).sort()).toEqual([...allowedVendor].sort());
+          |                                          ^
+      840 |         expect(mine.menuItems.length).toBeGreaterThan(0);
+      841 |         for (const item of mine.menuItems) expect(Object.keys(item).sort()).toEqual([...allowedItem].sort());
+      842 |         // every restaurant in the list has the public shape, except the viewer's own (the owner keeps the full row)
+
+      at Object.<anonymous> (test/e2e/hardening.test.ts:839:42)
+
+FAIL test/e2e/order_flow_v1.test.ts (21.715 s)
+  ● Order flow v1 › FM10 refund provider outage › refund fails -> FAILED + visible to admin, retried by the job, done once the provider is back
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "+91 9876543212"
+    Received: null
+
+      928 |       expect(row.order.payments[0]).toEqual(expect.objectContaining({ id: expect.any(String), razorpayOrderId: expect.any(String), razorpayPaymentId: expect.any(String), razorpayRefundId: null, amount: 220, status: 'PAID' }));
+      929 |       expect(row.order.refundError).toBe('Razorpay is down');
+    > 930 |       expect(row.order.vendor.phone).toBe(VENDOR.phone); // admin view only
+          |                                      ^
+      931 |       capture('admin_needs_attention_row', row);
+      932 |       expect((await getOrder(o.id, tStudent)).body.data).toMatchObject({ paymentStatus: 'PAID', refundStatus: 'FAILED' });
+      933 |
+
+      at Object.<anonymous> (test/e2e/order_flow_v1.test.ts:930:38)
+
+FAIL test/e2e/restaurant_profile.test.ts
+  ● Restaurant categories and profile edit › payloads: cuisines + tags added, every old field still there, owners never see commission or price data › GET /vendors and /vendors/:id for a customer, the owner and the admin
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 4
+
+      Array [
+        "address",
+        "bannerImage",
+        "category",
+        "cuisines",
+    +   "description",
+        "eta",
+        "id",
+        "isAcceptingOrders",
+        "lat",
+        "lng",
+        "menuItems",
+        "name",
+    +   "operatingHours",
+    +   "primaryCategoryId",
+    +   "publicPhone",
+        "rating",
+        "tags",
+        "totalRatingsCount",
+      ]
+
+      335 |         const list = await (t ? request.get('/api/vendors').set(H(t)) : request.get('/api/vendors'));
+      336 |         const mine = list.body.data.find((v: any) => v.id === `${R}-1`);
+    > 337 |         expect(Object.keys(mine).sort()).toEqual([...OLD_PUBLIC, 'cuisines', 'tags'].sort());
+          |                                          ^
+      338 |         expect(mine.cuisines).toEqual([{ id: a.id, name: `${P} Pay1`, icon: 'restaurant' }, { id: b.id, name: `${P} Pay2`, icon: 'restaurant' }]);
+      339 |         expect(mine.tags).toEqual([`${P} Pay1`, `${P} Pay2`]);
+      340 |         expect(mine.category).toBe(`${P} Pay1 • ${P} Pay2`);
+
+      at Object.<anonymous> (test/e2e/restaurant_profile.test.ts:337:42)
+
+
+Test Suites: 3 failed, 44 passed, 47 total
+Tests:       3 failed, 1124 passed, 1127 total
+Snapshots:   0 total
+Time:        652.585 s
+Ran all test suites.
+Test results written to: ../Docs/marketplace-workflow/evidence/backend-full/backend-full-run.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?
+
+FINAL RESULT
+{
+  "database": "grozo_final_1792610721983_test",
+  "databaseHost": "127.0.0.1",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "command": "node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/marketplace-workflow/evidence/backend-full/backend-full-run.json",
+  "invocations": 1,
+  "passed": 1124,
+  "failed": 3,
+  "skipped": 0,
+  "total": 1127,
+  "suites": 47,
+  "durationMs": 654697,
+  "exitCode": 1,
+  "startedAt": "2026-10-21T19:25:59.590Z",
+  "finishedAt": "2026-10-21T19:36:54.314Z"
+}

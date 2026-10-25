@@ -1,0 +1,101 @@
+
+> kraveo-super-admin@1.0.0 test
+> vitest run --reporter=default --reporter=json --outputFile=../../Docs/marketplace-workflow/evidence/admin-tests-complete.json
+
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/EditRestaurantDrawer.test.tsx (28 tests) 2981ms
+ ✓ src/components/CategoriesPanel.test.tsx (32 tests) 6420ms
+   ✓ CategoriesPanel list > loads every category including hidden ones and shows name, Hindi name, switches and what uses it 387ms
+   ✓ order > Save order sends every id in the new order and then clears the bar 383ms
+   ✓ merge > choosing a target shows a dry run first; Merge asks to confirm; only then it merges and reloads 535ms
+   ✓ create and edit > Add category: validates the name, sends the whole form, and the new row appears 563ms
+   ✓ create and edit > a name the server already has shows its sentence on the name field 393ms
+   ✓ create and edit > Edit starts from the saved values and sends only what changed; the rename note names what is affected 484ms
+   ✓ create and edit > Escape closes the drawer and focus returns to the button that opened it 440ms
+ ✓ src/components/SettlementsPanel.test.tsx (24 tests) 6840ms
+   ✓ settlement list > opens on PENDING, shows rows and the totals of that status only 326ms
+   ✓ settlement list > status chips, restaurant and dates go to the server and reset the page 574ms
+   ✓ Create settlements now > "nothing to settle", skipped and failed restaurants are reported plainly; an error is shown 306ms
+   ✓ mark paid > refuses an empty or too short reference: no confirm, no request 348ms
+   ✓ mark paid > confirm dialog names the amount and the reference; No sends nothing; Yes marks paid once and shows the UTR afterwards 451ms
+   ✓ mark paid > an earlier paid date is sent as noon India time 401ms
+   ✓ mark paid > Mark paid is disabled when nothing is payable 304ms
+   ✓ hold and release > hold with a note, then the drawer offers Release and no Mark paid 742ms
+   ✓ adjustments > refuses empty, zero, 3 decimals and a missing reason 695ms
+ ✓ src/components/ImportMenuWizard.test.tsx (24 tests) 2395ms
+   ✓ step 1: the file > starts with the restaurant from the filter, explains the columns and the 200 row limit, and needs text before it can check 383ms
+ ✓ src/components/SettingsPanel.test.tsx (24 tests) 3185ms
+   ✓ fees > named lines must add up to the all-in fee 395ms
+   ✓ fees > double click saves once; a failed save shows the server message and keeps the form 313ms
+ ✓ src/services/taxonomyApi.test.ts (33 tests) 294ms
+ ✓ src/components/OrderGroups.test.tsx (22 tests) 1865ms
+   ✓ order drawer: combined order > shows the badge, the restaurants with their status chips, and loads the group lazily (once) for the group id 433ms
+ ✓ src/components/CatalogPanel.bulk.test.tsx (16 tests) 1291ms
+ ✓ src/components/CatalogDishDrawer.test.tsx (31 tests) 1391ms
+ ✓ src/components/DashboardFixes.test.tsx (14 tests) 366ms
+ ✓ src/services/financeApi.test.ts (14 tests) 99ms
+ ✓ src/components/CatalogDishDrawer.taxonomy.test.tsx (16 tests) 803ms
+ ✓ src/components/RidersPanel.test.tsx (14 tests) 573ms
+ ✓ src/components/PayoutAccountPanel.test.tsx (15 tests) 392ms
+ ✓ src/services/api.test.ts (17 tests) 38ms
+ ✓ src/App.test.tsx (9 tests) 1128ms
+   ✓ WEB-06 / WEB-05 live socket > never gives up reconnecting, retries after a server-side disconnect, and refreshes vendors and riders on reconnect 303ms
+ ✓ src/components/VendorLocation.test.tsx (12 tests) 325ms
+ ✓ src/AppGroups.test.tsx (6 tests) 1539ms
+   ✓ combined orders in the app > opening an order loads its group once; clicking a sibling opens that order in the same drawer 387ms
+   ✓ combined orders in the app > a cancel the server refuses shows its message in the form and does not claim success 581ms
+ ✓ src/services/catalogApi.test.ts (10 tests) 33ms
+ ✓ src/components/FinanceWiring.test.tsx (10 tests) 428ms
+ ✓ src/components/FinanceOverview.test.tsx (10 tests) 756ms
+ ✓ src/components/CatalogPanel.test.tsx (11 tests) 862ms
+ ✓ src/components/ImageUploadField.test.tsx (10 tests) 234ms
+ ✓ src/components/AdminWorkspace.test.tsx (11 tests) 982ms
+ ✓ src/components/CategoryMultiSelect.test.tsx (10 tests) 587ms
+ ✓ src/components/AddPartnerDrawer.test.tsx (8 tests) 706ms
+   ✓ AddPartnerDrawer: categories > offers only restaurant categories as a multi-select and sends cuisineIds in order (no free-text category) 374ms
+ ✓ src/components/GeographyPanel.test.tsx (8 tests) 352ms
+ ✓ src/auth/ClerkAdmin.test.tsx (11 tests) 544ms
+ ✓ src/CategoriesWiring.test.tsx (4 tests) 1017ms
+   ✓ Categories tab > the sidebar has a Categories entry that opens the panel with the title from the header 430ms
+ ✓ src/components/CampusMap.test.tsx (6 tests) 377ms
+ ✓ src/components/InventoryPanel.test.tsx (5 tests) 242ms
+ ✓ src/components/SettingsGroups.test.tsx (6 tests) 420ms
+ ✓ src/components/OperationsPanel.test.tsx (4 tests) 246ms
+ ✓ src/CatalogBadge.test.tsx (3 tests) 207ms
+ ✓ src/components/CommissionEditor.test.tsx (4 tests) 105ms
+ ✓ src/services/api.clerk.test.ts (5 tests) 171ms
+ ✓ src/components/CashLedgerPanel.test.tsx (3 tests) 169ms
+ ✓ src/lib/financeParse.test.ts (22 tests) 51ms
+ ✓ src/lib/orderGroups.test.ts (29 tests) 85ms
+ ✓ src/lib/riderMarkers.test.ts (32 tests) 46ms
+ ✓ src/lib/menuCsv.test.ts (33 tests) 25ms
+ ✓ src/lib/financeInput.test.ts (18 tests) 45ms
+ ✓ src/AppWorkspace.test.tsx (3 tests) 1112ms
+   ✓ loads live workspace data with Clerk even though the legacy token is empty 345ms
+   ✓ sends selected city to the actual order query and shows owner-only team panel 372ms
+   ✓ overview Add vendor opens a creation form, while later vendor navigation opens the list 393ms
+ ✓ src/lib/catalogParse.test.ts (26 tests) 19ms
+ ✓ src/lib/dashboardStats.test.ts (17 tests) 41ms
+ ✓ src/lib/categoryParse.test.ts (30 tests) 22ms
+ ✓ src/lib/imageCompress.test.ts (13 tests) 26ms
+ ✓ src/lib/pricing.test.ts (40 tests) 49ms
+ ✓ src/lib/vendorLocation.test.ts (13 tests) 29ms
+ ✓ src/lib/catalogBulkParse.test.ts (12 tests) 12ms
+ ✓ src/lib/vendorProfile.test.ts (23 tests) 27ms
+ ✓ src/lib/locationInput.test.ts (34 tests) 18ms
+ ✓ src/lib/adminMessages.test.ts (7 tests) 11ms
+ ✓ src/lib/marketplaceOrders.test.ts (4 tests) 5ms
+
+ Test Files  54 passed (54)
+      Tests  846 passed (846)
+   Start at  19:50:39
+   Duration  39.84s (transform 7.74s, setup 0ms, collect 26.73s, tests 41.99s, environment 27.65s, prepare 5.37s)
+
+JSON report written to /workspace/bilnkit-clone/Docs/marketplace-workflow/evidence/admin-tests-complete.json
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

@@ -1,0 +1,14 @@
+{
+  "apps": {
+    "buildSourceCommit": "edd8b70",
+    "builtTree": "da32b56f01371b5db229ba64b969310fca136baf",
+    "currentTree": "da32b56f01371b5db229ba64b969310fca136baf",
+    "equal": true
+  },
+  "packages": {
+    "buildSourceCommit": "edd8b70",
+    "builtTree": "a4173b1cd765032b7d3c6471a6ac4475450c9bb4",
+    "currentTree": "a4173b1cd765032b7d3c6471a6ac4475450c9bb4",
+    "equal": true
+  }
+}

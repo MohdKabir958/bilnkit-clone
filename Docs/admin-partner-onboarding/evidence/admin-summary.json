@@ -1,0 +1,9 @@
+{
+  "total": 853,
+  "passed": 853,
+  "failed": 0,
+  "skipped": 0,
+  "files": 55,
+  "success": true,
+  "command": "npm test -- --run --reporter=json --outputFile=/tmp/grozo-onboarding-admin-complete.json"
+}

@@ -8,9 +8,9 @@ OUT.mkdir(parents=True, exist_ok=True)
 FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
 font = lambda size: ImageFont.truetype(FONT, size)
 SCREENS = {
-    'customer': ['home', 'categories', 'checkout'],
-    'vendor': ['dashboard', 'products', 'orders'],
-    'delivery': ['home', 'delivery-offer', 'active-delivery'],
+    'customer': ['login', 'home', 'checkout'],
+    'vendor': ['login', 'dashboard', 'products'],
+    'delivery': ['login', 'delivery-offer', 'active-delivery'],
     'admin': ['dashboard', 'inventory', 'finance'],
 }
 pages = []
@@ -20,7 +20,7 @@ for role, screens in SCREENS.items():
     page = Image.new('RGB', (width, height), '#F6F8F6')
     draw = ImageDraw.Draw(page)
     draw.text((36, 24), f'GROZO / {role.upper()} / BEFORE + AFTER', fill='#005A26', font=font(38))
-    source = 'Production Flutter widgets / isolated service fixtures / not device screenshots' if mobile else 'Actual Chromium / local API + persisted pilot catalog / no live payments'
+    source = 'Production Flutter widgets / isolated service fixtures / not device screenshots' if mobile else 'Actual Chromium / explicit synthetic API fixtures / not a hosted session'
     draw.text((36, 83), source, fill='#46534B', font=font(23))
     for index, screen in enumerate(screens):
         x, y = (30 + index * 790, 142) if mobile else (30, 140 + index * 920)

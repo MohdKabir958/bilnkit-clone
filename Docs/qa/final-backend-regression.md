@@ -1,60 +1,33 @@
-> Latest admin RBAC verification (2026-10-21): **1,119 passed, 0 failed, 0 skipped in one complete invocation**. See [the current report](../admin-redesign/verification.md) and [complete log](../admin-redesign/evidence/backend-full/backend-full-run.log). The report below preserves the earlier baseline run.
+# Final backend regression — Grozo marketplace and onboarding
 
-# Final backend regression — Clerk implementation
+**1,138 passed, 0 failed, 0 skipped, 47 suites. One complete Jest invocation. Exit code 0.**
 
-Date: 2026-10-21. Tested backend source commit: `1f6cbd4f82e1f3447ba6b4c133762c84c2b81c07` on `feature/india-grocery-platform`. Later handover changes concern documentation/evidence/deployment policy, not the tested backend implementation.
-
-**One complete Jest invocation passed: 1093 passed, 0 failed, 0 skipped, 1093 total; 44 suites; exit 0.** Duration 374.467 seconds. No targeted reruns were added to these counts.
-
-## Exact commands
-
-Repository-root command (QA_TEST_PATH unset):
+Tested backend source commit: `aba7afb` on `feature/admin-partner-onboarding`, including the completed marketplace and welcome-page branches. Subsequent handover commits change documentation, screenshots and rendering tools only. Backend source, Prisma migrations and tests were checked unchanged throughout the run using `../admin-partner-onboarding/evidence/backend-full/source-files.sha256`.
 
 ```sh
-QA_EVIDENCE_DIR=Docs/clerk/evidence/backend-release node scripts/qa/run_full_backend.mjs
+# From repository root, with QA_TEST_PATH unset:
+QA_EVIDENCE_DIR=Docs/admin-partner-onboarding/evidence/backend-full node scripts/qa/run_full_backend.mjs
+# Actual invocation in backend:
+node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/admin-partner-onboarding/evidence/backend-full/backend-full-run.json
 ```
 
-The runner executed in `backend`:
+The runner first creates a dedicated fresh local PostgreSQL database and applies all migrations with `node scripts/migrate.mjs`. It refuses remote hosts, uses UTF-8/template0/C.UTF-8 and keeps production/Neon untouched. Configure a private local backend/.env (or QA_DATABASE_URL) with a local PostgreSQL role allowed to create databases. Database credentials are excluded from evidence. Tests use deterministic fixtures, locally signed Clerk verification fixtures and local payment simulators, with real database transactions and server authorization enabled. Hosted provider authentication is not claimed.
 
-```sh
-node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/clerk/evidence/backend-release/backend-full-run.json
-```
-
-It first applied all controlled migrations with `node scripts/migrate.mjs`. Existing Jest configuration retains `--runInBand` and its pre-existing forceExit behavior. No failed test was skipped or disabled; no timeout was increased.
-
-## Isolated database and deterministic state
-
-The runner reads a private local `backend/.env` or `QA_DATABASE_URL`, refuses remote database hosts, and creates a new database named `grozo_final_1792576066307_test` on `127.0.0.1`. It uses UTF-8, template0, C.UTF-8 collation/ctype, then applies the full migration chain including `20261021060000_clerk_identity`. It does not reset/reuse a demo or production database. The local role needs CREATE DATABASE permission; credentials are not recorded in evidence. On a fresh machine, create a private backend/.env from the example and point it to a local PostgreSQL role before running.
-
-The test environment uses NODE_ENV=test, AUTH_MODE=legacy as the deterministic default; the Clerk suite explicitly selects clerk-test and restores environment/state afterward. Payment operations use the existing local provider simulator and synthetic HMAC fixtures. Clerk JWTs use locally generated RSA keys with the official verification SDK; only provider HTTP responses are substituted. No live customer, finance, payment or Clerk account was used. Authenticated business/resource checks remain enabled.
-
-## Environment and timings
-
-| Field | Actual value |
+| Field | Actual result |
 | --- | --- |
-| Node | v24.19.0 |
-| OS / CPU architecture | linux / x64 |
-| PostgreSQL | PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit |
-| Prisma | 5.22.0 |
-| Jest | 30.4.2 |
-| Start UTC | 2026-10-21T09:47:56.983Z |
-| Finish UTC | 2026-10-21T09:54:11.472Z |
-| Execution duration | 374467 ms (Jest process; database setup precedes this interval) |
-| Exit | 0 |
+| Database | grozo_final_1792933335138_test, 127.0.0.1 |
+| Node / Prisma | 24.19.0 / 5.22.0 |
+| PostgreSQL | 17.11, Debian x86_64 |
+| OS | Linux x64 |
+| Started | 2026-10-25T13:02:28.219Z |
+| Finished | 2026-10-25T13:09:21.892Z |
+| Duration | 413.641 seconds |
+| Total / passed / failed / skipped | 1138 / 1138 / 0 / 0 |
+| Jest invocations / suites | 1 / 47 |
+| Exit code | 0 |
 
-## Corrections and preserved failed evidence
+Full log: `backend-full-run.log`. Machine-readable test results and summary: `backend-full-run.json` and `backend-full-run-summary.json`. The original evidence files are also retained in `../admin-partner-onboarding/evidence/backend-full/`.
 
-The initial full attempt had a payment rotation failure: equal createdAt values did not have a deterministic SQL tie-breaker, and separately captured wall clocks could cross minute boundaries. Production reconciliation now orders by createdAt and ID. Its unchanged business assertions now force tied timestamps and advance a single captured clock by exactly one minute. The whole suite subsequently passed.
+The initial complete onboarding run had one new test fixture failure after a concurrency test demoted an administrator: the invitation setup incorrectly assumed that identity was still OWNER. It now uses the actual remaining owner. No authorization check was weakened, test skipped or timeout increased. The failed run remains in `../admin-partner-onboarding/evidence/backend-initial-full/`. Initial targeted results remain separate; no test counts are assembled across runs. Earlier Clerk/RBAC/marketplace baselines remain in their own evidence directories.
 
-Final privacy review added address/support cleanup on Clerk deletion, durable provider-deletion intent in the same transaction as account deletion, and atomic owned-device invalidation. These are included in this final successful run, with explicit retry/outage assertions. A legitimate existing foreign-rider ownership contract hides resource existence with 404; the new Clerk fixture checks that same contract and unchanged assignment/state/OTP-attempt data.
-
-A later intermediate run during competing Android builds timed out in the existing sequential 80-product inventory fixture setup, followed by a missing-product search assertion. No inventory assertion or timeout was changed. The final run used the same full suite without competing builds and passed. Complete failed logs/JSON remain under `Docs/clerk/evidence/backend-full/` (payment ordering) and `backend-handover/` (resource contention). `backend-final/` is an intermediate successful run, not the final acceptance result.
-
-## Complete evidence and limits
-
-- [Complete final log](backend-full-run.log)
-- [Machine-readable Jest result](backend-full-run.json)
-- [Exact runner summary](backend-full-run-summary.json)
-- Canonical same-run files: `Docs/clerk/evidence/backend-release/`.
-
-This verifies local backend regression with explicitly labelled provider fixtures. It does not prove hosted Clerk sign-in, real email/Google delivery, deployed Render/Neon/Vercel configuration, physical Android behavior, owned FCM delivery or real Razorpay sandbox operations. No production cutover is activated. See `Docs/clerk/08_testing_and_verification.md` and the manual test guide for those remaining checks.
+See `../admin-partner-onboarding/verification.md` and `../flutter-start-pages/evidence/summary.json` for admin, Flutter, Android and screenshot verification and the outstanding physical-device/external-provider checks.

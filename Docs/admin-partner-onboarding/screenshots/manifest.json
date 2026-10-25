@@ -1,0 +1,92 @@
+{
+  "capturedAt": "2026-10-25T13:04:37.468Z",
+  "renderer": "Chromium; actual implemented React components",
+  "api": "Explicit synthetic in-memory fixtures; no provider session or production database",
+  "screens": [
+    {
+      "name": "01-vendor-store",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "02-vendor-pickup",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "03-vendor-access",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "04-vendor-review",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "05-vendor-created",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "06-store-inventory",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "07-rider-identity",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "08-rider-vehicle",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "09-rider-area",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "10-rider-review-pending",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "11-rider-review-approved",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "12-rider-created",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "14-inventory-product-photo",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "13-mobile-rider",
+      "width": 390,
+      "overflow": false,
+      "fixture": true
+    }
+  ],
+  "uncaughtErrors": []
+}

@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-10-25T13:00:44Z",
+  "artifactCommit": "1592365",
+  "downloads": [
+    {
+      "filename": "Grozo-Customer-Clerk-Test.apk",
+      "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/1592365/clerk-staging/1.12.0-19/Grozo-Customer-Clerk-Test.apk",
+      "httpStatus": 200,
+      "bytes": 52027742,
+      "sha256": "5c848a2dc75743d9ba8161173aa5015ab00b955428873674d754e8ba0d8c8b15",
+      "verified": true
+    },
+    {
+      "filename": "Grozo-Vendor-Clerk-Test.apk",
+      "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/1592365/clerk-staging/1.12.0-19/Grozo-Vendor-Clerk-Test.apk",
+      "httpStatus": 200,
+      "bytes": 51205925,
+      "sha256": "82676fd54eb3f7b9705cc60145fb686025cfd3d6f16d55516c6cc84558f07a3f",
+      "verified": true
+    },
+    {
+      "filename": "Grozo-Delivery-Clerk-Test.apk",
+      "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/1592365/clerk-staging/1.12.0-19/Grozo-Delivery-Clerk-Test.apk",
+      "httpStatus": 200,
+      "bytes": 50975607,
+      "sha256": "2ec9f0e7fd6fa9f845befa38db28e98db0c21e8d51ade8346a398f417a882c03",
+      "verified": true
+    }
+  ]
+}
