@@ -86,7 +86,8 @@ export async function updateSupportCase(actor:SupportActor,id:string,input:any) 
     const before=await tx.supportCase.findUniqueOrThrow({where:{id}});
     await activeSupportAdmin(tx,actor.id);
     if(assignedToId)await activeSupportAdmin(tx,assignedToId);
-    await tx.supportNote.create({data:{caseId:id,actorId:actor.id,message,internal}});
+    const note=await tx.supportNote.create({data:{caseId:id,actorId:actor.id,message,internal}});
+    if(!internal) await tx.notificationIntent.create({data:{supportNoteId:note.id,event:'SUPPORT_UPDATED',options:{}}});
     const currentPriority=priority??before.priority,now=new Date();
     const row=await tx.supportCase.update({where:{id},data:{status,...(!internal?{resolution:status==='RESOLVED'?message:null}:{}),...(priority?{priority,dueAt:supportDueAt(currentPriority,now)}:{}),...(assignedToId!==undefined?{assignedToId}:{}),...(refundReference!==undefined?{refundReference}:{}),...(replacementReference!==undefined?{replacementReference}:{}),resolvedAt:status==='RESOLVED'?now:null,...(before.status==='RESOLVED'&&status!=='RESOLVED'?{reopenedAt:now,dueAt:supportDueAt(currentPriority,now)}:{})}});
     await tx.adminAuditLog.create({data:{action:'SUPPORT_CASE_UPDATED',targetType:'SUPPORT_CASE',targetId:id,summary:`Admin ${actor.id} set ${status}; priority ${currentPriority}; owner ${row.assignedToId??'unassigned'}; ${internal?'internal note':'requester-visible reply'}.`}});

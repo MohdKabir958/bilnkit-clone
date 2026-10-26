@@ -874,30 +874,33 @@ model SupportCase {
 }
 
 model SupportNote {
-  internal    Boolean     @default(false)
-  id          String      @id @default(uuid())
-  caseId      String
-  actorId     String
-  message     String
-  createdAt   DateTime    @default(now())
-  supportCase SupportCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  notificationIntent NotificationIntent?
+  internal           Boolean             @default(false)
+  id                 String              @id @default(uuid())
+  caseId             String
+  actorId            String
+  message            String
+  createdAt          DateTime            @default(now())
+  supportCase        SupportCase         @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
   @@index([caseId, createdAt])
 }
 
 model NotificationIntent {
-  leaseToken String?
-  id         String    @id @default(uuid())
-  orderId    String
-  event      String
-  options    Json
-  state      String    @default("PENDING")
-  attempts   Int       @default(0)
-  leaseUntil DateTime?
-  errorCode  String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @default(now()) @updatedAt
-  order      Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  supportNoteId String?      @unique
+  supportNote   SupportNote? @relation(fields: [supportNoteId], references: [id], onDelete: Cascade)
+  leaseToken    String?
+  id            String       @id @default(uuid())
+  orderId       String?
+  event         String
+  options       Json
+  state         String       @default("PENDING")
+  attempts      Int          @default(0)
+  leaseUntil    DateTime?
+  errorCode     String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now()) @updatedAt
+  order         Order?       @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([state, leaseUntil, createdAt])
 }

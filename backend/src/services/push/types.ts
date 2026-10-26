@@ -38,7 +38,7 @@ export interface PushMessage {
   priority: 'high' | 'normal';
   ttlSeconds: number;
   collapseKey: string;
-  data: { event: string; orderId: string; v: '1'; offerId?: string; offerExpiresAt?: string };
+  data: { event: string; orderId: string; v: '1'; offerId?: string; offerExpiresAt?: string; caseId?: string; noteId?: string };
 }
 
 /**

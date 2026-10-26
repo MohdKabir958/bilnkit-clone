@@ -44,6 +44,7 @@ export async function runtimeReadiness(db: Pick<PrismaClient, '$queryRaw'>, env:
     await db.$queryRaw(Prisma.sql`SELECT "name", "leaseToken" FROM "BackgroundJob" LIMIT 0`);
     await db.$queryRaw(Prisma.sql`SELECT "id", "state", "submitStartedAt" FROM "PaymentRefund" LIMIT 0`);
     await db.$queryRaw(Prisma.sql`SELECT "id", "storageKey" FROM "SupportEvidence" LIMIT 0`);
+    await db.$queryRaw(Prisma.sql`SELECT "id", "supportNoteId" FROM "NotificationIntent" LIMIT 0`);
     const migration = await db.$queryRaw<{ unfinished: bigint }[]>(Prisma.sql`SELECT count(*) AS unfinished FROM "_prisma_migrations" WHERE finished_at IS NULL AND rolled_back_at IS NULL`);
     if (Number(migration[0]?.unfinished ?? 1) !== 0) throw new RuntimeReadinessError('SCHEMA_NOT_READY');
   } catch (error) { throw new RuntimeReadinessError('SCHEMA_NOT_READY', error); }

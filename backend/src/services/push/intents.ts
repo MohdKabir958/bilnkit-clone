@@ -7,6 +7,7 @@ import { eventDef, pushEventsForChange, pushEventsForGroupChange } from './event
 import { notifyOrderEvent } from './pushService';
 import { getPushProvider } from './provider';
 import type { ChangeResult } from '../orderFlow';
+import { sendSupportUpdate } from './supportUpdates';
 
 export async function stageNotificationIntents(tx:Prisma.TransactionClient,r:Partial<ChangeResult>,assignedByAdmin=false) {
   if(!r.changed||!r.order||!r.before) return;
@@ -42,7 +43,8 @@ export async function flushNotificationIntents(now=new Date(), options:OutboxOpt
     if(!row)break;
     processed++;
     const finish=(data:Prisma.NotificationIntentUpdateManyMutationInput)=>prisma.notificationIntent.updateMany({where:{id:row.id,state:'PENDING',leaseToken:token},data:{...data,leaseToken:null}});
-    const stale=!(PUSH_EVENTS as readonly string[]).includes(row.event)||at.getTime()-row.createdAt.getTime()>eventDef(row.event as PushEvent).usefulMinutes*60000;
+    const support=row.event==='SUPPORT_UPDATED' && !!row.supportNoteId;
+    const stale=support?at.getTime()-row.createdAt.getTime()>86400000:!(PUSH_EVENTS as readonly string[]).includes(row.event)||at.getTime()-row.createdAt.getTime()>eventDef(row.event as PushEvent).usefulMinutes*60000;
     const offer=(row.options??{}) as PushOptions;
     const offerExpired=row.event==='NEW_DELIVERY'&&offer.offerExpiresAt&&Date.parse(offer.offerExpiresAt)<=at.getTime();
     if(stale||offerExpired) {await finish({state:'EXPIRED',leaseUntil:null,errorCode:'STALE_OR_UNKNOWN_EVENT'});continue;}
@@ -51,7 +53,9 @@ export async function flushNotificationIntents(now=new Date(), options:OutboxOpt
     try {
       if(options.signal?.aborted)throw new JobAborted();
       // PushLog contains its own durable recipient claim. Outbox completion is fenced to this lease owner.
-      await notifyOrderEvent(row.orderId,row.event as PushEvent,offer,true);
+      if(support) await sendSupportUpdate(row);
+      else if(row.orderId) await notifyOrderEvent(row.orderId,row.event as PushEvent,offer,true);
+      else throw new Error('Missing notification context.');
       await finish({state:'DONE',attempts:{increment:1},leaseUntil:null,errorCode:null});
     } catch(error) {
       const attempts=row.attempts+1;
