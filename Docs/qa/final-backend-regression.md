@@ -1,13 +1,37 @@
-# Final backend regression — 25 October 2026
+# Complete backend regression — 26 October 2026
 
-Implementation source: `be665d1a71b91bc32c5935ee4108740db9bc1eba`.
+The final backend source completed one clean Jest invocation against a fresh isolated local PostgreSQL database. No failed test was disabled or skipped. Real Clerk/FCM/Razorpay-hosted execution and production deployment are separate external checks, not inferred from simulated fixtures.
 
-**1,147 passed, 0 failed, 0 skipped; 47 suites; exit code 0.** One complete invocation took **403.594 seconds**.
+| Result | Value |
+| --- | --- |
+| Total / passed | 1233 / 1233 |
+| Failed / skipped | 0 / 0 |
+| Suites | 56 |
+| Duration | 496958 ms (8m 17s) |
+| Exit code | 0 |
+| Node | v24.19.0 |
+| Platform | linux / x64 |
+| PostgreSQL | PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit |
+| Database | `grozo_final_1793015366472_test`, local `127.0.0.1` |
+| Start / finish UTC | 2026-10-26T11:49:39.221Z / 2026-10-26T11:57:56.217Z |
 
-Command from root: `QA_EVIDENCE_DIR=Docs/rider-registration-fix/evidence/backend-final node scripts/qa/run_full_backend.mjs`. The runner creates a fresh local PostgreSQL database, applies all migrations and invokes, once from backend: `node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/rider-registration-fix/evidence/backend-final/backend-full-run.json`.
+Reproduce from the repository root:
 
-Database `grozo_final_1792952198761_test`, host `127.0.0.1`, PostgreSQL 17.11; Node v24.19.0; Linux x64; UTC. Started 2026-10-25T18:16:55.060Z, finished 2026-10-25T18:23:38.697Z. No production database or financial data used.
+```bash
+source /workspace/.setup/grozo-env.sh
+QA_EVIDENCE_DIR=Docs/production-readiness/evidence/backend-final node scripts/qa/run_full_backend.mjs
+```
 
-[Complete log](backend-full-run.log), [machine-readable results](backend-full-run.json), [summary](backend-full-run-summary.json), [attempt history and all client/build checks](../rider-registration-fix/verification.md). Authentication and approval checks remain enforced; no failed functional test was disabled.
+The runner accepts only local PostgreSQL, creates a new UTF8 database ending `_test` from `template0`, applies all 26 migrations using the direct local URL, and starts from deterministic per-suite fixtures. Authentication is exercised by legacy fixtures and separately by Clerk verification/role-isolation fixtures. Payment-provider and push transports are explicit simulators; no live customer accounts or money are used. Test cleanup refuses non-test databases.
 
-Clerk provider/native channels use explicit fixtures for local testing. Hosted authentication, deployed backend behavior, phone installation and real GPS/FCM remain separate operator/device checks.
+Exact Jest command:
+
+```text
+node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/production-readiness/evidence/backend-final/backend-full-run.json
+```
+
+Complete log: `backend-full-run.log`. Machine-readable Jest results and summary: `backend-full-run.json` and `backend-full-run-summary.json` alongside this document; immutable final-run copies also reside under `Docs/production-readiness/evidence/backend-final/`.
+
+The earlier 1,225-test checkpoint and earlier failed diagnostic runs remain under `Docs/production-readiness/evidence/`. They are historical evidence, not combined to manufacture this result. Corrections include using the existing transaction connection for settings, guarded test cleanup for append-only cash evidence, proper aging of payment-attempt fixtures, protected overlapping-checkout contracts, initialized fixture taxonomy, physical missing-stock disposition, partial-refund submission recovery and independent GPS exception approval. New tests cover the revised behavior; existing assertions were not removed to force a green run.
+
+CI workflow source runs the full suite and repeated constrained-pool pricing checks and uploads logs even after failure. Hosted GitHub Actions status is not asserted: API inspection was Forbidden in this environment.

@@ -53,7 +53,7 @@ export async function runPartialRefund(id: string, now = new Date()) {
     const changed = await tx.paymentRefund.updateMany({ where: { id, leaseToken: token }, data: { state, providerRefundId, lastErrorCode: errorCode,
       processedAt: state === 'PROCESSED' ? new Date() : null, leaseToken: null, leaseUntil: null, nextAttemptAt: new Date(Date.now() + Math.min(60, 2 ** Math.min(6, claim.attempts)) * 60_000) } });
     if (!changed.count) return;
-    if (order.refundLeaseUntil?.getTime() === until.getTime()) await tx.order.update({ where: { id: order.id }, data: { refundLeaseUntil: null } });
+    await tx.order.update({ where: { id: order.id }, data: {updatedAt:new Date(Math.max(Date.now(),order.updatedAt.getTime()+1)),...(order.refundLeaseUntil?.getTime()===until.getTime()?{refundLeaseUntil:null}:{})} });
     await tx.adminAuditLog.create({ data: { action: 'PARTIAL_REFUND_OBSERVED', targetType: 'ORDER', targetId: order.id,
       summary: `Request ${id}: ${state}; ${claim.amountPaise} paise. Original captured payment retained. ${errorCode ?? ''}` } });
   });
@@ -74,13 +74,16 @@ export async function applyPartialRefundEvent(event: 'refund.processed' | 'refun
   if (!input.refundId || !input.paymentId) return false;
   const request = await prisma.paymentRefund.findUnique({ where: { providerRefundId: input.refundId }, include: { payment: true } });
   if (!request || request.payment.razorpayPaymentId !== input.paymentId || request.amountPaise !== input.amountPaise) return false;
-  await withOrderLock(request.orderId, async (tx) => {
+  const changed=await withOrderLock(request.orderId, async (tx,order) => {
     const row = await tx.paymentRefund.findUniqueOrThrow({ where: { id: request.id } });
     // A signed delayed failure cannot reverse a provider-confirmed processed refund.
-    if (row.state === 'PROCESSED') return;
+    if (row.state === 'PROCESSED') return false;
     await tx.paymentRefund.update({ where: { id: row.id }, data: { state: event === 'refund.processed' ? 'PROCESSED' : 'FAILED', processedAt: event === 'refund.processed' ? new Date() : null,
       lastErrorCode: event === 'refund.failed' ? 'PROVIDER_REFUND_FAILED' : null, leaseToken: null, leaseUntil: null } });
+    await tx.order.update({where:{id:order.id},data:{updatedAt:new Date(Math.max(Date.now(),order.updatedAt.getTime()+1))}});
     await tx.adminAuditLog.create({ data: { action: 'PARTIAL_REFUND_WEBHOOK', targetType: 'ORDER', targetId: row.orderId, summary: `Verified ${event}: ${row.id}, ${row.amountPaise} paise.` } });
+    return true;
   });
+  if(changed){const order=await prisma.order.findUnique({where:{id:request.orderId},include:ORDER_VIEW_INCLUDE});if(order)await publishOrderChange(order);}
   return true;
 }

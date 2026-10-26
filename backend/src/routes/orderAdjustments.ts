@@ -15,6 +15,7 @@ orderAdjustmentsRouter.get('/v1/orders/:id/adjustments', requireAuth, requireRol
     const proposed = row.proposedItems as any;
     return { id:row.id, orderId:row.orderId, state:row.state, version:row.version, reason:row.reason, expiresAt:row.expiresAt,
       items: proposed.priced.verifiedItems.map((i:any)=>({itemId:i.itemId,name:i.name,quantity:i.quantity,...(req.user!.role==='VENDOR'?{}:{price:i.price})})),
+      ...(req.user!.role==='VENDOR'?{}:{amounts:{subtotal:proposed.priced.calculatedSubtotal,deliveryFee:proposed.priced.calculatedDeliveryFee,taxAndPackaging:proposed.priced.calculatedTaxAndPackaging,discount:proposed.priced.calculatedDiscount,couponCode:proposed.priced.appliedCoupon??null,couponMessage:proposed.priced.couponProblem??null}}),
       ...(req.user!.role==='VENDOR'?{}:{originalTotalPaise:row.originalTotalPaise,proposedTotalPaise:row.proposedTotalPaise,refundDuePaise:row.refundDuePaise}) };
   }) });
 }));

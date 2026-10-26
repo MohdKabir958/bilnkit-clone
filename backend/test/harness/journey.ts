@@ -174,7 +174,7 @@ export const createLedger = (): Ledger => {
 // ---------------------------------------------------------------------------------------------
 // HTTP client that remembers every call (for the "never 5xx" invariant)
 // ---------------------------------------------------------------------------------------------
-export interface CallLog { method: string; url: string; status: number; body?: unknown; who: string }
+export interface CallLog { method: string; url: string; status: number; body?: unknown; who: string; durationMs: number; responseBytes: number }
 
 export const createApi = (baseUrl: string, calls: CallLog[] = []) => {
   const request = supertest(baseUrl);
@@ -183,8 +183,9 @@ export const createApi = (baseUrl: string, calls: CallLog[] = []) => {
     if (token) r = r.set('Authorization', `Bearer ${token}`);
     for (const [k, v] of Object.entries(headers)) r = r.set(k, v);
     if (body !== undefined && method !== 'get') r = r.send(body as any);
+    const started = performance.now();
     const res = await r;
-    calls.push({ method, url: url.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/g, ':uuid'), status: res.status, who, ...(res.status >= 500 ? { body: res.body } : {}) });
+    calls.push({ method, url: url.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/g, ':uuid'), status: res.status, who, durationMs: performance.now() - started, responseBytes: Buffer.byteLength(res.text || ''), ...(res.status >= 500 ? { body: res.body } : {}) });
     return res as supertest.Response;
   };
   const T = (p: Person | string | null) => (p === null ? null : typeof p === 'string' ? p : p.token);

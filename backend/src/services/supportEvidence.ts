@@ -6,16 +6,15 @@ import { AppError } from '../utils/appError';
 import { ImageError, probeImage } from '../utils/imageProbe';
 import { uploadDir } from '../routes/uploads';
 import { SupportActor } from './supportCases';
+import { privateSupportPath } from '../config/storagePaths';
 
 export const MAX_EVIDENCE_BYTES=2*1024*1024;
 export const EVIDENCE_TYPES=['image/jpeg','image/png','image/webp'];
 const RETENTION_MS=90*86400000;
 /** Private storage must never be nested within the public /uploads static root. */
 export function supportEvidenceDir() {
-  const publicRoot=uploadDir(),root=path.resolve(process.env.SUPPORT_EVIDENCE_DIR||path.join(publicRoot,'..','private-support'));
-  const relative=path.relative(publicRoot,root);
-  if(relative===''||(!relative.startsWith('..'+path.sep)&&relative!=='..'&&!path.isAbsolute(relative)))throw new AppError(503,'EVIDENCE_STORAGE_UNSAFE','Support evidence storage must be separate from public product images.');
-  return root;
+  try { return privateSupportPath(uploadDir(), process.env.SUPPORT_EVIDENCE_DIR); }
+  catch { throw new AppError(503,'EVIDENCE_STORAGE_UNSAFE','Support evidence storage must be separate from public product images.'); }
 }
 const safeKey=(key:string)=>/^[0-9a-f]{48}\.(jpg|png|webp)$/.test(key);
 export async function authorizeSupportCase(actor:SupportActor,id:string) {

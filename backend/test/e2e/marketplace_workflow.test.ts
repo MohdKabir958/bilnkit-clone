@@ -7,6 +7,7 @@ import {setPaymentProvider} from '../../src/services/paymentService';
 import {ensureDispatchOffer} from '../../src/services/dispatch';
 import {verifyGateOtp} from '../../src/services/orderFlow';
 import {orderView,ORDER_VIEW_INCLUDE} from '../../src/services/orderView';
+import {generateTestToken} from '../harness/auth';
 
 jest.setTimeout(60000);
 describe('Single-store marketplace: real transactions, cash accounting and broadcast races',()=>{
@@ -83,6 +84,7 @@ describe('Single-store marketplace: real transactions, cash accounting and broad
   const rider=W.riders[0];expect((await raw(rider,'post',`/api/orders/${id}/accept-driver`,{})).status).toBe(200);
   for(const status of ['PREPARING','READY_FOR_PICKUP'])expect((await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status})).status).toBe(200);
   expect((await raw(rider,'patch',`/api/orders/${id}/status`,{status:'PICKED_UP'})).body.code).toBe('ARRIVAL_LOCATION_REQUIRED');
+  expect((await raw(W.admin,'patch',`/api/orders/${id}/status`,{status:'PICKED_UP'})).body.code).toBe('ARRIVAL_LOCATION_REQUIRED');
   expect((await raw(rider,'post','/api/drivers/location',{lat:23.0745,lng:76.859,accuracyMeters:10,measuredAt:new Date().toISOString()})).status).toBe(200);
   expect((await raw(rider,'post',`/api/v1/orders/${id}/arrive-pickup`,{})).status).toBe(200);
   expect((await raw(rider,'patch',`/api/orders/${id}/status`,{status:'PICKED_UP'})).status).toBe(200);
@@ -91,6 +93,27 @@ describe('Single-store marketplace: real transactions, cash accounting and broad
   await prisma.driverLocation.update({where:{driverId:rider.id},data:{lat:23.0745,measuredAt:new Date(Date.now()-2000)}});
   expect((await raw(rider,'post','/api/drivers/location',{lat:23.0746,lng:76.859,accuracyMeters:10,measuredAt:new Date().toISOString()})).status).toBe(200);
   expect((await raw(rider,'patch',`/api/orders/${id}/status`,{status:'ARRIVED_AT_GATE'})).status).toBe(200);
+ });
+ test('GPS exceptions require independent admin approval, remain scope-bound and never replace delivery code proof',async()=>{
+  const id=await place();await accept(id);const rider=W.riders[0];
+  // Another test can leave a fresh location for this rider at the same store. This scenario deliberately has no fix.
+  await prisma.driverLocation.deleteMany({where:{driverId:rider.id}});
+  expect((await raw(rider,'post',`/api/orders/${id}/accept-driver`,{})).status).toBe(200);
+  for(const status of ['PREPARING','READY_FOR_PICKUP'])expect((await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status})).status).toBe(200);
+  const input={scope:'PICKUP',reason:'Confirmed store pickup pin is inaccurate through independent operator contact.',evidenceReference:'VERIFIED-SUPPORT-CALL-REFERENCE'};
+  expect((await raw(rider,'post',`/api/v1/admin/orders/${id}/gps-exceptions`,input)).status).toBe(403);
+  const created=await raw(W.admin,'post',`/api/v1/admin/orders/${id}/gps-exceptions`,input);expect(created.status).toBe(201);
+  const path=`/api/v1/admin/gps-exceptions/${created.body.data.id}/approve`;
+  expect((await raw(W.admin,'post',path,{})).body.code).toBe('INDEPENDENT_APPROVAL_REQUIRED');
+  expect((await raw(W.admin,'patch',`/api/orders/${id}/status`,{status:'PICKED_UP'})).body.code).toBe('ARRIVAL_LOCATION_REQUIRED');
+  const supervisorId=tag+'-gps-supervisor';await prisma.user.upsert({where:{id:supervisorId},create:{id:supervisorId,name:'Independent GPS reviewer',role:'ADMIN'},update:{role:'ADMIN',deletedAt:null}});
+  const supervisor={token:generateTestToken({id:supervisorId,role:'ADMIN',phone:''})};
+  expect((await raw(supervisor,'post',path,{})).status).toBe(200);
+  expect((await raw(W.admin,'patch',`/api/orders/${id}/status`,{status:'PICKED_UP'})).status).toBe(200);
+  expect((await raw(W.admin,'patch',`/api/orders/${id}/status`,{status:'ARRIVED_AT_GATE'})).body.code).toBe('ARRIVAL_LOCATION_REQUIRED');
+  expect((await raw(rider,'post',`/api/orders/${id}/verify-gate-otp`,{otpCode:'0000'})).status).not.toBe(200);
+  expect(await prisma.cashCollection.count({where:{orderId:id}})).toBe(0);
+  expect(await prisma.adminAuditLog.count({where:{targetId:id,action:'GPS_EXCEPTION_APPROVED'}})).toBe(1);
  });
  test('store selection, profile edits and pickup changes cannot target another vendor store',async()=>{
   expect((await raw(W.vendors[0],'get',`/api/v1/partner/stores/${W.vendors[1].vendorId}`)).status).toBe(404);

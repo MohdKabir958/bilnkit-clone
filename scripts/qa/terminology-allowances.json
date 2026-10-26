@@ -693,5 +693,35 @@
     "file": "apps/driver_app/lib/services/partner_auth_service.dart",
     "value": "STUDENT",
     "reason": "Existing trusted database role recognized only for a signed-in identity that needs a rider application; not user-facing terminology."
+  },
+  {
+    "file": "backend/src/routes/orderAdjustments.ts",
+    "value": "STUDENT",
+    "reason": "Existing internal Prisma Role.STUDENT value used only for server authorization/ownership; customer-facing role name remains Customer. Preserve historical IDs and API compatibility."
+  },
+  {
+    "file": "backend/src/routes/operationsReadiness.ts",
+    "value": "STUDENT",
+    "reason": "Existing internal Prisma Role.STUDENT value used only for server authorization/ownership; customer-facing role name remains Customer. Preserve historical IDs and API compatibility."
+  },
+  {
+    "file": "backend/src/routes/compliance.ts",
+    "value": "STUDENT",
+    "reason": "Existing internal Prisma Role.STUDENT value used only for server authorization/ownership; customer-facing role name remains Customer. Preserve historical IDs and API compatibility."
+  },
+  {
+    "file": "backend/src/services/supportCases.ts",
+    "value": "STUDENT",
+    "reason": "Existing internal Prisma Role.STUDENT value used only for server authorization/ownership; customer-facing role name remains Customer. Preserve historical IDs and API compatibility."
+  },
+  {
+    "file": "backend/src/services/orderReceipt.ts",
+    "value": "STUDENT",
+    "reason": "Existing internal Prisma Role.STUDENT value used only for server authorization/ownership; customer-facing role name remains Customer. Preserve historical IDs and API compatibility."
+  },
+  {
+    "file": "backend/src/services/orderAdjustments.ts",
+    "value": "STUDENT",
+    "reason": "Existing internal Prisma Role.STUDENT value used only for server authorization/ownership; customer-facing role name remains Customer. Preserve historical IDs and API compatibility."
   }
 ]

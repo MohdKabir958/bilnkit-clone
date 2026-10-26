@@ -5,9 +5,9 @@ import { placeOrder, createPaymentForOrder, cancelOrder, loadOrder } from '../..
 import { pendingCheckoutProtected, canExpireUnpaidOrder } from '../../src/services/checkoutRecovery';
 import { createSimulatedProvider, setPaymentProvider } from '../../src/services/paymentService';
 import { runRefund } from '../../src/services/refundService';
-import { proposeOrderAdjustment, decideOrderAdjustment } from '../../src/services/orderAdjustments';
+import { proposeOrderAdjustment, decideOrderAdjustment, expireOrderAdjustments } from '../../src/services/orderAdjustments';
 import { runPartialRefund } from '../../src/services/partialRefunds';
-import { lockProducts, reserveStock } from '../../src/services/inventory';
+import { lockProducts, reserveStock, ensureOrderStockSafe } from '../../src/services/inventory';
 
 describe('Truthful checkout, protected payment attempts and customer-approved shortages', () => {
   let fixtures: Awaited<ReturnType<typeof seedTestDatabase>>;
@@ -59,9 +59,14 @@ describe('Truthful checkout, protected payment attempts and customer-approved sh
   });
   test('only the owning customer can approve reduced quantities; cash due and stock change exactly once',async()=>{
     const o=await packingOrder(true),p=await proposeOrderAdjustment(o.id,vendor,{requestKey:randomUUID(),reason:'One sealed pack was unavailable',items:[{itemId:'item-1',quantity:1}]});
+    const physicalStockBefore=fixtures.menuItem1.stockQty-2;
+    expect((await loadOrder(o.id))!.updatedAt.getTime()).toBeGreaterThan(o.updatedAt.getTime());
     await expect(decideOrderAdjustment(p.id,{id:'usr-5',role:'ADMIN'},{requestKey:randomUUID(),version:1,decision:'ACCEPT'})).rejects.toMatchObject({status:404});
     const requestKey=randomUUID();await decideOrderAdjustment(p.id,customer,{requestKey,version:1,decision:'ACCEPT'});await decideOrderAdjustment(p.id,customer,{requestKey,version:1,decision:'ACCEPT'});
     expect((await loadOrder(o.id))!).toMatchObject({totalAmount:205,subtotal:180,paymentMethod:'COD'});expect(await prisma.paymentRefund.count()).toBe(0);
+    expect((await prisma.menuItem.findUniqueOrThrow({where:{id:'item-1'}})).stockQty).toBe(physicalStockBefore);
+    const stockReservation=await prisma.inventoryReservation.findUniqueOrThrow({where:{orderId_menuItemId:{orderId:o.id,menuItemId:'item-1'}}});
+    expect(await prisma.stockMovement.count({where:{menuItemId:'item-1',kind:'MISSING',reference:{startsWith:`disposition:${stockReservation.id}:`}}})).toBe(1);
     expect(await prisma.inventoryReservation.findUniqueOrThrow({where:{orderId_menuItemId:{orderId:o.id,menuItemId:'item-1'}}})).toMatchObject({quantity:1});
   });
   test('more expensive and foreign-store alternatives are refused; rejecting preserves original items and totals',async()=>{
@@ -69,6 +74,7 @@ describe('Truthful checkout, protected payment attempts and customer-approved sh
     await expect(proposeOrderAdjustment(o.id,vendor,{requestKey:randomUUID(),reason:'More packs requested by store',items:[{itemId:'item-1',quantity:3}]})).rejects.toMatchObject({code:'ADDITIONAL_PAYMENT_UNSUPPORTED'});
     const p=await proposeOrderAdjustment(o.id,vendor,{requestKey:randomUUID(),reason:'One pack unavailable from shelf',items:[{itemId:'item-1',quantity:1}]});
     await decideOrderAdjustment(p.id,customer,{requestKey:randomUUID(),version:1,decision:'REJECT'});expect((await loadOrder(o.id))!).toMatchObject({totalAmount:385,subtotal:360});
+    await expect(prisma.$transaction(tx=>ensureOrderStockSafe(tx,[o.id]))).rejects.toMatchObject({code:'PACKING_REVIEW_REQUIRED'});
   });
   test('partial refund and later full cancellation reconcile to the original captured amount',async()=>{
     const o=await packingOrder(),sim=createSimulatedProvider();sim.addPayment({id:'partial-capture',orderId:'partial-rzp',amountPaise:38500});setPaymentProvider(sim);
@@ -79,6 +85,34 @@ describe('Truthful checkout, protected payment attempts and customer-approved sh
     expect((await prisma.payment.findUniqueOrThrow({where:{id:payment.id}})).amount).toBe(385);
     await cancelOrder(o.id,{id:'usr-5',role:'ADMIN'},'ADMIN','Customer requested cancellation');
     expect(sim.refunds.get('partial-capture')!.reduce((n,r)=>n+r.amountPaise,0)).toBe(38500);expect((await loadOrder(o.id))!.paymentStatus).toBe('REFUNDED');
+  });
+  test('proposal expiry races customer approval under the same order lock and does not restore missing packs',async()=>{
+    const o=await packingOrder(true),p=await proposeOrderAdjustment(o.id,vendor,{requestKey:randomUUID(),reason:'One missing pack requires customer decision',items:[{itemId:'item-1',quantity:1}]});
+    const before=(await loadOrder(o.id))!;
+    await Promise.allSettled([expireOrderAdjustments(100,new Date(p.expiresAt.getTime()+1)),decideOrderAdjustment(p.id,customer,{requestKey:randomUUID(),version:1,decision:'ACCEPT'})]);
+    const result=await prisma.orderAdjustment.findUniqueOrThrow({where:{id:p.id}}),after=(await loadOrder(o.id))!;
+    expect(['APPLIED','EXPIRED']).toContain(result.state);
+    expect(after.totalAmount).toBe(result.state==='APPLIED'?205:385);
+    expect(after.updatedAt.getTime()).toBeGreaterThan(before.updatedAt.getTime());
+    expect((await prisma.menuItem.findUniqueOrThrow({where:{id:'item-1'}})).stockQty).toBe(fixtures.menuItem1.stockQty-2);
+    if(result.state==='EXPIRED')await expect(prisma.$transaction(tx=>ensureOrderStockSafe(tx,[o.id]))).rejects.toMatchObject({code:'PACKING_REVIEW_REQUIRED'});
+  });
+  test.each([1,4])('a customer explicitly approves a valid alternative SKU with quantity %i, without an extra charge',async(quantity)=>{
+    const o=await packingOrder(true),p=await proposeOrderAdjustment(o.id,vendor,{requestKey:randomUUID(),reason:'Original product missing; offer an available grocery alternative',items:[{itemId:'item-2',quantity}]});
+    expect((await loadOrder(o.id))!.items[0].menuItemId).toBe('item-1');
+    await decideOrderAdjustment(p.id,customer,{requestKey:randomUUID(),version:1,decision:'ACCEPT'});
+    const after=(await loadOrder(o.id))!;
+    expect(after.totalAmount).toBe(90*quantity+25);expect(after.items).toHaveLength(1);expect(after.items[0]).toMatchObject({menuItemId:'item-2',quantity});
+    expect((await prisma.menuItem.findUniqueOrThrow({where:{id:'item-1'}})).stockQty).toBe(fixtures.menuItem1.stockQty-2);
+    expect((await prisma.menuItem.findUniqueOrThrow({where:{id:'item-2'}})).stockQty).toBe(fixtures.menuItem2.stockQty-quantity);
+  });
+  test('expired alternative batches are refused before an offer can mislead the customer',async()=>{
+    const o=await packingOrder(true);
+    await prisma.menuItem.update({where:{id:'item-2'},data:{batchTracking:true,stockQty:10}});
+    await prisma.stockBatch.create({data:{menuItemId:'item-2',lotCode:randomUUID(),availableQty:10,expiresAt:new Date(Date.now()-1000)}});
+    await expect(proposeOrderAdjustment(o.id,vendor,{requestKey:randomUUID(),reason:'Replace a missing pack with another grocery product',items:[{itemId:'item-2',quantity:1}]})).rejects.toMatchObject({code:'OUT_OF_STOCK'});
+    expect(await prisma.orderAdjustment.count({where:{orderId:o.id}})).toBe(0);
+    await prisma.menuItem.update({where:{id:'item-2'},data:{batchTracking:false}});
   });
   test.each(['BEFORE_SUBMISSION','LOST_SUBMISSION_ANSWER'])('partial refund recovers %s without withholding or duplicating money',async(failure)=>{
     const o=await packingOrder(),sim=createSimulatedProvider();sim.addPayment({id:'recovery-capture',orderId:'recovery-rzp',amountPaise:38500});

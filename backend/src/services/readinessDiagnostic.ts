@@ -23,6 +23,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import type { DeploymentEnv } from '../config/deploymentContract';
+import { assertSeparateStorage, privateSupportPath } from '../config/storagePaths';
 
 export class RuntimeReadinessError extends Error {
   constructor(public readonly code: 'SCHEMA_NOT_READY' | 'UPLOAD_UNAVAILABLE', cause?: unknown) {
@@ -41,19 +42,25 @@ export async function runtimeReadiness(db: Pick<PrismaClient, '$queryRaw'>, env:
     await db.$queryRaw(Prisma.sql`SELECT "id", "stockQty", "stockVersion", "batchTracking" FROM "MenuItem" LIMIT 0`);
     await db.$queryRaw(Prisma.sql`SELECT "id", "preparationMinutes" FROM "Vendor" LIMIT 0`);
     await db.$queryRaw(Prisma.sql`SELECT "name", "leaseToken" FROM "BackgroundJob" LIMIT 0`);
-    await db.$queryRaw(Prisma.sql`SELECT "id", "state" FROM "PaymentRefund" LIMIT 0`);
+    await db.$queryRaw(Prisma.sql`SELECT "id", "state", "submitStartedAt" FROM "PaymentRefund" LIMIT 0`);
     await db.$queryRaw(Prisma.sql`SELECT "id", "storageKey" FROM "SupportEvidence" LIMIT 0`);
     const migration = await db.$queryRaw<{ unfinished: bigint }[]>(Prisma.sql`SELECT count(*) AS unfinished FROM "_prisma_migrations" WHERE finished_at IS NULL AND rolled_back_at IS NULL`);
     if (Number(migration[0]?.unfinished ?? 1) !== 0) throw new RuntimeReadinessError('SCHEMA_NOT_READY');
   } catch (error) { throw new RuntimeReadinessError('SCHEMA_NOT_READY', error); }
-  const directory = path.resolve(env.UPLOAD_DIR || './var/uploads');
-  const probe = path.join(directory, `.readiness-${randomUUID()}`);
   try {
-    await fs.mkdir(directory, { recursive: true, mode: 0o750 });
-    const stat = await fs.lstat(directory);
-    if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error('Invalid upload directory.');
-    await fs.writeFile(probe, 'ready', { flag: 'wx', mode: 0o600 });
+    const directory = path.resolve(env.UPLOAD_DIR || './var/uploads');
+    const privateDirectory = privateSupportPath(directory, env.SUPPORT_EVIDENCE_DIR);
+    for (const root of [directory, privateDirectory]) {
+      const probe = path.join(root, `.readiness-${randomUUID()}`);
+      try {
+        await fs.mkdir(root, { recursive: true, mode: root === directory ? 0o750 : 0o700 });
+        const stat = await fs.lstat(root);
+        if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error('Invalid upload directory.');
+        await fs.writeFile(probe, 'ready', { flag: 'wx', mode: 0o600 });
+      } finally { await fs.unlink(probe).catch(() => undefined); }
+    }
+    // A symlink in a parent directory must not turn a separate-looking path into public storage.
+    assertSeparateStorage(await fs.realpath(directory), await fs.realpath(privateDirectory));
   } catch (error) { throw new RuntimeReadinessError('UPLOAD_UNAVAILABLE', error); }
-  finally { await fs.unlink(probe).catch(() => undefined); }
   return { ready: true, schemaReady: true, uploadWritable: true };
 }

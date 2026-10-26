@@ -679,7 +679,7 @@ export const advanceStatus = async (orderId: string, actor: Actor, target: strin
       throw new OrderFlowError(409, 'INVALID_TRANSITION', `Invalid order state transition from '${order.status}' to '${target}'. Allowed next state: ${NEXT_STATUS[order.status]}.`);
     }
     if (!fulfillmentAuthorized(order)) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid yet.');
-    if(actor.role==='DRIVER' && (target==='PICKED_UP'||target==='ARRIVED_AT_GATE')) {
+    if((actor.role==='DRIVER'||order.workflowVersion===2) && (target==='PICKED_UP'||target==='ARRIVED_AT_GATE')) {
       const address=order.addressSnapshot as any;
       await requireRiderAt(tx,order,target==='PICKED_UP'?order.vendor:(address&&typeof address.lat==='number'&&typeof address.lng==='number'?address:null));
     }

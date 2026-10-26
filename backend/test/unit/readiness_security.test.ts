@@ -10,9 +10,20 @@ describe('release readiness and safe diagnostics', () => {
   afterEach(async () => { await fs.rm(directory, { recursive: true, force: true }); });
   test('release schema probes and private storage write are required together', async () => {
     const query = jest.fn().mockResolvedValue([{ unfinished: 0n }]);
-    expect(await runtimeReadiness({ $queryRaw: query } as any, { UPLOAD_DIR: directory })).toEqual({ ready: true, schemaReady: true, uploadWritable: true });
+    const UPLOAD_DIR = path.join(directory, 'public'), SUPPORT_EVIDENCE_DIR = path.join(directory, 'private');
+    expect(await runtimeReadiness({ $queryRaw: query } as any, { UPLOAD_DIR, SUPPORT_EVIDENCE_DIR })).toEqual({ ready: true, schemaReady: true, uploadWritable: true });
     expect(query.mock.calls.length).toBeGreaterThanOrEqual(8);
-    expect(await fs.readdir(directory)).toEqual([]);
+    expect(await fs.readdir(UPLOAD_DIR)).toEqual([]);
+    expect(await fs.readdir(SUPPORT_EVIDENCE_DIR)).toEqual([]);
+  });
+  test('private evidence cannot overlap public images, including through parent symlinks', async () => {
+    const UPLOAD_DIR = path.join(directory, 'public');
+    await fs.mkdir(UPLOAD_DIR);
+    const link = path.join(directory, 'alias'); await fs.symlink(UPLOAD_DIR, link);
+    const query = jest.fn().mockResolvedValue([{ unfinished: 0n }]);
+    for (const SUPPORT_EVIDENCE_DIR of [UPLOAD_DIR, path.join(UPLOAD_DIR, 'private'), path.join(link, 'private')]) {
+      await expect(runtimeReadiness({ $queryRaw: query } as any, { UPLOAD_DIR, SUPPORT_EVIDENCE_DIR })).rejects.toMatchObject({ code: 'UPLOAD_UNAVAILABLE' });
+    }
   });
   test('a reachable empty or unfinished database does not pass readiness', async () => {
     for (const query of [jest.fn().mockRejectedValue(Error('private database credentials')), jest.fn().mockResolvedValue([{ unfinished: 1n }])]) {

@@ -1,10 +1,11 @@
 import { Router } from 'express';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../db';
 import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/auth';
 import { requireApprovedPartner } from './partners';
 import { validParams, fail } from '../utils/http';
 import { AppError } from '../utils/appError';
-import { text } from '../services/geography';
+import { text, validateHours } from '../services/geography';
 import { preparationMinutes } from '../services/preparation';
 import { ensureDispatchOffer } from '../services/dispatch';
 import { fulfillmentAuthorized } from '../services/marketplace';
@@ -21,13 +22,27 @@ preparationRouter.put('/v1/partner/stores/:id/preparation',...vendor,validParams
   const b=r.body??{},minutes=preparationMinutes(b.preparationMinutes);
   if(!Number.isInteger(b.maxPreparingOrders)||b.maxPreparingOrders<1||b.maxPreparingOrders>100)throw new AppError(400,'BAD_CAPACITY','Choose 1–100 simultaneous packing orders.');
   const busy=b.busyForMinutes??0;
+  const hours=b.operatingHours===undefined?undefined:validateHours(b.operatingHours);
   if(!Number.isInteger(busy)||busy<0||busy>120)throw new AppError(400,'BAD_BUSY_WINDOW','Pause new orders for 0–120 minutes.');
   const updated=await prisma.$transaction(async tx=>{
     await tx.$queryRaw`SELECT "id" FROM "Vendor" WHERE "id"=${r.params.id} FOR UPDATE`;
     const v=await tx.vendor.findFirst({where:{id:r.params.id,userId:r.user!.id,approvalStatus:'APPROVED'}});if(!v)throw new AppError(404,'NOT_FOUND','Store not found.');
-    const result=await tx.vendor.update({where:{id:v.id},data:{preparationMinutes:minutes,maxPreparingOrders:b.maxPreparingOrders,busyUntil:busy?new Date(Date.now()+busy*60000):null},select:{id:true,preparationMinutes:true,maxPreparingOrders:true,busyUntil:true}});
+    const result=await tx.vendor.update({where:{id:v.id},data:{preparationMinutes:minutes,maxPreparingOrders:b.maxPreparingOrders,busyUntil:busy?new Date(Date.now()+busy*60000):null,...(hours===undefined?{}:{operatingHours:hours===null?Prisma.DbNull:hours})},select:{id:true,preparationMinutes:true,maxPreparingOrders:true,busyUntil:true,operatingHours:true}});
     await tx.adminAuditLog.create({data:{action:'STORE_PREPARATION_POLICY',targetType:'VENDOR',targetId:v.id,summary:`Owner ${r.user!.id} set packing ${minutes} minutes; capacity ${b.maxPreparingOrders}; busy for ${busy} minutes.`}});return result;
   });s.json({success:true,data:updated});
+}));
+preparationRouter.get('/v1/partner/stores/:id/performance',...vendor,validParams('id'),wrap(async(r,s)=>{
+  const store=await prisma.vendor.findFirst({where:{id:r.params.id,userId:r.user!.id,approvalStatus:'APPROVED'},select:{id:true}});
+  if(!store)throw new AppError(404,'NOT_FOUND','Store not found.');
+  const days=Number(r.query.days??30);
+  if(!Number.isInteger(days)||days<1||days>90)throw new AppError(400,'BAD_PERIOD','Choose a period from 1 to 90 days.');
+  const from=new Date(Date.now()-days*86400000);
+  const [orders,shortages,lowStock]=await Promise.all([
+    prisma.$queryRaw<any[]>(Prisma.sql`SELECT count(*)::int AS orders, count(*) FILTER(WHERE status='DELIVERED')::int AS delivered, count(*) FILTER(WHERE status='CANCELLED')::int AS cancelled, (AVG(EXTRACT(EPOCH FROM ("readyForPickupAt"-"acceptedAt"))/60) FILTER(WHERE "acceptedAt" IS NOT NULL AND "readyForPickupAt">="acceptedAt"))::float8 AS "averagePackingMinutes" FROM "Order" WHERE "vendorId"=${store.id} AND "createdAt">=${from}`),
+    prisma.stockMovement.groupBy({by:['kind'],where:{item:{vendorId:store.id},kind:{in:['MISSING','DAMAGED','EXPIRED','RETURN','WRITE_OFF']},createdAt:{gte:from}},_count:{_all:true}}),
+    prisma.menuItem.findMany({where:{vendorId:store.id,deletedAt:null,stockQty:{lte:prisma.menuItem.fields.lowStockThreshold}},select:{id:true,name:true,stockQty:true,lowStockThreshold:true},orderBy:[{stockQty:'asc'},{id:'asc'}],take:20}),
+  ]);
+  s.json({success:true,data:{storeId:store.id,days,from:from.toISOString(),...orders[0],stockEvents:shortages.map(x=>({kind:x.kind,events:x._count._all})),lowStock,lowStockLimit:20}});
 }));
 preparationRouter.post('/v1/admin/orders/:id/dispatch/start-early',...admin,validParams('id'),wrap(async(r,s)=>{
   const reason=text(r.body?.reason,'reason',300),evidence=text(r.body?.evidenceReference,'evidenceReference',200);

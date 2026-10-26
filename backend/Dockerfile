@@ -20,7 +20,7 @@ RUN npm prune --omit=dev
 FROM node:24.19.0-bookworm-slim AS runtime
 ENV NODE_ENV=production PORT=5000 UPLOAD_DIR=/var/lib/market/uploads
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/* && mkdir -p /var/lib/market/uploads && chown node:node /var/lib/market/uploads
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/* && mkdir -p /var/lib/market/uploads /var/lib/market/private-support && chown -R node:node /var/lib/market && chmod 700 /var/lib/market/private-support
 COPY --from=production-deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
 # Render pre-deploy commands use the same final image as the API.

@@ -221,8 +221,8 @@ export async function recordStockDisposition(tx: InventoryTx, reservationId: str
 }
 
 /** Batched availability projection for customer/admin lists, without mutating stock on a GET. */
-export async function batchAvailability(itemIds: string[], now = new Date()) {
-  const rows = itemIds.length ? await prisma.stockBatch.findMany({ where: { menuItemId: { in: itemIds }, availableQty: { gt: 0 } }, select: { menuItemId: true, availableQty: true, expiresAt: true } }) : [];
+export async function batchAvailability(itemIds: string[], now = new Date(), db: InventoryTx | typeof prisma = prisma) {
+  const rows = itemIds.length ? await db.stockBatch.findMany({ where: { menuItemId: { in: itemIds }, availableQty: { gt: 0 } }, select: { menuItemId: true, availableQty: true, expiresAt: true } }) : [];
   const result = new Map<string, { availableQty: number; expiredQty: number; expiringQty: number; nextExpiry: string | null }>();
   for (const row of rows) {
     const value = result.get(row.menuItemId) ?? { availableQty: 0, expiredQty: 0, expiringQty: 0, nextExpiry: null };
@@ -237,10 +237,10 @@ export async function batchAvailability(itemIds: string[], now = new Date()) {
   return result;
 }
 
-export async function ensureStockAvailable(lines: { itemId: string; quantity: number }[]) {
+export async function ensureStockAvailable(lines: { itemId: string; quantity: number }[], db: InventoryTx | typeof prisma = prisma) {
   const quantities = new Map<string, number>();
   for (const line of lines) quantities.set(line.itemId, (quantities.get(line.itemId) ?? 0) + line.quantity);
-  const rows = await prisma.menuItem.findMany({ where: { id: { in: [...quantities.keys()] } }, select: { id: true, stockQty: true, batchTracking: true } });
-  const batches = await batchAvailability(rows.filter((row) => row.batchTracking).map((row) => row.id));
+  const rows = await db.menuItem.findMany({ where: { id: { in: [...quantities.keys()] } }, select: { id: true, stockQty: true, batchTracking: true } });
+  const batches = await batchAvailability(rows.filter((row) => row.batchTracking).map((row) => row.id),new Date(),db);
   if (rows.length !== quantities.size || rows.some((row) => (row.batchTracking ? batches.get(row.id)?.availableQty ?? 0 : row.stockQty) < quantities.get(row.id)!)) throw new AppError(409, 'OUT_OF_STOCK', 'Some packs no longer have enough unexpired stock. Refresh your cart.');
 }

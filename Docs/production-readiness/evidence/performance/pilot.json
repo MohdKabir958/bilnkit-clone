@@ -1,0 +1,237 @@
+{
+  "succeeded": true,
+  "seed": 20261002,
+  "waves": 10,
+  "fixture": {
+    "customers": 6,
+    "stores": 3,
+    "riders": 5
+  },
+  "elapsedMs": 36909.629982,
+  "httpRequests": 1368,
+  "peakConcurrentActions": 40,
+  "latencyMs": {
+    "p50": 76.22278600000573,
+    "p95": 363.70468800000526,
+    "maximum": 1067.7016310000035
+  },
+  "cpuMicroseconds": {
+    "user": 48393551,
+    "system": 7658580
+  },
+  "initialMemory": {
+    "rss": 767619072,
+    "heapTotal": 626929664,
+    "heapUsed": 508704808,
+    "external": 27651432,
+    "arrayBuffers": 12444349
+  },
+  "finalMemory": {
+    "rss": 873697280,
+    "heapTotal": 699445248,
+    "heapUsed": 478016000,
+    "external": 23790259,
+    "arrayBuffers": 8583136
+  },
+  "node": "v24.19.0",
+  "cpus": 4,
+  "routes": {
+    "GET /api/v1/vendors/:fixture/products": {
+      "count": 90,
+      "errors5xx": 0,
+      "success2xx": 84,
+      "maxMs": 325.291237999998,
+      "maxResponseBytes": 1197
+    },
+    "GET /api/v1/admin/operations": {
+      "count": 10,
+      "errors5xx": 0,
+      "success2xx": 10,
+      "maxMs": 136.48047899999983,
+      "maxResponseBytes": 304
+    },
+    "POST /api/drivers/duty-status": {
+      "count": 64,
+      "errors5xx": 0,
+      "success2xx": 64,
+      "maxMs": 377.7114490000022,
+      "maxResponseBytes": 42
+    },
+    "POST /api/v1/products/:fixture/stock": {
+      "count": 28,
+      "errors5xx": 0,
+      "success2xx": 16,
+      "maxMs": 446.510540999996,
+      "maxResponseBytes": 579
+    },
+    "POST /api/orders": {
+      "count": 70,
+      "errors5xx": 0,
+      "success2xx": 63,
+      "maxMs": 930.773414999996,
+      "maxResponseBytes": 1876
+    },
+    "POST /api/payments/create-order": {
+      "count": 37,
+      "errors5xx": 0,
+      "success2xx": 31,
+      "maxMs": 436.1524980000031,
+      "maxResponseBytes": 236
+    },
+    "POST /api/payments/webhook": {
+      "count": 22,
+      "errors5xx": 0,
+      "success2xx": 22,
+      "maxMs": 129.83306900000025,
+      "maxResponseBytes": 90
+    },
+    "POST /api/payments/verify-signature": {
+      "count": 17,
+      "errors5xx": 0,
+      "success2xx": 17,
+      "maxMs": 211.72983400000157,
+      "maxResponseBytes": 1852
+    },
+    "POST /api/orders/:uuid/cancel": {
+      "count": 11,
+      "errors5xx": 0,
+      "success2xx": 4,
+      "maxMs": 191.6645439999993,
+      "maxResponseBytes": 1836
+    },
+    "PATCH /api/orders/:uuid/status": {
+      "count": 138,
+      "errors5xx": 0,
+      "success2xx": 126,
+      "maxMs": 677.831384000001,
+      "maxResponseBytes": 1780
+    },
+    "POST /api/orders/:uuid/accept-driver": {
+      "count": 406,
+      "errors5xx": 0,
+      "success2xx": 19,
+      "maxMs": 711.3775669999959,
+      "maxResponseBytes": 1759
+    },
+    "POST /api/admin/partners/driver/st-dp-1/status": {
+      "count": 13,
+      "errors5xx": 0,
+      "success2xx": 4,
+      "maxMs": 168.52703499999916,
+      "maxResponseBytes": 433
+    },
+    "POST /api/admin/partners/driver/st-dp-2/status": {
+      "count": 11,
+      "errors5xx": 0,
+      "success2xx": 0,
+      "maxMs": 6.3537020000003395,
+      "maxResponseBytes": 47
+    },
+    "POST /api/admin/partners/driver/st-dp-3/status": {
+      "count": 11,
+      "errors5xx": 0,
+      "success2xx": 0,
+      "maxMs": 6.0346820000013395,
+      "maxResponseBytes": 47
+    },
+    "POST /api/admin/partners/driver/st-dp-4/status": {
+      "count": 11,
+      "errors5xx": 0,
+      "success2xx": 0,
+      "maxMs": 5.31455300000016,
+      "maxResponseBytes": 47
+    },
+    "POST /api/admin/partners/driver/st-dp-5/status": {
+      "count": 12,
+      "errors5xx": 0,
+      "success2xx": 2,
+      "maxMs": 102.11707599999863,
+      "maxResponseBytes": 433
+    },
+    "POST /api/admin/partners/vendor/:fixture/status": {
+      "count": 35,
+      "errors5xx": 0,
+      "success2xx": 4,
+      "maxMs": 141.16274700000213,
+      "maxResponseBytes": 599
+    },
+    "GET /api/orders": {
+      "count": 33,
+      "errors5xx": 0,
+      "success2xx": 33,
+      "maxMs": 40.19934800000192,
+      "maxResponseBytes": 15090
+    },
+    "GET /api/orders?scope=active": {
+      "count": 154,
+      "errors5xx": 0,
+      "success2xx": 154,
+      "maxMs": 57.31773800000519,
+      "maxResponseBytes": 29206
+    },
+    "GET /api/orders?scope=history": {
+      "count": 33,
+      "errors5xx": 0,
+      "success2xx": 33,
+      "maxMs": 52.627910999999585,
+      "maxResponseBytes": 15090
+    },
+    "GET /api/orders/available": {
+      "count": 55,
+      "errors5xx": 0,
+      "success2xx": 55,
+      "maxMs": 1067.7016310000035,
+      "maxResponseBytes": 2475
+    },
+    "POST /api/drivers/location": {
+      "count": 14,
+      "errors5xx": 0,
+      "success2xx": 8,
+      "maxMs": 134.55709500000012,
+      "maxResponseBytes": 220
+    },
+    "POST /api/orders/:uuid/reject": {
+      "count": 12,
+      "errors5xx": 0,
+      "success2xx": 1,
+      "maxMs": 177.44687500000146,
+      "maxResponseBytes": 1176
+    },
+    "POST /api/admin/orders/:uuid/reset-otp-lock": {
+      "count": 5,
+      "errors5xx": 0,
+      "success2xx": 2,
+      "maxMs": 278.18996999999945,
+      "maxResponseBytes": 2698
+    },
+    "POST /api/orders/:uuid/verify-gate-otp": {
+      "count": 40,
+      "errors5xx": 0,
+      "success2xx": 16,
+      "maxMs": 231.9596160000001,
+      "maxResponseBytes": 1300
+    },
+    "GET /api/orders/:uuid": {
+      "count": 16,
+      "errors5xx": 0,
+      "success2xx": 16,
+      "maxMs": 158.9045530000003,
+      "maxResponseBytes": 1891
+    },
+    "POST /api/orders/:uuid/release": {
+      "count": 6,
+      "errors5xx": 0,
+      "success2xx": 0,
+      "maxMs": 125.42223800000284,
+      "maxResponseBytes": 65
+    },
+    "POST /api/admin/orders/:uuid/cancel": {
+      "count": 14,
+      "errors5xx": 0,
+      "success2xx": 14,
+      "maxMs": 803.0513870000068,
+      "maxResponseBytes": 2726
+    }
+  },
+  "limits": "Local in-process HTTP and real PostgreSQL/Socket.io; simulated payment provider; FCM unconfigured; not a production capacity or memory-leak certification."
+}

@@ -71,7 +71,9 @@ jobs:
       - run: npm run build
       - run: npm audit --omit=dev
       - if: matrix.component == 'super_admin'
-        run: npm test -- --reporter=json --outputFile=../../Docs/production-readiness/evidence/ci/admin.json
+        run: |
+          mkdir -p ../../Docs/production-readiness/evidence/ci
+          npm test -- --reporter=json --outputFile=../../Docs/production-readiness/evidence/ci/admin.json
       - name: Preserve admin test evidence
         if: always() && matrix.component == 'super_admin'
         uses: actions/upload-artifact@v4

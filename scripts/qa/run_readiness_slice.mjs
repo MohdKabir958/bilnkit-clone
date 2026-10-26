@@ -10,7 +10,7 @@ const require=createRequire(path.join(backend,'package.json'));
 const {PrismaClient}=require('@prisma/client'),dotenv=require('dotenv');
 const [label='compliance-payout',connections='3',repeatArg='1',...testArgs]=process.argv.slice(2);
 if(!testArgs.length)testArgs.push('test/e2e/compliance_payout_readiness.test.ts');
-if(testArgs.some(arg=>!/^test\/e2e\/[a-z0-9_]+\.test\.ts$/.test(arg)))throw Error('Use explicit backend e2e test paths only.');
+if(testArgs.some(arg=>!/^test\/(?:e2e|unit)\/[a-z0-9_]+\.test\.ts$/.test(arg)))throw Error('Use explicit backend e2e/unit test paths only.');
 if(!/^[a-z0-9-]+$/.test(label))throw Error('Invalid evidence label');
 if(!/^[1-8]$/.test(connections))throw Error('Use 1–8 local test connections');
 if(!/^\d+$/.test(repeatArg)||Number(repeatArg)<1||Number(repeatArg)>50)throw Error('Use 1–50 test repetitions');
