@@ -24,6 +24,12 @@ services:
         value: 24.19.0
       - key: NODE_ENV
         value: production
+      - key: GROZO_ENV
+        value: production
+      # New clients send a protocol/auth-instance contract. Older apps remain compatible
+      # until a separately approved, coordinated retirement/cutover.
+      - key: REQUIRE_CLIENT_CONTRACT
+        value: false
       - key: DATABASE_URL
         sync: false
       - key: MIGRATION_DATABASE_URL
@@ -39,8 +45,12 @@ services:
         sync: false
       - key: ADMIN_URL
         sync: false
+      - key: PUBLIC_BASE_URL
+        sync: false
       - key: UPLOAD_DIR
         value: /var/data/grozo/uploads
+      - key: SUPPORT_EVIDENCE_DIR
+        value: /var/data/grozo/private/support-evidence
       - key: PAYMENT_PROVIDER
         value: razorpay
       - key: RAZORPAY_KEY_ID

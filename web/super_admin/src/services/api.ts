@@ -147,10 +147,24 @@ export const clearAuthToken = () => {
 
 export const isAuthenticated = (): boolean => getAuthToken().trim().length > 10;
 
+export function publicClerkFrontendOrigin(): string | null {
+  const key = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || '';
+  if (!/^pk_(test|live)_/.test(key)) return null;
+  try {
+    const value = atob(key.replace(/^pk_(test|live)_/, ''));
+    return /^[a-z0-9]+(?:[.-][a-z0-9]+)*\$$/.test(value) ? `https://${value.slice(0,-1)}` : null;
+  } catch { return null; }
+}
+
 const getHeaders = async (extraHeaders: Record<string, string> = {}) => {
   const token = (await freshAuthToken()).replace(/^Bearer\s+/i, '');
+  const instance = publicClerkFrontendOrigin();
   return {
+    ...(instance ? { 'X-Grozo-Clerk-Frontend': instance } : {}),
     'Content-Type': 'application/json',
+    'X-Grozo-Auth-Mode': import.meta.env.VITE_AUTH_MODE || 'legacy',
+    'X-Grozo-Client-Protocol': '1',
+    'X-Grozo-Client': 'admin/web',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...extraHeaders,
   };
@@ -255,6 +269,30 @@ const orderOrNull = (raw: any): Order | null => {
 };
 
 export const apiService = {
+  fetchSellerCompliance: (id:string) => request<any>(`/api/v1/vendors/${encodeURIComponent(id)}/compliance`),
+  saveSellerCompliance: (id:string,data:Record<string,unknown>) => request<any>(`/api/v1/vendors/${encodeURIComponent(id)}/compliance`,{method:'PUT',body:JSON.stringify(data)}),
+  reviewSellerCompliance: (id:string,data:Record<string,unknown>) => request<any>(`/api/v1/admin/vendors/${encodeURIComponent(id)}/compliance/review`,{method:'POST',body:JSON.stringify(data)}),
+  fetchPayoutReadiness: (id:string) => request<any>(`/api/v1/admin/settlements/${encodeURIComponent(id)}/readiness`),
+  planSettlementPayout: (id:string,requestKey:string) => request<any>(`/api/v1/admin/settlements/${encodeURIComponent(id)}/payout-plan`,{method:'POST',body:JSON.stringify({requestKey})}),
+
+  supportOwners: () => request<{id:string;name:string;email:string|null}[]>('/api/v1/admin/support-owners'),
+  operationExceptions: (cityId='') => request<any>(`/api/v1/admin/operations/exceptions${cityId?'?cityId='+encodeURIComponent(cityId):''}`),
+  recordOperationResolution: (input:Record<string,unknown>) => request('/api/v1/admin/operations/resolutions',{method:'POST',body:JSON.stringify(input)}),
+  cashLedger: (id:string) => request<any>(`/api/v1/admin/cash/${encodeURIComponent(id)}/ledger`),
+  cashEvidence: (id:string,input:Record<string,unknown>) => request(`/api/v1/admin/cash/${encodeURIComponent(id)}/evidence`,{method:'POST',body:JSON.stringify(input)}),
+  riderCashBalance: (id:string) => request<any>(`/api/v1/admin/riders/${encodeURIComponent(id)}/cash-balance`),
+  cashCloses: () => request<any[]>('/api/v1/admin/cash-closes'),
+  createCashClose: (id:string,input:Record<string,unknown>) => request(`/api/v1/admin/riders/${encodeURIComponent(id)}/cash-close`,{method:'POST',body:JSON.stringify(input)}),
+  reviewCashClose: (id:string,approved:boolean,reason:string) => request(`/api/v1/admin/cash-closes/${encodeURIComponent(id)}/review`,{method:'POST',body:JSON.stringify({approved,reason})}),
+  downloadSupportEvidence: async(caseId:string,id:string) => {
+    const controller=new AbortController(),timer=window.setTimeout(()=>controller.abort(),20000);
+    try {
+      const response=await fetch(`${API_BASE_URL}/api/v1/support-cases/${encodeURIComponent(caseId)}/evidence/${encodeURIComponent(id)}`,{headers:await getHeaders(),signal:controller.signal,cache:'no-store'});
+      if(!response.ok){const body=await response.json().catch(()=>({}));throw new ApiError(response.status,body.message||'Support photo is unavailable.');}
+      const blob=await response.blob();if(!['image/jpeg','image/png','image/webp'].includes(blob.type))throw new ApiError(502,'Unsupported evidence format.');
+      const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`support-evidence-${id}`;link.click();window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+    } finally{window.clearTimeout(timer);}
+  },
   fetchAdminTeam: () => request<import('../components/TeamAccessPanel').TeamMember[]>('/api/v1/admin/team'),
   inviteAdmin: (email: string, role: 'OWNER' | 'ADMIN') => request('/api/v1/admin/team', {method:'POST',body:JSON.stringify({email,role})}),
   changeAdminRole: (id: string, role: 'OWNER' | 'ADMIN') => request(`/api/v1/admin/team/${encodeURIComponent(id)}`, {method:'PATCH',body:JSON.stringify({role})}),
@@ -270,10 +308,16 @@ export const apiService = {
   dispatchPage: (cityId: string, after='') => requestFull<any>(`/api/v1/admin/dispatch?${new URLSearchParams({limit:'30',...(cityId?{cityId}:{}),...(after?{after}:{})})}`),
   retryDispatch: (id:string) => request(`/api/v1/admin/orders/${encodeURIComponent(id)}/dispatch/retry`,{method:'POST'}),
   supportPage: (status:string, after='') => requestFull<any>(`/api/v1/admin/support-cases?${new URLSearchParams({limit:'30',...(status?{status}:{}),...(after?{after}:{})})}`),
-  replySupport: (id:string,message:string,status:string) => request(`/api/v1/admin/support-cases/${encodeURIComponent(id)}/notes`,{method:'POST',body:JSON.stringify({message,status})}),
+  replySupport: (id:string,message:string,status:string,details:Record<string,unknown>={}) => request(`/api/v1/admin/support-cases/${encodeURIComponent(id)}/notes`,{method:'POST',body:JSON.stringify({...details,message,status})}),
   auditPage: (after='') => requestFull<any>(`/api/v1/admin/audit?${new URLSearchParams({limit:'50',...(after?{after}:{})})}`),
   configureRiderServiceArea: (id:string, zoneId:string) => request(`/api/v1/admin/drivers/${encodeURIComponent(id)}/service-area`, {method:'PUT',body:JSON.stringify({zoneId})}),
   inventoryPage: (opts: {q:string;vendorId:string;cityId:string;lowStock:boolean;after:string}) => requestFull<any>(`/api/v1/admin/products?${new URLSearchParams(Object.fromEntries(Object.entries({...opts,limit:'50'}).filter(([,v]) => v !== '' && v !== false).map(([k,v])=>[k,String(v)])))}`),
+  productBatches: (id:string,after='') => requestFull<any>(`/api/v1/products/${encodeURIComponent(id)}/batches?limit=100${after?'&after='+encodeURIComponent(after):''}`),
+  productReservations: (id:string) => request<any[]>(`/api/v1/products/${encodeURIComponent(id)}/reservations`),
+  productBatchTracking: (id:string,input:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/batch-tracking`,{method:'PUT',body:JSON.stringify(input)}),
+  receiveProductBatch: (id:string,input:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/batches`,{method:'POST',body:JSON.stringify(input)}),
+  correctProductBatch: (id:string,batchId:string,input:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/batches/${encodeURIComponent(batchId)}/stock`,{method:'POST',body:JSON.stringify(input)}),
+  stockDisposition: (id:string,input:Record<string,unknown>) => request(`/api/v1/inventory/reservations/${encodeURIComponent(id)}/disposition`,{method:'POST',body:JSON.stringify(input)}),
   productMovements: (id:string) => requestFull<any>(`/api/v1/products/${encodeURIComponent(id)}/stock-movements?limit=100`),
   adjustProductStock: (id:string, data:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/stock`, {method:'POST',body:JSON.stringify(data)}),
   createGroceryProduct: (vendorId:string,data:Record<string,unknown>) => request(`/api/v1/vendors/${encodeURIComponent(vendorId)}/products`, {method:'POST',body:JSON.stringify(data)}),

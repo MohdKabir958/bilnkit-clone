@@ -51,7 +51,9 @@ function AdminSession() {
     let active = true;
     installClerkTokenGetter(force => getToken({skipCache:force}));
     apiService.validateSession().then(profile => { if (active) {setAdmin(profile);setVerifiedFor(`${userId}:${sessionId}`);} })
-      .catch(reason => { if (active) setError(reason instanceof ApiError && reason.status === 403
+      .catch(reason => { if (active) setError(reason instanceof ApiError && reason.code === 'DEPLOYMENT_MISMATCH'
+        ? reason.message
+        : reason instanceof ApiError && reason.status === 403
         ? 'This account has not been approved as a Grozo administrator.'
         : reason instanceof ApiError && reason.status === 401
         ? 'Grozo could not authenticate this Clerk session (401). Sign out and retry. If this continues, ask the operator to check the Clerk instance and allowed website origin.'

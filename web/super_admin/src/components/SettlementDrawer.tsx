@@ -12,6 +12,7 @@ import { useConfirm } from './ui/ConfirmDialog';
 import { useToast } from './ui/Toast';
 import { ErrorNote, ScrollTable, Td, Th, plainError, useLoad } from './FinanceCommon';
 import { PayoutAccountPanel } from './PayoutAccountPanel';
+import { PayoutReadinessPanel } from './PayoutReadinessPanel';
 
 const BADGE: Record<string, string> = {
   PENDING: 'bg-kraveo-status-placed/15 text-kraveo-status-placed',
@@ -170,6 +171,7 @@ export const SettlementDrawer: React.FC<Props> = ({ settlementId, preview, onClo
       )}
     >
       <div className="space-y-5">
+        <PayoutReadinessPanel id={settlementId} onAuthError={onAuthError} />
         <div className="flex flex-wrap items-center gap-2">
           <SettlementStatusBadge status={status} />
           <span className="text-xs text-kraveo-ink3">Created {istDateTime(s.createdAt) || '—'}{s.createdBy === 'AUTO' ? ' by the daily job' : ''}</span>

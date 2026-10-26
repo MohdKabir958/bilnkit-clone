@@ -3,6 +3,7 @@ import { apiService } from '../services/api';
 import { Drawer } from './ui/Drawer';
 import {CreateProductDrawer} from './CreateProductDrawer';
 import { ProductImage } from './ui/ProductImage';
+import {PhysicalInventoryDrawer} from './PhysicalInventoryDrawer';
 
 type Product = Record<string, any> & { id: string; name: string; vendorId: string; stockQty: number; stockVersion: number; pricePaise: number };
 const currency = (paise: number) => `₹${(paise / 100).toFixed(2)}`;
@@ -10,6 +11,7 @@ const cls = 'k-input';
 const minor = (value: string) => { if (!/^\d+(\.\d{1,2})?$/.test(value.trim())) throw new Error('Enter a rupee amount with up to two decimals.'); const [whole, fraction = ''] = value.trim().split('.'); return Number(whole) * 100 + Number(fraction.padEnd(2,'0')); };
 export function InventoryPanel({ vendors, onAuthError,selectedCityId,initialVendorId='' }: { initialVendorId?:string; selectedCityId?:string; vendors: {id: string; name: string}[]; onAuthError: (e: unknown) => void }) {
   const [rows, setRows] = useState<Product[]>([]), [cities, setCities] = useState<{id:string;name:string}[]>([]);
+  const [physical,setPhysical]=useState<Product|null>(null);
   const [creating,setCreating]=useState(false);
   const [appliedQ,setAppliedQ] = useState('');
   const [q, setQ] = useState(''), [vendorId, setVendorId] = useState(initialVendorId), [cityId, setCityId] = useState(selectedCityId??''), [lowStock, setLowStock] = useState(false);
@@ -42,8 +44,8 @@ export function InventoryPanel({ vendors, onAuthError,selectedCityId,initialVend
     {!busy && rows.length === 0 && <p>No matching products. Choose Add product to create a grocery item, then Adjust stock to record the available packs.</p>}
     <div className="grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-2">{rows.map((p) => <article key={p.id} className="min-w-0 rounded-k-xl border border-kraveo-line bg-kraveo-surface p-4 space-y-3 [overflow-wrap:anywhere]">
       <div className="flex items-start gap-4"><ProductImage url={p.imageUrls?.[0] ?? ''} name={p.name}/><div className="min-w-0 flex-1"><h3 className="font-bold">{p.name} · {p.packSize} {p.unit}</h3><p className="mt-1 text-xs text-kraveo-ink2">{p.vendor?.name} · SKU {p.sku ?? 'needs setup'}</p><span className="mt-2 inline-flex rounded-md bg-kraveo-surface2 px-2 py-1 text-xs font-semibold">{String(p.approvalStatus).replace(/_/g,' ')}</span></div></div>
-      <p>{currency(p.pricePaise)}{p.mrpPaise > p.pricePaise && <> · MRP {currency(p.mrpPaise)}</>} · Available {p.stockQty}{p.lowStock && <strong> · Low stock</strong>}</p>
-      <div className="flex flex-wrap gap-4"><button disabled={busy} onClick={() => setEditing(p)}>Edit product</button><button disabled={busy} onClick={() => {setAdjusting(p);setDelta('');setReason('');stockKey.current=crypto.randomUUID();}}>Adjust stock</button><button disabled={busy} onClick={() => void run(async () => {setHistory((await apiService.productMovements(p.id)).data);})}>Recent stock history</button>
+      <p>{currency(p.pricePaise)}{p.mrpPaise > p.pricePaise && <> · MRP {currency(p.mrpPaise)}</>} · Available {p.stockQty}{p.lowStock && <strong> · Low stock</strong>}</p>{p.batchTracking&&<p className="text-sm text-kraveo-ink2">{p.batchSummary?.expiringQty??0} packs expire within 7 days · {p.batchSummary?.expiredQty??0} expired packs excluded</p>}
+      <div className="flex flex-wrap gap-4"><button disabled={busy} onClick={() => setEditing(p)}>Edit product</button><button disabled={busy} onClick={() => {if(p.batchTracking){setPhysical(p);return;}setAdjusting(p);setDelta('');setReason('');stockKey.current=crypto.randomUUID();}}>Adjust stock</button><button disabled={busy} onClick={() => void run(async () => {setHistory((await apiService.productMovements(p.id)).data);})}>Recent stock history</button><button disabled={busy} onClick={()=>setPhysical(p)}>Lots, packing and returns</button>
       {p.approvalStatus !== 'APPROVED' && <button disabled={busy} onClick={() => void run(() => apiService.approveCatalogItem(p.id, {}))}>Approve product</button>}
       </div>
     </article>)}</div>
@@ -53,6 +55,7 @@ export function InventoryPanel({ vendors, onAuthError,selectedCityId,initialVend
     </form></Drawer>}
     {history && <Drawer open title="Recent stock movements" onClose={() => setHistory(null)}><h2>Recent stock movements</h2><p>Showing the latest available page of up to 100 records.</p><ul>{history.map((h) => <li key={h.id}>{h.createdAt} · {h.kind} {h.delta} · {h.reason}</li>)}</ul><button onClick={() => setHistory(null)}>Close history</button></Drawer>}
     {editing && <Drawer open title="Edit grocery product" onClose={() => {if(!busy)setEditing(null);}}>{error && <p role="alert" className="mb-4 text-sm text-kraveo-danger">{error}</p>}<ProductEdit key={editing.id} row={editing} busy={busy} onCancel={() => setEditing(null)} onSave={(body) => run(async () => {await apiService.saveGroceryProduct(editing.id,body);setEditing(null);})} /></Drawer>}
+    {physical&&<PhysicalInventoryDrawer product={physical} onClose={()=>{setPhysical(null);void reload();}} onAuthError={onAuthError}/>}
     <CreateProductDrawer open={creating} vendors={vendors} initialVendorId={vendorId} onClose={()=>setCreating(false)} onCreated={()=>void reload()} onAuthError={onAuthError}/>
   </section>;
 }

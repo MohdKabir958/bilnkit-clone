@@ -1,7 +1,7 @@
 {
   "passed": true,
-  "database": "grozo_recovery_1792995525610_test",
-  "restoreTarget": "grozo_recovery_1792995525610_restore_test",
+  "database": "grozo_recovery_1793015950872_test",
+  "restoreTarget": "grozo_recovery_1793015950872_restore_test",
   "source": "synthetic-local-fixtures-only",
   "schemaAndMigrationChecksumsPreserved": true,
   "clerkUuidMappingPreserved": true,
@@ -14,9 +14,9 @@
     "vendors": 1,
     "products": 1,
     "orders": 1,
-    "migrations": 25
+    "migrations": 26
   },
   "node": "v24.19.0",
-  "completedAt": "2026-10-26T06:18:57.948Z",
+  "completedAt": "2026-10-26T11:59:22.686Z",
   "exitCode": 0
 }

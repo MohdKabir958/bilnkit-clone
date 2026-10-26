@@ -11,6 +11,7 @@ import { CreateStoreDrawer } from './CreateStoreDrawer';
 import { AddPartnerDrawer } from './AddPartnerDrawer';
 import { EditRestaurantDrawer } from './EditRestaurantDrawer';
 import { PayoutAccountPanel } from './PayoutAccountPanel';
+import { SellerCompliancePanel } from './SellerCompliancePanel';
 import { ApprovalPill } from './ui/ApprovalPill';
 import { Avatar } from './ui/Avatar';
 import { EmptyState } from './ui/EmptyState';
@@ -157,6 +158,7 @@ export const VendorManager: React.FC<VendorManagerProps> = ({ onOpenProducts,onO
             <VendorLocationEditor id={v.id} name={v.name} pin={v} onSaved={onLocationSaved} />
             {onCommissionSaved && <CommissionEditor id={v.id} name={v.name} commissionType={v.commissionType} commissionValue={v.commissionValue} onSaved={onCommissionSaved} onAuthError={onAuthError} />}
             {v.approvalStatus === 'APPROVED' && <VendorPayout vendor={v} onAuthError={onAuthError} />}
+            <SellerCompliancePanel vendorId={v.id} onAuthError={onAuthError} />
 
             <div className="mt-4 flex items-center justify-between gap-3 border-t border-kraveo-line pt-4">
               <div className="flex items-center gap-2">
