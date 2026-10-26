@@ -1,0 +1,25 @@
+FAIL test/e2e/store_coverage_workflow.test.ts (11.35 s)
+  ● Admin confirmed pickup and authoritative coverage › center and exact configured boundary succeed as closed stores with audited coverage
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 400
+
+      15 |   for(const pin of [point,{lat:12.98,lng:77.58}]){
+      16 |    await prisma.deliveryZone.update({where:{id:zoneId},data:{radiusKm:kmBetween(point,pin)||3}});
+    > 17 |    const response=await raw(w.admin,body(pin));expect(response.status).toBe(201);created.push(response.body.data.id);
+         |                                                                        ^
+      18 |    expect(response.body.data.isAcceptingOrders).toBe(false);expect(await prisma.vendorCoverage.count({where:{vendorId:response.body.data.id,zoneId,active:true}})).toBe(1);
+      19 |   }
+      20 |  });
+
+      at Object.<anonymous> (test/e2e/store_coverage_workflow.test.ts:17:72)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 3 passed, 4 total
+Snapshots:   0 total
+Time:        11.707 s
+Ran all test suites matching test/e2e/store_coverage_workflow.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/admin-pickup-coverage/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

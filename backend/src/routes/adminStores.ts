@@ -29,6 +29,8 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
       ownerSubject = (await verifiedPartnerIdentity(normalizeAdminEmail(b.ownerEmail))).id;
     }
     const row = await prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "City" WHERE id=${cityId} FOR SHARE`;
+      if(!(await tx.city.findUnique({where:{id:cityId}}))?.active)throw new AppError(400,'CITY_REQUIRED','Choose an enabled city.','cityId');
       let ownerId: string | undefined;
       if (ownerSubject) {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${ownerSubject}, 81971))`;
@@ -39,6 +41,7 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
         await tx.user.update({where:{id:owner.id},data:{role:'VENDOR'}});
         ownerId = owner.id;
       }
+      if(b.zoneId)await tx.$queryRaw`SELECT id FROM "DeliveryZone" WHERE id=${text(b.zoneId,'zoneId',64)} FOR SHARE`;
       const zone = b.zoneId ? await tx.deliveryZone.findUnique({where:{id:text(b.zoneId,'zoneId',64)}}) : null;
       if (b.zoneId && (!zone?.active || zone.cityId !== cityId || kmBetween({lat:b.lat,lng:b.lng},{lat:zone.centerLat,lng:zone.centerLng}) > zone.radiusKm)) throw new AppError(400,'ZONE_MISMATCH','Choose an enabled zone in this city that contains the store pickup location.','zoneId');
       const store = await tx.vendor.create({data:{name,address,cityId,pinCode,locality,lat:b.lat,lng:b.lng,userId:ownerId,category:category?.name??'Groceries',primaryCategoryId:category?.id,publicPhone:publicPhone||null,description:text(b.description,'description',600,false)||null,bannerImage:'',isAcceptingOrders:false,approvalStatus:'APPROVED',locationSource:'ADMIN',locationSetAt:new Date(),eta:''}});

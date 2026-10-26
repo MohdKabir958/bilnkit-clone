@@ -1,0 +1,23 @@
+
+> kraveo-super-admin@1.0.0 test
+> vitest run --maxWorkers=1 --minWorkers=1 src/lib/pickupCoverage.test.ts src/components/StoreCoverageWorkflow.test.tsx src/components/AdminWorkspace.test.tsx src/AppWorkspace.test.tsx
+
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/AdminWorkspace.test.tsx (11 tests) 870ms
+ ✓ src/AppWorkspace.test.tsx (4 tests) 2261ms
+   ✓ loads live workspace data with Clerk even though the legacy token is empty 493ms
+   ✓ sends selected city to the actual order query and shows owner-only team panel 310ms
+   ✓ overview Add vendor opens a creation form, while later vendor navigation opens the list 503ms
+   ✓ new vendor completion navigates to inventory scoped to the created store 953ms
+ ✓ src/components/StoreCoverageWorkflow.test.tsx (3 tests) 1038ms
+   ✓ offers only actual covering zones and clears the selection when the pin moves outside 426ms
+   ✓ an authoritative stale-zone refusal retains the form, refreshes coverage and never claims creation 322ms
+ ✓ src/lib/pickupCoverage.test.ts (2 tests) 5ms
+
+ Test Files  4 passed (4)
+      Tests  20 passed (20)
+   Start at  19:02:07
+   Duration  10.00s (transform 1.63s, setup 0ms, collect 3.23s, tests 4.17s, environment 1.35s, prepare 273ms)
+

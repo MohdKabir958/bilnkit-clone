@@ -27,7 +27,7 @@ it('new vendor completion navigates to inventory scoped to the created store',as
  const change=(label:string,value:string)=>fireEvent.change(screen.getByLabelText(label),{target:{value}});
  change('Store name','New store');change('Primary store category','groceries');fireEvent.click(screen.getByRole('button',{name:'Next: Pickup'}));
  for(const[label,value]of [['City','blr'],['Pickup address','Synthetic pickup'],['Area / locality','Town Hall'],['PIN code','560002'],['Pickup latitude','12.96393155'],['Pickup longitude','77.58425661']])change(label,value);
- fireEvent.click(screen.getByRole('button',{name:'Next: Access'}));fireEvent.click(screen.getByRole('button',{name:'Next: Review'}));fireEvent.click(screen.getByLabelText('I have confirmed these store and pickup details.'));fireEvent.click(screen.getByRole('button',{name:'Create vendor'}));
+ fireEvent.click(screen.getByRole('button',{name:'Next: Access'}));fireEvent.click(screen.getByRole('button',{name:'Next: Review'}));fireEvent.click(screen.getByLabelText('I have confirmed these store and pickup details.'));fireEvent.click(screen.getByRole('button',{name:'Create closed draft'}));
  fireEvent.click(await screen.findByRole('button',{name:'Add products & stock'}));
  await waitFor(()=>expect(apiService.inventoryPage).toHaveBeenLastCalledWith(expect.objectContaining({vendorId:'new-store'})));
  expect((screen.getByLabelText('Inventory store')as HTMLSelectElement).value).toBe('new-store');

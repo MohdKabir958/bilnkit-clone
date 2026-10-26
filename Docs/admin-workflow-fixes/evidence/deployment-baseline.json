@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-10-26T18:59:10.782742+00:00",
+  "readOnly": true,
+  "results": [
+    {
+      "url": "https://grozo-backend-3wdf.onrender.com/api/config",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://grozo-backend-3wdf.onrender.com/ready",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8",
+      "vercelId": null,
+      "response": {
+        "ready": true,
+        "pushConfigured": false
+      }
+    },
+    {
+      "url": "https://grozo-admin.vercel.app/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "vercelId": "cle1::dt6hk-1793041150615-254749acddf9",
+      "note": "HTML response confirms reachability, not deployed Git SHA."
+    }
+  ],
+  "renderSha": "Not independently verified; management API credentials unavailable",
+  "operatorReportedRenderSha": "0727cbdecf25a2f5f0b1af9052ee8ce340c042e3",
+  "operatorReportedRenderBranch": "feature/india-grocery-platform",
+  "stagingConfigured": false
+}
