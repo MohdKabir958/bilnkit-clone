@@ -1,0 +1,5 @@
+
+> kraveo-super-admin@1.0.0 test
+> vitest run --maxWorkers=1 --minWorkers=1 --reporter=json --outputFile=../../Docs/production-readiness/evidence/release-admin/vitest.json
+
+JSON report written to /workspace/bilnkit-clone/Docs/production-readiness/evidence/release-admin/vitest.json

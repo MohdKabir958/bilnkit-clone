@@ -313,7 +313,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -324,7 +324,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -335,7 +335,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -346,7 +346,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -357,7 +357,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -368,7 +368,18 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
+    "physicalDevice": false,
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
+  },
+  {
+    "path": "after/customer/home-reference-aspect.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 793,
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -379,7 +390,18 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
+    "physicalDevice": false,
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
+  },
+  {
+    "path": "after/customer/item-change-approval.png",
+    "role": "customer",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -390,7 +412,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -401,7 +423,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -412,7 +434,7 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -423,7 +445,7 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -434,7 +456,7 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -445,7 +467,7 @@
     "phase": "after",
     "width": 430,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -456,7 +478,7 @@
     "phase": "after",
     "width": 430,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -467,7 +489,7 @@
     "phase": "after",
     "width": 430,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -478,7 +500,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario and demo-service quote snapshot",
+    "source": "Flutter production widgets; isolated scenario/service fixtures; captured checkout uses explicitly simulated online/COD capability",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -489,7 +511,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures; legacy login component is not a hosted Clerk login",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -500,7 +522,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures; legacy login component is not a hosted Clerk login",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -511,7 +533,7 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures; legacy login component is not a hosted Clerk login",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -522,7 +544,7 @@
     "phase": "after",
     "width": 320,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures; legacy login component is not a hosted Clerk login",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -533,7 +555,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures; legacy login component is not a hosted Clerk login",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -544,7 +566,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures; legacy login component is not a hosted Clerk login",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -555,7 +577,18 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures; legacy login component is not a hosted Clerk login",
+    "physicalDevice": false,
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
+  },
+  {
+    "path": "after/vendor/packing-and-hours.png",
+    "role": "vendor",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures; legacy login component is not a hosted Clerk login",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -566,7 +599,7 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures; legacy login component is not a hosted Clerk login",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -577,7 +610,18 @@
     "phase": "after",
     "width": 390,
     "height": 844,
-    "source": "Flutter production widgets; isolated scenario/API/order fixtures",
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures; legacy login component is not a hosted Clerk login",
+    "physicalDevice": false,
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
+  },
+  {
+    "path": "after/vendor/store-performance.png",
+    "role": "vendor",
+    "phase": "after",
+    "width": 390,
+    "height": 844,
+    "source": "Flutter production widgets; isolated scenario/API/order fixtures; legacy login component is not a hosted Clerk login",
     "physicalDevice": false,
     "livePayments": false,
     "productImages": "Original AI-generated, unbranded demo illustrations"
@@ -682,6 +726,50 @@
     "productImages": "Original AI-generated, unbranded demo illustrations"
   },
   {
+    "path": "after/admin/add-admin-email.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1440,
+    "height": 1000,
+    "source": "Actual Chromium; explicitly labelled synthetic API fixtures, not a hosted session",
+    "physicalDevice": false,
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
+  },
+  {
+    "path": "after/admin/add-product.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1440,
+    "height": 1000,
+    "source": "Actual Chromium; explicitly labelled synthetic API fixtures, not a hosted session",
+    "physicalDevice": false,
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
+  },
+  {
+    "path": "after/admin/add-vendor.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1440,
+    "height": 1000,
+    "source": "Actual Chromium; explicitly labelled synthetic API fixtures, not a hosted session",
+    "physicalDevice": false,
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
+  },
+  {
+    "path": "after/admin/cash-handover.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1440,
+    "height": 1000,
+    "source": "Actual Chromium; explicitly labelled synthetic API fixtures, not a hosted session",
+    "physicalDevice": false,
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
+  },
+  {
     "path": "after/admin/coverage.png",
     "role": "admin",
     "phase": "after",
@@ -727,6 +815,17 @@
   },
   {
     "path": "after/admin/inventory.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1440,
+    "height": 1000,
+    "source": "Actual Chromium; explicitly labelled synthetic API fixtures, not a hosted session",
+    "physicalDevice": false,
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
+  },
+  {
+    "path": "after/admin/login-current.png",
     "role": "admin",
     "phase": "after",
     "width": 1440,
@@ -892,6 +991,17 @@
   },
   {
     "path": "after/admin/onboarding-14-inventory-product-photo.png",
+    "role": "admin",
+    "phase": "after",
+    "width": 1440,
+    "height": 1000,
+    "source": "Actual Chromium; explicitly labelled synthetic API fixtures, not a hosted session",
+    "physicalDevice": false,
+    "livePayments": false,
+    "productImages": "Original AI-generated, unbranded demo illustrations"
+  },
+  {
+    "path": "after/admin/operational-health.png",
     "role": "admin",
     "phase": "after",
     "width": 1440,

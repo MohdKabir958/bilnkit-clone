@@ -1,0 +1,68 @@
+{"protocolVersion":"0.1.1","runnerVersion":null,"pid":1029872,"type":"start","time":0}
+{"suite":{"id":0,"platform":"vm","path":"/workspace/bilnkit-clone/apps/customer_app/test/ui_visual_capture_test.dart"},"type":"suite","time":0}
+{"test":{"id":1,"name":"loading /workspace/bilnkit-clone/apps/customer_app/test/ui_visual_capture_test.dart","suiteID":0,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":2}
+{"count":4,"time":9,"type":"allSuites"}
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":25883}
+{"group":{"id":2,"suiteID":0,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":1,"line":null,"column":null,"url":null},"type":"group","time":25886}
+{"test":{"id":3,"name":"(setUpAll)","suiteID":0,"groupIDs":[2],"metadata":{"skip":false,"skipReason":null},"line":72,"column":3,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/ui_visual_capture_test.dart"},"type":"testStart","time":25886}
+{"testID":3,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":25972}
+{"test":{"id":4,"name":"capture customer production screens using isolated grocery fixtures","suiteID":0,"groupIDs":[2],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":73,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/ui_visual_capture_test.dart"},"type":"testStart","time":25973}
+{"testID":4,"messageType":"print","message":"[Categories] restaurants unavailable: _Exception","type":"print","time":28193}
+{"testID":4,"messageType":"print","message":"[Categories] dishes unavailable: _Exception","type":"print","time":28194}
+{"testID":4,"messageType":"print","message":"[Catalog] Live catalog unavailable: FormatException","type":"print","time":28194}
+{"testID":4,"messageType":"print","message":"[Catalog] Live catalog unavailable: FormatException","type":"print","time":29003}
+{"testID":4,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":30329}
+{"test":{"id":5,"name":"(tearDownAll)","suiteID":0,"groupIDs":[2],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":30330}
+{"testID":5,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":30334}
+{"suite":{"id":6,"platform":"vm","path":"/workspace/bilnkit-clone/apps/customer_app/test/ui_state_visual_capture_test.dart"},"type":"suite","time":30379}
+{"test":{"id":7,"name":"loading /workspace/bilnkit-clone/apps/customer_app/test/ui_state_visual_capture_test.dart","suiteID":6,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":30379}
+{"testID":7,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":31594}
+{"group":{"id":8,"suiteID":6,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":1,"line":null,"column":null,"url":null},"type":"group","time":31594}
+{"test":{"id":9,"name":"(setUpAll)","suiteID":6,"groupIDs":[8],"metadata":{"skip":false,"skipReason":null},"line":20,"column":3,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/ui_state_visual_capture_test.dart"},"type":"testStart","time":31595}
+{"testID":9,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":31639}
+{"test":{"id":10,"name":"capture customer loading empty and offline HTTP states","suiteID":6,"groupIDs":[8],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":21,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/ui_state_visual_capture_test.dart"},"type":"testStart","time":31640}
+{"testID":10,"messageType":"print","message":"[Categories] restaurants unavailable: ClientException","type":"print","time":33409}
+{"testID":10,"messageType":"print","message":"[Categories] dishes unavailable: ClientException","type":"print","time":33410}
+{"testID":10,"messageType":"print","message":"[Catalog] Live catalog unavailable: ClientException","type":"print","time":33410}
+{"testID":10,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":33620}
+{"test":{"id":11,"name":"(tearDownAll)","suiteID":6,"groupIDs":[8],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":33621}
+{"testID":11,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":33630}
+{"suite":{"id":12,"platform":"vm","path":"/workspace/bilnkit-clone/apps/customer_app/test/readiness_visual_capture_test.dart"},"type":"suite","time":33672}
+{"test":{"id":13,"name":"loading /workspace/bilnkit-clone/apps/customer_app/test/readiness_visual_capture_test.dart","suiteID":12,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":33672}
+{"testID":13,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":35650}
+{"group":{"id":14,"suiteID":12,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":1,"line":null,"column":null,"url":null},"type":"group","time":35651}
+{"test":{"id":15,"name":"(setUpAll)","suiteID":12,"groupIDs":[14],"metadata":{"skip":false,"skipReason":null},"line":14,"column":3,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/readiness_visual_capture_test.dart"},"type":"testStart","time":35652}
+{"testID":15,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":35740}
+{"test":{"id":16,"name":"capture implemented item-change approval using synthetic service fixtures","suiteID":12,"groupIDs":[14],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":15,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/readiness_visual_capture_test.dart"},"type":"testStart","time":35740}
+{"testID":16,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":36927}
+{"test":{"id":17,"name":"(tearDownAll)","suiteID":12,"groupIDs":[14],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":36928}
+{"testID":17,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":36933}
+{"suite":{"id":18,"platform":"vm","path":"/workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"suite","time":36960}
+{"test":{"id":19,"name":"loading /workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart","suiteID":18,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":36960}
+{"testID":19,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":38706}
+{"group":{"id":20,"suiteID":18,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":10,"line":null,"column":null,"url":null},"type":"group","time":38707}
+{"test":{"id":21,"name":"(setUpAll)","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":87,"column":3,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"testStart","time":38707}
+{"testID":21,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":38750}
+{"test":{"id":22,"name":"reference structure: green brand, four stores, ten categories and two product columns","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":142,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"testStart","time":38751}
+{"testID":22,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":40810}
+{"test":{"id":23,"name":"product hearts and header wishlist work and clear on account logout","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":158,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"testStart","time":40811}
+{"testID":23,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":41851}
+{"test":{"id":24,"name":"cart header opens the existing empty cart and View All opens live stores","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":182,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"testStart","time":41852}
+{"testID":24,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":42735}
+{"test":{"id":25,"name":"reference remains scrollable without overflow at 320.0 / 1.0 text","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":201,"root_column":5,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"testStart","time":42736}
+{"testID":25,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":43495}
+{"test":{"id":26,"name":"reference remains scrollable without overflow at 390.0 / 1.8 text","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":201,"root_column":5,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"testStart","time":43497}
+{"testID":26,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":44091}
+{"test":{"id":27,"name":"reference remains scrollable without overflow at 600.0 / 1.0 text","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":201,"root_column":5,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"testStart","time":44092}
+{"testID":27,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":44938}
+{"test":{"id":28,"name":"department mapping groups live categories without inventing products","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":212,"column":3,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"testStart","time":44940}
+{"testID":28,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":44956}
+{"test":{"id":29,"name":"reference ADD button uses the real single-store cart and updates the header","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":219,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"testStart","time":44957}
+{"testID":29,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":45899}
+{"test":{"id":30,"name":"category queries preserve the address and pagination on the existing protected API","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":239,"column":3,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"testStart","time":45900}
+{"testID":30,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":45924}
+{"test":{"id":31,"name":"capture actual reference implementation","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":257,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/reference_home_test.dart"},"type":"testStart","time":45925}
+{"testID":31,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":47706}
+{"test":{"id":32,"name":"(tearDownAll)","suiteID":18,"groupIDs":[20],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":47708}
+{"testID":32,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":47712}
+{"success":true,"type":"done","time":47774}

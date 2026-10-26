@@ -1,3 +1,9 @@
+# Latest complete backend verification
+
+The continuation completed a **single complete run: 1,238 passed, zero failed/skipped, 57 suites, 524,240 ms, exit 0**, after all 27 migrations in a fresh local database. Backend source: `ca886b4`. Exact command, database/environment and full unmodified log are in [Docs/qa/final-backend-regression.md](../qa/final-backend-regression.md) and [release evidence](evidence/release-final/).
+
+The earlier checkpoint below is preserved as independent history, not added to the latest test count.
+
 # Complete backend regression — 26 October 2026
 
 The final backend source completed one clean Jest invocation against a fresh isolated local PostgreSQL database. No failed test was disabled or skipped. Real Clerk/FCM/Razorpay-hosted execution and production deployment are separate external checks, not inferred from simulated fixtures.

@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-10-26T13:46:56.045232+00:00",
+  "readOnly": true,
+  "results": [
+    {
+      "url": "https://grozo-backend-3wdf.onrender.com/health",
+      "error": "The read operation timed out"
+    },
+    {
+      "url": "https://grozo-backend-3wdf.onrender.com/ready",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8",
+      "csp": null,
+      "response": {
+        "ready": true,
+        "pushConfigured": false
+      }
+    },
+    {
+      "url": "https://grozo-backend-3wdf.onrender.com/api/config",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://grozo-admin.vercel.app/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; connect-src 'self' https://grozo-backend-3wdf.onrender.com wss://grozo-backend-3wdf.onrender.com https://capable-mutt-6.clerk.accounts.dev https://clerk-telemetry.com https://challenges.cloudflare.com; script-src 'self' https://capable-mutt-6.clerk.accounts.dev https://challenges.cloudflare.com; worker-src 'self' blob:; frame-src https://capable-mutt-6.clerk.accounts.dev https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://grozo-backend-3wdf.onrender.com https://capable-mutt-6.clerk.accounts.dev https://img.clerk.com https://raw.githubusercontent.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+      "htmlTitle": "Grozo"
+    }
+  ],
+  "healthFollowUp": {
+    "url": "https://grozo-backend-3wdf.onrender.com/health",
+    "error": "The read operation timed out",
+    "checkedAt": "2026-10-26T17:17:36.432927+00:00"
+  }
+}

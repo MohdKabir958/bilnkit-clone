@@ -1,0 +1,13 @@
+{"protocolVersion":"0.1.1","runnerVersion":null,"pid":1031096,"type":"start","time":0}
+{"suite":{"id":0,"platform":"vm","path":"/workspace/bilnkit-clone/apps/customer_app/test/readiness_visual_capture_test.dart"},"type":"suite","time":0}
+{"test":{"id":1,"name":"loading /workspace/bilnkit-clone/apps/customer_app/test/readiness_visual_capture_test.dart","suiteID":0,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":1}
+{"count":1,"time":5,"type":"allSuites"}
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":4430}
+{"group":{"id":2,"suiteID":0,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":1,"line":null,"column":null,"url":null},"type":"group","time":4433}
+{"test":{"id":3,"name":"(setUpAll)","suiteID":0,"groupIDs":[2],"metadata":{"skip":false,"skipReason":null},"line":14,"column":3,"url":"file:///workspace/bilnkit-clone/apps/customer_app/test/readiness_visual_capture_test.dart"},"type":"testStart","time":4433}
+{"testID":3,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":4525}
+{"test":{"id":4,"name":"capture implemented item-change approval using synthetic service fixtures","suiteID":0,"groupIDs":[2],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":15,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/customer_app/test/readiness_visual_capture_test.dart"},"type":"testStart","time":4526}
+{"testID":4,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":5517}
+{"test":{"id":5,"name":"(tearDownAll)","suiteID":0,"groupIDs":[2],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":5518}
+{"testID":5,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":5523}
+{"success":true,"type":"done","time":5551}
