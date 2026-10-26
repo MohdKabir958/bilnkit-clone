@@ -161,6 +161,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
         .popUntil((route) => route.isFirst || route is! PageRoute);
     switch (payload.event) {
       case PushEvent.newDelivery:
+        // Even an expired notification opens only the refreshed offers list. The
+        // server owns expiry/eligibility; notification data never accepts a job.
         _goTab(0);
         if (_rider.onDuty) unawaited(_rider.pollNow());
       case PushEvent.pickupReady:

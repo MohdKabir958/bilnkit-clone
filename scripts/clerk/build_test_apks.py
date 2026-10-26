@@ -41,7 +41,7 @@ def main():
         env.pop(name,None)
     output=ROOT/'build/clerk-test-apks';output.mkdir(parents=True,exist_ok=True)
     command=['flutter','build','apk','--profile','--split-per-abi','--target-platform','android-arm64','--no-pub',
-             f'--build-name={args.build_name}',f'--build-number={args.build_number}','--dart-define=AUTH_MODE=clerk-test',
+             f'--build-name={args.build_name}',f'--build-number={args.build_number}','--dart-define=AUTH_MODE=clerk-test', f'--dart-define=CLERK_FRONTEND_ORIGIN=https://{host[:-1]}', '--dart-define=GROZO_ENV=staging',
              f'--dart-define=AUTH_PREVIEW={str(preview).lower()}',f'--dart-define=API_BASE_URL={origin}/api',f'--dart-define=SOCKET_URL={origin}']
     app=ROOT/f'apps/{args.app}_app'
     build_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()

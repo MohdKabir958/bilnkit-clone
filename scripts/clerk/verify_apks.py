@@ -7,8 +7,10 @@ OUT=ROOT/'build/clerk-test-apks'
 SDK=Path(os.environ['ANDROID_HOME'])/'build-tools/36.0.0'
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--app',choices=['customer','vendor','driver'])
+parser.add_argument('--previous-manifest',type=Path,default=ROOT/'Docs/clerk/evidence/android/manifest.json')
 args=parser.parse_args()
 records=[]
+previous={r['applicationId']:r for r in json.loads(args.previous_manifest.read_text())} if args.previous_manifest.exists() else {}
 for app,label in [('customer','Customer'),('vendor','Vendor'),('driver','Delivery')]:
     if args.app and args.app!=app:continue
     apk=OUT/f'Grozo-{label}-Clerk-Test.apk'
@@ -19,6 +21,9 @@ for app,label in [('customer','Customer'),('vendor','Vendor'),('driver','Deliver
     signature=subprocess.check_output([str(SDK/'apksigner'),'verify','--verbose','--print-certs',str(apk)],text=True)
     expected=f'in.grozo.{app}'
     assert f"package: name='{expected}'" in badging
+    minimum_sdk=int(re.search(r"minSdkVersion:'(\d+)'",badging).group(1))
+    target_sdk=int(re.search(r"targetSdkVersion:'(\d+)'",badging).group(1))
+    assert minimum_sdk==24 and target_sdk>=35, 'Review supported Android versions before publication.'
     version_name=build.get('versionName','1.10.0')
     build_number=build.get('flutterBuildNumber',16)
     # Flutter adds 2000 to the base build number for an ARM64 split APK.
@@ -37,11 +42,18 @@ for app,label in [('customer','Customer'),('vendor','Vendor'),('driver','Deliver
             if name.endswith('/'):continue
             if re.search(rb'sk_(?:test|live)_[A-Za-z0-9]{12,}',z.read(name)):
                 raise RuntimeError(f'Potential Clerk Secret Key in APK entry {name}; investigate without printing it.')
+            if re.search(rb'postgres(?:ql)?://[^\s/]{1,120}:[^\s/]{1,120}@',z.read(name)):
+                raise RuntimeError(f'Potential database credentials in APK entry {name}; investigate without printing it.')
     record={**build,'applicationId':expected,'versionName':version_name,'versionCode':version_code,'flutterBuildNumber':build_number,
        'bytes':apk.stat().st_size,'sha256':hashlib.sha256(apk.read_bytes()).hexdigest(),
        'permissions':re.findall(r"uses-permission(?:-sdk-\d+)?: name='([^']+)'",badging),
        'certificateSha256':re.search(r'Signer #1 certificate SHA-256 digest: (\S+)',signature).group(1),
        'verification':{'zipIntegrity':True,'androidSignature':True,'callbackManifest':True,'arm64Only':True,'clerkSecretPatternAbsent':True}}
+    if expected in previous:
+        assert record['certificateSha256']==previous[expected]['certificateSha256'], 'Signing certificate changed: do not claim update compatibility.'
+    sensitive={'android.permission.ACCESS_FINE_LOCATION','android.permission.ACCESS_COARSE_LOCATION','android.permission.POST_NOTIFICATIONS','android.permission.CAMERA','android.permission.RECORD_AUDIO','android.permission.READ_CONTACTS','android.permission.READ_SMS','android.permission.READ_PHONE_STATE','android.permission.READ_MEDIA_IMAGES','android.permission.READ_EXTERNAL_STORAGE','android.permission.USE_FULL_SCREEN_INTENT','android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS'}
+    assert not ({'android.permission.CAMERA','android.permission.RECORD_AUDIO','android.permission.READ_CONTACTS','android.permission.READ_SMS'} & set(record['permissions'])), 'Unexpected sensitive permission requires investigation.'
+    record.update({'minimumSdk':minimum_sdk,'targetSdk':target_sdk,'sensitivePermissionsForDeviceReview':sorted(sensitive & set(record['permissions'])),'historicalSigningCertificateMatches':expected in previous})
     records.append(record)
     (OUT/f'{app}-apk-verification.txt').write_text(badging+'\n'+signature+'\n'+manifest)
 (OUT/'manifest.json').write_text(json.dumps(records,indent=2)+'\n')

@@ -48,14 +48,19 @@ void main() {
     await tester.pumpWidget(
         MaterialApp(home: SupportCenter(call: call, orderId: 'order-owned')));
     await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Damaged item').last);
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField),
         'One pack was damaged. Please review a refund.');
     await tester.tap(find.text('Send request'));
     await tester.pumpAndSettle();
     expect(posted.single['orderId'], 'order-owned');
     expect(posted.single['description'], contains('damaged'));
-    await tester.ensureVisible(find.text('Order issue').last);
-    await tester.tap(find.text('Order issue').last);
+    expect(posted.single['category'], 'DAMAGED_ITEM');
+    await tester.ensureVisible(find.text('Damaged item').last);
+    await tester.tap(find.text('Damaged item').last);
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'The seal was broken.');
     await tester.ensureVisible(find.text('Send reply'));

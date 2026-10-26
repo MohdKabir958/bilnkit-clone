@@ -101,7 +101,8 @@ abstract class VendorBackend {
 
   /// `PATCH /orders/:id/status` with ACCEPTED | PREPARING | READY_FOR_PICKUP. The data may be null when the
   /// server answered 200 without a readable order (the caller then re-reads the order).
-  Future<ApiResult<OrderModel>> updateStatus(String id, OrderStatus status);
+  Future<ApiResult<OrderModel>> updateStatus(String id, OrderStatus status,
+      {int? preparationMinutes});
 
   /// `POST /orders/:id/reject` `{reason}` (3-200 characters).
   Future<ApiResult<OrderModel>> reject(String id, String reason);
@@ -282,11 +283,15 @@ class HttpVendorBackend implements VendorBackend, DishCategorySource {
   }
 
   @override
-  Future<ApiResult<OrderModel>> updateStatus(
-      String id, OrderStatus status) async {
+  Future<ApiResult<OrderModel>> updateStatus(String id, OrderStatus status,
+      {int? preparationMinutes}) async {
     final res = await _send(
         'PATCH', '/orders/${Uri.encodeComponent(id)}/status',
-        body: {'status': status.wire});
+        body: {
+          'status': status.wire,
+          if (preparationMinutes != null)
+            'preparationMinutes': preparationMinutes
+        });
     if (!res.ok) return res.cast();
     return ApiResult.success(_orderFrom(res.data), serverTime: res.serverTime);
   }

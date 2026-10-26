@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:kraveo_ui/kraveo_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/product_api.dart';
+import 'physical_stock_screen.dart';
 
 class ProductInventoryScreen extends StatefulWidget {
   const ProductInventoryScreen({super.key, required this.vendorId, this.api});
@@ -79,6 +80,14 @@ class _ProductInventoryScreenState extends State<ProductInventoryScreen> {
     if (saved == true && mounted) await load();
   }
 
+  Future<void> physicalStock(Map<String, dynamic> row) async {
+    await Navigator.push<void>(
+        context,
+        MaterialPageRoute(
+            builder: (_) => PhysicalStockScreen(api: api, product: row)));
+    if (mounted) await load();
+  }
+
   Future<void> archive(Map<String, dynamic> row) async {
     final yes = await showDialog<bool>(
         context: context,
@@ -139,6 +148,9 @@ class _ProductInventoryScreenState extends State<ProductInventoryScreen> {
         .where((row) => switch (filter) {
               'Low stock' => row['lowStock'] == true,
               'Out of stock' => row['stockQty'] == 0,
+              'Expiry warnings' =>
+                ((row['batchSummary']?['expiredQty'] as num?) ?? 0) > 0 ||
+                    ((row['batchSummary']?['expiringQty'] as num?) ?? 0) > 0,
               'Pending' => row['approvalStatus'] == 'PENDING',
               _ => true,
             })
@@ -188,7 +200,8 @@ class _ProductInventoryScreenState extends State<ProductInventoryScreen> {
                               TextField(
                                   controller: search,
                                   decoration: InputDecoration(
-                                      labelText: 'Search products or SKU',
+                                      labelText:
+                                          'Search products, SKU or barcode',
                                       prefixIcon: const Icon(Icons.search),
                                       suffixIcon: IconButton(
                                           tooltip: 'Search inventory',
@@ -212,6 +225,7 @@ class _ProductInventoryScreenState extends State<ProductInventoryScreen> {
                                   'All',
                                   'Low stock',
                                   'Out of stock',
+                                  'Expiry warnings',
                                   'Pending'
                                 ])
                                   KChoiceChip(
@@ -353,6 +367,15 @@ class _ProductInventoryScreenState extends State<ProductInventoryScreen> {
                                                           ? k.warning
                                                           : k.inkMuted),
                                             ]),
+                                        if (row['batchTracking'] == true)
+                                          Padding(
+                                              padding:
+                                                  const EdgeInsets.only(top: 8),
+                                              child: Text(
+                                                  'Lots: ${row['batchSummary']?['expiringQty'] ?? 0} packs expire within 7 days · ${row['batchSummary']?['expiredQty'] ?? 0} expired packs excluded',
+                                                  style: KraveoType.caption
+                                                      .copyWith(
+                                                          color: k.warning))),
                                         if (row['rejectionReason'] != null)
                                           Padding(
                                               padding:
@@ -375,11 +398,27 @@ class _ProductInventoryScreenState extends State<ProductInventoryScreen> {
                                           TextButton.icon(
                                               onPressed: busy
                                                   ? null
-                                                  : () => stock(row),
+                                                  : () =>
+                                                      row['batchTracking'] ==
+                                                              true
+                                                          ? physicalStock(row)
+                                                          : stock(row),
                                               icon: const Icon(
                                                   Icons.inventory_2_outlined,
                                                   size: 18),
-                                              label: const Text('Adjust stock'))
+                                              label: Text(
+                                                  row['batchTracking'] == true
+                                                      ? 'Lots and expiry'
+                                                      : 'Adjust stock')),
+                                          TextButton.icon(
+                                              onPressed: busy
+                                                  ? null
+                                                  : () => physicalStock(row),
+                                              icon: const Icon(
+                                                  Icons.fact_check_outlined,
+                                                  size: 18),
+                                              label: const Text(
+                                                  'Packing and returns'))
                                         ]),
                                       ])));
                         })),

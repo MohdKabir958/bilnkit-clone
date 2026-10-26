@@ -207,6 +207,8 @@ class OrderView {
   bool get isCashOnDelivery => paymentMethod == 'COD';
   const OrderView({
     this.paymentMethod = 'ONLINE',
+    this.estimatedReadyAt,
+    this.riderAtPickup = false,
     required this.id,
     required this.status,
     this.group,
@@ -234,6 +236,8 @@ class OrderView {
     this.driver,
   });
 
+  final DateTime? estimatedReadyAt;
+  final bool riderAtPickup;
   final String id;
   final OrderStatus status;
 
@@ -523,6 +527,11 @@ class OrderView {
     return OrderView(
       id: id,
       status: OrderStatus.parse(raw['status']),
+      estimatedReadyAt: raw['fulfillment'] is Map
+          ? _date(raw['fulfillment']['estimatedReadyAt'])
+          : null,
+      riderAtPickup: raw['fulfillment'] is Map &&
+          raw['fulfillment']['riderAtPickup'] == true,
       group: _group(raw['group']),
       offerId:
           raw['dispatchOffer'] is Map ? _str(raw['dispatchOffer']['id']) : null,

@@ -1,3 +1,4 @@
+import '../config/api_config.dart';
 import 'package:kraveo_ui/kraveo_ui.dart' show GrozoAuthConfig, ClerkSessions;
 import 'package:http/http.dart' as http;
 import 'package:kraveo_ui/kraveo_ui.dart' show SecureSessionTokens;
@@ -12,7 +13,8 @@ class VendorApiService {
   static int _tokenEpoch = 0;
 
   /// Shown when the server rejects the saved token (HTTP 401) on an authenticated call.
-  static const String sessionExpiredMessage = 'Session expired. Please log in again.';
+  static const String sessionExpiredMessage =
+      'Session expired. Please log in again.';
 
   /// Set by the session gate. Called when any authenticated request comes back 401, so the
   /// app can drop the dead token and return to the login screen.
@@ -28,7 +30,8 @@ class VendorApiService {
   static void checkResponse(http.Response response) {
     if (response.statusCode == 401) {
       onUnauthorized?.call();
-    } else if (response.statusCode == 403 && response.body.contains('PARTNER_NOT_APPROVED')) {
+    } else if (response.statusCode == 403 &&
+        response.body.contains('PARTNER_NOT_APPROVED')) {
       onNotApproved?.call();
     }
   }
@@ -52,7 +55,12 @@ class VendorApiService {
 
   /// Saves JWT token to local persistence
   static Future<void> saveToken(String token) async {
-    if (GrozoAuthConfig.usesClerk) { try { await SecureSessionTokens.delete(_tokenPrefKey); } catch (_) {} return; }
+    if (GrozoAuthConfig.usesClerk) {
+      try {
+        await SecureSessionTokens.delete(_tokenPrefKey);
+      } catch (_) {}
+      return;
+    }
     _tokenEpoch++;
     _cachedToken = token;
     try {
@@ -73,23 +81,34 @@ class VendorApiService {
   static Future<Map<String, String>> getAuthHeaders() async {
     final token = await getSavedToken();
     final headers = <String, String>{
+      ...ApiConfig.clientHeaders,
       'Content-Type': 'application/json',
     };
     if (token != null && token.isNotEmpty) {
-      headers['Authorization'] = token.startsWith('Bearer ') ? token : 'Bearer $token';
+      headers['Authorization'] =
+          token.startsWith('Bearer ') ? token : 'Bearer $token';
     }
     return headers;
   }
 
   /// `PATCH /orders/:id/status`. True when the server accepted the change.
-  static Future<bool> updateOrderStatus(String orderId, String newStatus) async =>
-      (await const HttpVendorBackend().updateStatus(orderId.replaceAll('#', '').trim(), OrderStatus.parse(newStatus))).ok;
+  static Future<bool> updateOrderStatus(
+          String orderId, String newStatus) async =>
+      (await const HttpVendorBackend().updateStatus(
+              orderId.replaceAll('#', '').trim(), OrderStatus.parse(newStatus)))
+          .ok;
 
   /// `PATCH /vendors/:id/status`. True when the server saved the new value.
-  static Future<bool> toggleStoreStatus(String vendorId, bool isAcceptingOrders) async =>
-      (await const HttpVendorBackend().setStoreOpen(vendorId, isAcceptingOrders)).ok;
+  static Future<bool> toggleStoreStatus(
+          String vendorId, bool isAcceptingOrders) async =>
+      (await const HttpVendorBackend()
+              .setStoreOpen(vendorId, isAcceptingOrders))
+          .ok;
 
   /// `PATCH /vendors/items/:itemId`. True when the server saved the change.
-  static Future<bool> updateDishStock(String itemId, {bool? isAvailable, double? price}) async =>
-      (await const HttpVendorBackend().updateDish(itemId, isAvailable: isAvailable, price: price)).ok;
+  static Future<bool> updateDishStock(String itemId,
+          {bool? isAvailable, double? price}) async =>
+      (await const HttpVendorBackend()
+              .updateDish(itemId, isAvailable: isAvailable, price: price))
+          .ok;
 }

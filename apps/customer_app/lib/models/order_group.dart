@@ -112,8 +112,10 @@ class QuoteLine {
 /// `POST /orders/quote` -> `data`: what placing the same cart would charge.
 class OrderQuote {
   final List<String> paymentMethods;
+  final String? paymentMessage;
   const OrderQuote({
     this.paymentMethods = const ['ONLINE'],
+    this.paymentMessage,
     required this.restaurantCount,
     required this.subtotal,
     required this.baseFee,
@@ -179,7 +181,13 @@ class OrderQuote {
     return OrderQuote(
       paymentMethods: json['paymentMethods'] is List
           ? (json['paymentMethods'] as List).whereType<String>().toList()
-          : const ['ONLINE'],
+          : const [],
+      paymentMessage: _str(
+          json['capacity'] is Map && json['capacity']['canCheckout'] == false
+              ? json['capacity']['message']
+              : json['paymentCapabilities'] is Map
+                  ? json['paymentCapabilities']['message']
+                  : null),
       restaurantCount:
           count is num ? count.toInt() : (lines.isEmpty ? 1 : lines.length),
       subtotal: subtotal.toDouble(),

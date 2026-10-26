@@ -137,9 +137,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void _onQuoteChanged() {
     if (mounted) {
       setState(() {
-        if (_quote.quote != null &&
-            !_quote.quote!.paymentMethods.contains('COD')) {
-          _selectedPaymentMethod = 'Pay online via Razorpay';
+        final methods = _quote.quote?.paymentMethods ?? const <String>[];
+        final selected =
+            _selectedPaymentMethod == 'Cash on delivery' ? 'COD' : 'ONLINE';
+        if (!methods.contains(selected)) {
+          _selectedPaymentMethod = methods.contains('COD')
+              ? 'Cash on delivery'
+              : 'Pay online via Razorpay';
         }
       });
     }
@@ -164,6 +168,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   /// Why a cart with several restaurants cannot be ordered as it is, or null.
   String? _blockMessage(CartProvider cart) {
+    if (_quote.quote != null && _quote.quote!.paymentMethods.isEmpty) {
+      return _quote.quote!.paymentMessage ??
+          'Payment is unavailable for this store. Please try again later.';
+    }
     if (!cart.isMultiRestaurant) {
       return _quote.blocksCheckout ? _quote.problem : null;
     }
@@ -282,6 +290,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         message += ' Trying again is safe: you won\'t get a duplicate order.';
       }
       _setBusy(false);
+      if (error.pendingOrderId != null) {
+        final pending = await orders.refreshOrder(error.pendingOrderId!);
+        if (!mounted) return null;
+        if (pending != null) setState(() => _orderId = pending.id);
+      }
       switch (error.code) {
         case 'COUPON_NOT_APPLICABLE':
           // The server will not take this coupon for this student: drop it, keep checkout open and
@@ -565,7 +578,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ? KButtonKind.accent
                 : KButtonKind.primary,
             loading: busy,
-            onPressed: busy || blockMessage != null
+            onPressed: busy ||
+                    blockMessage != null ||
+                    (order == null &&
+                        _currentHostel != null &&
+                        _quote.quote == null)
                 ? null
                 : () => _onPrimary(cart, orders),
           ),
@@ -576,7 +593,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ? 'Placing your order. Please do not close the app.'
                   : (_currentHostel == null
                       ? 'Tell us where to deliver first. Payment opens right after.'
-                      : 'Next: ${BrandConfig.name} confirms the price, then you pay online.'),
+                      : _quote.quote == null
+                          ? 'Checking the current price and available payment methods.'
+                          : _selectedPaymentMethod == 'Cash on delivery'
+                              ? 'Confirm your order, then pay the delivery partner at your doorstep.'
+                              : 'Next: ${BrandConfig.name} confirms the price, then you pay online.'),
               textAlign: TextAlign.center,
               style:
                   KraveoType.caption.copyWith(color: k.inkFaint, fontSize: 12),
@@ -951,9 +972,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   Widget _buildPayment(BuildContext context, KraveoTokens k) {
     return Column(children: [
+      if (_quote.quote?.paymentMessage != null)
+        Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _NoticeLine(
+                message: _quote.quote!.paymentMessage!,
+                error: _quote.quote!.paymentMethods.isEmpty)),
       for (final opt in _paymentOptions.where((o) =>
-          o['name'] != 'Cash on delivery' ||
-          (_quote.quote?.paymentMethods.contains('COD') ?? false)))
+          _quote.quote?.paymentMethods
+              .contains(o['name'] == 'Cash on delivery' ? 'COD' : 'ONLINE') ??
+          false))
         Builder(builder: (context) {
           final isSelected = _selectedPaymentMethod == opt['name'];
           return KPressable(

@@ -5,6 +5,7 @@ import 'dart:convert';
 /// the app only reacts to these and ignores anything else.
 enum PushEvent {
   orderPlaced('ORDER_PLACED'),
+  orderUpdated('ORDER_UPDATED'),
   orderPreparing('ORDER_PREPARING'),
   riderAssigned('RIDER_ASSIGNED_CUSTOMER'),
   orderAccepted('ORDER_ACCEPTED'),
@@ -30,7 +31,10 @@ enum PushEvent {
   /// Events the student must notice even with the app open on another screen (they use the
   /// high-importance `order_attention` channel on the server too).
   bool get needsAttention =>
-      this == riderAtGate || this == orderCancelled || this == orderPickedUp;
+      this == orderUpdated ||
+      this == riderAtGate ||
+      this == orderCancelled ||
+      this == orderPickedUp;
 
   /// Android channel id, exactly as in the contract (section 5).
   String get channelId =>
@@ -39,6 +43,7 @@ enum PushEvent {
   /// Fallback copy for a locally shown banner when the message carries no notification block.
   /// Never contains the delivery verification code (it is only shown inside the app).
   String get fallbackTitle => switch (this) {
+        orderUpdated => 'Review an item change',
         orderPlaced => 'Order placed',
         orderPreparing => 'Packing your order',
         riderAssigned => 'Delivery partner assigned',
@@ -52,6 +57,8 @@ enum PushEvent {
       };
 
   String get fallbackBody => switch (this) {
+        orderUpdated =>
+          'Open your order to review the store’s proposed item change.',
         orderPlaced =>
           'Your order has been saved. Complete payment to confirm it.',
         orderPreparing => 'Your store is packing your items.',

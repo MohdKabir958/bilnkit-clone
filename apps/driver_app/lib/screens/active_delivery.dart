@@ -322,7 +322,9 @@ class _DeliveryViewState extends State<_DeliveryView> {
           icon: LucideIcons.package,
           color: KStatus.preparing.color,
           title: 'Store is packing your order',
-          message: 'You can mark it picked up once the store marks it ready.',
+          message: o.estimatedReadyAt == null
+              ? 'You can mark it picked up once the store marks it ready.'
+              : '${o.riderAtPickup ? 'Waiting at pickup. ' : ''}Estimated ready at ${TimeOfDay.fromDateTime(o.estimatedReadyAt!.toLocal()).format(context)}. Collect only once the store marks it ready.',
         ),
       OrderStatus.readyForPickup => _Banner(
           icon: LucideIcons.packageCheck,

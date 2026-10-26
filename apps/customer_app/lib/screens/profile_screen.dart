@@ -158,8 +158,10 @@ class ProfileScreen extends StatelessWidget {
                       onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) =>
-                                  const SupportCenter(call: SupportApi.call))),
+                              builder: (_) => const SupportCenter(
+                                  call: SupportApi.call,
+                                  attachPhoto: SupportApi.attachPhoto,
+                                  readPhoto: SupportApi.readPhoto))),
                     ),
                   ),
                 ),

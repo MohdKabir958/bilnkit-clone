@@ -385,8 +385,7 @@ class RiderController extends ChangeNotifier {
       _updateConnection();
       _notify();
       if (!restoring) {
-        _say(
-            'You are on duty. Sharing your location to find nearby pickups.');
+        _say('You are on duty. Sharing your location to find nearby pickups.');
       }
       if (_active == null) await refreshOffers();
       return;
@@ -618,7 +617,9 @@ class RiderController extends ChangeNotifier {
     _lastPostAt = services.uptime();
     try {
       final r = await _api.postLocation(reading.lat!, reading.lng!,
-          heading: reading.heading);
+          heading: reading.heading,
+          accuracyMeters: reading.accuracyMeters,
+          measuredAt: reading.measuredAt);
       if (_disposed) return;
       _lastLocationPostFailed = !r.ok;
       _notify();
@@ -654,7 +655,9 @@ class RiderController extends ChangeNotifier {
         _position.value = GeoPoint(reading.lat!, reading.lng!);
         _lastPostAt = services.uptime();
         final r = await _api.postLocation(reading.lat!, reading.lng!,
-            heading: reading.heading);
+            heading: reading.heading,
+            accuracyMeters: reading.accuracyMeters,
+            measuredAt: reading.measuredAt);
         _lastLocationPostFailed = !r.ok;
       } else {
         _applyProblem(reading.problem!);
@@ -695,7 +698,9 @@ class RiderController extends ChangeNotifier {
 
   bool _poolable(OrderView o) =>
       (o.offerExpiresAt == null || o.offerExpiresAt!.isAfter(_now())) &&
-      (o.paymentStatus == null || o.paymentStatus == 'PAID' || (o.isCashOnDelivery && o.paymentStatus == 'PENDING')) &&
+      (o.paymentStatus == null ||
+          o.paymentStatus == 'PAID' ||
+          (o.isCashOnDelivery && o.paymentStatus == 'PENDING')) &&
       o.driver == null &&
       (o.status == OrderStatus.accepted ||
           o.status == OrderStatus.preparing ||

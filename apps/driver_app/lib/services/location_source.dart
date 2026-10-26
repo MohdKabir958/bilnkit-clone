@@ -19,14 +19,20 @@ enum LocationProblem {
 }
 
 class LocationReading {
-  const LocationReading.fix(double this.lat, double this.lng, {this.heading = 0}) : problem = null;
+  const LocationReading.fix(double this.lat, double this.lng,
+      {this.heading = 0, this.accuracyMeters, this.measuredAt})
+      : problem = null;
   const LocationReading.problem(LocationProblem this.problem)
       : lat = null,
         lng = null,
-        heading = 0;
+        heading = 0,
+        accuracyMeters = null,
+        measuredAt = null;
 
   final double? lat, lng;
   final double heading;
+  final double? accuracyMeters;
+  final DateTime? measuredAt;
   final LocationProblem? problem;
 
   bool get hasFix => problem == null && lat != null && lng != null;
@@ -39,7 +45,8 @@ const Duration kLocationInterval = Duration(seconds: 10);
 /// The text of the Android foreground-service notification shown for as long as the rider is
 /// on duty (Docs/19 section 4).
 const String kDutyNotificationTitle = '${BrandConfig.name} - you are on duty';
-const String kDutyNotificationText = 'Sharing your location with ${BrandConfig.name}';
+const String kDutyNotificationText =
+    'Sharing your location with ${BrandConfig.name}';
 
 /// Android notification channel of the duty notification. The plugin creates a channel with this
 /// id as "importance none" (an invisible notification); MainActivity creates it first with low
@@ -52,16 +59,20 @@ const String kDutyNotificationChannelName = 'On duty - location sharing';
 /// Returns null off Android (no foreground service there: the controller polls instead).
 @visibleForTesting
 LocationSettings? dutyLocationSettings({TargetPlatform? platform}) {
-  if (kIsWeb || (platform ?? defaultTargetPlatform) != TargetPlatform.android) return null;
+  if (kIsWeb || (platform ?? defaultTargetPlatform) != TargetPlatform.android) {
+    return null;
+  }
   return AndroidSettings(
     accuracy: LocationAccuracy.high,
-    distanceFilter: 0, // a standing rider still reports (the dashboard marks silent riders "stale")
+    distanceFilter:
+        0, // a standing rider still reports (the dashboard marks silent riders "stale")
     intervalDuration: kLocationInterval,
     foregroundNotificationConfig: const ForegroundNotificationConfig(
       notificationTitle: kDutyNotificationTitle,
       notificationText: kDutyNotificationText,
       notificationChannelName: kDutyNotificationChannelName,
-      notificationIcon: AndroidResource(name: 'ic_stat_grozo', defType: 'drawable'),
+      notificationIcon:
+          AndroidResource(name: 'ic_stat_grozo', defType: 'drawable'),
       setOngoing: true,
       enableWakeLock: false,
       enableWifiLock: false,
@@ -93,17 +104,29 @@ class GeolocatorLocationSource implements LocationSource {
   @override
   Future<LocationReading> read() async {
     try {
-      if (!await Geolocator.isLocationServiceEnabled()) return const LocationReading.problem(LocationProblem.serviceOff);
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        return const LocationReading.problem(LocationProblem.serviceOff);
+      }
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied && !_askedThisSession) {
         // Ask once per app session by ourselves; after that the rider uses the "Allow location" button.
         _askedThisSession = true;
         permission = await Geolocator.requestPermission();
       }
-      if (permission == LocationPermission.denied) return const LocationReading.problem(LocationProblem.permissionDenied);
-      if (permission == LocationPermission.deniedForever) return const LocationReading.problem(LocationProblem.permissionDeniedForever);
-      final p = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high, timeLimit: const Duration(seconds: 8));
-      return LocationReading.fix(p.latitude, p.longitude, heading: p.heading.isFinite ? p.heading : 0);
+      if (permission == LocationPermission.denied) {
+        return const LocationReading.problem(LocationProblem.permissionDenied);
+      }
+      if (permission == LocationPermission.deniedForever) {
+        return const LocationReading.problem(
+            LocationProblem.permissionDeniedForever);
+      }
+      final p = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 8));
+      return LocationReading.fix(p.latitude, p.longitude,
+          heading: p.heading.isFinite ? p.heading : 0,
+          accuracyMeters: p.accuracy,
+          measuredAt: p.timestamp.toUtc());
     } catch (_) {
       return const LocationReading.problem(LocationProblem.unavailable);
     }
@@ -119,8 +142,12 @@ class GeolocatorLocationSource implements LocationSource {
       onListen: () {
         try {
           sub = Geolocator.getPositionStream(locationSettings: settings).listen(
-            (p) => out.add(LocationReading.fix(p.latitude, p.longitude, heading: p.heading.isFinite ? p.heading : 0)),
-            onError: (Object e) => out.add(LocationReading.problem(_problemFor(e))),
+            (p) => out.add(LocationReading.fix(p.latitude, p.longitude,
+                heading: p.heading.isFinite ? p.heading : 0,
+                accuracyMeters: p.accuracy,
+                measuredAt: p.timestamp.toUtc())),
+            onError: (Object e) =>
+                out.add(LocationReading.problem(_problemFor(e))),
           );
         } catch (_) {
           out.add(const LocationReading.problem(LocationProblem.unavailable));
@@ -129,14 +156,17 @@ class GeolocatorLocationSource implements LocationSource {
       onCancel: () async {
         final s = sub;
         sub = null;
-        await s?.cancel(); // the plugin stops the foreground service and removes its notification
+        await s
+            ?.cancel(); // the plugin stops the foreground service and removes its notification
       },
     );
     return out.stream;
   }
 
   static LocationProblem _problemFor(Object e) {
-    if (e is LocationServiceDisabledException) return LocationProblem.serviceOff;
+    if (e is LocationServiceDisabledException) {
+      return LocationProblem.serviceOff;
+    }
     if (e is PermissionDeniedException) return LocationProblem.permissionDenied;
     return LocationProblem.unavailable;
   }

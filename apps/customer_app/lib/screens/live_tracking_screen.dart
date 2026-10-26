@@ -1,3 +1,4 @@
+import 'order_changes_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kraveo_ui/kraveo_ui.dart';
@@ -219,7 +220,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                       context,
                       MaterialPageRoute(
                           builder: (_) => SupportCenter(
-                              call: SupportApi.call, orderId: order.id))))
+                              call: SupportApi.call,
+                              attachPhoto: SupportApi.attachPhoto,
+                              readPhoto: SupportApi.readPhoto,
+                              orderId: order.id))))
           ],
         );
 
@@ -364,7 +368,53 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
               const SizedBox(height: 10),
             ],
             const NotificationsOffHint(key: ValueKey('notifications-hint')),
-            if(order.isCashOnDelivery) Padding(padding:const EdgeInsets.only(bottom:14),child:KCard(padding:const EdgeInsets.all(16),child:Text(order.paymentStatus==PaymentStatus.refunded?'Cash refund recorded by support.':order.isPaid?'Cash received by your delivery partner.':'Cash on delivery · Pay ${rupee(order.totalAmount)} to your assigned delivery partner at your doorstep.'))),
+            if (order.itemChanges.isNotEmpty)
+              Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: KCard(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text(
+                            order.itemChanges
+                                    .any((p) => p['state'] == 'PROPOSED')
+                                ? 'The store needs your decision'
+                                : 'Item change history',
+                            style: KraveoType.titleMd),
+                        const Text(
+                            'Review replacement products, quantities and the updated total.'),
+                        TextButton(
+                            onPressed: () async {
+                              await Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                      builder: (_) => OrderChangesScreen(
+                                          orderId: order.id)));
+                              if (mounted) await orders.refreshOrder(order.id);
+                            },
+                            child: const Text('Review item changes')),
+                      ]))),
+            if (order.partialRefunds.isNotEmpty)
+              Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: KCard(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text('Item refunds', style: KraveoType.titleMd),
+                        for (final r in order.partialRefunds)
+                          Text(
+                              '${rupee((r['amountPaise'] as num).toDouble() / 100)} · ${r['state'] == 'PROCESSED' ? 'Confirmed by payment provider' : r['state'] == 'FAILED' || r['state'] == 'UNKNOWN' ? 'Support is checking the refund' : 'Refund pending provider confirmation'}'),
+                      ]))),
+            if (order.isCashOnDelivery)
+              Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: KCard(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(order.paymentStatus == PaymentStatus.refunded
+                          ? 'Cash refund recorded by support.'
+                          : order.isPaid
+                              ? 'Cash received by your delivery partner.'
+                              : 'Cash on delivery · Pay ${rupee(order.totalAmount)} to your assigned delivery partner at your doorstep.'))),
             KReveal(
                 key: const ValueKey('hero'),
                 child: _StatusHero(order: order, confirming: confirming)),
@@ -459,7 +509,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                       ]),
                 ),
               ),
-            if (status == OrderProgressStatus.placed && (order.isPaid || order.isCashOnDelivery)) ...[
+            if (status == OrderProgressStatus.placed &&
+                (order.isPaid || order.isCashOnDelivery)) ...[
               const SizedBox(height: 14),
               Text(
                 order.isGroup
@@ -574,6 +625,15 @@ class _StatusHero extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(hint, style: KraveoType.body.copyWith(color: k.inkMuted)),
+        if (!unpaid &&
+            status != OrderProgressStatus.cancelled &&
+            status != OrderProgressStatus.delivered &&
+            order.estimatedDeliveryBy != null)
+          Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                  'Estimated delivery by ${clockLabel(order.estimatedDeliveryBy!)} · updates with store and rider progress',
+                  style: KraveoType.bodySm.copyWith(color: k.inkMuted))),
         if (status != OrderProgressStatus.cancelled && !unpaid) ...[
           const SizedBox(height: 18),
           TweenAnimationBuilder<double>(
@@ -899,7 +959,11 @@ class _CancelledCard extends StatelessWidget {
   }
 
   String get _money {
-    if(order.isCashOnDelivery)return order.paymentStatus==PaymentStatus.refunded?'Support recorded your completed cash refund.':'No cash was collected for this cancelled order. No online refund is needed.';
+    if (order.isCashOnDelivery) {
+      return order.paymentStatus == PaymentStatus.refunded
+          ? 'Support recorded your completed cash refund.'
+          : 'No cash was collected for this cancelled order. No online refund is needed.';
+    }
     if (order.paymentStatus == PaymentStatus.refunded) {
       return 'Your refund of ${rupee(order.totalAmount)} has been issued. It will reach your account in 5–7 working days.';
     }
@@ -940,7 +1004,10 @@ class _CancelledCard extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (_) => SupportCenter(
-                          call: SupportApi.call, orderId: order.id))),
+                          call: SupportApi.call,
+                          attachPhoto: SupportApi.attachPhoto,
+                          readPhoto: SupportApi.readPhoto,
+                          orderId: order.id))),
               icon: const Icon(Icons.support_agent),
               label: const Text('Help with this order')),
         const SizedBox(height: 14),

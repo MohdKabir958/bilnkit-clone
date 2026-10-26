@@ -101,7 +101,7 @@ abstract class RiderOrdersApi {
 
   /// `POST /drivers/location`.
   Future<ApiResult<void>> postLocation(double lat, double lng,
-      {double heading = 0});
+      {double heading = 0, double? accuracyMeters, DateTime? measuredAt});
 }
 
 /// The real HTTP implementation. Uses `package:http` top-level functions, so tests can swap the
@@ -282,14 +282,27 @@ class HttpRiderOrdersApi implements RiderOrdersApi {
 
   @override
   Future<ApiResult<void>> postLocation(double lat, double lng,
-      {double heading = 0}) async {
-    final availability = await _send(
-        'POST', _u('/v1/drivers/availability-location'),
-        body: {'lat': lat, 'lng': lng});
-    final r = await _send('POST', _u('/drivers/location'),
-        body: {'lat': lat, 'lng': lng, 'heading': heading});
-    if(r.ok) return const ApiResult.ok(null);
-    if(r.code=='NO_ACTIVE_DELIVERY') return availability.ok?const ApiResult.ok(null):_carry(availability);
+      {double heading = 0,
+      double? accuracyMeters,
+      DateTime? measuredAt}) async {
+    final availability =
+        await _send('POST', _u('/v1/drivers/availability-location'), body: {
+      'lat': lat,
+      'lng': lng,
+      if (accuracyMeters != null) 'accuracyMeters': accuracyMeters,
+      if (measuredAt != null) 'measuredAt': measuredAt.toUtc().toIso8601String()
+    });
+    final r = await _send('POST', _u('/drivers/location'), body: {
+      'lat': lat,
+      'lng': lng,
+      'heading': heading,
+      if (accuracyMeters != null) 'accuracyMeters': accuracyMeters,
+      if (measuredAt != null) 'measuredAt': measuredAt.toUtc().toIso8601String()
+    });
+    if (r.ok) return const ApiResult.ok(null);
+    if (r.code == 'NO_ACTIVE_DELIVERY') {
+      return availability.ok ? const ApiResult.ok(null) : _carry(availability);
+    }
     return _carry(r);
   }
 }

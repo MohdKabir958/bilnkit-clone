@@ -88,6 +88,7 @@ Future<void> pumpApp(WidgetTester tester, Widget child,
     CartProvider? cart,
     DhabaProvider? dhabas,
     SessionProvider? session}) async {
+  if (cart != null) supplyWidgetQuote(orders, cart);
   tester.view.physicalSize = const Size(360, 640);
   tester.view.devicePixelRatio = 1.0;
   tester.platformDispatcher.textScaleFactorTestValue = 1.3;

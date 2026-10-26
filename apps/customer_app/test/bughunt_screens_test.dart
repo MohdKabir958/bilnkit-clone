@@ -177,6 +177,7 @@ Future<void> _pump(
   Size size = const Size(360, 640),
   double keyboard = 0,
 }) async {
+  if (orders != null && cart != null) supplyWidgetQuote(orders, cart);
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
   if (keyboard > 0) tester.view.viewInsets = FakeViewPadding(bottom: keyboard);
@@ -388,7 +389,8 @@ void main() {
 
       await _pump(tester, const HomeScreen(),
           dhabas: sampleCatalogProvider(), orders: await ordersLoaded());
-      await tester.scrollUntilVisible(find.text('WELCOME20'),300,scrollable:find.byType(Scrollable).first);
+      await tester.scrollUntilVisible(find.text('WELCOME20'), 300,
+          scrollable: find.byType(Scrollable).first);
       expect(find.text('WELCOME20'), findsOneWidget);
 
       await _pump(tester, const HomeScreen(),
@@ -416,7 +418,8 @@ void main() {
       await _pump(tester, const HomeScreen(), dhabas: DhabaProvider());
       expect(find.text('Night Mess'), findsNothing);
       expect(find.text('Parathas'), findsNothing);
-      await tester.tap(find.byKey(const ValueKey('all-nearby-stores')));await _settle(tester);
+      await tester.tap(find.byKey(const ValueKey('all-nearby-stores')));
+      await _settle(tester);
       final chipRow = find.byWidgetPredicate(
           (w) => w is Scrollable && w.axisDirection == AxisDirection.right);
       for (final chip in ['All', 'Thalis', 'Beverages', 'Rolls']) {
@@ -465,7 +468,8 @@ void main() {
       await tester.scrollUntilVisible(find.text('Real Dhaba'), 200,
           scrollable: find.byType(Scrollable).first);
       expect(find.textContaining('Min'), findsNothing);
-      await tester.tap(find.byKey(const ValueKey('all-nearby-stores')));await _settle(tester);
+      await tester.tap(find.byKey(const ValueKey('all-nearby-stores')));
+      await _settle(tester);
       expect(find.textContaining('Delivery'), findsWidgets);
     });
   });

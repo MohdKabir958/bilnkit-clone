@@ -359,6 +359,7 @@ class CustomerApiService {
   static Future<Map<String, String>> getAuthHeaders() async {
     final token = await getSavedToken();
     final headers = <String, String>{
+      ...ApiConfig.clientHeaders,
       'Content-Type': 'application/json',
     };
     if (token != null && token.isNotEmpty) {

@@ -28,10 +28,22 @@ enum PushEvent {
 
 /// A validated push `data` block: `{ event, orderId, v: "1" }`. Anything else is malformed.
 class PushPayload {
-  const PushPayload({required this.event, required this.orderId});
+  const PushPayload(
+      {required this.event,
+      required this.orderId,
+      this.offerId,
+      this.offerExpiresAt});
 
   final PushEvent event;
   final String orderId;
+  final String? offerId;
+  final DateTime? offerExpiresAt;
+
+  /// A notification is a refresh hint, never authorization to accept an offer.
+  /// Old payloads without an expiry also require loading current server offers.
+  bool offerExpiredAt(DateTime now) =>
+      event == PushEvent.newDelivery &&
+      (offerExpiresAt == null || !offerExpiresAt!.isAfter(now));
 
   static final RegExp _orderIdShape = RegExp(r'^[A-Za-z0-9_\-]{1,64}$');
 
@@ -42,11 +54,25 @@ class PushPayload {
       final event = PushEvent.parse(data['event']);
       if (event == null) return null;
       final orderId = data['orderId'];
-      if (orderId is! String || !_orderIdShape.hasMatch(orderId.trim())) return null;
+      if (orderId is! String || !_orderIdShape.hasMatch(orderId.trim())) {
+        return null;
+      }
       // Only data format "1" is understood; a missing version is treated as 1.
       final version = data['v'];
       if (version != null && version.toString().trim() != '1') return null;
-      return PushPayload(event: event, orderId: orderId.trim());
+      final offerId = data['offerId'];
+      final expiry = data['offerExpiresAt'];
+      if (offerId != null &&
+          (offerId is! String || !_orderIdShape.hasMatch(offerId))) {
+        return null;
+      }
+      final parsedExpiry = expiry is String ? DateTime.tryParse(expiry) : null;
+      if (expiry != null && parsedExpiry == null) return null;
+      return PushPayload(
+          event: event,
+          orderId: orderId.trim(),
+          offerId: offerId as String?,
+          offerExpiresAt: parsedExpiry?.toUtc());
     } catch (_) {
       return null;
     }
@@ -56,8 +82,13 @@ class PushPayload {
   String toString() => 'PushPayload(${event.key}, $orderId)';
 
   @override
-  bool operator ==(Object other) => other is PushPayload && other.event == event && other.orderId == orderId;
+  bool operator ==(Object other) =>
+      other is PushPayload &&
+      other.event == event &&
+      other.orderId == orderId &&
+      other.offerId == offerId &&
+      other.offerExpiresAt == offerExpiresAt;
 
   @override
-  int get hashCode => Object.hash(event, orderId);
+  int get hashCode => Object.hash(event, orderId, offerId, offerExpiresAt);
 }

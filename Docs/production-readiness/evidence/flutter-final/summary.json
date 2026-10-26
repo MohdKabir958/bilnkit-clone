@@ -1,0 +1,41 @@
+[
+  {
+    "app": "customer",
+    "command": "flutter test --no-pub --concurrency=2 --reporter json",
+    "passed": 476,
+    "failed": 0,
+    "skipped": 4,
+    "skippedTests": [
+      "capture customer loading empty and offline HTTP states",
+      "capture implemented item-change approval using synthetic service fixtures",
+      "capture customer production screens using isolated grocery fixtures",
+      "capture actual reference implementation"
+    ],
+    "elapsedMs": 94392,
+    "success": true
+  },
+  {
+    "app": "vendor",
+    "command": "flutter test --no-pub --concurrency=2 --reporter json",
+    "passed": 537,
+    "failed": 0,
+    "skipped": 1,
+    "skippedTests": [
+      "capture vendor production screens with isolated service fixtures"
+    ],
+    "elapsedMs": 83961,
+    "success": true
+  },
+  {
+    "app": "driver",
+    "command": "flutter test --no-pub --concurrency=2 --reporter json",
+    "passed": 417,
+    "failed": 0,
+    "skipped": 1,
+    "skippedTests": [
+      "capture rider production screens with isolated service fixtures"
+    ],
+    "elapsedMs": 71615,
+    "success": true
+  }
+]
