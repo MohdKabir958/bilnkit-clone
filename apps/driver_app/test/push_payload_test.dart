@@ -32,7 +32,8 @@ void main() {
           isNull);
     });
     test('the three rider events parse', () {
-      for (final e in PushEvent.values) {
+      for (final e
+          in PushEvent.values.where((e) => e != PushEvent.supportUpdated)) {
         final p = PushPayload.tryParse(
             {'event': e.key, 'orderId': 'ord_123', 'v': '1'});
         expect(p, PushPayload(event: e, orderId: 'ord_123'));

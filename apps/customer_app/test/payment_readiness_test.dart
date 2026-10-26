@@ -9,6 +9,37 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  test('delivery windows are server-provided, bounded and never invented', () {
+    final quote = OrderQuote.tryParse({
+      'total': 105,
+      'subtotal': 80,
+      'capacity': {
+        'estimatedDeliveryMinMinutes': 35,
+        'estimatedDeliveryMaxMinutes': 55,
+        'message': 'Constrained capacity'
+      }
+    })!;
+    expect(quote.estimatedDeliveryMinMinutes, 35);
+    expect(quote.estimatedDeliveryMaxMinutes, 55);
+    expect(quote.deliveryMessage, 'Constrained capacity');
+    for (final capacity in [
+      null,
+      {
+        'canCheckout': false,
+        'estimatedDeliveryMinMinutes': 20,
+        'estimatedDeliveryMaxMinutes': 40
+      },
+      {'estimatedDeliveryMinMinutes': -1, 'estimatedDeliveryMaxMinutes': 30},
+      {'estimatedDeliveryMinMinutes': 50, 'estimatedDeliveryMaxMinutes': 20},
+      {'estimatedDeliveryMinMinutes': '20', 'estimatedDeliveryMaxMinutes': 40},
+      {'estimatedDeliveryMinMinutes': 20, 'estimatedDeliveryMaxMinutes': 9999}
+    ]) {
+      final q = OrderQuote.tryParse(
+          {'total': 105, 'subtotal': 80, 'capacity': capacity})!;
+      expect(q.estimatedDeliveryMinMinutes, isNull);
+      expect(q.estimatedDeliveryMaxMinutes, isNull);
+    }
+  });
   test(
       'authoritative empty payment list stays empty and does not invent online payment',
       () {

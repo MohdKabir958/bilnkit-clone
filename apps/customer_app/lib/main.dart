@@ -9,6 +9,7 @@ import 'providers/cart_provider.dart';
 import 'providers/order_provider.dart';
 import 'providers/session_provider.dart';
 import 'services/customer_api_service.dart';
+import 'services/support_api.dart';
 import 'services/google_auth_service.dart';
 import 'services/push/firebase_push.dart';
 import 'services/push/push_service.dart';
@@ -33,7 +34,8 @@ void main() {
 class KraveoCustomerApp extends StatelessWidget {
   /// [googleAuth] and [createOrders] are test seams; the real Google layer and the real order
   /// backend are used when they are null.
-  const KraveoCustomerApp({super.key, this.googleAuth, this.createOrders, this.push});
+  const KraveoCustomerApp(
+      {super.key, this.googleAuth, this.createOrders, this.push});
 
   final GoogleAuthService? googleAuth;
   final OrderProvider Function()? createOrders;
@@ -45,17 +47,22 @@ class KraveoCustomerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => SessionProvider(googleAuth: googleAuth)),
+        ChangeNotifierProvider(
+            create: (_) => SessionProvider(googleAuth: googleAuth)),
         ChangeNotifierProvider(create: (_) => DhabaProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
-        ChangeNotifierProvider(create: (_) => createOrders?.call() ?? OrderProvider()),
-        if (push != null) ChangeNotifierProvider<PushService>.value(value: push!),
+        ChangeNotifierProvider(
+            create: (_) => createOrders?.call() ?? OrderProvider()),
+        if (push != null)
+          ChangeNotifierProvider<PushService>.value(value: push!),
       ],
       child: MaterialApp(
         title: BrandConfig.customerName,
         debugShowCheckedModeBanner: false,
         theme: KraveoTheme.customer(),
-        home: GrozoAuthConfig.usesClerk && GrozoAuthConfig.preview ? const ClerkEntryScreen(appName: 'Grozo Customer',preview:true) : const AuthGate(),
+        home: GrozoAuthConfig.usesClerk && GrozoAuthConfig.preview
+            ? const ClerkEntryScreen(appName: 'Grozo Customer', preview: true)
+            : const AuthGate(),
       ),
     );
   }
@@ -74,8 +81,10 @@ class _AuthGateState extends State<AuthGate> {
   late final SessionProvider _session = context.read<SessionProvider>();
 
   /// Null when the app runs without push (tests, or no Firebase wiring).
-  late final PushService? _push = Provider.of<PushService?>(context, listen: false);
-  late final AppLifecycleListener _lifecycle = AppLifecycleListener(onResume: () => unawaited(_push?.onAppResumed()));
+  late final PushService? _push =
+      Provider.of<PushService?>(context, listen: false);
+  late final AppLifecycleListener _lifecycle =
+      AppLifecycleListener(onResume: () => unawaited(_push?.onAppResumed()));
   bool _routingTap = false;
 
   @override
@@ -107,7 +116,8 @@ class _AuthGateState extends State<AuthGate> {
     push.isOrderVisible = orders.isWatching;
     push.addListener(_drainPendingTap);
     // After the first frame, so Firebase start-up never delays the first paint.
-    WidgetsBinding.instance.addPostFrameCallback((_) => unawaited(push.start()));
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => unawaited(push.start()));
   }
 
   /// Routes a tapped notification to its order once the student is signed in. A tap that
@@ -133,10 +143,22 @@ class _AuthGateState extends State<AuthGate> {
       _routingTap = false;
       if (!mounted || _session.status != SessionStatus.signedIn) return;
       final navigator = Navigator.of(context);
+      if (tap.caseId != null) {
+        navigator.push(MaterialPageRoute<void>(
+            settings: RouteSettings(name: 'support:${tap.caseId}'),
+            builder: (_) => SupportCenter(
+                call: SupportApi.call,
+                initialCaseId: tap.caseId,
+                attachPhoto: SupportApi.attachPhoto,
+                readPhoto: SupportApi.readPhoto)));
+        return;
+      }
       // A push for any restaurant of a combined order opens the one screen of the whole order:
       // name the route by the order's primary id when it is known, so a second tap (for another
       // restaurant's part) finds the screen that is already open.
-      final orderId = context.read<OrderProvider>().orderById(tap.orderId)?.id ?? tap.orderId;
+      final orderId =
+          context.read<OrderProvider>().orderById(tap.orderId)?.id ??
+              tap.orderId;
       final routeName = 'track:$orderId';
       String? topName;
       navigator.popUntil((route) {
@@ -145,8 +167,11 @@ class _AuthGateState extends State<AuthGate> {
       });
       // The screen on top may have been opened through another part of the same combined order.
       final top = topName;
-      final topId = top != null && top.startsWith('track:') ? top.substring(6) : null;
-      final topCanonical = topId == null ? top : 'track:${context.read<OrderProvider>().orderById(topId)?.id ?? topId}';
+      final topId =
+          top != null && top.startsWith('track:') ? top.substring(6) : null;
+      final topCanonical = topId == null
+          ? top
+          : 'track:${context.read<OrderProvider>().orderById(topId)?.id ?? topId}';
       if (topCanonical == routeName) return; // already showing it
       navigator.popUntil((route) => route.isFirst);
       navigator.push(MaterialPageRoute<void>(
@@ -168,7 +193,9 @@ class _AuthGateState extends State<AuthGate> {
     _session.onUserLoaded = null;
     _session.onSignedOut = null;
     _session.beforeSignOut = null;
-    if (CustomerApiService.onUnauthorized == _handleUnauthorized) CustomerApiService.onUnauthorized = null;
+    if (CustomerApiService.onUnauthorized == _handleUnauthorized) {
+      CustomerApiService.onUnauthorized = null;
+    }
     super.dispose();
   }
 
@@ -194,19 +221,23 @@ class _AuthGateState extends State<AuthGate> {
     Navigator.of(context).popUntil((route) => route.isFirst);
     _session.expire();
     if (!alreadySignedOut) {
-      showKSnack(context, CustomerApiService.sessionExpiredMessage, icon: LucideIcons.logIn, error: true);
+      showKSnack(context, CustomerApiService.sessionExpiredMessage,
+          icon: LucideIcons.logIn, error: true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final session = context.watch<SessionProvider>();
-    if (_push?.pendingTap != null) WidgetsBinding.instance.addPostFrameCallback((_) => _drainPendingTap());
+    if (_push?.pendingTap != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _drainPendingTap());
+    }
     switch (session.status) {
       case SessionStatus.checking:
         return const _SplashScreen();
       case SessionStatus.unreachable:
-        return _SessionUnreachable(onRetry: session.retryRestore, onUseAnotherAccount: session.logout);
+        return _SessionUnreachable(
+            onRetry: session.retryRestore, onUseAnotherAccount: session.logout);
       case SessionStatus.signedOut:
         return const AuthScreen();
       case SessionStatus.needsProfile:
@@ -227,7 +258,10 @@ class _SplashScreen extends StatelessWidget {
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           KBrandMark(height: 72),
           SizedBox(height: 28),
-          SizedBox(width: 26, height: 26, child: CircularProgressIndicator(strokeWidth: 3)),
+          SizedBox(
+              width: 26,
+              height: 26,
+              child: CircularProgressIndicator(strokeWidth: 3)),
         ]),
       ),
     );
@@ -237,7 +271,8 @@ class _SplashScreen extends StatelessWidget {
 /// Shown when a saved session exists but Grozo cannot be reached. We keep the token so the
 /// student is not logged out just because the network dropped.
 class _SessionUnreachable extends StatefulWidget {
-  const _SessionUnreachable({required this.onRetry, required this.onUseAnotherAccount});
+  const _SessionUnreachable(
+      {required this.onRetry, required this.onUseAnotherAccount});
 
   final Future<void> Function() onRetry;
   final Future<void> Function() onUseAnotherAccount;
@@ -267,11 +302,19 @@ class _SessionUnreachableState extends State<_SessionUnreachable> {
               child: KEmptyState(
                 icon: LucideIcons.wifiOff,
                 title: 'Can\'t reach ${BrandConfig.name}',
-                message: 'Check your connection and try again. You are still signed in.',
+                message:
+                    'Check your connection and try again. You are still signed in.',
                 action: Column(mainAxisSize: MainAxisSize.min, children: [
-                  KButton(label: 'Try again', icon: LucideIcons.rotateCcw, loading: _busy, onPressed: _retry),
+                  KButton(
+                      label: 'Try again',
+                      icon: LucideIcons.rotateCcw,
+                      loading: _busy,
+                      onPressed: _retry),
                   const SizedBox(height: 12),
-                  KButton(label: 'Use a different account', kind: KButtonKind.ghost, onPressed: _busy ? null : widget.onUseAnotherAccount),
+                  KButton(
+                      label: 'Use a different account',
+                      kind: KButtonKind.ghost,
+                      onPressed: _busy ? null : widget.onUseAnotherAccount),
                 ]),
               ),
             ),

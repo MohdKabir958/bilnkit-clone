@@ -218,6 +218,29 @@ void main() {
 
   group('Checkout: the bill comes from the server quote', () {
     testWidgets(
+        'checkout shows a server capacity window without changing the quoted total',
+        (tester) async {
+      final api = FakeOrderApi()
+        ..onQuote = (_) async => OrderResult.ok(OrderQuote.tryParse({
+              ...quoteJson(count: 1, total: 140, max: 3),
+              'capacity': {
+                'estimatedDeliveryMinMinutes': 35,
+                'estimatedDeliveryMaxMinutes': 55,
+                'message': 'Limited delivery availability.'
+              }
+            })!);
+      final orders = fakeOrders(api);
+      await pumpApp(tester, const CheckoutScreen(selectedHostel: 'BH2'),
+          orders: orders, cart: singleCart());
+      await scrollTo(tester, find.text('Estimated delivery 35–55 min'));
+      expect(find.text('Estimated delivery 35–55 min'), findsOneWidget);
+      expect(find.textContaining('This is an estimate and can change.'),
+          findsOneWidget);
+      expect(button('Pay ₹140'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
         'ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders',
         (tester) async {
       final api = FakeOrderApi();

@@ -219,7 +219,9 @@ class PushService extends ChangeNotifier {
   Future<void> _syncOnce() async {
     await start();
     final userId = _userId;
-    if (!_available || userId == null || _permission != PushPermission.granted) {
+    if (!_available ||
+        userId == null ||
+        _permission != PushPermission.granted) {
       return;
     }
     final token = _refreshedToken ?? await _messaging.token();
@@ -316,7 +318,7 @@ class PushService extends ChangeNotifier {
     if (payload == null || _userId == null) return;
     // FCM shows nothing while the app is open: bring the order up to date once.
     try {
-      onOrderEvent?.call(payload);
+      if (payload.caseId == null) onOrderEvent?.call(payload);
     } catch (_) {}
     // Only things the student must not miss, and only if they are not already looking at that
     // order (the tracking screen updates itself).
@@ -331,7 +333,7 @@ class PushService extends ChangeNotifier {
       final title = (m.title ?? '').trim();
       final body = (m.body ?? '').trim();
       await _local.show(
-        id: payload.orderId.hashCode & 0x7fffffff,
+        id: payload.referenceId.hashCode & 0x7fffffff,
         title: title.isEmpty ? payload.event.fallbackTitle : title,
         body: body.isEmpty ? payload.event.fallbackBody : body,
         channelId: payload.event.channelId,

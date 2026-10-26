@@ -7,6 +7,9 @@ import 'push_ports.dart';
 
 /// What the order screens should do because of a push.
 enum PushActionKind {
+  showSupport,
+  supportUpdated,
+
   /// A push arrived while the app is open: reload the orders once.
   refreshOrders,
 
@@ -15,9 +18,10 @@ enum PushActionKind {
 }
 
 class PushAction {
-  const PushAction(this.kind, [this.orderId]);
+  const PushAction(this.kind, [this.orderId, this.caseId]);
   final PushActionKind kind;
   final String? orderId;
+  final String? caseId;
 
   @override
   String toString() => 'PushAction($kind, ${orderId ?? '-'})';
@@ -441,6 +445,10 @@ class PushController extends ChangeNotifier {
   /// alarm, so no banner is shown (no double alarm); the queue is just reloaded once.
   void _onForeground(PushMessage m) {
     if (!_active || !m.isActionable) return;
+    if (m.event == PushEvent.supportUpdated) {
+      _home?.call(PushAction(PushActionKind.supportUpdated, null, m.caseId));
+      return;
+    }
     _home?.call(const PushAction(PushActionKind.refreshOrders));
   }
 
@@ -450,8 +458,10 @@ class PushController extends ChangeNotifier {
     if (_signedOutKnown) {
       return; // logged out: the login screen is shown instead
     }
-    final action = PushAction(PushActionKind.showQueue,
-        m.event == PushEvent.newOrder ? m.orderId : null);
+    final action = m.event == PushEvent.supportUpdated
+        ? PushAction(PushActionKind.showSupport, null, m.caseId)
+        : PushAction(PushActionKind.showQueue,
+            m.event == PushEvent.newOrder ? m.orderId : null);
     final home = _home;
     if (home != null && _active) {
       home(action);

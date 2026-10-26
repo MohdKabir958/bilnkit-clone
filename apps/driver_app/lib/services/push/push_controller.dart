@@ -438,7 +438,7 @@ class PushController extends ChangeNotifier {
   String _key(PushIncoming m, PushPayload p) =>
       m.messageId != null && m.messageId!.isNotEmpty
           ? 'id:${m.messageId}'
-          : '${p.event.key}:${p.orderId}';
+          : '${p.event.key}:${p.caseId ?? p.orderId}:${p.noteId ?? ''}';
 
   void _onForeground(PushIncoming m) {
     try {
@@ -460,7 +460,8 @@ class PushController extends ChangeNotifier {
       }
       final status = _session?.status;
       if (status == SessionStatus.signedOut) return;
-      if (_seenBefore(_seenTaps, _key(m, payload), const Duration(seconds: 30))) {
+      if (_seenBefore(
+          _seenTaps, _key(m, payload), const Duration(seconds: 30))) {
         return;
       }
       _pendingTap = payload;

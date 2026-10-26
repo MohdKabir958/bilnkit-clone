@@ -116,6 +116,9 @@ class OrderQuote {
   const OrderQuote({
     this.paymentMethods = const ['ONLINE'],
     this.paymentMessage,
+    this.estimatedDeliveryMinMinutes,
+    this.estimatedDeliveryMaxMinutes,
+    this.deliveryMessage,
     required this.restaurantCount,
     required this.subtotal,
     required this.baseFee,
@@ -131,6 +134,9 @@ class OrderQuote {
   });
 
   final int restaurantCount;
+  final int? estimatedDeliveryMinMinutes;
+  final int? estimatedDeliveryMaxMinutes;
+  final String? deliveryMessage;
   final double subtotal;
 
   /// The "Delivery & service fee" line.
@@ -175,10 +181,25 @@ class OrderQuote {
     final count = json['restaurantCount'];
     final max = json['maxRestaurants'];
     final extras = fees['extraRestaurants'];
+    final capacity = json['capacity'];
+    final minimum =
+        capacity is Map ? capacity['estimatedDeliveryMinMinutes'] : null;
+    final maximum =
+        capacity is Map ? capacity['estimatedDeliveryMaxMinutes'] : null;
+    final validWindow = capacity is Map &&
+        capacity['canCheckout'] != false &&
+        minimum is int &&
+        maximum is int &&
+        minimum >= 1 &&
+        maximum >= minimum &&
+        maximum <= 1440;
     final feeTotal = fees['total'] is num
         ? (fees['total'] as num).toDouble()
         : _num(fees['base']) + _num(fees['extraTotal']);
     return OrderQuote(
+      estimatedDeliveryMinMinutes: validWindow ? minimum : null,
+      estimatedDeliveryMaxMinutes: validWindow ? maximum : null,
+      deliveryMessage: capacity is Map ? _str(capacity['message']) : null,
       paymentMethods: json['paymentMethods'] is List
           ? (json['paymentMethods'] as List).whereType<String>().toList()
           : const [],

@@ -1,6 +1,8 @@
 /// What a Grozo push tells the rider app. The server decides who gets which event (Docs/18, section 4);
 /// the app only understands the three rider events and ignores everything else.
 enum PushEvent {
+  supportUpdated('SUPPORT_UPDATED'),
+
   /// A paid order is waiting in the pool.
   newDelivery('NEW_DELIVERY'),
   pickupReady('PICKUP_READY'),
@@ -31,11 +33,15 @@ class PushPayload {
   const PushPayload(
       {required this.event,
       required this.orderId,
+      this.caseId,
+      this.noteId,
       this.offerId,
       this.offerExpiresAt});
 
   final PushEvent event;
   final String orderId;
+  final String? caseId;
+  final String? noteId;
   final String? offerId;
   final DateTime? offerExpiresAt;
 
@@ -53,6 +59,18 @@ class PushPayload {
       if (data is! Map) return null;
       final event = PushEvent.parse(data['event']);
       if (event == null) return null;
+      if (event == PushEvent.supportUpdated) {
+        final caseId = data['caseId'], noteId = data['noteId'];
+        if (data['v'] != '1' ||
+            caseId is! String ||
+            noteId is! String ||
+            !_orderIdShape.hasMatch(caseId) ||
+            !_orderIdShape.hasMatch(noteId)) {
+          return null;
+        }
+        return PushPayload(
+            event: event, orderId: '', caseId: caseId, noteId: noteId);
+      }
       final orderId = data['orderId'];
       if (orderId is! String || !_orderIdShape.hasMatch(orderId.trim())) {
         return null;
@@ -86,9 +104,12 @@ class PushPayload {
       other is PushPayload &&
       other.event == event &&
       other.orderId == orderId &&
+      other.caseId == caseId &&
+      other.noteId == noteId &&
       other.offerId == offerId &&
       other.offerExpiresAt == offerExpiresAt;
 
   @override
-  int get hashCode => Object.hash(event, orderId, offerId, offerExpiresAt);
+  int get hashCode =>
+      Object.hash(event, orderId, caseId, noteId, offerId, offerExpiresAt);
 }

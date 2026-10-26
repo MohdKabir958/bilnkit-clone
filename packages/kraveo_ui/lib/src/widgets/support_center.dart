@@ -12,10 +12,12 @@ class SupportCenter extends StatefulWidget {
       {super.key,
       required this.call,
       this.orderId,
+      this.initialCaseId,
       this.attachPhoto,
       this.readPhoto});
   final SupportCall call;
   final String? orderId;
+  final String? initialCaseId;
   final Future<void> Function(String caseId)? attachPhoto;
   final Future<Uint8List> Function(String caseId, String evidenceId)? readPhoto;
   @override
@@ -45,6 +47,19 @@ class _SupportCenterState extends State<SupportCenter> {
   void initState() {
     super.initState();
     load();
+    if (widget.initialCaseId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+                builder: (_) => _SupportThread(
+                    call: widget.call,
+                    id: widget.initialCaseId!,
+                    attachPhoto: widget.attachPhoto,
+                    readPhoto: widget.readPhoto)));
+      });
+    }
   }
 
   @override

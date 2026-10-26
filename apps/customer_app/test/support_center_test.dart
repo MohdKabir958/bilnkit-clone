@@ -4,6 +4,48 @@ import 'package:kraveo_ui/kraveo_ui.dart';
 
 void main() {
   testWidgets(
+      'a support notification opens its selected private thread and displays a denied case safely',
+      (tester) async {
+    final paths = <String>[];
+    Future<Map<String, dynamic>> call(String method, String path,
+        [Map<String, dynamic>? body]) async {
+      paths.add(path);
+      if (path.contains('/case-owned')) {
+        return {
+          'data': {
+            'id': 'case-owned',
+            'subject': 'Account help',
+            'description': 'Original private account question',
+            'status': 'IN_PROGRESS',
+            'notes': [
+              {
+                'id': 'note-owned',
+                'fromSupport': true,
+                'message': 'Your private reply'
+              }
+            ]
+          }
+        };
+      }
+      if (path.contains('/case-denied')) throw Exception('Request not found');
+      return {'data': []};
+    }
+
+    await tester.pumpWidget(MaterialApp(
+        home: SupportCenter(call: call, initialCaseId: 'case-owned')));
+    await tester.pumpAndSettle();
+    expect(paths.any((p) => p.contains('/case-owned')), isTrue);
+    expect(find.text('Your private reply'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(MaterialApp(
+        home: SupportCenter(call: call, initialCaseId: 'case-denied')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Request not found'), findsOneWidget);
+    expect(find.text('Your private reply'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets(
       'support submits an order-linked request and opens the private reply thread at 360px',
       (tester) async {
     tester.view.physicalSize = const Size(360, 640);

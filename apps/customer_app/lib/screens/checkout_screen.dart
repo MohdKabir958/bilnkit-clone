@@ -538,6 +538,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   icon: LucideIcons.mapPin,
                   child: _buildDropoff(context, k))),
           const SizedBox(height: 14),
+          if (_quote.quote?.estimatedDeliveryMinMinutes != null) ...[
+            _InfoCard(
+                icon: LucideIcons.clock,
+                title:
+                    'Estimated delivery ${_quote.quote!.estimatedDeliveryMinMinutes}–${_quote.quote!.estimatedDeliveryMaxMinutes} min',
+                message:
+                    '${_quote.quote!.deliveryMessage ?? 'Delivery estimates depend on store packing and rider availability.'} This is an estimate and can change.'),
+            const SizedBox(height: 14),
+          ],
           KReveal(
             index: 1,
             child: _SectionCard(
