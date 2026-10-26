@@ -1,3 +1,11 @@
+import { jobsRouter } from './jobs';
+import { payoutReadinessRouter } from './payoutReadiness';
+import { orderAdjustmentsRouter } from './orderAdjustments';
+import { clientContractMiddleware } from '../middleware/clientContract';
+import { configurationRouter } from './configuration';
+import { operationsReadinessRouter } from './operationsReadiness';
+import { preparationRouter } from './preparation';
+import { complianceRouter } from './compliance';
 import { marketplaceRouter } from './marketplace';
 import { grozoClerkMiddleware } from '../middleware/clerk';
 import {anonymizeAdminAccess} from '../services/adminAccess';
@@ -47,7 +55,10 @@ export const apiRouter = Router();
 
 // Rate limits are mounted by path, before any handler (see middleware/rateLimit.ts for the numbers).
 apiRouter.use(clerkWebhookRouter);
+apiRouter.use(clientContractMiddleware);
 apiRouter.use(grozoClerkMiddleware);
+apiRouter.use(configurationRouter);
+apiRouter.use(jobsRouter);
 apiRouter.use(rateLimitMiddleware);
 apiRouter.use(adminTeamRouter);
 apiRouter.use(adminStoresRouter);
@@ -55,6 +66,11 @@ apiRouter.use(marketplaceRouter);
 apiRouter.use(geographyRouter);
 apiRouter.use(productsRouter);
 apiRouter.use(operationsRouter);
+apiRouter.use(operationsReadinessRouter);
+apiRouter.use(preparationRouter);
+apiRouter.use(complianceRouter);
+apiRouter.use(payoutReadinessRouter);
+apiRouter.use(orderAdjustmentsRouter);
 // Partner sign-up, applications, approval and admin customer views live in ./partners.
 apiRouter.use(partnerRouter);
 // Orders, payments, rider pool, delivery verification code and the admin order tools live in ./orders.

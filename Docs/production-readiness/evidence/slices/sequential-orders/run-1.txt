@@ -1,0 +1,194 @@
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order f8356d44-919d-4048-bb8e-bc36a17508a6
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 264bc218-7acb-4959-b299-edf7dc146753
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 31a6737b-df5b-4e63-ba33-a02d40979f05
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order a8cc6e6a-f27c-4174-9dcb-0a9aab9402cb
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 4c779422-2328-42ee-a6bb-573249805098
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 9fbc29db-8e93-4cb5-a429-c808b1a6b9cb
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 03b1d875-3e8e-4659-9422-bab2d01ff3bb
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.error
+    refund for order c313f71d-6f0e-4aec-8525-46c4f831a567 failed (temporary): Razorpay is down
+
+      199 |   } catch (err) {
+      200 |     const perr = toProviderError(err);
+    > 201 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      202 |     try {
+      203 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      204 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:201:13)
+      at executeRefund (src/services/refundService.ts:211:106)
+      at finishChange (src/services/orderFlow.ts:201:7)
+      at cancelOrder (src/services/orderFlow.ts:859:17)
+      at src/routes/orders.ts:451:15
+
+  console.error
+    refund for order c313f71d-6f0e-4aec-8525-46c4f831a567 failed (temporary): Razorpay is down
+
+      199 |   } catch (err) {
+      200 |     const perr = toProviderError(err);
+    > 201 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      202 |     try {
+      203 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      204 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:201:13)
+      at src/services/orderMaintenance.ts:122:15
+      at worker (src/services/providerPool.ts:32:13)
+          at async Promise.all (index 0)
+      at runPool (src/services/providerPool.ts:40:3)
+      at runOrderMaintenance (src/services/orderMaintenance.ts:120:3)
+      at Object.<anonymous> (test/e2e/order_flow_v1.test.ts:932:21)
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+
+  console.error
+    refund for order e7e2012b-340c-43de-94d2-e292936e665e failed (temporary): Could not reach the payment provider (network error).
+
+      199 |   } catch (err) {
+      200 |     const perr = toProviderError(err);
+    > 201 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      202 |     try {
+      203 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      204 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:201:13)
+      at executeRefund (src/services/refundService.ts:211:106)
+      at finishChange (src/services/orderFlow.ts:201:7)
+      at cancelOrder (src/services/orderFlow.ts:859:17)
+      at src/routes/orders.ts:451:15
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+          at async Promise.all (index 0)
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order d6e0d271-874d-442c-b735-3c2e2ee44d68
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+          at async Promise.all (index 0)
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+          at async Promise.all (index 0)
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+          at async Promise.all (index 0)
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+          at async Promise.all (index 0)
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+          at async Promise.all (index 0)
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+          at async Promise.all (index 0)
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+          at async Promise.all (index 0)
+
+  console.log
+    order maintenance: expired 1, auto-cancelled 1, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+          at async Promise.all (index 0)
+
+  console.log
+    order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+
+  console.log
+    order maintenance: expired 1, auto-cancelled 0, refunds retried 0 (0 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order b281c851-7162-4c15-9a7f-c99bda32a581
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+Test Suites: 1 passed, 1 total
+Tests:       59 passed, 59 total
+Snapshots:   0 total
+Time:        26.097 s
+Ran all test suites matching test/e2e/order_flow_v1.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/sequential-orders/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

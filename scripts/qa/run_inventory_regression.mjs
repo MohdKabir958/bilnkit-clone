@@ -1,0 +1,10 @@
+import {fileURLToPath} from 'node:url';
+import {createRequire} from 'node:module';import {spawnSync} from 'node:child_process';import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
+const root=fileURLToPath(new URL('../../',import.meta.url)).replace(/\/$/,''),backend=root+'/backend',require=createRequire(backend+'/package.json'),{PrismaClient}=require('@prisma/client'),dotenv=require('dotenv');
+const saved=dotenv.parse(readFileSync(backend+'/.env')),base=new URL(saved.DATABASE_URL);if(!['localhost','127.0.0.1'].includes(base.hostname))throw Error('Local DB required');
+const admin=new URL(base);admin.pathname='/postgres';const target=new URL(base);target.pathname='/grozo_inventory_'+Date.now()+'_test';target.searchParams.set('connection_limit','4');
+const db=new PrismaClient({datasources:{db:{url:admin.toString()}}});await db.$executeRawUnsafe(`CREATE DATABASE "${target.pathname.slice(1)}"`);await db.$disconnect();
+const env={...process.env,NODE_ENV:'test',AUTH_MODE:'legacy',DATABASE_URL:target.toString(),JWT_SECRET:'inventory-only-local-test-secret',ADMIN_PASSCODE:'local-test',PAYMENT_PROVIDER:'razorpay',FORCE_COLOR:'0'};delete env.FIREBASE_KEY_PATH;delete env.FIREBASE_SERVICE_ACCOUNT;
+const out=root+'/Docs/production-readiness/evidence/inventory';mkdirSync(out,{recursive:true});
+const migrate=spawnSync(process.execPath,['scripts/migrate.mjs'],{cwd:backend,env,encoding:'utf8'});writeFileSync(out+'/migration.log',migrate.stdout+migrate.stderr);if(migrate.status!==0)throw Error('Migration failed');
+const start=Date.now();const r=spawnSync(process.execPath,['node_modules/jest/bin/jest.js','--runInBand','test/e2e/inventory_disposition.test.ts','test/e2e/grocery_inventory.test.ts','--json','--outputFile='+out+'/jest.json'],{cwd:backend,env,encoding:'utf8',maxBuffer:15*1024*1024});writeFileSync(out+'/test.log',r.stdout+r.stderr);writeFileSync(out+'/summary.json',JSON.stringify({command:'node scripts/qa/run_inventory_regression.mjs',database:target.pathname.slice(1),durationMs:Date.now()-start,exitCode:r.status}));console.log(r.stdout+r.stderr);process.exitCode=r.status??1;

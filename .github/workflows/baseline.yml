@@ -35,7 +35,22 @@ jobs:
       - run: npm run build
       - run: python3 ../scripts/qa/check_ui_terminology.py
       - run: python3 ../scripts/qa/test_terminology_guard.py
-      - run: npm test -- --silent
+      - name: Complete backend regression (one invocation)
+        run: |
+          mkdir -p ../Docs/production-readiness/evidence/ci
+          set -o pipefail
+          npm test -- --json --outputFile=../Docs/production-readiness/evidence/ci/backend.json 2>&1 | tee ../Docs/production-readiness/evidence/ci/backend.log
+      - name: Repeated pricing concurrency with the CI-sized connection pool
+        run: node ../scripts/qa/run_pricing_concurrency.mjs ci-pool-two 2 10 --testNamePattern='recalculate and edits running together'
+      - name: Preserve backend and pricing evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-and-pricing-${{ github.sha }}
+          path: |
+            Docs/production-readiness/evidence/ci
+            Docs/production-readiness/evidence/pricing
+          if-no-files-found: warn
       - run: npm audit --omit=dev
   web:
     runs-on: ubuntu-latest
@@ -56,7 +71,14 @@ jobs:
       - run: npm run build
       - run: npm audit --omit=dev
       - if: matrix.component == 'super_admin'
-        run: npm test
+        run: npm test -- --reporter=json --outputFile=../../Docs/production-readiness/evidence/ci/admin.json
+      - name: Preserve admin test evidence
+        if: always() && matrix.component == 'super_admin'
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-${{ github.sha }}
+          path: Docs/production-readiness/evidence/ci/admin.json
+          if-no-files-found: warn
       - run: python3 ../../scripts/configure_brand.py --check
   flutter:
     runs-on: ubuntu-latest

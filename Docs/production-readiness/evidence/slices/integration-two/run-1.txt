@@ -1,0 +1,166 @@
+FAIL test/e2e/marketplace_workflow.test.ts (13.693 s)
+  ● Single-store marketplace: real transactions, cash accounting and broadcast races › category, owner, city payment policy and one-store request are enforced by backend
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.cashCollection.deleteMany()` invocation in
+    /workspace/bilnkit-clone/backend/test/e2e/marketplace_workflow.test.ts:20:86
+
+      17 const place=async(method='COD',customer=W.customers[0])=>{const r=await raw(customer,'post','/api/v2/checkout',await body(method,customer));expect(r.status).toBe(201);return r.body.data.id as string;};
+      18 const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
+      19 beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+    → 20 beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany(
+    Foreign key constraint violated: `CashLedgerEvent_collectionId_fkey (index)`
+
+      18 |  const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
+      19 |  beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+    > 20 |  beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await resetWorldState(W);await prisma.city.update({where:{id:tag+'-city'},data:{active:true,codEnabled:true}});await prisma.vendor.updateMany({where:{id:{startsWith:tag+'-'}},data:{primaryCategoryId:'marketplace-category',publicPhone:'+919000000001'}});await prisma.driverPartner.updateMany({where:{id:{startsWith:tag+'-'}},data:{availabilityLat:23.0745,availabilityLng:76.859,availabilityAt:new Date()}});setPaymentProvider(createLedger().provider);});
+         |                                                          ^
+      21 |  afterAll(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await purgeWorld(tag);await prisma.category.delete({where:{id:'marketplace-category'}});setPaymentProvider(null);await stopTestServer(server);await prisma.$disconnect();});
+      22 |  test('deployed default retires legacy order creation without blocking existing records',async()=>{
+      23 |   const before=process.env.LEGACY_CHECKOUT_ENABLED;
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at Object.<anonymous> (test/e2e/marketplace_workflow.test.ts:20:58)
+
+  ● Single-store marketplace: real transactions, cash accounting and broadcast races › pickup and doorstep transitions require fresh assigned GPS; admin retries also support cash
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.cashCollection.deleteMany()` invocation in
+    /workspace/bilnkit-clone/backend/test/e2e/marketplace_workflow.test.ts:20:86
+
+      17 const place=async(method='COD',customer=W.customers[0])=>{const r=await raw(customer,'post','/api/v2/checkout',await body(method,customer));expect(r.status).toBe(201);return r.body.data.id as string;};
+      18 const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
+      19 beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+    → 20 beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany(
+    Foreign key constraint violated: `CashLedgerEvent_collectionId_fkey (index)`
+
+      18 |  const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
+      19 |  beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+    > 20 |  beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await resetWorldState(W);await prisma.city.update({where:{id:tag+'-city'},data:{active:true,codEnabled:true}});await prisma.vendor.updateMany({where:{id:{startsWith:tag+'-'}},data:{primaryCategoryId:'marketplace-category',publicPhone:'+919000000001'}});await prisma.driverPartner.updateMany({where:{id:{startsWith:tag+'-'}},data:{availabilityLat:23.0745,availabilityLng:76.859,availabilityAt:new Date()}});setPaymentProvider(createLedger().provider);});
+         |                                                          ^
+      21 |  afterAll(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await purgeWorld(tag);await prisma.category.delete({where:{id:'marketplace-category'}});setPaymentProvider(null);await stopTestServer(server);await prisma.$disconnect();});
+      22 |  test('deployed default retires legacy order creation without blocking existing records',async()=>{
+      23 |   const before=process.env.LEGACY_CHECKOUT_ENABLED;
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at Object.<anonymous> (test/e2e/marketplace_workflow.test.ts:20:58)
+
+  ● Single-store marketplace: real transactions, cash accounting and broadcast races › store selection, profile edits and pickup changes cannot target another vendor store
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.cashCollection.deleteMany()` invocation in
+    /workspace/bilnkit-clone/backend/test/e2e/marketplace_workflow.test.ts:20:86
+
+      17 const place=async(method='COD',customer=W.customers[0])=>{const r=await raw(customer,'post','/api/v2/checkout',await body(method,customer));expect(r.status).toBe(201);return r.body.data.id as string;};
+      18 const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
+      19 beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+    → 20 beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany(
+    Foreign key constraint violated: `CashLedgerEvent_collectionId_fkey (index)`
+
+      18 |  const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
+      19 |  beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+    > 20 |  beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await resetWorldState(W);await prisma.city.update({where:{id:tag+'-city'},data:{active:true,codEnabled:true}});await prisma.vendor.updateMany({where:{id:{startsWith:tag+'-'}},data:{primaryCategoryId:'marketplace-category',publicPhone:'+919000000001'}});await prisma.driverPartner.updateMany({where:{id:{startsWith:tag+'-'}},data:{availabilityLat:23.0745,availabilityLng:76.859,availabilityAt:new Date()}});setPaymentProvider(createLedger().provider);});
+         |                                                          ^
+      21 |  afterAll(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await purgeWorld(tag);await prisma.category.delete({where:{id:'marketplace-category'}});setPaymentProvider(null);await stopTestServer(server);await prisma.$disconnect();});
+      22 |  test('deployed default retires legacy order creation without blocking existing records',async()=>{
+      23 |   const before=process.env.LEGACY_CHECKOUT_ENABLED;
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at Object.<anonymous> (test/e2e/marketplace_workflow.test.ts:20:58)
+
+  ● Single-store marketplace: real transactions, cash accounting and broadcast races › uncollected cash cancellation releases stock without a gateway refund
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.cashCollection.deleteMany()` invocation in
+    /workspace/bilnkit-clone/backend/test/e2e/marketplace_workflow.test.ts:20:86
+
+      17 const place=async(method='COD',customer=W.customers[0])=>{const r=await raw(customer,'post','/api/v2/checkout',await body(method,customer));expect(r.status).toBe(201);return r.body.data.id as string;};
+      18 const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
+      19 beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+    → 20 beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany(
+    Foreign key constraint violated: `CashLedgerEvent_collectionId_fkey (index)`
+
+      18 |  const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
+      19 |  beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+    > 20 |  beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await resetWorldState(W);await prisma.city.update({where:{id:tag+'-city'},data:{active:true,codEnabled:true}});await prisma.vendor.updateMany({where:{id:{startsWith:tag+'-'}},data:{primaryCategoryId:'marketplace-category',publicPhone:'+919000000001'}});await prisma.driverPartner.updateMany({where:{id:{startsWith:tag+'-'}},data:{availabilityLat:23.0745,availabilityLng:76.859,availabilityAt:new Date()}});setPaymentProvider(createLedger().provider);});
+         |                                                          ^
+      21 |  afterAll(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await purgeWorld(tag);await prisma.category.delete({where:{id:'marketplace-category'}});setPaymentProvider(null);await stopTestServer(server);await prisma.$disconnect();});
+      22 |  test('deployed default retires legacy order creation without blocking existing records',async()=>{
+      23 |   const before=process.env.LEGACY_CHECKOUT_ENABLED;
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at Object.<anonymous> (test/e2e/marketplace_workflow.test.ts:20:58)
+
+  ● Single-store marketplace: real transactions, cash accounting and broadcast races › server-side category/shop/product search uses the full catalog and returns no login phone
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.cashCollection.deleteMany()` invocation in
+    /workspace/bilnkit-clone/backend/test/e2e/marketplace_workflow.test.ts:20:86
+
+      17 const place=async(method='COD',customer=W.customers[0])=>{const r=await raw(customer,'post','/api/v2/checkout',await body(method,customer));expect(r.status).toBe(201);return r.body.data.id as string;};
+      18 const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
+      19 beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+    → 20 beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany(
+    Foreign key constraint violated: `CashLedgerEvent_collectionId_fkey (index)`
+
+      18 |  const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
+      19 |  beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+    > 20 |  beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await resetWorldState(W);await prisma.city.update({where:{id:tag+'-city'},data:{active:true,codEnabled:true}});await prisma.vendor.updateMany({where:{id:{startsWith:tag+'-'}},data:{primaryCategoryId:'marketplace-category',publicPhone:'+919000000001'}});await prisma.driverPartner.updateMany({where:{id:{startsWith:tag+'-'}},data:{availabilityLat:23.0745,availabilityLng:76.859,availabilityAt:new Date()}});setPaymentProvider(createLedger().provider);});
+         |                                                          ^
+      21 |  afterAll(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await purgeWorld(tag);await prisma.category.delete({where:{id:'marketplace-category'}});setPaymentProvider(null);await stopTestServer(server);await prisma.$disconnect();});
+      22 |  test('deployed default retires legacy order creation without blocking existing records',async()=>{
+      23 |   const before=process.env.LEGACY_CHECKOUT_ENABLED;
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at Object.<anonymous> (test/e2e/marketplace_workflow.test.ts:20:58)
+
+
+  ● Test suite failed to run
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.cashCollection.deleteMany()` invocation in
+    /workspace/bilnkit-clone/backend/test/e2e/marketplace_workflow.test.ts:21:84
+
+      18 const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
+      19 beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+      20 beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await resetWorldState(W);await prisma.city.update({where:{id:tag+'-city'},data:{active:true,codEnabled:true}});await prisma.vendor.updateMany({where:{id:{startsWith:tag+'-'}},data:{primaryCategoryId:'marketplace-category',publicPhone:'+919000000001'}});await prisma.driverPartner.updateMany({where:{id:{startsWith:tag+'-'}},data:{availabilityLat:23.0745,availabilityLng:76.859,availabilityAt:new Date()}});setPaymentProvider(createLedger().provider);});
+    → 21 afterAll(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany(
+    Foreign key constraint violated: `CashLedgerEvent_collectionId_fkey (index)`
+
+      19 |  beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
+      20 |  beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await resetWorldState(W);await prisma.city.update({where:{id:tag+'-city'},data:{active:true,codEnabled:true}});await prisma.vendor.updateMany({where:{id:{startsWith:tag+'-'}},data:{primaryCategoryId:'marketplace-category',publicPhone:'+919000000001'}});await prisma.driverPartner.updateMany({where:{id:{startsWith:tag+'-'}},data:{availabilityLat:23.0745,availabilityLng:76.859,availabilityAt:new Date()}});setPaymentProvider(createLedger().provider);});
+    > 21 |  afterAll(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await purgeWorld(tag);await prisma.category.delete({where:{id:'marketplace-category'}});setPaymentProvider(null);await stopTestServer(server);await prisma.$disconnect();});
+         |                                                        ^
+      22 |  test('deployed default retires legacy order creation without blocking existing records',async()=>{
+      23 |   const before=process.env.LEGACY_CHECKOUT_ENABLED;
+      24 |   try {delete process.env.LEGACY_CHECKOUT_ENABLED;expect((await raw(W.customers[0],'post','/api/orders',await body('ONLINE'))).status).toBe(410);expect((await raw(W.customers[0],'post','/api/order-groups',{restaurants:[{},{}]})).status).toBe(410);}
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at Object.<anonymous> (test/e2e/marketplace_workflow.test.ts:21:56)
+
+
+Test Suites: 1 failed, 2 passed, 3 total
+Tests:       5 failed, 28 passed, 33 total
+Snapshots:   0 total
+Time:        18.093 s, estimated 20 s
+Ran all test suites matching test/e2e/marketplace_workflow.test.ts|test/e2e/operations_readiness.test.ts|test/e2e/compliance_payout_readiness.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/integration-two/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

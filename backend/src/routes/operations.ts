@@ -12,6 +12,7 @@ import { declineDispatchOffer, ensureDispatchOffer } from '../services/dispatch'
 import { drainNotificationIntents } from '../services/push/intents';
 import { withOrderLock } from '../services/orderFlow';
 import { ACTIVE_RIDER_STATUSES } from '../services/orderView';
+import { createSupportCase, replyToSupportCase, requesterSupportCase, publicSupportNote, updateSupportCase } from '../services/supportCases';
 
 export const operationsRouter=Router();
 const wrap=(fn:(r:AuthenticatedRequest,s:Response)=>Promise<any>)=>async(r:AuthenticatedRequest,s:Response)=>{try{await fn(r,s);}catch(e){fail(s,e,'operations');}};
@@ -47,7 +48,7 @@ operationsRouter.post('/v1/orders/:id/arrive-pickup',requireAuth,requireRole('DR
     if(!['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(o.status))throw new AppError(409,'BAD_STATE','Pickup arrival can be confirmed before collection.');
     if(o.pickupArrivalAt)return;
     await requireRiderAt(tx,o,o.vendor);
-    await tx.order.update({where:{id:o.id},data:{pickupArrivalAt:new Date()}});
+    await tx.order.update({where:{id:o.id},data:{pickupArrivalAt:new Date(),riderArrivedPickupAt:new Date()}});
     await tx.notificationIntent.create({data:{orderId:o.id,event:'RIDER_AT_PICKUP',options:{bucket:o.updatedAt.getTime()}}});
     await tx.adminAuditLog.create({data:{action:'RIDER_AT_PICKUP',targetType:'ORDER',targetId:o.id,summary:`Assigned rider ${r.user!.id} confirmed arrival at the store`}});
   });drainNotificationIntents();ok(s,{arrived:true});
@@ -94,44 +95,28 @@ operationsRouter.put('/v1/partner/store',requireAuth,requireRole('VENDOR'),requi
 }));
 
 operationsRouter.post('/v1/support-cases',...requester,wrap(async(r,s)=>{
-  const subject=text(r.body?.subject,'subject',100),description=messageText(r.body?.description),orderId=r.body?.orderId==null?null:text(r.body.orderId,'orderId',64);
-  if(orderId&&!await prisma.order.findFirst({where:{id:orderId,...(r.user!.role==='STUDENT'?{customerId:r.user!.id}:r.user!.role==='VENDOR'?{vendor:{userId:r.user!.id}}:{driverId:r.user!.id})}}))throw new AppError(404,'NOT_FOUND','Order not found.');
-  ok(s,await prisma.$transaction(async(tx)=>{const user=await tx.$queryRaw<{id:string;deletedAt:Date|null}[]>`SELECT "id","deletedAt" FROM "User" WHERE "id"=${r.user!.id} FOR UPDATE`;if(!user.length||user[0].deletedAt)throw new AppError(401,'ACCOUNT_UNAVAILABLE','Please sign in again.');return tx.supportCase.create({data:{customerId:r.user!.id,orderId,subject,description}});}),201);
+  ok(s,await createSupportCase(r.user!,r.body),201);
 }));
 operationsRouter.get('/v1/support-cases',...requester,wrap(async(r,s)=>{
-  const p=page(r),rows=await prisma.supportCase.findMany({...p,where:{customerId:r.user!.id},orderBy:[{createdAt:'desc'},{id:'desc'}],include:{notes:{orderBy:{createdAt:'desc'},take:20}}});
-  s.json({success:true,data:rows.map((c)=>({...c,notes:c.notes.map((n)=>({id:n.id,message:n.message,createdAt:n.createdAt,fromSupport:n.actorId!==c.customerId}))})),nextCursor:rows.length===p.take?rows.at(-1)!.id:null});
+  const p=page(r),rows=await prisma.supportCase.findMany({...p,where:{customerId:r.user!.id},orderBy:[{createdAt:'desc'},{id:'desc'}],include:{notes:{where:{internal:false},orderBy:{createdAt:'desc'},take:20},evidence:{where:{expiresAt:{gt:new Date()}},orderBy:{createdAt:'asc'}}}});
+  s.json({success:true,data:rows.map(requesterSupportCase),nextCursor:rows.length===p.take?rows.at(-1)!.id:null});
 }));
 operationsRouter.get('/v1/support-cases/:id',...requester,validParams('id'),wrap(async(r,s)=>{
-  const c=await prisma.supportCase.findFirst({where:{id:r.params.id,customerId:r.user!.id}});if(!c)throw new AppError(404,'NOT_FOUND','Request not found.');
-  const p=page(r),notes=await prisma.supportNote.findMany({...p,where:{caseId:c.id},orderBy:[{createdAt:'desc'},{id:'desc'}]});
-  ok(s,{...c,notes:notes.map((n)=>({id:n.id,message:n.message,createdAt:n.createdAt,fromSupport:n.actorId!==c.customerId})),nextNotesCursor:notes.length===p.take?notes.at(-1)!.id:null});
+  const c=await prisma.supportCase.findFirst({where:{id:r.params.id,customerId:r.user!.id},include:{evidence:{where:{expiresAt:{gt:new Date()}},orderBy:{createdAt:'asc'}}}});if(!c)throw new AppError(404,'NOT_FOUND','Request not found.');
+  const p=page(r),notes=await prisma.supportNote.findMany({...p,where:{caseId:c.id,internal:false},orderBy:[{createdAt:'desc'},{id:'desc'}]});
+  ok(s,{...requesterSupportCase(c),notes:notes.map(n=>publicSupportNote(n,c.customerId)),nextNotesCursor:notes.length===p.take?notes.at(-1)!.id:null});
 }));
 operationsRouter.post('/v1/support-cases/:id/replies',...requester,validParams('id'),wrap(async(r,s)=>{
-  const message=messageText(r.body?.message);
-  await prisma.$transaction(async(tx)=>{
-    const users=await tx.$queryRaw<{id:string;deletedAt:Date|null}[]>`SELECT "id","deletedAt" FROM "User" WHERE "id"=${r.user!.id} FOR UPDATE`;if(!users.length||users[0].deletedAt)throw new AppError(401,'ACCOUNT_UNAVAILABLE','Please sign in again.');
-    await tx.$queryRaw`SELECT "id" FROM "SupportCase" WHERE "id"=${r.params.id} FOR UPDATE`;
-    const c=await tx.supportCase.findFirst({where:{id:r.params.id,customerId:r.user!.id}});if(!c)throw new AppError(404,'NOT_FOUND','Request not found.');
-    await tx.supportNote.create({data:{caseId:c.id,actorId:r.user!.id,message}});
-    await tx.supportCase.update({where:{id:c.id},data:{status:c.status==='RESOLVED'?'OPEN':c.status,resolution:null}});
-  });ok(s,{sent:true});
+  await replyToSupportCase(r.user!,r.params.id,r.body?.message);ok(s,{sent:true});
 }));
 operationsRouter.get('/v1/admin/support-cases',...admin,wrap(async(r,s)=>{
   const p=page(r),status=r.query.status===undefined?undefined:text(r.query.status,'status',20);
   if(status&&!['OPEN','IN_PROGRESS','RESOLVED'].includes(status))throw new AppError(400,'BAD_REQUEST','Invalid support status.');
-  const rows=await prisma.supportCase.findMany({...p,where:{...(status?{status}:{})},orderBy:[{createdAt:'desc'},{id:'desc'}],include:{notes:{orderBy:{createdAt:'desc'},take:100},customer:{select:{id:true,name:true}},order:{select:{id:true,status:true,paymentStatus:true,refundStatus:true}}}});
+  const rows=await prisma.supportCase.findMany({...p,where:{...(status?{status}:{})},orderBy:[{createdAt:'desc'},{id:'desc'}],include:{notes:{orderBy:{createdAt:'desc'},take:100},evidence:{where:{expiresAt:{gt:new Date()}},select:{id:true,mime:true,bytes:true,caption:true,createdAt:true,expiresAt:true}},customer:{select:{id:true,name:true}},order:{select:{id:true,status:true,paymentStatus:true,refundStatus:true}}}});
   s.json({success:true,data:rows,nextCursor:rows.length===p.take?rows.at(-1)!.id:null});
 }));
 operationsRouter.post('/v1/admin/support-cases/:id/notes',...admin,validParams('id'),wrap(async(r,s)=>{
-  const message=messageText(r.body?.message),status=text(r.body?.status,'status',20);
-  if(!['OPEN','IN_PROGRESS','RESOLVED'].includes(status))throw new AppError(400,'BAD_REQUEST','Choose a valid support status.');
-  const result=await prisma.$transaction(async(tx)=>{
-    const locked=await tx.$queryRaw<{id:string}[]>`SELECT "id" FROM "SupportCase" WHERE "id"=${r.params.id} FOR UPDATE`;if(!locked.length)throw new AppError(404,'NOT_FOUND','Support case not found.');
-    await tx.supportNote.create({data:{caseId:r.params.id,actorId:r.user!.id,message}});
-    const c=await tx.supportCase.update({where:{id:r.params.id},data:{status,resolution:status==='RESOLVED'?message:null}});
-    await tx.adminAuditLog.create({data:{action:'SUPPORT_CASE_UPDATED',targetType:'SUPPORT_CASE',targetId:c.id,summary:`Admin ${r.user!.id} changed status to ${status}`}});return c;
-  });ok(s,result);
+  ok(s,await updateSupportCase(r.user!,r.params.id,r.body));
 }));
 operationsRouter.get('/v1/admin/audit',...admin,wrap(async(r,s)=>{
   const p=page(r),rows=await prisma.adminAuditLog.findMany({...p,orderBy:[{createdAt:'desc'},{id:'desc'}]});s.json({success:true,data:rows,nextCursor:rows.length===p.take?rows.at(-1)!.id:null});

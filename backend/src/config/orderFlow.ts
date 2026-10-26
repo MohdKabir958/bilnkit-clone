@@ -12,7 +12,7 @@ const envNumber = (name: string, fallback: number): number => {
 /** An unpaid order is cancelled by the server after this many minutes. */
 export const paymentWindowMin = () => envNumber('PAYMENT_WINDOW_MIN', 15);
 /** A paid order the restaurant has not accepted is cancelled (and refunded) after this many minutes. */
-export const vendorAcceptWindowMin = () => envNumber('VENDOR_ACCEPT_WINDOW_MIN', 10);
+export const vendorAcceptWindowMin = () => Math.max(1, Math.min(30, envNumber('VENDOR_ACCEPT_WINDOW_MIN', 10)));
 
 export const MAX_UNPAID_OPEN_ORDERS = 3;
 export const MAX_ACTIVE_ORDERS_PER_RIDER = 1;

@@ -1,0 +1,7 @@
+Test Suites: 1 passed, 1 total
+Tests:       42 skipped, 1 passed, 43 total
+Snapshots:   0 total
+Time:        8.493 s
+Ran all test suites matching test/e2e/pricing_catalog.test.ts with tests matching "recalculate and edits running together".
+Test results written to: ../Docs/production-readiness/evidence/pricing/fixed-pool-two/run-6.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

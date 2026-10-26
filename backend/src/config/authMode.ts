@@ -18,6 +18,9 @@ export const clerkOnly: RequestHandler = (_req, res, next) => {
   if (!usesClerk()) return void res.status(404).json({ success: false, message: 'Not found.' });
   next();
 };
-export const clerkParties = () => (process.env.CLERK_AUTHORIZED_PARTIES || '').split(',').map(v => v.trim()).filter(Boolean);
+export const clerkParties = () => (process.env.CLERK_AUTHORIZED_PARTIES || '').split(',').map(v => v.trim()).filter(Boolean).map(value => {
+  // azp is an origin. Normalize a harmless trailing slash without accepting paths or wildcards.
+  try { const url = new URL(value); return !url.username && !url.password && url.pathname === '/' && !url.search && !url.hash && !url.hostname.includes('*') && ['https:', 'http:'].includes(url.protocol) ? url.origin : value; } catch { return value; }
+});
 export const clerkAdmins = () => (process.env.CLERK_ADMIN_USER_IDS || '').split(',').map(v => v.trim()).filter(Boolean);
 export const nativeClerkRequest = (origin?: string) => !origin && process.env.CLERK_ALLOW_NATIVE_WITHOUT_AZP === 'true';

@@ -1,3 +1,5 @@
+import { dispatchTiming, capacityRecoveryDeadline } from './preparation';
+import { estimateTravel, TravelEstimate } from './routing';
 import { fulfillmentAuthorized, fulfillmentWhere } from './marketplace';
 import { drainNotificationIntents } from './push/intents';
 import { Prisma, DriverPartner, DeliveryZone, City, DispatchOffer } from '@prisma/client';
@@ -75,16 +77,16 @@ async function ensureLegacyDispatchOffer(orderId:string,now=new Date()):Promise<
       await tx.order.update({where:{id:o.id},data:{dispatchNextAttemptAt:offer.expiresAt,dispatchNote:null,dispatchEscalatedAt:null}});
       await tx.adminAuditLog.create({data:{action:'DELIVERY_OFFERED',targetType:'ORDER',targetId:o.id,summary:`Offered to rider ${rider.id}; round ${o.dispatchRound}`}});
       // FCM intent commits with the offer; the worker suppresses stale offers at dispatch time.
-      await tx.notificationIntent.create({data:{orderId:o.id,event:'NEW_DELIVERY',options:{userId:rider.userId,bucket:o.dispatchRound}}});
+      await tx.notificationIntent.create({data:{orderId:o.id,event:'NEW_DELIVERY',options:{userId:rider.userId,bucket:o.dispatchRound,offerId:offer.id,offerExpiresAt:offer.expiresAt.toISOString()}}});
       return {o,userId:rider.userId,offer};
     },{maxWait:15000,timeout:30000});
     if(created) {drainNotificationIntents();await publisher(created.o,created.userId,created.offer).catch(()=>console.error('Dispatch socket delivery failed.'));return created.offer;}
   }
   await markAttention(first.id,now,'NO_ELIGIBLE_RIDER');
 }
-export async function runDispatchMaintenance(now=new Date(),cityId?:string,wakeUnserved=false) {
+export async function runDispatchMaintenance(now=new Date(),cityId?:string,wakeUnserved=false,signal?:AbortSignal) {
   const ids=await prisma.order.findMany({where:{driverId:null,status:{in:[...POOL]},...(cityId?{vendor:{cityId}}:{}),AND:[fulfillmentWhere,{OR:[{groupId:null},{groupIndex:0}]},{OR:[{dispatchNextAttemptAt:null},{dispatchNextAttemptAt:{lte:now}},...(wakeUnserved?[{dispatchOffers:{none:{state:'PENDING',expiresAt:{gt:now}}}}]:[])]},{OR:[{dispatchEscalatedAt:null},{dispatchNote:'NO_ELIGIBLE_RIDER',...(wakeUnserved?{}:{dispatchNextAttemptAt:{lte:now}})}]}]},select:{id:true},orderBy:{createdAt:'asc'},take:100});
-  for(const o of ids) await ensureDispatchOffer(o.id,now);
+  for(const o of ids) {if(signal?.aborted)break;await ensureDispatchOffer(o.id,now);}
   return ids.length;
 }
 export async function acceptDispatchOffer(tx:Tx,orders:OrderWithRelations[],riderUserId:string,now=new Date()) {
@@ -122,13 +124,33 @@ export async function ensureDispatchOffer(orderId:string, now=new Date()):Promis
   const first=await prisma.order.findUnique({where:{id:orderId},include:ORDER_VIEW_INCLUDE});
   if (!first || !isPoolEligible(first)) return;
   if (first.workflowVersion !== 2) return ensureLegacyDispatchOffer(orderId,now);
+  // Filter quickly, then rank using cached/licensed road ETA outside all DB transactions.
+  const candidates=await prisma.driverPartner.findMany({where:{approvalStatus:'APPROVED',dutyStatus:'ONLINE',cityId:first.vendor.cityId,user:{is:{role:'DRIVER',deletedAt:null}},availabilityAt:{gte:new Date(now.getTime()-120000),lte:now},serviceZone:{is:{active:true,city:{active:true}}}},include:{serviceZone:{include:{city:true}}},orderBy:{id:'asc'}});
+  const ranked:{r:Rider;travel:TravelEstimate}[]=[];
+  for(const r of candidates) {
+    if(r.availabilityLat==null||r.availabilityLng==null||kmBetween({lat:r.availabilityLat,lng:r.availabilityLng},first.vendor)>5||!riderServesOrders(r,[first]))continue;
+    ranked.push({r,travel:await estimateTravel({lat:r.availabilityLat,lng:r.availabilityLng},first.vendor,now)});
+  }
+  ranked.sort((a,b)=>a.travel.durationSeconds-b.travel.durationSeconds||a.r.id.localeCompare(b.r.id));
+  const timing=ranked.map(r=>dispatchTiming(first,r.travel,now));
+  const eligible=new Set(ranked.filter((_,i)=>timing[i].eligible).map(r=>r.r.id));
+  if(ranked.length&&!eligible.size) {
+    await prisma.order.updateMany({where:{id:first.id,driverId:null,status:{in:[...POOL]},dispatchRound:first.dispatchRound},data:{dispatchNextAttemptAt:new Date(Math.min(...timing.map(t=>t.nextSearchAt.getTime()))),dispatchNote:'WAITING_FOR_PACKING'}});
+    return;
+  }
   const prepared=await prisma.$transaction(async tx=>{
     const rows=await lockedOrders(tx,orderId);const o=rows[0];
     if(!o || !claimable(rows) || o.dispatchEscalatedAt) return null;
     await expire(tx,o.id,now);
     if(o.dispatchNextAttemptAt && o.dispatchNextAttemptAt>now) return null;
+    if(now>capacityRecoveryDeadline(o)) {
+      await tx.order.update({where:{id:o.id},data:{dispatchEscalatedAt:now,dispatchNote:'RECOVERY_DEADLINE_EXCEEDED',dispatchNextAttemptAt:null}});
+      await tx.adminAuditLog.create({data:{action:'DISPATCH_RECOVERY_EXPIRED',targetType:'ORDER',targetId:o.id,summary:'Delivery recovery deadline exceeded; operator cancellation/refund review is required.'}});
+      return null;
+    }
     let round=o.dispatchRound;
-    if(o.dispatchNextAttemptAt) {
+    // A packing delay is not a consumed rider-offer round.
+    if(o.dispatchNextAttemptAt&&o.dispatchNote!=='WAITING_FOR_PACKING') {
       if(round%3===2) {
         await tx.order.update({where:{id:o.id},data:{dispatchEscalatedAt:now,dispatchNote:'OFFERS_EXHAUSTED',dispatchNextAttemptAt:null}});
         await tx.adminAuditLog.create({data:{action:'DISPATCH_EXHAUSTED',targetType:'ORDER',targetId:o.id,summary:'No rider accepted after three nearby broadcast rounds. Operator action required.'}});
@@ -136,28 +158,30 @@ export async function ensureDispatchOffer(orderId:string, now=new Date()):Promis
       }
       round++;
     }
-    const expiresAt=new Date(now.getTime()+45000);
-    await tx.order.update({where:{id:o.id},data:{dispatchRound:round,dispatchNextAttemptAt:expiresAt,dispatchNote:'WAITING_FOR_NEARBY_RIDER'}});
+    const expiresAt=new Date(now.getTime()+ttlMs());
+    await tx.order.update({where:{id:o.id},data:{dispatchRound:round,dispatchSearchStartedAt:o.dispatchSearchStartedAt??now,dispatchNextAttemptAt:expiresAt,dispatchNote:'WAITING_FOR_NEARBY_RIDER'}});
     return {round,expiresAt};
   });
   if(!prepared) return;
   const radiusKm=prepared.round%3===0?3:5;
-  const candidates=await prisma.driverPartner.findMany({where:{approvalStatus:'APPROVED',dutyStatus:'ONLINE',cityId:first.vendor.cityId,user:{is:{role:'DRIVER',deletedAt:null}},availabilityAt:{gte:new Date(now.getTime()-120000)},serviceZone:{is:{active:true,city:{active:true}}}},include:{serviceZone:{include:{city:true}}},orderBy:{id:'asc'}});
   let offered:DispatchOffer|undefined;
-  for(const candidate of candidates) {
-    if(candidate.availabilityLat==null||candidate.availabilityLng==null||kmBetween({lat:candidate.availabilityLat,lng:candidate.availabilityLng},first.vendor)>radiusKm||!riderServesOrders(candidate,[first])) continue;
+  for(const {r:candidate} of ranked) {
+    if(!eligible.has(candidate.id)||candidate.availabilityLat==null||candidate.availabilityLng==null||kmBetween({lat:candidate.availabilityLat,lng:candidate.availabilityLng},first.vendor)>radiusKm)continue;
     const created=await prisma.$transaction(async tx=>{
       const locked=await tx.$queryRaw<{id:string}[]>`SELECT "id" FROM "DriverPartner" WHERE "id"=${candidate.id} FOR UPDATE SKIP LOCKED`;
       if(!locked.length) return null;
       const r=await tx.driverPartner.findUniqueOrThrow({where:{id:candidate.id},include:{serviceZone:{include:{city:true}},user:true}});
       if(!r.userId||r.user?.deletedAt||r.user?.role!=='DRIVER'||r.approvalStatus!=='APPROVED'||r.dutyStatus!=='ONLINE'||!r.availabilityAt||r.availabilityAt.getTime()<now.getTime()-120000||r.availabilityLat==null||r.availabilityLng==null||kmBetween({lat:r.availabilityLat,lng:r.availabilityLng},first.vendor)>radiusKm) return null;
+      if(r.user.clerkUserId) {const identity=await tx.clerkIdentityState.findUnique({where:{clerkUserId:r.user.clerkUserId}});if(identity&&(identity.suspended||identity.deleted||identity.deleteRequested))return null;}
       if(await tx.order.count({where:{driverId:r.userId,status:{in:[...ACTIVE_RIDER_STATUSES]}}})) return null;
       const orders=await lockedOrders(tx,orderId),o=orders[0];
       if(!o||!claimable(orders)||o.dispatchRound!==prepared.round||o.dispatchEscalatedAt||!riderServesOrders(r,orders)) return null;
       if(await tx.dispatchOffer.findUnique({where:{orderId_driverId_round:{orderId:o.id,driverId:r.id,round:prepared.round}}})) return null;
+      const travel=ranked.find(x=>x.r.id===r.id)!.travel;
+      if(!dispatchTiming(o,travel,now).eligible)return null;
       const offer=await tx.dispatchOffer.create({data:{orderId:o.id,driverId:r.id,round:prepared.round,expiresAt:prepared.expiresAt}});
       await tx.driverPartner.update({where:{id:r.id},data:{lastOfferedAt:now}});
-      await tx.notificationIntent.create({data:{orderId:o.id,event:'NEW_DELIVERY',options:{userId:r.userId,bucket:prepared.round}}});
+      await tx.notificationIntent.create({data:{orderId:o.id,event:'NEW_DELIVERY',options:{userId:r.userId,bucket:prepared.round,offerId:offer.id,offerExpiresAt:offer.expiresAt.toISOString()}}});
       return {o,userId:r.userId,offer};
     },{maxWait:15000,timeout:30000});
     if(created) {offered=created.offer;await publisher(created.o,created.userId,created.offer).catch(()=>console.error('Broadcast socket delivery failed.'));}

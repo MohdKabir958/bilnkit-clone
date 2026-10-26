@@ -1,0 +1,60 @@
+FAIL test/e2e/compliance_payout_readiness.test.ts (8.416 s)
+  ● Owned receipts and payout reconciliation › repeated dry runs do not change settlement or pretend a bank transfer
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.$queryRaw()` invocation:
+
+
+    Raw query failed. Code: `N/A`. Message: `Failed to deserialize column of type 'void'. If you're using $queryRaw and this column is explicitly marked as `Unsupported` in your Prisma schema, try casting this column to any supported Prisma type such as `String`.`
+
+      39 |  if(typeof requestKey!=='string'||!/^[A-Za-z0-9_-]{8,64}$/.test(requestKey))throw new AppError(400,'REQUEST_KEY_REQUIRED','Use an 8–64 character payout planning request key.');
+      40 |  return prisma.$transaction(async tx=>{
+    > 41 |   await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`payout-plan:${id}:${requestKey}`},0))`;
+         |   ^
+      42 |   const check=await inspectSettlement(tx,id);
+      43 |   const targetId=`${id}:${requestKey}`;
+      44 |   const old=await tx.adminAuditLog.findFirst({where:{action:'PAYOUT_DRY_RUN_PLANNED',targetType:'SETTLEMENT',targetId}});
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at src/services/payoutReadiness.ts:41:3
+      at Proxy._transactionWithCallback (node_modules/@prisma/client/runtime/library.js:130:8000)
+          at async Promise.all (index 0)
+      at Object.<anonymous> (test/e2e/compliance_payout_readiness.test.ts:55:15)
+
+  ● Owned receipts and payout reconciliation › unremitted COD blocks settlement until independently recorded platform receipt
+
+    PrismaClientUnknownRequestError: 
+    Invalid `newOrder=async(data:any={})=>prisma.order.create()` invocation in
+    /workspace/bilnkit-clone/backend/test/e2e/compliance_payout_readiness.test.ts:13:49
+
+      10 jest.setTimeout(90000);
+      11 const owner={id:'usr-3',role:'VENDOR'},admin={id:'usr-5',role:'ADMIN'},customer={id:'usr-1',role:'STUDENT'};
+      12 const valid={businessName:'Grozo Synthetic Grocery',businessAddress:'Demonstration address, India',contactEmail:'grocer@example.test',contactPhone:'+919999999999',gstApplicable:false,gstNumber:null,fssaiApplicable:true,fssaiNumber:'12345678901234',fssaiExpiresAt:'2099-12-31',authorizedSellerName:'Synthetic Store Operator',documentReferences:[{kind:'FSSAI',reference:'private-registry/demo-fssai',expiresAt:'2099-12-31'}]};
+    → 13 const newOrder=async(data:any={})=>prisma.order.create(
+    Error occurred during query execution:
+    ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "23514", message: "new row for relation \"Order\" violates check constraint \"Order_paymentMethod_check\"", severity: "ERROR", detail: Some("Failing row contains (33b13641-8a09-4496-9f40-5f25eacc49d5, usr-1, ven-1, null, 120, 20, Historic compatibility address, null, DELIVERED, PAID, null, f, 2026-10-26 06:05:52.925, 2026-10-26 06:05:52.925, 100, 0, 0, null, null, null, null, null, 2026-10-16 06:05:52.923, null, null, null, 0, f, null, null, null, 0, null, 80, 20, null, null, null, null, null, null, null, null, null, null, 0, null, 1, COD, null, null, null, null, null, null, null, null)."), column: None, hint: None }), transient: false })
+
+      66 |  });
+      67 |  test('unremitted COD blocks settlement until independently recorded platform receipt',async()=>{
+    > 68 |   const order=await newOrder({paymentMethod:'COD'});const s=await newSettlement(order.id);
+         |               ^
+      69 |   const check=await inspectSettlement(prisma,s.id);expect(check.codOutstandingPaise).toBe(12000);expect(check.reasons).toContain('COD_NOT_REMITTED');
+      70 |   await prisma.cashCollection.create({data:{orderId:order.id,driverUserId:'usr-4',amountPaise:12000}});
+      71 |   await expect(markPaid(s.id,{reference:'TEST-UNREMITTED'},admin)).rejects.toMatchObject({code:'PAYOUT_REVIEW_REQUIRED'});
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7505)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at Object.<anonymous> (test/e2e/compliance_payout_readiness.test.ts:68:15)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 9 passed, 11 total
+Snapshots:   0 total
+Time:        8.876 s
+Ran all test suites matching test/e2e/compliance_payout_readiness.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/compliance-payout-initial/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

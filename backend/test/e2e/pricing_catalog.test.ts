@@ -861,17 +861,62 @@ describe('Pricing and catalog (phase 1)', () => {
       const dishes = [] as any[];
       for (let i = 0; i < 6; i++) dishes.push(await liveDish(100 + i));
       await setCommission('PERCENT', 10);
-      await Promise.all([
+      const responses = await Promise.all([
         adminPost('/api/admin/catalog/recalculate', { dryRun: false, vendorId: V1.vendorId }),
         adminPost('/api/admin/catalog/recalculate', { dryRun: false, vendorId: V1.vendorId }),
         ...dishes.map((d, i) => adminPatch(`/api/admin/catalog/${d.id}`, { vendorPrice: 200 + i })),
         adminPost('/api/admin/catalog/recalculate', { dryRun: false, vendorId: V1.vendorId }),
       ]);
-      await adminPost('/api/admin/catalog/recalculate', { dryRun: false, vendorId: V1.vendorId });
+      // A failed write cannot be treated as a successful price edit. Retain all
+      // response statuses so a pool/rate-limit/conflict failure is diagnosed here.
+      expect(responses.map((r) => ({ status: r.status, code: r.body.code ?? null })))
+        .toEqual(responses.map(() => ({ status: 200, code: null })));
+      expect((await adminPost('/api/admin/catalog/recalculate', { dryRun: false, vendorId: V1.vendorId })).status).toBe(200);
       const list = (await adminGet(`/api/admin/catalog?pageSize=100&vendorId=${V1.vendorId}`)).body.data;
       expect(list).toHaveLength(6);
       expect(list.every((d: any) => d.priceIsStale === false)).toBe(true);
       expect(list.map((d: any) => d.vendorPrice).sort()).toEqual([200, 201, 202, 203, 204, 205]);
+      const history = await audits('DISH_EDITED');
+      expect(history).toHaveLength(6);
+      expect(new Set(history.map((row) => row.targetId))).toEqual(new Set(dishes.map((row) => row.id)));
+      expect(await audits('PRICES_RECALCULATED')).toHaveLength(4);
+    });
+
+    test('a price edit and its financial audit either both commit or both roll back', async () => {
+      const item = await liveDish(100);
+      // Inject an actual database failure only for this local fixture's audit write.
+      await prisma.$executeRawUnsafe(`ALTER TABLE "AdminAuditLog" ADD CONSTRAINT "pricing_edit_audit_fixture" CHECK ("action" <> 'DISH_EDITED')`);
+      try {
+        const rejected = await adminPatch(`/api/admin/catalog/${item.id}`, { vendorPrice: 205 });
+        expect(rejected.status).toBe(500);
+        const unchanged = await dbItem(item.id);
+        expect(unchanged.vendorPrice).toBe(100);
+        expect(unchanged.price).toBe(item.price);
+        expect(await audits('DISH_EDITED', item.id)).toHaveLength(0);
+      } finally {
+        await prisma.$executeRawUnsafe(`ALTER TABLE "AdminAuditLog" DROP CONSTRAINT IF EXISTS "pricing_edit_audit_fixture"`);
+      }
+      const accepted = await adminPatch(`/api/admin/catalog/${item.id}`, { vendorPrice: 205 });
+      expect(accepted.status).toBe(200);
+      expect((await dbItem(item.id)).vendorPrice).toBe(205);
+      expect(await audits('DISH_EDITED', item.id)).toHaveLength(1);
+    });
+
+    test('recalculation rolls every derived price back when its audit cannot be saved', async () => {
+      const items = await Promise.all([liveDish(100), liveDish(200)]);
+      expect((await setCommission('PERCENT', 10)).status).toBe(200);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "AdminAuditLog" ADD CONSTRAINT "pricing_recalc_audit_fixture" CHECK ("action" <> 'PRICES_RECALCULATED')`);
+      try {
+        const rejected = await adminPost('/api/admin/catalog/recalculate', { dryRun: false, vendorId: V1.vendorId });
+        expect(rejected.status).toBe(500);
+        for (const item of items) expect((await dbItem(item.id)).price).toBe(item.price);
+        expect(await audits('PRICES_RECALCULATED')).toHaveLength(0);
+      } finally {
+        await prisma.$executeRawUnsafe(`ALTER TABLE "AdminAuditLog" DROP CONSTRAINT IF EXISTS "pricing_recalc_audit_fixture"`);
+      }
+      expect((await adminPost('/api/admin/catalog/recalculate', { dryRun: false, vendorId: V1.vendorId })).status).toBe(200);
+      expect((await Promise.all(items.map((item) => dbItem(item.id)))).map((row) => row.price)).toEqual([110, 220]);
+      expect(await audits('PRICES_RECALCULATED')).toHaveLength(1);
     });
 
     test('two parallel checkouts of the same dish while it is being deleted: every order that exists has a valid snapshot', async () => {

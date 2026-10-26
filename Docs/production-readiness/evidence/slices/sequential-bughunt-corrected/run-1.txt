@@ -1,0 +1,57 @@
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 1092be85-8faa-485c-892a-837e293e0b83
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (bf-cust-1) earned +10 Grozo Coins! Total Balance: 10
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 7e317cbb-ec1e-4678-815a-8741db1d1062
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (bf-cust-1) earned +10 Grozo Coins! Total Balance: 20
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order c27bf44f-6a7b-4b58-873c-0a329dd929a5
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (bf-cust-1) earned +10 Grozo Coins! Total Balance: 30
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 60b3e6fc-dbc0-4722-b50e-fb8fb0b1c8a9
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (bf-cust-1) earned +10 Grozo Coins! Total Balance: 40
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order cd4e1420-a7e7-40eb-9c16-f791800b3ccc
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (bf-cust-1) earned +10 Grozo Coins! Total Balance: 50
+
+      at src/routes/api.ts:1059:35
+
+Test Suites: 1 passed, 1 total
+Tests:       58 passed, 58 total
+Snapshots:   0 total
+Time:        17.143 s, estimated 30 s
+Ran all test suites matching test/e2e/bughunt_fixes.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/sequential-bughunt-corrected/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

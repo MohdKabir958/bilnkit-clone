@@ -445,9 +445,10 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       // a checkout with a payment in flight is NOT abandoned
       const protectedG = await placeG(c, [cartOf(v1), cartOf(v2)]);
       await api.createPayment(c, protectedG.payOrderId);
-      const next = await placeG(c, [cartOf(v1), cartOf(v3)]);
+      const next = await api.placeGroup(c, [cartOf(v1), cartOf(v3)]);
+      expect([next.status,next.body.code]).toEqual([409,'PAYMENT_IN_PROGRESS']);
       expect((await children(protectedG.id)).every((o) => o.status === 'PLACED')).toBe(true);
-      expect(next.id).not.toBe(protectedG.id);
+      expect(next.body.data).toBeUndefined();
     });
 
     test('coupons: single use per customer through the group (child 0 holds the code), a cancelled group releases it, WELCOME20 only for a first order', async () => {
@@ -493,7 +494,8 @@ describe('Order groups: settings, quote, place, pay, refund', () => {
       expect((await api.listGroups(W.customers[1])).body.data).toEqual([]);
       expect((await api.listGroups(c, '?scope=nope')).status).toBe(400);
       expect((await api.listGroups(v1)).status).toBe(403);
-      const single = await api.place(c, v1);
+      const single = await api.place(c, v3);
+      expect(single.status).toBe(201);
       expect(single.body.data.group).toBeUndefined(); // single orders carry no group info at all
       expect(Object.keys(single.body.data)).not.toContain('group');
     });

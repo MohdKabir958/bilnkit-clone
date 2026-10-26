@@ -378,7 +378,7 @@ orderRouter.patch('/orders/:id/status', requireAuth, requireApprovedPartner, val
     }
     if (role === 'STUDENT') return res.status(403).json({ success: false, code: 'ROLE_NOT_ALLOWED', message: 'Customers can only cancel orders.' });
 
-    const r = await advanceStatus(req.params.id, actorOf(req), status);
+    const r = await advanceStatus(req.params.id, actorOf(req), status, req.body?.preparationMinutes);
     return res.json({ success: true, ...(r.idempotent ? { message: `Order is already ${status}.` } : {}), data: viewFor(req, r.order) });
   } catch (err) {
     return fail(res, err, 'update order status');
@@ -418,7 +418,7 @@ orderRouter.post('/drivers/location', requireAuth, requireRole('DRIVER'), requir
   try {
     const {lat,lng,heading}=req.body??{};
     const riderUserId=req.user!.id;
-    const loc = await recordRiderLocation(riderUserId, lat, lng, heading);
+    const loc = await recordRiderLocation(riderUserId, lat, lng, heading, req.body??{});
     return res.json({ success: true, data: loc });
   } catch (err: any) {
     if (err?.status && err?.code) return res.status(err.status).json({ success: false, code: err.code, message: err.message });

@@ -1,3 +1,4 @@
+import { JobAborted } from '../jobs';
 import { prisma } from '../../db';
 import { OrderWithRelations, ORDER_VIEW_INCLUDE } from '../orderView';
 import { activeTokensFor, disableToken } from './deviceTokens';
@@ -19,7 +20,7 @@ const CONCURRENCY = 4; // small on purpose: the DB pool is shared with order tra
 const backoffMs = (attempts: number) => Math.min(8 * 60_000, 30_000 * 2 ** Math.max(0, attempts - 1));
 const sendTimeoutMs = () => {
   const n = Number(process.env.PUSH_SEND_TIMEOUT_MS);
-  return Number.isFinite(n) && n > 0 ? n : 10_000;
+  return Number.isFinite(n) && n > 0 ? Math.min(30_000,n) : 10_000;
 };
 
 const logError = (what: string, event: string, orderId: string, err: unknown) => {
@@ -42,14 +43,21 @@ const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T> =>
     p.then((v) => { clearTimeout(timer); resolve(v); }, (e) => { clearTimeout(timer); reject(e); });
   });
 
-const inChunks = async <T>(items: T[], fn: (item: T) => Promise<void>) => {
-  for (let i = 0; i < items.length; i += CONCURRENCY) await Promise.all(items.slice(i, i + CONCURRENCY).map(fn));
+const inChunks = async <T>(items: T[], fn: (item: T) => Promise<void>, signal?:AbortSignal) => {
+  for (let i = 0; i < items.length; i += CONCURRENCY) {
+    if(signal?.aborted)throw new JobAborted();
+    await Promise.all(items.slice(i, i + CONCURRENCY).map(fn));
+  }
 };
 
 /** What the apps see in `data.event`: a reminder is shown and routed exactly like the original NEW_ORDER. */
 const wireEvent = (event: PushEvent): string => (event === 'NEW_ORDER_REMINDER' ? 'NEW_ORDER' : event);
 
-type LogRow = { id: string; orderId: string; userId: string; event: string; attempts: number; createdAt: Date };
+type LogRow = { id: string; orderId: string; userId: string; event: string; attempts: number; createdAt: Date; nextAttemptAt:Date|null; deliveryOfferId:string|null; deliveryOfferExpiresAt:Date|null };
+const LOG_SELECT={id:true,orderId:true,userId:true,event:true,attempts:true,createdAt:true,nextAttemptAt:true,deliveryOfferId:true,deliveryOfferExpiresAt:true} as const;
+async function currentOffer(orderId:string,userId:string,offerId?:string,now=new Date()) {
+  return prisma.dispatchOffer.findFirst({where:{...(offerId?{id:offerId}:{}),orderId,state:'PENDING',expiresAt:{gt:now},driver:{userId,approvalStatus:'APPROVED',dutyStatus:'ONLINE',user:{deletedAt:null}}},select:{id:true,expiresAt:true},orderBy:{createdAt:'desc'}});
+}
 
 const loadOrderForPush = (orderId: string) => prisma.order.findUnique({ where: { id: orderId }, include: ORDER_VIEW_INCLUDE });
 
@@ -57,7 +65,9 @@ const loadOrderForPush = (orderId: string) => prisma.order.findUnique({ where: {
 const deliver = async (provider: PushProvider, row: LogRow, order: OrderWithRelations, now: Date): Promise<void> => {
   const event = row.event as PushEvent;
   const def = eventDef(event);
-  const finish = (data: Record<string, unknown>) => prisma.pushLog.updateMany({ where: { id: row.id, status: 'PENDING' }, data });
+  const finish = (data: Record<string, unknown>) => prisma.pushLog.updateMany({ where: { id: row.id, status: 'PENDING',nextAttemptAt:row.nextAttemptAt }, data });
+  const offer=event==='NEW_DELIVERY'&&row.deliveryOfferId?await currentOffer(row.orderId,row.userId,row.deliveryOfferId,new Date(Math.max(Date.now(),now.getTime()))):null;
+  if(event==='NEW_DELIVERY'&&(!offer||!row.deliveryOfferExpiresAt)){await finish({status:'SKIPPED',lastError:'OFFER_EXPIRED',nextAttemptAt:null});return;}
 
   const tokens = await activeTokensFor(row.userId, def.app);
   if (tokens.length === 0) {
@@ -73,11 +83,12 @@ const deliver = async (provider: PushProvider, row: LogRow, order: OrderWithRela
         body: copy.body,
         channelId: def.channelId,
         priority: def.priority,
-        ttlSeconds: def.ttlSeconds,
+        ttlSeconds: offer?Math.max(0,Math.min(def.ttlSeconds,Math.floor((offer.expiresAt.getTime()-Math.max(Date.now(),now.getTime()))/1000))):def.ttlSeconds,
         collapseKey: `${event}:${order.id}`,
-        data: { event: wireEvent(event), orderId: order.id, v: '1' }, // the apps know NEW_ORDER; a reminder is the same news again
+        data: { event: wireEvent(event), orderId: order.id, v: '1',...(offer?{offerId:offer.id,offerExpiresAt:offer.expiresAt.toISOString()}:{}) }, // the apps know NEW_ORDER; a reminder is the same news again
       };
       try {
+        if(offer&&message.ttlSeconds<1)return {ok:false as const,transient:false,deadToken:false,code:'OFFER_EXPIRED'};
         await withTimeout(Promise.resolve().then(() => provider.send(message)), sendTimeoutMs());
         return { ok: true as const };
       } catch (err) {
@@ -101,7 +112,7 @@ const deliver = async (provider: PushProvider, row: LogRow, order: OrderWithRela
     return;
   }
   const next = new Date(now.getTime() + backoffMs(attempts));
-  const expired = next.getTime() > row.createdAt.getTime() + def.usefulMinutes * 60_000;
+  const expired = next.getTime() > Math.min(row.createdAt.getTime() + def.usefulMinutes * 60_000,row.deliveryOfferExpiresAt?.getTime()??Infinity);
   if (attempts >= MAX_PUSH_ATTEMPTS || expired) {
     await finish({ status: 'FAILED', attempts, lastError: transient.code, nextAttemptAt: null });
     return;
@@ -124,10 +135,13 @@ export const notifyOrderEvent = async (orderId: string, event: PushEvent, opts: 
     await inChunks(userIds, async (userId) => {
       try {
         let row: LogRow;
+        const offer=event==='NEW_DELIVERY'?await currentOffer(orderId,userId,opts.offerId,now):null;
+        if(event==='NEW_DELIVERY'&&!offer)return;
+        if(opts.offerExpiresAt&&Date.parse(opts.offerExpiresAt)<=now.getTime())return;
         try {
           row = await prisma.pushLog.create({
-            data: { key: `${orderId}:${event}:${userId}${opts.bucket != null ? `:${opts.bucket}` : ''}`, orderId, userId, event, status: 'PENDING', attempts: 0, nextAttemptAt: new Date(now.getTime() + LEASE_MS) },
-            select: { id: true, orderId: true, userId: true, event: true, attempts: true, createdAt: true },
+            data: { key: `${orderId}:${event}:${userId}${opts.bucket != null ? `:${opts.bucket}` : ''}`, orderId, userId, event, status: 'PENDING', attempts: 0, nextAttemptAt: new Date(now.getTime() + LEASE_MS),...(offer?{deliveryOfferId:offer.id,deliveryOfferExpiresAt:offer.expiresAt}:{}) },
+            select: LOG_SELECT,
           });
         } catch (err) {
           if ((err as { code?: string })?.code === 'P2002') return; // this exact push was already claimed: never twice
@@ -166,25 +180,27 @@ export const __waitForPushWork = async () => {
 };
 
 /** Maintenance job (every 60 s): retry transient failures whose backoff has passed. Returns how many rows were tried. */
-export const retryDuePushes = async (now: Date = new Date()): Promise<number> => {
+export const retryDuePushes = async (now: Date = new Date(),signal?:AbortSignal): Promise<number> => {
   const provider = getPushProvider();
   if (!provider.enabled) return 0;
   const due = await prisma.pushLog.findMany({
     where: { status: 'PENDING', nextAttemptAt: { lte: now } },
     orderBy: { nextAttemptAt: 'asc' },
     take: 20,
-    select: { id: true, orderId: true, userId: true, event: true, attempts: true, createdAt: true },
+    select: LOG_SELECT,
   });
   let tried = 0;
   await inChunks(due, async (row) => {
     try {
+      if(signal?.aborted)throw new JobAborted();
+      const claimedUntil=new Date(Math.max(Date.now(),now.getTime())+LEASE_MS);
       const claim = await prisma.pushLog.updateMany({
         where: { id: row.id, status: 'PENDING', nextAttemptAt: { lte: now } },
-        data: { nextAttemptAt: new Date(now.getTime() + LEASE_MS) },
+        data: { nextAttemptAt: claimedUntil },
       });
       if (claim.count === 0) return; // another worker took it
       const finish = (status: string, lastError: string) =>
-        prisma.pushLog.updateMany({ where: { id: row.id, status: 'PENDING' }, data: { status, lastError, nextAttemptAt: null } });
+        prisma.pushLog.updateMany({ where: { id: row.id, status: 'PENDING',nextAttemptAt:claimedUntil }, data: { status, lastError, nextAttemptAt: null } });
       const event = row.event as PushEvent;
       if (!(PUSH_EVENTS as readonly string[]).includes(event)) {
         await finish('FAILED', 'UNKNOWN_EVENT');
@@ -195,14 +211,16 @@ export const retryDuePushes = async (now: Date = new Date()): Promise<number> =>
       const order = await loadOrderForPush(row.orderId);
       if (!order) return void (await finish('SKIPPED', 'ORDER_GONE'));
       if (!stillUseful(event, order)) return void (await finish('SKIPPED', 'STALE'));
+      if(event==='NEW_DELIVERY'&&(!row.deliveryOfferId||!row.deliveryOfferExpiresAt||row.deliveryOfferExpiresAt<=now||!await currentOffer(row.orderId,row.userId,row.deliveryOfferId,new Date(Math.max(Date.now(),now.getTime())))))return void(await finish('SKIPPED','OFFER_EXPIRED'));
       const recipients = await resolveRecipients(event, order, { userId: row.userId });
       if (!recipients.includes(row.userId)) return void (await finish('SKIPPED', 'NOT_RECIPIENT'));
       tried += 1;
-      await deliver(provider, row, order, now);
+      await deliver(provider, {...row,nextAttemptAt:claimedUntil}, order, now);
     } catch (err) {
+      if(signal?.aborted)throw err;
       logError('retry', row.event, row.orderId, err);
     }
-  });
+  },signal);
   return tried;
 };
 
@@ -211,7 +229,7 @@ export const retryDuePushes = async (now: Date = new Date()): Promise<number> =>
  * and for riders who became idle after an order went to the pool. Everything here is idempotent: notifyOrderEvent claims one row per
  * (order, event, user), so calling it for something already sent does nothing. Returns how many orders it looked at.
  */
-export const sweepMissedPushes = async (now: Date = new Date()): Promise<number> => {
+export const sweepMissedPushes = async (now: Date = new Date(),signal?:AbortSignal): Promise<number> => {
   const provider = getPushProvider();
   if (!provider.enabled) return 0;
   let looked = 0;
@@ -223,6 +241,7 @@ export const sweepMissedPushes = async (now: Date = new Date()): Promise<number>
     take: 30,
   });
   for (const o of paid) {
+    if(signal?.aborted)throw new JobAborted();
     const ownerId = o.vendor.userId;
     if (!ownerId) continue;
     const seen = await prisma.pushLog.findUnique({ where: { key: `${o.id}:NEW_ORDER:${ownerId}` }, select: { id: true, status: true } });
@@ -256,16 +275,17 @@ const maintenanceDeadlineMs = () => {
  * so the money paths of the same tick (refunds, expiry, reconciliation) are never held up; unfinished work simply continues in the
  * background and the next tick skips this part while it is still running.
  */
-export const runPushMaintenance = async (now: Date = new Date()): Promise<void> => {
+export const runPushMaintenance = async (now: Date = new Date(),options:{signal?:AbortSignal;awaitCompletion?:boolean}={}): Promise<void> => {
   if (pushMaintenanceRunning) return;
   pushMaintenanceRunning = true;
   const done = (async () => {
-    await retryDuePushes(now);
-    await sweepMissedPushes(now);
+    await retryDuePushes(now,options.signal);
+    await sweepMissedPushes(now,options.signal);
   })().then(
     () => undefined,
-    (err) => logError('maintenance', 'MAINTENANCE', '-', err),
+    (err) => {logError('maintenance', 'MAINTENANCE', '-', err);if(options.awaitCompletion)throw err;},
   ).finally(() => { pushMaintenanceRunning = false; });
+  if(options.awaitCompletion){await done;return;}
   let timer: NodeJS.Timeout | undefined;
   const deadline = new Promise<void>((resolve) => {
     timer = setTimeout(() => { console.warn('push maintenance is slow: continuing the tick without waiting for it'); resolve(); }, maintenanceDeadlineMs());

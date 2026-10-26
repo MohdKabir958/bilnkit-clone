@@ -1,3 +1,4 @@
+import { ageCheckoutAttempt } from '../harness/paymentAttempts';
 import { ensureFixtureGeography } from '../harness/geography';
 /**
  * Payments & money-integrity audit (adversarial). Companion to order_flow_v1.test.ts.
@@ -198,7 +199,7 @@ describe('Payments adversarial audit', () => {
         paidAt: o.paid ? minutesAgo(o.paidAgoMin ?? 1) : null,
         payments: { create: [o.paid
           ? { razorpayOrderId: `rzp_order_sim_${randomUUID().slice(0, 10)}`, razorpayPaymentId: payId, amount: total, capturedAmountPaise: Math.round(total * 100), status: 'PAID' }
-          : { razorpayOrderId: `rzp_order_sim_${randomUUID().slice(0, 10)}`, amount: total, status: 'PENDING' }] },
+          : { razorpayOrderId: `rzp_order_sim_${randomUUID().slice(0, 10)}`, amount: total, status: 'PENDING', createdAt: minutesAgo(o.ageMin ?? 1) }] },
       },
       include: { payments: true },
     });
@@ -302,7 +303,7 @@ describe('Payments adversarial audit', () => {
         const payId = `pay_late_${how}_${randomUUID().slice(0, 8)}`;
         if (how === 'customer') await customerCancel(id);
         if (how === 'admin') await adminCancel(id);
-        if (how === 'expiry') { await prisma.order.update({ where: { id }, data: { createdAt: minutesAgo(16) } }); await runOrderMaintenance(); }
+        if (how === 'expiry') { await ageCheckoutAttempt(id); await runOrderMaintenance(); }
         expect((await db(id)).status).toBe('CANCELLED');
         await Promise.all([
           verify(rzp, payId), verify(rzp, payId),
@@ -323,7 +324,7 @@ describe('Payments adversarial audit', () => {
     test('PROVE: unpaid expiry never touches the refund provider and leaves no money state', async () => {
       const placed = await place();
       await createPayment(placed.body.data.id);
-      await prisma.order.update({ where: { id: placed.body.data.id }, data: { createdAt: minutesAgo(16) } });
+      await ageCheckoutAttempt(placed.body.data.id);
       await runOrderMaintenance();
       const row = await db(placed.body.data.id);
       expect(row.status).toBe('CANCELLED');
@@ -389,15 +390,17 @@ describe('Payments adversarial audit', () => {
       expect(P.calls.createOrder).toHaveLength(1);
     });
 
-    test('PROVE: a provider failure while creating the Razorpay order leaves no orphan payment row and the retry works', async () => {
+    test('PROVE: uncertain provider order creation leaves no exposed payment and refuses duplicate submission', async () => {
       const p = useProvider({ createOrderFailTimes: 1 });
       const placed = await place();
       const id = placed.body.data.id;
       expect((await createPayment(id)).status).toBe(503);
       expect(await prisma.payment.count({ where: { orderId: id } })).toBe(0);
-      expect((await createPayment(id)).status).toBe(200);
-      expect(p.calls.createOrder).toHaveLength(2);
-      expect(await prisma.payment.count({ where: { orderId: id } })).toBe(1);
+      const retry=await createPayment(id);
+      expect([retry.status,retry.body.code]).toEqual([409,'PAYMENT_START_PENDING']);
+      expect(p.calls.createOrder).toHaveLength(1);
+      expect(await prisma.payment.count({ where: { orderId: id } })).toBe(0);
+      expect((await prisma.paymentCreation.findUniqueOrThrow({where:{orderId:id}})).state).toBe('UNKNOWN');
     });
 
     test('PROVE: a second captured payment on a paid order (second Razorpay order) is flagged, refunded automatically by its OWN payment id exactly once, and changes nothing else; the original is refunded later by a cancel', async () => {
@@ -1185,7 +1188,7 @@ describe('Payments adversarial audit', () => {
         let seen = false;
         while (Date.now() - t0 < 4_000) {
           const [a, b] = await Promise.all([db(unpaid.id), db(unaccepted.id)]);
-          if (a.status === 'CANCELLED' && b.status === 'CANCELLED') { seen = true; break; }
+          if (a.status === 'PLACED' && b.status === 'CANCELLED') { seen = true; break; }
           await new Promise((r) => setTimeout(r, 50));
         }
         const expiryTook = Date.now() - t0;
@@ -1287,7 +1290,7 @@ describe('Payments adversarial audit', () => {
       P.sim.addPayment({ id: 'pay_lost_expired', orderId: o.rzp, amountPaise: o.paise });
       await prisma.order.update({ where: { id: o.id }, data: { createdAt: minutesAgo(20) } });
       const t1 = await runOrderMaintenance(minutesFromNow(3)); // expires it, then asks Razorpay
-      expect(t1.expired).toContain(o.id);
+      expect(t1.expired).not.toContain(o.id); // protected attempt is checked before any automatic cancellation
       expect(t1.reconciledLateRefund).toContain(o.id);
       await __waitForBackgroundWork();
       let row = await db(o.id);
@@ -1327,7 +1330,7 @@ describe('Payments adversarial audit', () => {
 
     test('PROVE: an authorized (not yet captured) payment of the right amount is captured by reconcile, then the order is paid; a wrong amount is left alone', async () => {
       const ok = await placeUnpaid();
-      const wrong = await placeUnpaid();
+      const wrong = await mkOrder({ageMin:1}); // independent pre-existing attempt; current checkout blocks overlapping new payments
       P.sim.addPayment({ id: 'pay_auth_ok', orderId: ok.rzp, amountPaise: ok.paise, status: 'authorized' });
       P.sim.addPayment({ id: 'pay_auth_wrong', orderId: wrong.rzp, amountPaise: 100, status: 'authorized' });
       await runOrderMaintenance(minutesFromNow(3));
@@ -1473,7 +1476,7 @@ describe('Payments adversarial audit', () => {
       const r = await verify(o.rzp, 'pay_v_amt');
       expect([r.status, r.body.code]).toEqual([409, 'PAYMENT_AMOUNT_MISMATCH']);
       expect(await db(o.id)).toMatchObject({ paymentStatus: 'PENDING', paidAt: null });
-      const other = await placeUnpaid();
+      const other = await mkOrder({ageMin:1}); // independent historical payment used to verify provider-order isolation
       P.sim.addPayment({ id: 'pay_v_other', orderId: other.rzp, amountPaise: o.paise });
       const x = await verify(o.rzp, 'pay_v_other'); // valid-looking pair, but the payment belongs to another Razorpay order
       expect([x.status, x.body.code]).toEqual([404, 'NOT_FOUND']);

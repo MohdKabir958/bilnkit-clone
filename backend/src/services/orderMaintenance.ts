@@ -1,10 +1,12 @@
+import { canExpireUnpaidOrder } from './checkoutRecovery';
+import { JobAborted } from './jobs';
 import { isCashOrder } from './marketplace';
 import { flushNotificationIntents } from './push/intents';
 import { pruneRiderLocations } from '../realtime';
 import { runDispatchMaintenance } from './dispatch';
 import { prisma } from '../db';
-import { paymentWindowMin, vendorAcceptWindowMin, MAX_REFUND_ATTEMPTS, REFUND_LEASE_MS, MAINTENANCE_INTERVAL_MS } from '../config/orderFlow';
-import { cancelOrder } from './orderFlow';
+import { paymentWindowMin, vendorAcceptWindowMin, MAX_REFUND_ATTEMPTS, REFUND_LEASE_MS } from '../config/orderFlow';
+import { cancelOrder, isAbandonedOrder } from './orderFlow';
 import { PAYABLE_SELECT, payableAmount } from './orderView';
 import { runRefund, refundExtraPayment } from './refundService';
 import { createBreaker, runPool } from './providerPool';
@@ -30,7 +32,11 @@ let lastPushPrune = 0;
  *     b. Extra (duplicate) payments that still need their refund.
  *     c. Reconcile: unpaid Payment rows older than 2 minutes are looked up at Razorpay (lost webhook + closed app).
  */
-export const runOrderMaintenance = async (now: Date = new Date()) => {
+export type MaintenanceOptions = { signal?: AbortSignal; checkpoint?: () => Promise<void>; includeAuxiliary?: boolean; includeLifecycle?: boolean; includeProvider?: boolean; reportFailures?: boolean };
+export const runOrderMaintenance = async (now: Date = new Date(), options: MaintenanceOptions = {}) => {
+  const checkpoint = async () => { if (options.signal?.aborted) throw new JobAborted(); await options.checkpoint?.(); };
+  let failures = 0;
+  await checkpoint();
   const payCutoff = new Date(now.getTime() - paymentWindowMin() * 60_000);
   const acceptCutoff = new Date(now.getTime() - vendorAcceptWindowMin() * 60_000);
   const summary = {
@@ -39,22 +45,13 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
     providerPhaseStopped: false,
   };
 
+  if(options.includeLifecycle !== false) {
   const unpaid = await prisma.order.findMany({
     where: { status: 'PLACED', paymentMethod:'ONLINE', paymentStatus: { in: ['PENDING', 'FAILED'] }, createdAt: { lt: payCutoff } },
     select: { id: true },
     orderBy: { createdAt: 'asc' },
     take: BATCH,
   });
-  for (const { id } of unpaid) {
-    try {
-      const r = await cancelOrder(id, SYSTEM, 'SYSTEM', 'Payment not completed', {
-        guard: (o) => !isCashOrder(o) && o.status === 'PLACED' && (o.paymentStatus === 'PENDING' || o.paymentStatus === 'FAILED') && o.createdAt < payCutoff,
-      });
-      if (r && !r.idempotent) summary.expired.push(id);
-    } catch (err) {
-      console.error(`maintenance: expiring ${id} failed:`, (err as Error).message);
-    }
-  }
 
   // paidAt is only set by markOrderPaid, so legacy rows without it are never auto-refunded (they show in needs-attention).
   const unaccepted = await prisma.order.findMany({
@@ -64,6 +61,7 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
     take: BATCH,
   });
   for (const { id } of unaccepted) {
+    await checkpoint();
     try {
       const r = await cancelOrder(id, SYSTEM, 'SYSTEM', 'Restaurant did not respond', {
         guard: (o) => o.status === 'PLACED' && ((o.paymentStatus === 'PAID' && !!o.paidAt && o.paidAt < acceptCutoff) || (isCashOrder(o) && o.createdAt < acceptCutoff)),
@@ -75,16 +73,34 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
         if (r.refundOrderId) summary.autoRefunds.push(r.refundOrderId);
       }
     } catch (err) {
-      console.error(`maintenance: auto-cancelling ${id} failed:`, (err as Error).message);
+      failures += 1; console.error(`maintenance: auto-cancelling ${id} failed; next job will retry.`);
     }
   }
 
+  for (const { id } of unpaid) {
+    await checkpoint();
+    try {
+      if (!await canExpireUnpaidOrder(id, now, {observeProvider: options.includeProvider !== false})) continue;
+      const r = await cancelOrder(id, SYSTEM, 'SYSTEM', 'Payment not completed', {
+        guard: (o,g) => isAbandonedOrder(o,g,now.getTime()) && o.createdAt < payCutoff,
+      });
+      if (r && !r.idempotent) summary.expired.push(id);
+    } catch (err) {
+      failures += 1; console.error(`maintenance: expiring ${id} failed; next job will retry.`);
+    }
+  }
+
+  }
+  if (options.includeAuxiliary !== false) {
+  await checkpoint();
   await prisma.driverPartner.updateMany({where:{availabilityAt:{lt:new Date(now.getTime()-120000)}},data:{availabilityAt:null,availabilityLat:null,availabilityLng:null}});
   await pruneRiderLocations(now).catch(()=>console.error('Location retention cleanup failed.'));
-  await runDispatchMaintenance(now).catch(()=>console.error('Dispatch maintenance failed; retrying next tick.'));
+  await runDispatchMaintenance(now, undefined, false, options.signal).catch(()=>{ failures += 1; console.error('Dispatch maintenance failed; retrying next tick.'); });
+  }
 
   // ---- provider phase ----
   const breaker = createBreaker();
+  if(options.includeProvider !== false) {
   const due = await prisma.order.findMany({
     where: {
       OR: [
@@ -100,12 +116,14 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
     take: BATCH,
   });
   const refundIds = [...new Set([...summary.autoRefunds, ...due.map((o) => o.id)])];
+  await checkpoint();
   await runPool(refundIds, breaker, async (id) => {
+    await checkpoint();
     const r = await runRefund(id, now);
     if (r.outcome !== 'SKIPPED') summary.refundsRetried.push(id);
     if (r.outcome === 'DONE') summary.refundsDone.push(id);
     return { transient: r.outcome === 'FAILED' && r.transient, neutral: r.outcome === 'SKIPPED' };
-  });
+  }, undefined, options.signal);
 
   // Extra payments (captured twice): the refund is retried here with backoff; "not before" is Payment.refundedAt.
   if (!breaker.open) {
@@ -124,22 +142,27 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
     // Only true duplicates (the right amount, refunded in full); a wrong amount stays flagged for the admin.
     const duplicates = extras.filter((x) => x.capturedAmountPaise === Math.round(payableAmount(x.order) * 100));
     await runPool(duplicates, breaker, async (x) => {
+      await checkpoint();
       const r = await refundExtraPayment({ orderId: x.orderId, providerPaymentId: x.razorpayPaymentId!, amountPaise: x.capturedAmountPaise!, paymentRowId: x.id }, now);
       if (r.outcome === 'DONE') summary.extraRefundsDone.push(x.id);
       return { transient: r.outcome === 'FAILED' && r.transient, neutral: r.outcome === 'SKIPPED' };
-    });
+    }, undefined, options.signal);
   }
 
   if (!breaker.open) {
     try {
+      await checkpoint();
       const rec = await reconcilePendingPayments(now, breaker);
       summary.reconciledPaid.push(...rec.paid);
       summary.reconciledLateRefund.push(...rec.refundedLate);
       summary.reconcileFlagged.push(...rec.flagged);
     } catch (err) {
-      console.error('maintenance: reconcile failed:', (err as Error).message);
+      failures += 1; console.error('maintenance: reconcile failed; next job will retry.');
     }
   }
+  }
+  if (options.includeAuxiliary !== false) {
+  await checkpoint();
   await flushNotificationIntents(now).catch(()=>console.error('Notification outbox retry failed.'));
   // Push (FCM): retry transient failures whose backoff has passed, and clean old rows once an hour. Never affects the rest of the tick.
   try {
@@ -161,6 +184,8 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
       console.error('maintenance: daily settlement failed:', (err as Error)?.message ?? 'error');
     }
   }
+  }
+  await checkpoint();
   summary.providerPhaseStopped = breaker.open;
   if (breaker.open) console.warn('order maintenance: payment provider phase stopped after repeated provider failures; the next tick tries again.');
 
@@ -168,19 +193,12 @@ export const runOrderMaintenance = async (now: Date = new Date()) => {
   if (touched > 0) {
     console.log(`order maintenance: expired ${summary.expired.length}, auto-cancelled ${summary.autoCancelled.length}, refunds retried ${summary.refundsRetried.length} (${summary.refundsDone.length} done), reconciled ${summary.reconciledPaid.length} paid + ${summary.reconciledLateRefund.length} late-refunded, extra refunds ${summary.extraRefundsDone.length}`);
   }
+  if (options.reportFailures && (failures > 0 || breaker.open)) throw Object.assign(new Error('Order maintenance needs retry; see resource-level diagnostics.'), { code: breaker.open ? 'PAYMENT_PROVIDER_UNAVAILABLE' : 'ORDER_MAINTENANCE_FAILED' });
   return summary;
 };
 
-/** Started from index.ts (not in tests). Overlapping ticks are skipped, never stacked. */
-export const startOrderMaintenance = () => {
-  let running = false;
-  const timer = setInterval(() => {
-    if (running) return;
-    running = true;
-    runOrderMaintenance()
-      .catch((err) => console.error('order maintenance failed:', err?.message ?? err))
-      .finally(() => { running = false; });
-  }, MAINTENANCE_INTERVAL_MS);
-  timer.unref();
-  return timer;
+/** Compatibility entrypoint; production uses the centralized durable registry in backgroundWorker.ts. */
+export const startOrderMaintenance = async () => {
+  const { startBackgroundWorker } = await import('./backgroundWorker');
+  return startBackgroundWorker();
 };

@@ -17,6 +17,7 @@ const DEFS: Record<PushEvent, Def> = {
   RIDER_AT_PICKUP:{app:'VENDOR',channelId:'order_updates',priority:'high',...URGENT},
   PICKUP_READY:{app:'DRIVER',channelId:'order_updates',priority:'high',...URGENT},
   ORDER_PLACED:{app:'CUSTOMER',channelId:'order_updates',priority:'normal',...STATUS},
+  ORDER_UPDATED:{app:'CUSTOMER',channelId:'order_attention',priority:'high',...STATUS},
   ORDER_PREPARING:{app:'CUSTOMER',channelId:'order_updates',priority:'normal',...STATUS},
   RIDER_ASSIGNED_CUSTOMER:{app:'CUSTOMER',channelId:'order_updates',priority:'normal',...STATUS},
   RIDER_ASSIGNED_VENDOR:{app:'VENDOR',channelId:'order_updates',priority:'normal',...STATUS},
@@ -93,12 +94,13 @@ export const buildCopy = (event: PushEvent, o: OrderWithRelations): { title: str
         return { title: 'Order cancelled', body: `Order ${orderRef(o.id)} was cancelled: another store could not take this combined order.` };
       }
       return { title: 'Order cancelled', body: `Order ${orderRef(o.id)} was cancelled.` };
+    case 'ORDER_UPDATED': return {title:'Review an item change',body:'The store proposed an item change. Open your order to review it.'};
     case 'ORDER_PLACED': return {title:'Order created',body:isCashOrder(o)?'Your order has been sent to the store. Pay the assigned rider in cash at delivery.':'Complete payment in the app to send your order to the store.'};
     case 'ORDER_PREPARING': return {title:'Preparing your order',body:'The store is packing your items.'};
     case 'RIDER_ASSIGNED_CUSTOMER': return {title:'Delivery partner assigned',body:'Your order has a delivery partner. Open the app for updates.'};
     case 'RIDER_ASSIGNED_VENDOR': return {title:'Delivery partner assigned',body:'A delivery partner will collect this order.'};
     case 'NEW_DELIVERY':
-      return { title: 'New delivery', body: `${placeLabel(o, vendor)} to ${safeText(o.addressSnapshot ? `${(o.addressSnapshot as any).locality}, ${(o.addressSnapshot as any).city}` : o.dropoffHostel, 30)}. Tap to accept.` };
+      return { title: 'New delivery', body: `${placeLabel(o, vendor)} to ${safeText(o.addressSnapshot ? `${(o.addressSnapshot as any).locality}, ${(o.addressSnapshot as any).city}` : o.dropoffHostel, 30)}. Open to check current offers.` };
     case 'DELIVERY_ASSIGNED':
       return { title: 'Delivery assigned', body: `${placeLabel(o, vendor)} to ${safeText(o.addressSnapshot ? `${(o.addressSnapshot as any).locality}, ${(o.addressSnapshot as any).city}` : o.dropoffHostel, 30)}.` };
     case 'DELIVERY_CANCELLED':
@@ -169,6 +171,7 @@ export const resolveRecipients = async (event: PushEvent, o: OrderWithRelations,
 export const stillUseful = (event: PushEvent, o: OrderWithRelations): boolean => {
   if(event==='RIDER_AT_PICKUP') return !!o.pickupArrivalAt&&!!o.driverId&&['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(o.status);
   if(event==='PICKUP_READY') return !!o.driverId&&o.status==='READY_FOR_PICKUP';
+  if(event==='ORDER_UPDATED')return !['CANCELLED','DELIVERED'].includes(o.status);
   if(event==='ORDER_PLACED') return o.status==='PLACED'&&['PENDING','FAILED'].includes(o.paymentStatus);
   if(event==='ORDER_PREPARING') return o.status==='PREPARING';
   if(event==='RIDER_ASSIGNED_CUSTOMER'||event==='RIDER_ASSIGNED_VENDOR') return !!o.driverId&&(ACTIVE_RIDER_STATUSES as readonly string[]).includes(o.status);

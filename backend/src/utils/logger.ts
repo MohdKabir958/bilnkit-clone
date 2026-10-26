@@ -9,7 +9,7 @@ export function redactLog(value:unknown,depth=0):unknown {
     if(/Invalid `[^`]+` invocation/.test(value))return '[redacted database error]';
     return value.replace(/Bearer\s+\S+/gi,'Bearer [redacted]')
       .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g,'[redacted JWT]')
-      .replace(/(https?:\/\/)[^\s/:]+:[^\s/@]+@/g,'$1[redacted]@')
+      .replace(/((?:https?|postgres(?:ql)?):\/\/)[^\s/@]+@/gi,'$1[redacted]@')
       .replace(/-----BEGIN [^-]*PRIVATE KEY-----[\s\S]*?-----END [^-]*PRIVATE KEY-----/g,'[redacted private key]')
       .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[redacted email]')
       .replace(/(?:\+91[ -]*)?\b[6-9](?:[ -]*\d){9}\b/g,'[redacted phone]')

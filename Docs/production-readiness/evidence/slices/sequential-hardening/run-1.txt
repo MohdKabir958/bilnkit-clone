@@ -1,0 +1,85 @@
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 58e5af46-a67b-4606-8a1c-dfead04a48ad
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 10
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order d647fe2c-0af5-4c2e-b53e-0c4dc603e165
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 20
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 201fe7da-b8ba-45a1-aa54-01ae168ebaa8
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 30
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 3e544b05-489e-487c-8026-417dddae9cd8
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (hd-cust-2) earned +10 Grozo Coins! Total Balance: 10
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 8aba1de3-c9e7-41e4-ac72-f8d574ff504a
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 40
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 8329997d-7620-4ed4-b858-586a18c306f3
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 79b7b26d-f24b-45f1-b62a-ed49e9f6de4a
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+FAIL test/e2e/hardening.test.ts (24.96 s)
+  ● Backend hardening › 10. menu prices › POST /vendors/:id/items: negative, zero, NaN/null, string, huge, sub-paise, and over-long fields are 400; valid prices are stored exactly
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 400
+
+      696 |       expect(await prisma.menuItem.count({ where: { vendorId: v1.vendorId, name: { in: ['Bad price', 'No price', 'ok'] } } })).toBe(0);
+      697 |       const ok = await post({ name: '  Fresh   Lime ', price: 19.99, category: 'Drinks', description: 'cold' });
+    > 698 |       expect(ok.status).toBe(201);
+          |                         ^
+      699 |       expect(ok.body.data).toMatchObject({ name: 'Fresh Lime', price: 19.99, category: 'Drinks', isAvailable: true });
+      700 |       expect((await post({ name: 'Max', price: 10000 })).status).toBe(201);
+      701 |       expect((await post({ name: 'Min', price: 0.01 })).status).toBe(201);
+
+      at Object.<anonymous> (test/e2e/hardening.test.ts:698:25)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 39 passed, 40 total
+Snapshots:   0 total
+Time:        25.447 s
+Ran all test suites matching test/e2e/hardening.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/sequential-hardening/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

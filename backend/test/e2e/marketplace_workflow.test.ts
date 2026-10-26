@@ -15,10 +15,10 @@ describe('Single-store marketplace: real transactions, cash accounting and broad
  const raw=(who:{token:string},method:string,path:string,body?:object)=>api.raw('marketplace',method as any,path,who.token,body);
  const body=async(method='COD',customer=W.customers[0],vendor=W.vendors[0])=>({vendorId:vendor.vendorId,addressId:(await prisma.address.findFirstOrThrow({where:{customerId:customer.id}})).id,items:[{itemId:vendor.items[0].id,quantity:1}],paymentMethod:method,clientRequestId:randomUUID()});
  const place=async(method='COD',customer=W.customers[0])=>{const r=await raw(customer,'post','/api/v2/checkout',await body(method,customer));expect(r.status).toBe(201);return r.body.data.id as string;};
- const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED'});expect(r.status).toBe(200);};
+ const accept=async(id:string)=>{const r=await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status:'ACCEPTED',preparationMinutes:1});expect(r.status).toBe(200);};
  beforeAll(async()=>{server=await startTestServer();W=await createWorld(tag,'5',{customers:3,vendors:2,riders:3});api=createApi(server.baseUrl);await prisma.category.upsert({where:{slug:'marketplace-store-test'},create:{id:'marketplace-category',slug:'marketplace-store-test',name:'Vegetable shops',forRestaurants:true,forDishes:false},update:{}});});
- beforeEach(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await resetWorldState(W);await prisma.city.update({where:{id:tag+'-city'},data:{active:true,codEnabled:true}});await prisma.vendor.updateMany({where:{id:{startsWith:tag+'-'}},data:{primaryCategoryId:'marketplace-category',publicPhone:'+919000000001'}});await prisma.driverPartner.updateMany({where:{id:{startsWith:tag+'-'}},data:{availabilityLat:23.0745,availabilityLng:76.859,availabilityAt:new Date()}});setPaymentProvider(createLedger().provider);});
- afterAll(async()=>{await waitForNotificationIntents();await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await purgeWorld(tag);await prisma.category.delete({where:{id:'marketplace-category'}});setPaymentProvider(null);await stopTestServer(server);await prisma.$disconnect();});
+ beforeEach(async()=>{await waitForNotificationIntents();if(process.env.NODE_ENV!=='test'||!new URL(process.env.DATABASE_URL!).pathname.endsWith('_test'))throw Error('Disposable database required');await prisma.$executeRawUnsafe('TRUNCATE TABLE "CashLedgerEvent"');await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await resetWorldState(W);await prisma.city.update({where:{id:tag+'-city'},data:{active:true,codEnabled:true}});await prisma.vendor.updateMany({where:{id:{startsWith:tag+'-'}},data:{primaryCategoryId:'marketplace-category',publicPhone:'+919000000001'}});await prisma.driverPartner.updateMany({where:{id:{startsWith:tag+'-'}},data:{availabilityLat:23.0745,availabilityLng:76.859,availabilityAt:new Date()}});setPaymentProvider(createLedger().provider);});
+ afterAll(async()=>{await waitForNotificationIntents();if(process.env.NODE_ENV!=='test'||!new URL(process.env.DATABASE_URL!).pathname.endsWith('_test'))throw Error('Disposable database required');await prisma.$executeRawUnsafe('TRUNCATE TABLE "CashLedgerEvent"');await prisma.cashCollection.deleteMany({where:{order:{customerId:{startsWith:tag+'-'}}}});await purgeWorld(tag);await prisma.category.delete({where:{id:'marketplace-category'}});setPaymentProvider(null);await stopTestServer(server);await prisma.$disconnect();});
  test('deployed default retires legacy order creation without blocking existing records',async()=>{
   const before=process.env.LEGACY_CHECKOUT_ENABLED;
   try {delete process.env.LEGACY_CHECKOUT_ENABLED;expect((await raw(W.customers[0],'post','/api/orders',await body('ONLINE'))).status).toBe(410);expect((await raw(W.customers[0],'post','/api/order-groups',{restaurants:[{},{}]})).status).toBe(410);}
@@ -57,7 +57,7 @@ describe('Single-store marketplace: real transactions, cash accounting and broad
   const id=await place();await accept(id);const rider=W.riders[0];expect((await raw(rider,'post',`/api/orders/${id}/accept-driver`,{})).status).toBe(200);
   // Arrange at-doorstep state to focus on the locked OTP + cash transaction (navigation has its own regression suite).
   await prisma.order.update({where:{id},data:{status:'ARRIVED_AT_GATE',otpCode:'0742',otpExpiresAt:new Date(Date.now()+600000)}});
-  await prisma.driverLocation.upsert({where:{driverId:rider.id},create:{driverId:rider.id,driverName:rider.name,lat:23.0746,lng:76.859},update:{lat:23.0746,lng:76.859,lastUpdated:new Date()}});
+  await prisma.driverLocation.upsert({where:{driverId:rider.id},create:{driverId:rider.id,driverName:rider.name,lat:23.0746,lng:76.859,accuracyMeters:10,measuredAt:new Date()},update:{lat:23.0746,lng:76.859,accuracyMeters:10,measuredAt:new Date(),lastUpdated:new Date()}});
   const actor={id:rider.id,role:'DRIVER'};
   await expect(verifyGateOtp(id,actor,'9999',true)).rejects.toMatchObject({code:'OTP_INVALID'});expect(await prisma.cashCollection.count({where:{orderId:id}})).toBe(0);
   await expect(verifyGateOtp(id,actor,'0742')).rejects.toMatchObject({code:'CASH_CONFIRMATION_REQUIRED'});
@@ -83,19 +83,20 @@ describe('Single-store marketplace: real transactions, cash accounting and broad
   const rider=W.riders[0];expect((await raw(rider,'post',`/api/orders/${id}/accept-driver`,{})).status).toBe(200);
   for(const status of ['PREPARING','READY_FOR_PICKUP'])expect((await raw(W.vendors[0],'patch',`/api/orders/${id}/status`,{status})).status).toBe(200);
   expect((await raw(rider,'patch',`/api/orders/${id}/status`,{status:'PICKED_UP'})).body.code).toBe('ARRIVAL_LOCATION_REQUIRED');
-  expect((await raw(rider,'post','/api/drivers/location',{lat:23.0745,lng:76.859})).status).toBe(200);
+  expect((await raw(rider,'post','/api/drivers/location',{lat:23.0745,lng:76.859,accuracyMeters:10,measuredAt:new Date().toISOString()})).status).toBe(200);
   expect((await raw(rider,'post',`/api/v1/orders/${id}/arrive-pickup`,{})).status).toBe(200);
   expect((await raw(rider,'patch',`/api/orders/${id}/status`,{status:'PICKED_UP'})).status).toBe(200);
   await prisma.driverLocation.update({where:{driverId:rider.id},data:{lat:23.2,lastUpdated:new Date()}});
   expect((await raw(rider,'patch',`/api/orders/${id}/status`,{status:'ARRIVED_AT_GATE'})).body.code).toBe('ARRIVAL_LOCATION_REQUIRED');
-  expect((await raw(rider,'post','/api/drivers/location',{lat:23.0746,lng:76.859})).status).toBe(200);
+  await prisma.driverLocation.update({where:{driverId:rider.id},data:{lat:23.0745,measuredAt:new Date(Date.now()-2000)}});
+  expect((await raw(rider,'post','/api/drivers/location',{lat:23.0746,lng:76.859,accuracyMeters:10,measuredAt:new Date().toISOString()})).status).toBe(200);
   expect((await raw(rider,'patch',`/api/orders/${id}/status`,{status:'ARRIVED_AT_GATE'})).status).toBe(200);
  });
  test('store selection, profile edits and pickup changes cannot target another vendor store',async()=>{
   expect((await raw(W.vendors[0],'get',`/api/v1/partner/stores/${W.vendors[1].vendorId}`)).status).toBe(404);
   expect((await raw(W.vendors[0],'get',`/api/v1/partner/store?vendorId=${W.vendors[1].vendorId}`)).status).toBe(404);
   expect((await raw(W.vendors[0],'put',`/api/v1/partner/store?vendorId=${W.vendors[1].vendorId}`,{name:'Unauthorized rename'})).status).toBe(404);
-  expect((await raw(W.vendors[0],'put',`/api/v1/partner/stores/${W.vendors[1].vendorId}/location`,{lat:23.0745,lng:76.859})).status).toBe(404);
+  expect((await raw(W.vendors[0],'put',`/api/v1/partner/stores/${W.vendors[1].vendorId}/location`,{lat:23.0745,lng:76.859,accuracyMeters:10,measuredAt:new Date().toISOString()})).status).toBe(404);
   const own=await raw(W.vendors[0],'get','/api/v1/partner/stores');expect(own.status).toBe(200);expect(own.body.data.map((v:any)=>v.id)).toEqual([W.vendors[0].vendorId]);
  });
  test('uncollected cash cancellation releases stock without a gateway refund',async()=>{

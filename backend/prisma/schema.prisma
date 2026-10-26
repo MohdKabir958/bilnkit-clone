@@ -28,19 +28,20 @@ enum AdminAccessStatus {
 }
 
 model AdminAccess {
-  id           String            @id @default(uuid())
-  email        String?           @unique
-  userId       String?           @unique
-  clerkUserId  String?           @unique
-  displayName  String?
-  role         AdminAccessRole   @default(ADMIN)
-  status       AdminAccessStatus @default(INVITED)
-  invitedById  String?
-  acceptedAt   DateTime?
-  revokedAt    DateTime?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  user         User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id          String            @id @default(uuid())
+  email       String?           @unique
+  userId      String?           @unique
+  clerkUserId String?           @unique
+  displayName String?
+  role        AdminAccessRole   @default(ADMIN)
+  status      AdminAccessStatus @default(INVITED)
+  invitedById String?
+  acceptedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([status, role])
 }
 
@@ -122,69 +123,74 @@ model User {
 
 // Independent provider subject state survives deidentification and webhook reordering.
 model ClerkIdentityState {
-  clerkUserId      String   @id
-  lastEventAt      BigInt   @default(0)
-  deleted          Boolean  @default(false)
-  suspended        Boolean  @default(false)
-  deleteRequested  Boolean  @default(false)
-  updatedAt        DateTime @updatedAt
+  clerkUserId     String   @id
+  lastEventAt     BigInt   @default(0)
+  deleted         Boolean  @default(false)
+  suspended       Boolean  @default(false)
+  deleteRequested Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
 }
 
 model ClerkWebhookDelivery {
-  id               String   @id
-  clerkUserId      String
-  type             String
-  eventTimestamp   BigInt
-  processedAt      DateTime @default(now())
+  id             String   @id
+  clerkUserId    String
+  type           String
+  eventTimestamp BigInt
+  processedAt    DateTime @default(now())
+
   @@index([processedAt])
 }
 
 model Vendor {
-  id                String         @id @default(uuid())
-  userId            String?
-  name              String
-  primaryCategoryId String?
-  publicPhone       String?
-  description       String?
-  primaryCategory   Category? @relation("PrimaryStoreCategory", fields: [primaryCategoryId], references: [id], onDelete: Restrict)
-  category          String
-  rating            Float          @default(0.0)
-  totalRatingsCount Int            @default(0)
-  eta               String         @default("20-25 min")
-  bannerImage       String
-  address           String
-  isAcceptingOrders Boolean        @default(true)
-  lat               Float          @default(0)
-  lng               Float          @default(0)
-  cityId            String?
-  pinCode           String?
-  locality          String?
-  operatingHours    Json?
+  preparationMinutes Int            @default(10)
+  maxPreparingOrders Int            @default(10)
+  busyUntil          DateTime?
+  id                 String         @id @default(uuid())
+  userId             String?
+  name               String
+  primaryCategoryId  String?
+  publicPhone        String?
+  description        String?
+  primaryCategory    Category?      @relation("PrimaryStoreCategory", fields: [primaryCategoryId], references: [id], onDelete: Restrict)
+  category           String
+  rating             Float          @default(0.0)
+  totalRatingsCount  Int            @default(0)
+  eta                String         @default("20-25 min")
+  bannerImage        String
+  address            String
+  isAcceptingOrders  Boolean        @default(true)
+  lat                Float          @default(0)
+  lng                Float          @default(0)
+  cityId             String?
+  pinCode            String?
+  locality           String?
+  operatingHours     Json?
   // Where the pin came from (Docs/20): DEVICE = the restaurant's own phone, ADMIN = typed by Kraveo, null = never set / legacy.
-  locationSource    String?
-  locationSetAt     DateTime?
-  locationAccuracyM Float?
+  locationSource     String?
+  locationSetAt      DateTime?
+  locationAccuracyM  Float?
   // Partner approval: rows created by Kraveo are APPROVED; self sign-ups start PENDING.
-  approvalStatus    ApprovalStatus @default(APPROVED)
-  rejectionReason   String?
-  fssaiNumber       String?
-  appliedAt         DateTime?
-  reviewedAt        DateTime?
+  approvalStatus     ApprovalStatus @default(APPROVED)
+  rejectionReason    String?
+  fssaiNumber        String?
+  appliedAt          DateTime?
+  reviewedAt         DateTime?
   // Docs/21: this restaurant's default commission (PERCENT | FLAT). Both null = inherit the global default.
-  commissionType    String?
-  commissionValue   Float?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  commissionType     String?
+  commissionValue    Float?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 
-  user        User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   menuItems   MenuItem[]
   orders      Order[]
   reviews     ReviewRecord[]
   settlements Settlement[]
   // Docs/23: the managed categories (cuisines) of this restaurant, ordered by `position` (first = main). `category` above is DERIVED from them.
   cuisines    VendorCategory[]
-  city        City?            @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  city        City?             @relation(fields: [cityId], references: [id], onDelete: Restrict)
   coverage    VendorCoverage[]
+  compliance  SellerCompliance?
 
   @@index([primaryCategoryId])
   @@index([approvalStatus])
@@ -192,22 +198,24 @@ model Vendor {
 }
 
 model MenuItem {
-  id          String   @id @default(uuid())
-  vendorId    String
-  name        String
+  batchTracking Boolean      @default(false)
+  stockBatches  StockBatch[]
+  id            String       @id @default(uuid())
+  vendorId      String
+  name          String
   // The CUSTOMER price (what the apps and the cart read). The restaurant's own price is `vendorPrice`.
-  price       Float
+  price         Float
   // Display name of the dish's category, kept in sync with Category.name (Docs/23). Old app builds read this string.
-  category    String
+  category      String
   // Docs/23: the managed category (null only for legacy rows the backfill could not match). ON DELETE RESTRICT.
-  categoryId  String?
-  description String
-  imageUrl    String
-  isAvailable Boolean  @default(true)
-  isVeg       Boolean  @default(true)
-  rating      Float?   @default(0.0)
-  ratingCount Int?     @default(0)
-  createdAt   DateTime @default(now())
+  categoryId    String?
+  description   String
+  imageUrl      String
+  isAvailable   Boolean      @default(true)
+  isVeg         Boolean      @default(true)
+  rating        Float?       @default(0.0)
+  ratingCount   Int?         @default(0)
+  createdAt     DateTime     @default(now())
 
   // Pricing and catalog approval (Docs/21 sections 2-4). `price` = roundUp(vendorPrice + commission, step), recomputed on every change.
   // No default on vendorPrice on purpose: a writer that forgets it fails loudly instead of paying a restaurant Rs 0.
@@ -271,9 +279,9 @@ model Category {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @default(now()) @updatedAt
 
-  menuItems MenuItem[]
-  vendors   VendorCategory[]
-  primaryVendors Vendor[] @relation("PrimaryStoreCategory")
+  menuItems      MenuItem[]
+  vendors        VendorCategory[]
+  primaryVendors Vendor[]         @relation("PrimaryStoreCategory")
 
   @@index([isActive, sortOrder])
 }
@@ -292,26 +300,36 @@ model VendorCategory {
 }
 
 model Order {
-  workflowVersion Int @default(1)
-  paymentMethod String @default("ONLINE")
-  cashCollection CashCollection?
-  id              String        @id @default(uuid())
-  customerId      String
-  vendorId        String
-  driverId        String?
-  totalAmount     Float
-  deliveryFee     Float         @default(30.0)
-  dropoffHostel   String
-  dropoffNotes    String?
-  addressId       String?
-  addressSnapshot Json?
-  deliveryAddress Address?      @relation(fields: [addressId], references: [id], onDelete: SetNull)
-  status          OrderStatus   @default(PLACED)
-  paymentStatus   PaymentStatus @default(PENDING)
-  otpCode         String?
-  isReviewed      Boolean       @default(false)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  preparationMinutes      Int?
+  estimatedReadyAt        DateTime?
+  packingStartedAt        DateTime?
+  readyForPickupAt        DateTime?
+  riderArrivedPickupAt    DateTime?
+  dispatchSearchStartedAt DateTime?
+  dispatchOverrideUntil   DateTime?
+  capacitySnapshot        Json?
+  adjustments             OrderAdjustment[]
+  refundRequests          PaymentRefund[]
+  workflowVersion         Int               @default(1)
+  paymentMethod           String            @default("ONLINE")
+  cashCollection          CashCollection?
+  id                      String            @id @default(uuid())
+  customerId              String
+  vendorId                String
+  driverId                String?
+  totalAmount             Float
+  deliveryFee             Float             @default(30.0)
+  dropoffHostel           String
+  dropoffNotes            String?
+  addressId               String?
+  addressSnapshot         Json?
+  deliveryAddress         Address?          @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  status                  OrderStatus       @default(PLACED)
+  paymentStatus           PaymentStatus     @default(PENDING)
+  otpCode                 String?
+  isReviewed              Boolean           @default(false)
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
 
   // Order flow v1 (Docs/16_order_flow_contract.md). Price parts are stored so history never changes.
   subtotal         Float     @default(0)
@@ -365,7 +383,7 @@ model Order {
   payments              Payment[]
   review                ReviewRecord?
 
-  pickupArrivalAt DateTime?
+  pickupArrivalAt       DateTime?
   otpExpiresAt          DateTime?
   dispatchRound         Int                  @default(0)
   dispatchNote          String?
@@ -435,17 +453,22 @@ model OrderItem {
 }
 
 model Payment {
-  id                  String        @id @default(uuid())
-  orderId             String
-  razorpayOrderId     String        @unique
-  razorpayPaymentId   String?
-  amount              Float
-  status              PaymentStatus @default(PENDING)
-  createdAt           DateTime      @default(now())
+  providerStatus          String?
+  lastProviderCheckedAt   DateTime?
+  verificationRequestedAt DateTime?
+  providerFailureCode     String?
+  refundRequests          PaymentRefund[]
+  id                      String          @id @default(uuid())
+  orderId                 String
+  razorpayOrderId         String          @unique
+  razorpayPaymentId       String?
+  amount                  Float
+  status                  PaymentStatus   @default(PENDING)
+  createdAt               DateTime        @default(now())
   // What Razorpay says was captured (paise), the refund that returned it, and when.
-  capturedAmountPaise Int?
-  razorpayRefundId    String?
-  refundedAt          DateTime?
+  capturedAmountPaise     Int?
+  razorpayRefundId        String?
+  refundedAt              DateTime?
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
@@ -481,13 +504,15 @@ model DriverPartner {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
   city City? @relation(fields: [cityId], references: [id], onDelete: Restrict)
 
-  serviceZoneId String?
-  serviceZone   DeliveryZone?   @relation(fields: [serviceZoneId], references: [id], onDelete: SetNull)
-  availabilityLat Float?
-  availabilityLng Float?
-  availabilityAt DateTime?
-  lastOfferedAt DateTime?
-  offers        DispatchOffer[]
+  serviceZoneId              String?
+  serviceZone                DeliveryZone?   @relation(fields: [serviceZoneId], references: [id], onDelete: SetNull)
+  availabilityLat            Float?
+  availabilityLng            Float?
+  availabilityAt             DateTime?
+  lastOfferedAt              DateTime?
+  offers                     DispatchOffer[]
+  availabilityAccuracyMeters Float?
+  availabilityMeasuredAt     DateTime?
 
   @@index([cityId, approvalStatus, dutyStatus])
   @@index([approvalStatus])
@@ -495,18 +520,18 @@ model DriverPartner {
 
 // India-wide serviceability. Existing stores are deliberately not auto-enabled in a city.
 model City {
-  id        String          @id @default(uuid())
-  code      String          @unique
-  name      String
-  state     String
-  country   String          @default("IN")
-  codEnabled Boolean        @default(false)
-  active    Boolean         @default(false)
-  createdAt DateTime        @default(now())
-  zones     DeliveryZone[]
-  vendors   Vendor[]
-  addresses Address[]
-  drivers   DriverPartner[]
+  id         String          @id @default(uuid())
+  code       String          @unique
+  name       String
+  state      String
+  country    String          @default("IN")
+  codEnabled Boolean         @default(false)
+  active     Boolean         @default(false)
+  createdAt  DateTime        @default(now())
+  zones      DeliveryZone[]
+  vendors    Vendor[]
+  addresses  Address[]
+  drivers    DriverPartner[]
 }
 
 model DeliveryZone {
@@ -599,12 +624,14 @@ model ReviewRecord {
 }
 
 model DriverLocation {
-  driverId    String   @id
-  driverName  String
-  lat         Float
-  lng         Float
-  heading     Float    @default(0)
-  lastUpdated DateTime @default(now())
+  driverId       String    @id
+  driverName     String
+  lat            Float
+  lng            Float
+  heading        Float     @default(0)
+  lastUpdated    DateTime  @default(now())
+  accuracyMeters Float?
+  measuredAt     DateTime?
 }
 
 // Push notifications (Docs/18_push_notifications_contract.md). One row per installed app that registered with FCM.
@@ -629,17 +656,19 @@ model DeviceToken {
 // One row per (order, event, user): the idempotency key AND the delivery log. No foreign keys on purpose, so orders and
 // users can be removed without touching it; the maintenance job prunes rows after 14 days. lastError is a code only.
 model PushLog {
-  id            String    @id @default(uuid())
-  key           String    @unique // `${orderId}:${event}:${userId}`
-  orderId       String
-  userId        String
-  event         String
-  status        String // PENDING | SENT | FAILED | SKIPPED
-  attempts      Int       @default(0)
-  lastError     String?
-  nextAttemptAt DateTime?
-  createdAt     DateTime  @default(now())
-  sentAt        DateTime?
+  deliveryOfferId        String?
+  deliveryOfferExpiresAt DateTime?
+  id                     String    @id @default(uuid())
+  key                    String    @unique // `${orderId}:${event}:${userId}`
+  orderId                String
+  userId                 String
+  event                  String
+  status                 String // PENDING | SENT | FAILED | SKIPPED
+  attempts               Int       @default(0)
+  lastError              String?
+  nextAttemptAt          DateTime?
+  createdAt              DateTime  @default(now())
+  sentAt                 DateTime?
 
   @@index([status, nextAttemptAt])
   @@index([createdAt])
@@ -761,21 +790,27 @@ model RiderPayout {
 
 /// Available units are decremented at checkout. Reservation state determines eligible release.
 model InventoryReservation {
-  id         String   @id @default(uuid())
-  orderId    String
-  menuItemId String
-  quantity   Int
-  state      String   @default("HELD")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  item       MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  packedQty            Int      @default(0)
+  unusableQty          Int      @default(0)
+  pendingInspectionQty Int      @default(0)
+  releasedQty          Int      @default(0)
+  batchAllocations     Json     @default("[]")
+  id                   String   @id @default(uuid())
+  orderId              String
+  menuItemId           String
+  quantity             Int
+  state                String   @default("HELD")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @default(now()) @updatedAt
+  order                Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  item                 MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
 
   @@unique([orderId, menuItemId])
   @@index([orderId, state])
 }
 
 model StockMovement {
+  details    Json?
   id         String   @id @default(uuid())
   menuItemId String
   delta      Int
@@ -809,24 +844,37 @@ model DispatchOffer {
 }
 
 model SupportCase {
-  id          String        @id @default(uuid())
-  customerId  String
-  orderId     String?
-  subject     String
-  description String
-  status      String        @default("OPEN")
-  resolution  String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @default(now()) @updatedAt
-  customer    User          @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  order       Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
-  notes       SupportNote[]
+  category             String            @default("OTHER")
+  priority             String            @default("NORMAL")
+  assignedToId         String?
+  dueAt                DateTime?
+  escalatedAt          DateTime?
+  resolvedAt           DateTime?
+  reopenedAt           DateTime?
+  refundReference      String?
+  replacementReference String?
+  evidence             SupportEvidence[]
+  id                   String            @id @default(uuid())
+  customerId           String
+  orderId              String?
+  subject              String
+  description          String
+  status               String            @default("OPEN")
+  resolution           String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @default(now()) @updatedAt
+  customer             User              @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  order                Order?            @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  notes                SupportNote[]
 
+  @@index([status, dueAt])
+  @@index([assignedToId, status])
   @@index([customerId, createdAt])
   @@index([status, createdAt])
 }
 
 model SupportNote {
+  internal    Boolean     @default(false)
   id          String      @id @default(uuid())
   caseId      String
   actorId     String
@@ -838,6 +886,7 @@ model SupportNote {
 }
 
 model NotificationIntent {
+  leaseToken String?
   id         String    @id @default(uuid())
   orderId    String
   event      String
@@ -855,17 +904,257 @@ model NotificationIntent {
 
 // Cash never creates a Razorpay Payment row. Order UUID and server price are immutable.
 model CashCollection {
-  id String @id @default(uuid())
-  orderId String @unique
-  driverUserId String
-  amountPaise Int
-  collectedAt DateTime @default(now())
-  remittedAt DateTime?
+  events              CashLedgerEvent[]
+  id                  String            @id @default(uuid())
+  orderId             String            @unique
+  driverUserId        String
+  amountPaise         Int
+  collectedAt         DateTime          @default(now())
+  remittedAt          DateTime?
   remittanceReference String?
-  remittedById String?
-  refundedAt DateTime?
-  refundReference String?
-  refundedById String?
-  order Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  remittedById        String?
+  refundedAt          DateTime?
+  refundReference     String?
+  refundedById        String?
+  order               Order             @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
   @@index([driverUserId, collectedAt])
+}
+
+model BackgroundJob {
+  name           String             @id
+  state          String             @default("READY") // READY | RUNNING | DEAD
+  intervalMs     Int
+  maxAttempts    Int                @default(8)
+  attempts       Int                @default(0)
+  nextRunAt      DateTime           @default(now())
+  leaseToken     String?
+  leaseOwner     String?
+  leaseUntil     DateTime?
+  lastStartedAt  DateTime?
+  lastFinishedAt DateTime?
+  lastSuccessAt  DateTime?
+  lastErrorCode  String?
+  recoveryCount  Int                @default(0)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @default(now()) @updatedAt
+  runs           BackgroundJobRun[]
+
+  @@index([state, nextRunAt])
+  @@index([leaseUntil])
+}
+
+model BackgroundJobRun {
+  id         String        @id @default(uuid())
+  jobName    String
+  workerId   String
+  state      String // RUNNING | SUCCEEDED | FAILED | ABANDONED
+  startedAt  DateTime      @default(now())
+  finishedAt DateTime?
+  leaseUntil DateTime
+  errorCode  String?
+  recovered  Boolean       @default(false)
+  job        BackgroundJob @relation(fields: [jobName], references: [name], onDelete: Cascade)
+
+  @@index([jobName, startedAt])
+  @@index([state, leaseUntil])
+}
+
+model StockBatch {
+  id           String    @id @default(uuid())
+  menuItemId   String
+  lotCode      String
+  availableQty Int       @default(0)
+  expiresAt    DateTime?
+  receivedAt   DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
+  item         MenuItem  @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([menuItemId, lotCode])
+  @@index([menuItemId, expiresAt])
+}
+
+model SupportEvidence {
+  id           String      @id @default(uuid())
+  caseId       String
+  uploadedById String
+  storageKey   String      @unique
+  mime         String
+  bytes        Int
+  sha256       String
+  caption      String?
+  expiresAt    DateTime
+  createdAt    DateTime    @default(now())
+  supportCase  SupportCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, createdAt])
+  @@index([expiresAt])
+}
+
+model OperationalResolution {
+  id                String   @id @default(uuid())
+  exceptionKey      String
+  referenceType     String
+  referenceId       String
+  state             String   @default("OPEN")
+  ownerId           String?
+  reason            String
+  evidenceReference String?
+  version           Int      @default(1)
+  actorId           String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now()) @updatedAt
+
+  @@unique([exceptionKey, referenceType, referenceId])
+  @@index([state, updatedAt])
+}
+
+model CashLedgerEvent {
+  id             String          @id @default(uuid())
+  collectionId   String?
+  driverUserId   String
+  kind           String
+  amountPaise    Int
+  reference      String
+  reason         String
+  actorId        String
+  supervisorId   String?
+  businessDate   String
+  idempotencyKey String          @unique
+  createdAt      DateTime        @default(now())
+  collection     CashCollection? @relation(fields: [collectionId], references: [id], onDelete: Restrict)
+
+  @@index([driverUserId, businessDate, createdAt])
+  @@index([collectionId, kind])
+}
+
+model CashDailyClose {
+  id                String    @id @default(uuid())
+  driverUserId      String
+  businessDate      String
+  expectedPaise     Int
+  receivedPaise     Int
+  outstandingPaise  Int
+  shortagePaise     Int
+  overagePaise      Int
+  state             String    @default("REVIEW_REQUIRED")
+  reason            String
+  actorId           String
+  reviewedById      String?
+  reviewedAt        DateTime?
+  createdAt         DateTime  @default(now())
+  countedPaise      Int
+  evidenceReference String
+
+  @@unique([driverUserId, businessDate])
+}
+
+// Customer-approved grocery line corrections. Original authorized financial snapshots remain immutable here.
+model OrderAdjustment {
+  id                 String          @id @default(uuid())
+  orderId            String
+  customerId         String
+  requestedById      String
+  requestKey         String
+  state              String          @default("PROPOSED")
+  version            Int             @default(1)
+  reason             String
+  originalSnapshot   Json
+  proposedItems      Json
+  originalTotalPaise Int
+  proposedTotalPaise Int
+  refundDuePaise     Int             @default(0)
+  decisionKey        String?         @unique
+  expiresAt          DateTime
+  decidedAt          DateTime?
+  appliedAt          DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @default(now()) @updatedAt
+  order              Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  refundRequests     PaymentRefund[]
+
+  @@unique([orderId, requestKey])
+  @@index([state, expiresAt])
+}
+
+// Separate each provider refund request; PENDING/SUBMITTED never means money returned.
+model PaymentRefund {
+  id               String           @id @default(uuid())
+  paymentId        String
+  orderId          String
+  adjustmentId     String?
+  amountPaise      Int
+  state            String           @default("PENDING")
+  reason           String
+  idempotencyKey   String           @unique
+  providerRefundId String?          @unique
+  submitStartedAt  DateTime?
+  leaseToken       String?
+  leaseUntil       DateTime?
+  attempts         Int              @default(0)
+  nextAttemptAt    DateTime         @default(now())
+  lastErrorCode    String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @default(now()) @updatedAt
+  processedAt      DateTime?
+  payment          Payment          @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  order            Order            @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  adjustment       OrderAdjustment? @relation(fields: [adjustmentId], references: [id], onDelete: Restrict)
+
+  @@index([state, nextAttemptAt, leaseUntil])
+  @@index([paymentId, state])
+}
+
+model GpsException {
+  id                String    @id @default(uuid())
+  orderId           String
+  scope             String
+  reason            String
+  evidenceReference String
+  requestedById     String
+  approvedById      String?
+  state             String    @default("PENDING")
+  expiresAt         DateTime
+  approvedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([orderId, scope, state, expiresAt])
+}
+
+model SellerCompliance {
+  id                   String    @id @default(uuid())
+  vendorId             String    @unique
+  businessName         String?
+  businessAddress      String?
+  contactEmail         String?
+  contactPhone         String?
+  gstApplicable        Boolean?
+  gstNumber            String?
+  fssaiApplicable      Boolean?
+  fssaiNumber          String?
+  fssaiExpiresAt       DateTime?
+  authorizedSellerName String?
+  documentReferences   Json      @default("[]")
+  requiredDocuments    Json      @default("[]")
+  status               String    @default("DRAFT")
+  revision             Int       @default(1)
+  reviewedById         String?
+  reviewedAt           DateTime?
+  reviewReason         String?
+  updatedAt            DateTime  @default(now()) @updatedAt
+  createdAt            DateTime  @default(now())
+  vendor               Vendor    @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+}
+
+model PaymentCreation {
+  id              String   @id @default(uuid())
+  orderId         String   @unique
+  amountPaise     Int
+  state           String   @default("CREATING")
+  claimToken      String
+  providerOrderId String?  @unique
+  lastErrorCode   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
 }

@@ -1,4 +1,6 @@
 import { authMode } from './authMode';
+import { clerkFrontendOrigin, exactOrigin } from './deploymentContract';
+import { databaseConfiguration } from './databaseConfig';
 /**
  * Boot-time configuration check. Pure (takes the env as an argument) so it can be tested.
  * Hard requirements stop the server from starting; soft ones are returned as warnings.
@@ -21,15 +23,23 @@ export const assertRuntimeConfig = (env: Record<string, string | undefined>): { 
   const mode = authMode(env);
   const required = mode === 'legacy' ? [...REQUIRED_CONFIG] : [...REQUIRED_CONFIG.filter(key => !['JWT_SECRET','ADMIN_PASSCODE'].includes(key)), 'CLERK_PUBLISHABLE_KEY','CLERK_SECRET_KEY','CLERK_WEBHOOK_SIGNING_SECRET','CLERK_ISSUER','CLERK_AUTHORIZED_PARTIES','DELIVERY_PROOF_SECRET'];
   const missing = required.filter(key => !(paymentsDisabled && key.startsWith('RAZORPAY_')) && blank(key));
+  if (missing.length > 0) throw new Error(`Missing required configuration: ${missing.join(', ')}`);
   if (mode !== 'legacy') {
     const prefix = mode === 'clerk-test' ? 'pk_test_' : env.NODE_ENV === 'production' ? 'pk_live_' : 'pk_';
     if (!env.CLERK_PUBLISHABLE_KEY?.startsWith(prefix)) throw new Error('Clerk instance does not match the configured environment.');
     if (mode === 'clerk-test' && !env.CLERK_SECRET_KEY?.startsWith('sk_test_')) throw new Error('Clerk test mode requires a development instance.');
     if (env.NODE_ENV === 'production' && !env.CLERK_SECRET_KEY?.startsWith('sk_live_')) throw new Error('Production Clerk mode requires production credentials.');
-    if (!env.CLERK_ISSUER?.startsWith('https://')) throw new Error('CLERK_ISSUER must be HTTPS.');
+    const frontend = clerkFrontendOrigin(env.CLERK_PUBLISHABLE_KEY);
+    if (!frontend) throw new Error('CLERK_PUBLISHABLE_KEY must contain a valid Clerk frontend domain.');
+    if (exactOrigin(env.CLERK_ISSUER || '', 'CLERK_ISSUER') !== frontend) throw new Error('CLERK_ISSUER must match the Clerk instance encoded in CLERK_PUBLISHABLE_KEY.');
+    if (env.CLERK_PUBLISHABLE_KEY?.startsWith('pk_test_') !== env.CLERK_SECRET_KEY?.startsWith('sk_test_')) throw new Error('Clerk publishable and secret keys must come from the same environment.');
+    for (const party of (env.CLERK_AUTHORIZED_PARTIES || '').split(',')) exactOrigin(party.trim(), 'CLERK_AUTHORIZED_PARTIES', env.NODE_ENV !== 'production');
+    if (env.CLERK_ALLOW_NATIVE_WITHOUT_AZP && !['true', 'false'].includes(env.CLERK_ALLOW_NATIVE_WITHOUT_AZP)) throw new Error('CLERK_ALLOW_NATIVE_WITHOUT_AZP must be true or false.');
     if ((env.DELIVERY_PROOF_SECRET?.length ?? 0) < 32) throw new Error('DELIVERY_PROOF_SECRET must contain at least 32 characters.');
   }
-  if (missing.length > 0) throw new Error(`Missing required configuration: ${missing.join(', ')}`);
+  databaseConfiguration(env);
+  if (env.GROZO_ENV && !['development', 'staging', 'production', 'test'].includes(env.GROZO_ENV)) throw new Error('GROZO_ENV must be development, staging, production or test.');
+  if (env.REQUIRE_CLIENT_CONTRACT && !['true','false'].includes(env.REQUIRE_CLIENT_CONTRACT)) throw new Error('REQUIRE_CLIENT_CONTRACT must be true or false.');
   if (env.NODE_ENV === 'production') {
     if (mode === 'legacy' && ((env.JWT_SECRET?.length ?? 0) < 32 || (env.ADMIN_PASSCODE?.length ?? 0) < 20)) throw new Error('Production requires a JWT_SECRET of at least 32 characters and an ADMIN_PASSCODE of at least 20.');
     for (const key of ['ADMIN_URL', 'PUBLIC_BASE_URL']) {

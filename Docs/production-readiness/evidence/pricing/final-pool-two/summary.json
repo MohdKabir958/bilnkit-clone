@@ -1,0 +1,27 @@
+{
+  "database": "grozo_pricing_1792994019751_test",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "connectionLimit": 2,
+  "poolTimeoutSeconds": 1,
+  "command": [
+    "node",
+    "/workspace/bilnkit-clone/scripts/qa/run_pricing_concurrency.mjs",
+    "final-pool-two",
+    "2",
+    "10",
+    "--testNamePattern=recalculate and edits running together"
+  ],
+  "results": [
+    {
+      "round": 1,
+      "exitCode": 1,
+      "durationMs": 9289,
+      "passed": 0,
+      "failed": 1,
+      "skipped": 44
+    }
+  ]
+}

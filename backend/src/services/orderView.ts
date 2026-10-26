@@ -1,3 +1,4 @@
+import { fulfillmentProgress } from './preparation';
 import { isCashOrder, fulfillmentAuthorized } from './marketplace';
 import { Prisma } from '@prisma/client';
 import { dropoffView, vendorHasLocation } from '../config/campus';
@@ -33,6 +34,8 @@ const vendorProductSnapshot=(snapshot:unknown)=>{
 export const ORDER_VIEW_INCLUDE = {
   items: true,
   cashCollection: true,
+  adjustments: {orderBy:{createdAt:'desc'},take:10},
+  refundRequests: {orderBy:{createdAt:'desc'},take:20},
   vendor: { include: { user: { select: { phone: true } } } },
   customer: true,
   driver: true,
@@ -146,6 +149,7 @@ const buildView = (o: OrderWithRelations) => ({
   paymentStatus: o.paymentStatus,
   paymentMethod: o.paymentMethod,
   workflowVersion: o.workflowVersion,
+  fulfillment: fulfillmentProgress(o),
   cashAmountDue: isCashOrder(o) && o.paymentStatus === 'PENDING' ? o.totalAmount : 0,
   cashCollected: !!o.cashCollection,
   totalAmount: o.totalAmount,
@@ -204,6 +208,8 @@ export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string
         acceptBy: acceptByOf(o),
         ...withGroup(groupFull(o)),
         ...(o.groupId ? { groupId: o.groupId } : {}),
+        itemChanges:o.adjustments,
+        partialRefunds:o.refundRequests,
         // Admin-only extras.
         items: o.items.map((i) => ({ id: i.id, menuItemId: i.menuItemId ?? null, productSnapshot: i.productSnapshot, name: i.name, quantity: i.quantity, price: i.price, vendorUnitPrice: vendorEarnUnit(i), commissionUnit: i.commissionUnit })),
         vendorSubtotal: vendorEarnTotal(o),
@@ -241,6 +247,9 @@ export function orderView(o: OrderWithRelations, viewerRole: ViewerRole | string
         otpCode: o.status === 'ARRIVED_AT_GATE' ? realOtp(o.otpCode) : null,
         payBy: payByOf(o),
         acceptBy: acceptByOf(o),
+        itemChanges: o.adjustments.map(p=>({id:p.id,state:p.state,version:p.version,reason:p.reason,expiresAt:p.expiresAt.toISOString(),originalTotalPaise:p.originalTotalPaise,proposedTotalPaise:p.proposedTotalPaise,refundDuePaise:p.refundDuePaise})),
+        paymentStage: o.refundStatus==='DONE'?'REFUND_COMPLETED':o.refundStatus==='FAILED'?'REFUND_REVIEW':o.refundStatus==='PENDING'?'REFUND_PENDING':isCashOrder(o)?(o.cashCollection?'CASH_COLLECTED':'CASH_DUE'):o.paymentStatus==='PAID'?'CAPTURED':o.paymentStatus==='FAILED'?'FAILED':o.payments.some(p=>p.providerStatus==='authorized')?'AUTHORIZED':o.payments.length?'PROVIDER_PENDING':'NOT_STARTED',
+        partialRefunds: o.refundRequests.map(r=>({id:r.id,amountPaise:r.amountPaise,state:r.state,processedAt:iso(r.processedAt)})),
         // Only the primary child carries the group's refund; the customer sees it on every part of the combined order.
         refundStatus: (o.groupId && o.groupIndex !== 0 ? o.group?.orders.find((s) => s.groupIndex === 0)?.refundStatus : o.refundStatus) ?? 'NONE',
         isReviewed: o.isReviewed,

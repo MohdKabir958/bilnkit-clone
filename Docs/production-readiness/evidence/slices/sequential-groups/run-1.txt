@@ -1,0 +1,73 @@
+  console.log
+    order maintenance: expired 0, auto-cancelled 0, refunds retried 0 (0 done), reconciled 1 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+
+  console.error
+    refund for order 769ee6a6-a7a7-4cd9-a279-89e34e60c97e failed (temporary): Razorpay is down
+
+      199 |   } catch (err) {
+      200 |     const perr = toProviderError(err);
+    > 201 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      202 |     try {
+      203 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      204 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:201:13)
+      at executeRefund (src/services/refundService.ts:211:106)
+      at finishChange (src/services/orderFlow.ts:201:7)
+      at cancelOrder (src/services/orderFlow.ts:859:17)
+      at src/routes/orders.ts:451:15
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+
+  console.error
+    refund for order 6870bad1-4944-4603-9649-4dd0d8e843ee failed (temporary): Could not reach the payment provider (network error).
+
+      199 |   } catch (err) {
+      200 |     const perr = toProviderError(err);
+    > 201 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      202 |     try {
+      203 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      204 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:201:13)
+      at executeRefund (src/services/refundService.ts:211:106)
+      at finishChange (src/services/orderFlow.ts:201:7)
+      at cancelOrder (src/services/orderFlow.ts:859:17)
+      at src/routes/orders.ts:451:15
+
+  console.log
+    order maintenance: expired 0, auto-cancelled 0, refunds retried 1 (1 done), reconciled 0 paid + 0 late-refunded, extra refunds 0
+
+      at runOrderMaintenance (src/services/orderMaintenance.ts:194:13)
+
+  console.error
+    refund for order 3f0c8cfe-5e54-4be6-8d4e-59fb2de9338f failed (temporary): Razorpay is down
+
+      199 |   } catch (err) {
+      200 |     const perr = toProviderError(err);
+    > 201 |     console.error(`refund for order ${orderId} failed (${perr.transient ? 'temporary' : 'permanent'}):`, perr.message);
+          |             ^
+      202 |     try {
+      203 |       await recordFailure(orderId, perr.message, { transient: perr.transient, now });
+      204 |     } catch (inner) {
+
+      at runRefund (src/services/refundService.ts:201:13)
+      at executeRefund (src/services/refundService.ts:211:106)
+      at finishChange (src/services/orderFlow.ts:201:7)
+      at cancelOrder (src/services/orderFlow.ts:859:17)
+      at src/routes/orders.ts:451:15
+
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        17.381 s, estimated 22 s
+Ran all test suites matching test/e2e/order_groups_place_pay.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/sequential-groups/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

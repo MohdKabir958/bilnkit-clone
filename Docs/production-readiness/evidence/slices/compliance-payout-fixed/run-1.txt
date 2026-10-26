@@ -1,0 +1,117 @@
+FAIL test/e2e/compliance_payout_readiness.test.ts (5.014 s)
+  ● Owned receipts and payout reconciliation › changed earnings cannot be recorded as paid without reconciling settlement totals
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.order.deleteMany()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:170:22
+
+      167 // Delete test created orders/payments/orderItems
+      168 await prisma.payment.deleteMany({});
+      169 await prisma.orderItem.deleteMany({});
+    → 170 await prisma.order.deleteMany(
+    Foreign key constraint violated: `CashCollection_orderId_fkey (index)`
+
+      168 |   await prisma.payment.deleteMany({});
+      169 |   await prisma.orderItem.deleteMany({});
+    > 170 |   await prisma.order.deleteMany({});
+          |   ^
+      171 |   await prisma.orderGroup.deleteMany({}); // Docs/22: children first (Order.groupId is RESTRICT), then the groups
+      172 | };
+      173 |
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at cleanTestOrders (test/harness/db.ts:170:3)
+      at Object.<anonymous> (test/e2e/compliance_payout_readiness.test.ts:15:22)
+
+  ● Explicit sandbox adapter contract; no real banking integration claimed › retries return one sandbox result and conflicting details are rejected
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.order.deleteMany()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:170:22
+
+      167 // Delete test created orders/payments/orderItems
+      168 await prisma.payment.deleteMany({});
+      169 await prisma.orderItem.deleteMany({});
+    → 170 await prisma.order.deleteMany(
+    Foreign key constraint violated: `CashCollection_orderId_fkey (index)`
+
+      168 |   await prisma.payment.deleteMany({});
+      169 |   await prisma.orderItem.deleteMany({});
+    > 170 |   await prisma.order.deleteMany({});
+          |   ^
+      171 |   await prisma.orderGroup.deleteMany({}); // Docs/22: children first (Order.groupId is RESTRICT), then the groups
+      172 | };
+      173 |
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at cleanTestOrders (test/harness/db.ts:170:3)
+      at Object.<anonymous> (test/e2e/compliance_payout_readiness.test.ts:15:22)
+
+  ● Explicit sandbox adapter contract; no real banking integration claimed › an environment flag alone cannot enable live transfer
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.order.deleteMany()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:170:22
+
+      167 // Delete test created orders/payments/orderItems
+      168 await prisma.payment.deleteMany({});
+      169 await prisma.orderItem.deleteMany({});
+    → 170 await prisma.order.deleteMany(
+    Foreign key constraint violated: `CashCollection_orderId_fkey (index)`
+
+      168 |   await prisma.payment.deleteMany({});
+      169 |   await prisma.orderItem.deleteMany({});
+    > 170 |   await prisma.order.deleteMany({});
+          |   ^
+      171 |   await prisma.orderGroup.deleteMany({}); // Docs/22: children first (Order.groupId is RESTRICT), then the groups
+      172 | };
+      173 |
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at cleanTestOrders (test/harness/db.ts:170:3)
+      at Object.<anonymous> (test/e2e/compliance_payout_readiness.test.ts:15:22)
+
+
+  ● Test suite failed to run
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.order.deleteMany()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:170:22
+
+      167 // Delete test created orders/payments/orderItems
+      168 await prisma.payment.deleteMany({});
+      169 await prisma.orderItem.deleteMany({});
+    → 170 await prisma.order.deleteMany(
+    Foreign key constraint violated: `CashCollection_orderId_fkey (index)`
+
+      168 |   await prisma.payment.deleteMany({});
+      169 |   await prisma.orderItem.deleteMany({});
+    > 170 |   await prisma.order.deleteMany({});
+          |   ^
+      171 |   await prisma.orderGroup.deleteMany({}); // Docs/22: children first (Order.groupId is RESTRICT), then the groups
+      172 | };
+      173 |
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at cleanTestOrders (test/harness/db.ts:170:3)
+      at Object.<anonymous> (test/e2e/compliance_payout_readiness.test.ts:16:20)
+
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 8 passed, 11 total
+Snapshots:   0 total
+Time:        5.287 s
+Ran all test suites matching test/e2e/compliance_payout_readiness.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/compliance-payout-fixed/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

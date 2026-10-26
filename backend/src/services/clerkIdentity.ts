@@ -145,11 +145,20 @@ export async function requestClerkDeletion(subject: string) {
   await prisma.clerkIdentityState.upsert({where:{clerkUserId:subject},create:{clerkUserId:subject,deleteRequested:true},update:{deleteRequested:true}});
   await retryClerkDeletions();
 }
-export async function retryClerkDeletions() {
+/** Idempotent provider deletion; bounded calls never hold a database transaction or worker lease connection. */
+export async function retryClerkDeletions(signal?: AbortSignal) {
   if (!usesClerk()) return;
   for (const state of await prisma.clerkIdentityState.findMany({where:{deleteRequested:true},take:25})) {
-    try { await transport.deleteUser(state.clerkUserId); }
-    catch(error) { if ((error as {status?:number}).status !== 404) continue; }
+    signal?.throwIfAborted();
+    let timeout: NodeJS.Timeout | undefined;
+    try {
+      await Promise.race([transport.deleteUser(state.clerkUserId), new Promise((_, reject) => {
+        timeout = setTimeout(() => reject(unavailable()), 15_000);
+      })]);
+    }
+    catch(error) { signal?.throwIfAborted(); if ((error as {status?:number}).status !== 404) continue; }
+    finally { if (timeout) clearTimeout(timeout); }
+    signal?.throwIfAborted();
     await prisma.clerkIdentityState.update({where:{clerkUserId:state.clerkUserId},data:{deleted:true,deleteRequested:false}});
   }
 }
