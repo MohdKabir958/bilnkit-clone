@@ -40,7 +40,11 @@ try {
   await sourceDb.vendor.create({ data: { id: 'recovery-store', name: 'Simulated recovery store', category: 'Grocery', address: 'Synthetic recovery fixture only', bannerImage: '', preparationMinutes: 12 } });
   await sourceDb.menuItem.create({ data: { id: 'recovery-product', vendorId: 'recovery-store', name: 'Synthetic rice pack', category: 'Grocery', description: 'Recovery fixture only', imageUrl: '/uploads/synthetic.webp', price: 115, vendorPrice: 100, stockQty: 8 } });
   await sourceDb.order.create({ data: { id: 'recovery-order', customerId: 'recovery-customer', vendorId: 'recovery-store', totalAmount: 145, subtotal: 115, vendorSubtotal: 100, commissionTotal: 15, deliveryFee: 30, dropoffHostel: '', paymentStatus: 'PAID', paidAt: new Date('2026-10-01T10:00:00Z'), items: { create: { menuItemId: 'recovery-product', name: 'Synthetic rice pack', quantity: 1, price: 115, vendorUnitPrice: 100, commissionUnit: 15 } }, payments: { create: { razorpayOrderId: 'recovery_synthetic_provider_order', razorpayPaymentId: 'recovery_synthetic_captured_payment', amount: 145, capturedAmountPaise: 14500, status: 'PAID' } } } });
+  await sourceDb.user.create({data:{id:'recovery-admin',name:'Synthetic recovery operator',role:'ADMIN'}});
+  await sourceDb.supportCase.create({data:{id:'recovery-support',customerId:'recovery-customer',subject:'Synthetic support snapshot',description:'Private synthetic recovery fixture',notes:{create:{id:'recovery-note',actorId:'recovery-admin',message:'Synthetic public reply',internal:false}}}});
+  await sourceDb.notificationIntent.create({data:{id:'recovery-support-intent',supportNoteId:'recovery-note',event:'SUPPORT_UPDATED',options:{supportAcks:['a'.repeat(64)]}}});
   const snapshot = async db => ({
+    support: await db.supportCase.findUnique({where:{id:'recovery-support'},include:{notes:{include:{notificationIntent:true}}}}),
     customer: await db.user.findUnique({ where: { id: 'recovery-customer' } }),
     order: await db.order.findUnique({ where: { id: 'recovery-order' }, include: { items: true, payments: true } }),
     product: await db.menuItem.findUnique({ where: { id: 'recovery-product' } }),
@@ -56,7 +60,7 @@ try {
   assert.equal(after, before, 'Identity mapping, financial history, stock, all tables and migration checksums must match after restore.');
   command([path.join(root, 'scripts/database_recovery.mjs'), 'restore', file], { DATABASE_URL: source.toString(), RESTORE_DATABASE_URL: restored.toString() }, 1);
   command([path.join(root, 'scripts/database_recovery.mjs'), 'restore', file], { DATABASE_URL: source.toString(), RESTORE_DATABASE_URL: base.toString() }, 1);
-  const result = { passed: true, database: sourceName, restoreTarget: restoreName, source: 'synthetic-local-fixtures-only', schemaAndMigrationChecksumsPreserved: true, clerkUuidMappingPreserved: true, orderPaymentStockSnapshotsPreserved: true, overwriteRejected: true, nonIsolatedTargetRejected: true, archiveChecksumVerified: true, counts: restoreResult.counts, node: process.version, completedAt: new Date().toISOString(), exitCode: 0 };
+  const result = { passed: true, database: sourceName, restoreTarget: restoreName, source: 'synthetic-local-fixtures-only', schemaAndMigrationChecksumsPreserved: true, clerkUuidMappingPreserved: true, orderPaymentStockSnapshotsPreserved: true, supportOutboxContextPreserved: true, overwriteRejected: true, nonIsolatedTargetRejected: true, archiveChecksumVerified: true, counts: restoreResult.counts, node: process.version, completedAt: new Date().toISOString(), exitCode: 0 };
   writeFileSync(path.join(evidence, 'database-recovery.json'), JSON.stringify(result, null, 2) + '\n');
   console.log(JSON.stringify(result));
 } catch (error) { log += `DRILL FAILURE: ${error.message}\n`; console.error(error.message); process.exitCode = 1; }
