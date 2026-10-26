@@ -1,3 +1,16 @@
+# Latest Grozo Android handover — 1.16.0+24
+
+Source: `477d86743fb1accffffcc7ee99c5d4f1a7802821` on feature/production-readiness.
+
+- [Customer APK](clerk-staging/1.16.0-24/Grozo-Customer-Clerk-Test.apk?raw=true)
+- [Vendor APK](clerk-staging/1.16.0-24/Grozo-Vendor-Clerk-Test.apk?raw=true)
+- [Delivery APK](clerk-staging/1.16.0-24/Grozo-Delivery-Clerk-Test.apk?raw=true)
+- [Checksums and staging limitations](clerk-staging/1.16.0-24/README.md)
+
+Connected to the supplied Render origin, development-signed ARM64/API24+, same historical signing certificate. New API features require an approved matching backend deployment. Firebase is disabled pending owned configuration. No physical-device, hosted Clerk-session, live-payment or production-release claim. Historical artifacts below are preserved.
+
+---
+
 # Latest delivery registration fix
 
 **Grozo Delivery 1.14.1+22**
