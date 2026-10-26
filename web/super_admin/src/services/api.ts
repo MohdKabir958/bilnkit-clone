@@ -269,6 +269,10 @@ const orderOrNull = (raw: any): Order | null => {
 };
 
 export const apiService = {
+  backgroundJobs: () => request<any[]>('/api/admin/jobs'),
+  retryBackgroundJob: (name:string,reason:string) => request(`/api/admin/jobs/${encodeURIComponent(name)}/retry`,{method:'POST',body:JSON.stringify({reason})}),
+  backgroundJobRuns: (name:string) => request<any[]>(`/api/admin/jobs/${encodeURIComponent(name)}/runs`),
+  complianceReminders: () => request<any[]>('/api/v1/admin/compliance/expiry'),
   fetchSellerCompliance: (id:string) => request<any>(`/api/v1/vendors/${encodeURIComponent(id)}/compliance`),
   saveSellerCompliance: (id:string,data:Record<string,unknown>) => request<any>(`/api/v1/vendors/${encodeURIComponent(id)}/compliance`,{method:'PUT',body:JSON.stringify(data)}),
   reviewSellerCompliance: (id:string,data:Record<string,unknown>) => request<any>(`/api/v1/admin/vendors/${encodeURIComponent(id)}/compliance/review`,{method:'POST',body:JSON.stringify(data)}),
