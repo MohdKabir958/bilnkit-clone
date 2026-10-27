@@ -1,3 +1,14 @@
+# Latest customer update — 1.16.2+26
+
+- [Customer APK](clerk-staging/1.16.2-26/Grozo-Customer-Clerk-Test.apk?raw=true): clear Clerk-to-shopping errors and protection from stale account responses.
+- [Customer checksums and verification](clerk-staging/1.16.2-26/README.md)
+- [Vendor APK — unchanged 1.16.1+25](clerk-staging/1.16.1-25/Grozo-Vendor-Clerk-Test.apk?raw=true)
+- [Delivery APK — unchanged 1.16.1+25](clerk-staging/1.16.1-25/Grozo-Delivery-Clerk-Test.apk?raw=true)
+
+All twelve synthetic Clerk handoff checks, complete Customer suite/analysis/bundle and shared authentication UI tests pass in [CI](https://github.com/MohdKabir958/bilnkit-clone/actions/runs/40465812093). Customer native build/signature/compiled API checks pass with the same previous development certificate. Hosted/provider/device acceptance is separate; no personal account was used. Historical versions are preserved below.
+
+---
+
 # Latest Grozo Android previews — 1.16.1+25
 
 - [Customer APK](clerk-staging/1.16.1-25/Grozo-Customer-Clerk-Test.apk?raw=true)
