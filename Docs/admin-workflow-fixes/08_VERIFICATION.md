@@ -17,7 +17,7 @@ No personal account was used. All test identities/data are synthetic. Hosted ser
 | Android previews | All three ARM64 APKs compile; signature/package/version/embedded API checks pass |
 | Public APK distribution | All three HTTP 200 downloads match SHA-256 and exact byte counts |
 | Browser visuals | 13 actual component captures; zero uncaught errors and horizontal overflow; 15-page PDF |
-| Terminology/brand/whitespace | Pass; internal STUDENT compatibility identifier is explicitly allowed, not UI wording |
+| Terminology/brand/source whitespace | Pass; internal STUDENT compatibility identifier is explicitly allowed, not UI wording |
 
 Backend full-suite shell step: **2026-10-27T05:09:39Z → 2026-10-27T05:15:25Z, 346 seconds**. This is GitHub's measured whole-step duration, not an invented Jest-duration statistic. The detailed Jest output/JSON and ten concurrency results are retained in the [complete backend artifact](https://github.com/MohdKabir958/bilnkit-clone/actions/runs/40453636470/artifacts/12711776905). CI artifact expiry is recorded in evidence/ci-final-artifacts.json. The workspace proxy blocks the artifact/log redirect host: local annotations/metadata are direct API evidence, not a reconstructed full log. Download the complete artifact through GitHub for the raw files.
 
@@ -67,3 +67,5 @@ Initial Prisma/Chromium/Gradle restrictions were resolved by narrowly approved b
 Task 8's **real staging acceptance remains incomplete**: actual Render/Vercel Git SHAs are unverified; no explicitly approved isolated staging deployment, synthetic verified provider identities or management credentials were provided. Public reachability is not source alignment or isolation. Existing hosted branches/domains/auth modes/data were not modified.
 
 Still pending: approved matching staging deployment/migrations; authorized map service/basemap and real address searches; intended-account hosted Clerk invitation/session/refresh/logout; owned Firebase files and real device-token isolation/push; Android physical GPS/navigation/background/OTP/account-switch; genuine provider test-mode online payment/refund checks; browser-to-staging full cross-app workflow with redacted request/response evidence. The supplied personal account is prohibited for all such work. See 09_STAGING_AND_ROLLBACK.md for exact cases and rollback.
+
+Source whitespace validation uses `git diff dec347b --check -- backend web apps packages scripts` and passes. Raw captured console evidence is preserved byte for byte, including original trailing whitespace; PDF artifacts are binary. Documentation/capture publication commits after cba6e5c do not change backend/web/mobile application or regression-test source. Their automatic CI runs are independent of the verified run reported here; no queued run is claimed as passed.

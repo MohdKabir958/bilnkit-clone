@@ -1,3 +1,4 @@
+.gitattributes
 .github/workflows/baseline.yml
 Docs/admin-workflow-fixes/00_TRACKER.md
 Docs/admin-workflow-fixes/01_OVERVIEW.md
@@ -28,6 +29,7 @@ Docs/admin-workflow-fixes/evidence/apks/driver-signature.txt
 Docs/admin-workflow-fixes/evidence/apks/manifest.json
 Docs/admin-workflow-fixes/evidence/apks/vendor-manifest.txt
 Docs/admin-workflow-fixes/evidence/apks/vendor-signature.txt
+Docs/admin-workflow-fixes/evidence/application-source-equivalence.json
 Docs/admin-workflow-fixes/evidence/backend-build-generated.json
 Docs/admin-workflow-fixes/evidence/backend-focused.json
 Docs/admin-workflow-fixes/evidence/backend-focused.log
@@ -54,6 +56,7 @@ Docs/admin-workflow-fixes/evidence/deployment-baseline.json
 Docs/admin-workflow-fixes/evidence/driver-analysis.txt
 Docs/admin-workflow-fixes/evidence/driver-apk-allowed.txt
 Docs/admin-workflow-fixes/evidence/driver-apk-build-final.log
+Docs/admin-workflow-fixes/evidence/gallery-download-verification.json
 Docs/admin-workflow-fixes/evidence/github-deployments.json
 Docs/admin-workflow-fixes/evidence/integration-admin-types.txt
 Docs/admin-workflow-fixes/evidence/local-database-blocker.txt

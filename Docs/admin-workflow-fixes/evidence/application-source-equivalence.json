@@ -1,0 +1,19 @@
+{
+  "verifiedCommit": "cba6e5cba8b8bc917ec9f6a6bf646426aebd8e85",
+  "publicationCommit": "7a56bdbd7661e6b1f32276bb0e6d27b149f07476",
+  "equalPaths": [
+    "backend",
+    "web",
+    "apps",
+    "packages"
+  ],
+  "equalTrees": {
+    "backend": "e9a7c8c0a7be812648f44588797443759e9a2987",
+    "web": "7bbdf516b5b92cdd085a3c9f8c1a1b2eba5751cd",
+    "apps": "bf1991f4612e0affde17ff8528ad5db2a93548ed",
+    "packages": "b482212313cdde62053b527d86ccf302ab6c7390"
+  },
+  "proofCommand": "git diff --quiet cba6e5c HEAD -- backend web apps packages",
+  "exitCode": 0,
+  "note": "Subsequent publication changes are documentation, genuine capture harness/artifacts and file metadata; application and test source is unchanged."
+}
