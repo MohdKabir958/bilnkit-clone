@@ -106,7 +106,10 @@ jobs:
           flutter-version: '3.44.9'
           channel: stable
           cache: true
-      - run: bash scripts/check_flutter.sh ${{ matrix.role }}
+      - name: Resolve locked dependencies for Clerk handoff checks
+        if: matrix.role == 'customer'
+        working-directory: apps/customer_app
+        run: flutter pub get --enforce-lockfile
       - name: Customer Clerk session handoff regressions
         id: customer_handoff
         if: matrix.role == 'customer'
@@ -126,6 +129,7 @@ jobs:
         run: |
           flutter pub get
           flutter test --no-pub
+      - run: bash scripts/check_flutter.sh ${{ matrix.role }}
       - name: Preserve customer handoff evidence
         if: always() && matrix.role == 'customer'
         uses: actions/upload-artifact@v4

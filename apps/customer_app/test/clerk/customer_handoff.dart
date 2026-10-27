@@ -238,8 +238,9 @@ void main() {
     // Wait for the actual profile outcome, not just for animations to stop.
     final checked = Completer<void>();
     void profileChecked() {
-      if (session.accessError != null && !checked.isCompleted)
+      if (session.accessError != null && !checked.isCompleted) {
         checked.complete();
+      }
     }
 
     session.addListener(profileChecked);
