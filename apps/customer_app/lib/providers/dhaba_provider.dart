@@ -356,8 +356,9 @@ class DhabaProvider with ChangeNotifier {
 
   bool _matchesCategory(Dhaba d, String category) {
     final wanted = category.toLowerCase();
-    if (d.primaryCategoryId != null) {
-      return d.category.trim().toLowerCase() == wanted;
+    if (d.primaryCategoryId != null &&
+        d.category.trim().toLowerCase() == wanted) {
+      return true;
     }
     if ((_menuItems[d.id] ?? const <MenuItemModel>[])
         .any((i) => i.category.trim().toLowerCase() == wanted)) {

@@ -8,7 +8,7 @@ Baseline: `dec347b0ad073bc608f45f395560126f8340480e`. Target: `feature/productio
 | 6 | Rider eligibility, invitation and 409/429 handling | Source implemented; 14 focused UI tests pass; full backend verification blocked | riderOnboarding service/routes, additive RiderInvitation migration, CreateRiderDrawer, RiderInvitations, RiderInvitePage, ApiRetryAfter; see 06_RIDER_INVITATIONS.md |
 | 1 | Authorized dashboard aggregates and interactive charts | Source implemented; 7 UI + 16 backend unit tests pass; SQL integration pending | overview.ts, OverviewDashboard, OverviewOrders; city/date server filters, IST calendar ranges, real money definitions |
 | 2 | Compact vendor directory and details | Source implemented; 3 focused UI tests pass; SQL integration pending | vendorDirectory.ts authorized paginated totals; VendorManager compact cards and 10 lazy tabs; vendor_directory.test.ts |
-| 3 | Inline categories and Customer visibility | Pending | In progress |
+| 3 | Inline categories and Customer visibility | Source implemented; 11 focused UI tests pass; Flutter runner / PostgreSQL blocked | CategoryForm/CreateStoreDrawer; primary-category counts/cache/rename/merge; Customer matching retains product categories |
 | 4 | Places provider and confirmed map pin | Pending | In progress |
 | 7 | Vendor-owned catalog and audited admin oversight | Pending | In progress |
 | 8 | Full regression, actual staging acceptance and screenshots | Pending | In progress |

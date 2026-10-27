@@ -1,0 +1,21 @@
+00:00 +0: loading /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart
+00:00 +0 -1: loading /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart [E]
+  Failed to load "/workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart": Failed to create server socket (OS Error: Operation not permitted, errno = 1), address = 127.0.0.1, port = 0
+  dart:io-patch/socket_patch.dart 1216:7                           _NativeSocket.bind
+  ===== asynchronous gap ===========================
+  dart:io-patch/socket_patch.dart 2163:12                          _RawServerSocket.bind.<fn>
+  ===== asynchronous gap ===========================
+  dart:io-patch/socket_patch.dart 2483:12                          _ServerSocket.bind.<fn>
+  ===== asynchronous gap ===========================
+  dart:_http/http_impl.dart 3476:24                                _HttpServer.bind.<fn>
+  ===== asynchronous gap ===========================
+  package:flutter_tools/src/test/flutter_tester_device.dart 89:15  FlutterTesterTestDevice.start
+  ===== asynchronous gap ===========================
+  package:flutter_tools/src/test/flutter_platform.dart 680:51      FlutterPlatform._startTest.<fn>
+  ===== asynchronous gap ===========================
+  package:flutter_tools/src/base/async_guard.dart 108:24           asyncGuard.<fn>
+  
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart: loading /workspace/bilnkit-clone/apps/customer_app/test/categories_test.dart

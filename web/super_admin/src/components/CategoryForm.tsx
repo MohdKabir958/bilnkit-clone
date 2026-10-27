@@ -68,7 +68,7 @@ export const CategoryForm: React.FC<Props> = ({ category, mode, preset = DEFAULT
     if (!category || form.forRestaurants !== category.forRestaurants) out.forRestaurants = form.forRestaurants;
     if (!category || form.forDishes !== category.forDishes) out.forDishes = form.forDishes;
     if (!category || form.showOnHome !== category.showOnHome) out.showOnHome = form.showOnHome;
-    if (category && form.isActive !== category.isActive) out.isActive = form.isActive;
+    if ((category && form.isActive !== category.isActive)||(!category&&!form.isActive)) out.isActive = form.isActive;
     return out;
   };
 
@@ -153,10 +153,10 @@ export const CategoryForm: React.FC<Props> = ({ category, mode, preset = DEFAULT
       {mode === 'full' && (
         <div className="space-y-2">
           <p className="k-label">Where it is used</p>
-          {flagRow('forRestaurants', 'Stores', 'Can be picked as a cuisine when adding or editing a store.')}
+          {flagRow('forRestaurants', 'Stores', 'Can be the primary store category or an additional store category.')}
           {flagRow('forDishes', 'Products', 'Can be picked as the category of a product.')}
-          {flagRow('showOnHome', 'Home chip', 'Shows as a quick filter on the customer app’s home screen, once a store or product uses it.')}
-          {editing && (
+          {flagRow('showOnHome', 'Show on Customer Home', 'Shows as a quick filter on the customer app’s home screen, once a store or product uses it.')}
+          {(
             <div className="k-inset flex items-start justify-between gap-3 px-4 py-3">
               <div className="min-w-0"><p className="text-sm font-bold text-kraveo-ink">Active</p><p className="text-[11px] text-kraveo-ink3">Off hides it from pickers and the home screen. Stores and products that already use it keep it.</p></div>
               <Switch checked={form.isActive} onChange={() => set('isActive', !form.isActive)} label="Active" disabled={saving} />

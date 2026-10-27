@@ -1,3 +1,4 @@
+import {invalidatePublicCategories} from '../services/categories';
 import { Router } from 'express';
 import { prisma } from '../db';
 import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/auth';
@@ -20,7 +21,7 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
     if (!/^[1-9]\d{5}$/.test(pinCode) || !indianPoint(b.lat,b.lng)) throw new AppError(400,'BAD_LOCATION','Enter a six-digit PIN and a confirmed location in India.');
     const city = await prisma.city.findUnique({where:{id:cityId}});
     if (!city?.active) throw new AppError(400,'CITY_REQUIRED','Choose an enabled city.','cityId');
-    const category=b.primaryCategoryId?await prisma.category.findUnique({where:{id:text(b.primaryCategoryId,'primaryCategoryId',64)}}):null;
+    let category=b.primaryCategoryId?await prisma.category.findUnique({where:{id:text(b.primaryCategoryId,'primaryCategoryId',64)}}):null;
     if(b.primaryCategoryId&&(!category?.isActive||!category.forRestaurants)) throw new AppError(400,'CATEGORY_REQUIRED','Choose an active store category.');
     const publicPhone=text(b.publicPhone,'publicPhone',16,false);
     if(publicPhone&&!/^\+?[0-9 ()-]{10,16}$/.test(publicPhone)) throw new AppError(400,'BAD_PHONE','Enter a public business contact number.');
@@ -30,6 +31,11 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
       ownerSubject = (await verifiedPartnerIdentity(normalizeAdminEmail(b.ownerEmail))).id;
     }
     const row = await prisma.$transaction(async tx => {
+      if(b.primaryCategoryId){
+        await tx.$queryRaw`SELECT id FROM "Category" WHERE id=${text(b.primaryCategoryId,'primaryCategoryId',64)} FOR SHARE`;
+        category=await tx.category.findUnique({where:{id:b.primaryCategoryId}});
+        if(!category?.isActive||!category.forRestaurants)throw new AppError(400,'CATEGORY_REQUIRED','Choose an active store category.','primaryCategoryId');
+      }
       await tx.$queryRaw`SELECT id FROM "City" WHERE id=${cityId} FOR SHARE`;
       if(!(await tx.city.findUnique({where:{id:cityId}}))?.active)throw new AppError(400,'CITY_REQUIRED','Choose an enabled city.','cityId');
       let ownerId: string | undefined;
@@ -50,6 +56,7 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
       await tx.adminAuditLog.create({data:{action:'STORE_CREATED',targetType:'VENDOR',targetId:store.id,summary:`Operator ${req.user!.id} created a closed store with confirmed pickup${ownerId?' and a verified partner owner':''}.`}});
       return store;
     });
+    invalidatePublicCategories();
     res.status(201).json({success:true,data:row});
   } catch(e) { fail(res,e,'Store could not be created'); }
 });
@@ -58,7 +65,7 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
 adminStoresRouter.patch('/v1/admin/stores/:id',requireAuth,requireRole('ADMIN'),async(req:AuthenticatedRequest,res)=>{
   try {
     const b=req.body??{};
-    const category=b.primaryCategoryId?await prisma.category.findUnique({where:{id:text(b.primaryCategoryId,'primaryCategoryId',64)}}):null;
+    let category=b.primaryCategoryId?await prisma.category.findUnique({where:{id:text(b.primaryCategoryId,'primaryCategoryId',64)}}):null;
     if(b.primaryCategoryId&&(!category?.isActive||!category.forRestaurants)) throw new AppError(400,'CATEGORY_REQUIRED','Choose an active store category.');
     const publicPhone=b.publicPhone===undefined?undefined:text(b.publicPhone,'publicPhone',16,false);
     if(publicPhone && !/^\+?[0-9 ()-]{10,16}$/.test(publicPhone)) throw new AppError(400,'BAD_PHONE','Enter a public business contact number.');
@@ -77,7 +84,7 @@ adminStoresRouter.patch('/v1/admin/stores/:id',requireAuth,requireRole('ADMIN'),
       const updated=await tx.vendor.update({where:{id:store.id},data:{...(category?{primaryCategoryId:category.id,category:category.name}:{}),...(userId?{userId}:{}),...(publicPhone!==undefined?{publicPhone:publicPhone||null}:{}),...(b.description===undefined?{}:{description:text(b.description,'description',600,false)||null})}});
       await tx.adminAuditLog.create({data:{action:'STORE_MARKETPLACE_UPDATED',targetType:'VENDOR',targetId:store.id,summary:`Operator ${req.user!.id} updated category, public contact or verified ownership.`}});
       return updated;
-    });res.json({success:true,data:row});
+    });invalidatePublicCategories();res.json({success:true,data:row});
   }catch(e){fail(res,e,'Store configuration could not be saved');}
 });
 

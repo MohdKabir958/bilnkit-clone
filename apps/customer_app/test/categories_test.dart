@@ -424,6 +424,17 @@ void main() {
     });
   });
 
+  test('primary store category does not hide valid product category matches', () {
+    final store=Dhaba(id:'synthetic-store',name:'Synthetic groceries',category:'Vegetable shops',primaryCategoryId:'store-category',rating:0,eta:'20 min',bannerUrl:'',isAcceptingOrders:true,address:'Synthetic test address');
+    final p=DhabaProvider(dhabas:[store],menus:{store.id:[dishModel(store.id,'Dairy')]});
+    p.setCategoriesForTest(home:_cats([('Vegetable shops',1,'vegetables'),('Dairy',2,'milk')]));
+    p.setSelectedCategoryIndex(p.categories.indexOf('Dairy'));
+    expect(p.dhabas.map((d)=>d.id),[store.id]);
+    p.setSelectedCategoryIndex(p.categories.indexOf('Vegetable shops'));
+    expect(p.dhabas.map((d)=>d.id),[store.id]);
+    p.dispose();
+  });
+
   // ===================================================================================== matching ====
   group('Home filtering by chip and by search', () {
     DhabaProvider catalog() {
