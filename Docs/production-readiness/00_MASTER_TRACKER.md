@@ -459,3 +459,5 @@ The all-26-task matrix above is the current acceptance record. Exact commands, l
 ## Subsequent admin workflow follow-up
 
 The eight-task follow-up is tracked separately in [Docs/admin-workflow-fixes/00_TRACKER.md](../admin-workflow-fixes/00_TRACKER.md). Earlier test/APK evidence remains historical to its recorded source. New source must pass its own release gates; current local sandbox/provider limitations do not certify a new production release. No personal account is used.
+
+Latest follow-up handover (27 October 2026): [admin workflow release evidence](../admin-workflow-fixes/10_HANDOVER.md) supersedes the initial environment blockers for that follow-up. Dedicated CI source cba6e5c passed the complete 1266-test backend invocation and ten pricing repetitions; Admin 886/886, all three Flutter CI jobs, three 1.16.1+25 APK builds/public download hashes and 13 genuine local fixture captures/15-page PDF are verified. Historical 26-task evidence above retains its original source/version. Real hosted/provider/physical-device acceptance remains external and no production deployment/authentication switch was performed.

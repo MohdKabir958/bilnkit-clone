@@ -1,0 +1,1 @@
+{"app": "driver", "filename": "Grozo-Delivery-Clerk-Test.apk", "bytes": 51041199, "preview": false, "exitCode": 0}

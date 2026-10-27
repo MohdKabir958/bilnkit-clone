@@ -1,0 +1,12 @@
+{
+  "command": "npm run build",
+  "workingDirectory": "backend",
+  "exitCode": 0,
+  "prismaClientRegenerated": true,
+  "prismaVersion": "5.22.0",
+  "sourceCommit": "cba6e5cba8b8bc917ec9f6a6bf646426aebd8e85",
+  "scope": "Local TypeScript compilation; no hosted migration or database operation",
+  "note": "Direct job metadata confirms successful Prisma generation, all migrations and npm run build before the complete regression invocation.",
+  "environment": "GitHub CI, dedicated ephemeral test database",
+  "ciRun": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/40453636470"
+}

@@ -28,3 +28,9 @@ Use synthetic approved administrator/vendor/rider identities, isolated data and 
 ## Rollback
 
 Before rollout record backend/admin prior SHAs, environment keys by name (never secret values), schema migration state and storage backup. Roll back applications together to a compatible reviewed pair if acceptance fails; retain additive tables/indexes and historical/financial rows. Do not undo migrations destructively or switch authentication modes as an emergency shortcut. Keep stores closed if pickup/coverage needs review. Document all failures and request approval before changing the existing hosted service, domain, credentials or database.
+
+## Current delivery status (27 October 2026)
+
+Source implementation is on feature/production-readiness, not merged into a production branch or deployed. Three 1.16.1+25 Android previews are published on the existing artifact branch; their compiled API/socket point to the supplied Render origin. Each public APK was downloaded again, returned HTTP 200 and matched its recorded SHA-256. This establishes distribution integrity, not compatibility with an unverified hosted backend SHA. Android versionCode is 2025 (ARM64 split ABI), development signing, API 24+. Firebase is not configured in these previews.
+
+The attached 13-screen gallery/15-page PDF is real local Chromium rendering with explicitly synthetic API fixtures. It cannot replace the staging acceptance above. Current source tests, CI links, checksums and external blockers are in 08_VERIFICATION.md and 10_HANDOVER.md. No personal account was used. No existing hosted branch, domain, authentication mode, database or financial records were changed.

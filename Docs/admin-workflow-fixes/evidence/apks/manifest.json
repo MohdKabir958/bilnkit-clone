@@ -1,0 +1,62 @@
+{
+  "artifacts": [
+    {
+      "role": "customer",
+      "filename": "Grozo-Customer-Clerk-Test.apk",
+      "bytes": 53639844,
+      "sha256": "690f90649f763df706c978c3d77c8bbf7928e452d599cb9314d0e25bfdade52f",
+      "applicationId": "in.grozo.customer",
+      "versionName": "1.16.1",
+      "flutterBuildNumber": 25,
+      "versionCode": 2025,
+      "buildCommit": "8668d448a29ad3f60b3b2a521eee8b4913ac9afc",
+      "mobileSourceMatchesCurrentHead": true,
+      "apiOrigin": "https://grozo-backend-3wdf.onrender.com",
+      "socketOrigin": "https://grozo-backend-3wdf.onrender.com",
+      "compiledApiUrlVerified": true,
+      "signatureVerified": true,
+      "firebaseConfigured": false,
+      "signing": "Android development signing; not a Play Store release",
+      "abi": "arm64-v8a"
+    },
+    {
+      "role": "vendor",
+      "filename": "Grozo-Vendor-Clerk-Test.apk",
+      "bytes": 51730853,
+      "sha256": "0a980d2e733fa959720de629c57b338071be6457b7fc89c051e1300e6d4f8685",
+      "applicationId": "in.grozo.vendor",
+      "versionName": "1.16.1",
+      "flutterBuildNumber": 25,
+      "versionCode": 2025,
+      "buildCommit": "8668d448a29ad3f60b3b2a521eee8b4913ac9afc",
+      "mobileSourceMatchesCurrentHead": true,
+      "apiOrigin": "https://grozo-backend-3wdf.onrender.com",
+      "socketOrigin": "https://grozo-backend-3wdf.onrender.com",
+      "compiledApiUrlVerified": true,
+      "signatureVerified": true,
+      "firebaseConfigured": false,
+      "signing": "Android development signing; not a Play Store release",
+      "abi": "arm64-v8a"
+    },
+    {
+      "role": "driver",
+      "filename": "Grozo-Delivery-Clerk-Test.apk",
+      "bytes": 51041199,
+      "sha256": "87161693929c1124ce7baf2e17404b782cafc91692c3d7d1a8ba073072858fba",
+      "applicationId": "in.grozo.driver",
+      "versionName": "1.16.1",
+      "flutterBuildNumber": 25,
+      "versionCode": 2025,
+      "buildCommit": "8668d448a29ad3f60b3b2a521eee8b4913ac9afc",
+      "mobileSourceMatchesCurrentHead": true,
+      "apiOrigin": "https://grozo-backend-3wdf.onrender.com",
+      "socketOrigin": "https://grozo-backend-3wdf.onrender.com",
+      "compiledApiUrlVerified": true,
+      "signatureVerified": true,
+      "firebaseConfigured": false,
+      "signing": "Android development signing; not a Play Store release",
+      "abi": "arm64-v8a"
+    }
+  ],
+  "realDeviceAndHostedLoginVerified": false
+}

@@ -9,7 +9,7 @@ import {App} from '../../../web/super_admin/src/App';
 import {ClerkAdminRoot} from '../../../web/super_admin/src/auth/ClerkAdmin';
 import {ToastProvider} from '../../../web/super_admin/src/components/ui/Toast';
 import {fulfillmentApi} from '../../../web/super_admin/src/services/fulfillmentApi';
-import {apiService,installClerkTokenGetter} from '../../../web/super_admin/src/services/api';
+import {apiService,ApiError,installClerkTokenGetter} from '../../../web/super_admin/src/services/api';
 const cities=[{id:'blr',code:'bengaluru-ka',name:'Bengaluru',state:'Karnataka',active:true,codEnabled:true},{id:'pune',code:'pune-mh',name:'Pune',state:'Maharashtra',active:true}];
 const vendors=[{id:'demo-market-one',cityId:'blr',name:'Grozo Demo Market One · Simulated',primaryCategoryId:'grocery-store',publicPhone:'+919000000001',description:'An explicitly simulated grocery shop.',category:'Grocery stores',rating:0,totalRatingsCount:0,isAcceptingOrders:false,address:'Simulated pickup · Town Hall, Bengaluru 560002',pinCode:'560002',locality:'Town Hall',lat:12.96393155,lng:77.58425661,hasLocation:true,locationSource:'ADMIN',activeOrdersCount:0,approvalStatus:'APPROVED'}, {id:'demo-market-two',cityId:'blr',name:'Grozo Demo Pantry · Simulated',primaryCategoryId:'grocery-store',publicPhone:'+919000000001',description:'An explicitly simulated grocery shop.',category:'Grocery stores',rating:0,isAcceptingOrders:false,address:'Simulated pickup · Town Hall, Bengaluru 560002',lat:12.96393155,lng:77.58425661,hasLocation:true,locationSource:'ADMIN',activeOrdersCount:0,approvalStatus:'APPROVED'}];
 const zones=[{id:'central',cityId:'blr',name:'Town Hall demonstration area',centerLat:12.96393155,centerLng:77.58425661,radiusKm:3,baseFeePaise:2500,perKmFeePaise:0,active:true}];
@@ -35,9 +35,18 @@ Object.assign(apiService,{
  searchPickupLocations:async()=>[{label:'Simulated demo at independently referenced Town Hall, Bengaluru 560002',lat:12.96393155,lng:77.58425661,pinCode:'560002'}],
  riderInvitations:async()=>[],
  createRiderInvitation:async()=>({id:'fixture-invitation',expiresAt:'2026-10-30T10:00:00Z',inviteUrl:'https://synthetic.grozo.invalid/partner-invite#invite='+ 'a'.repeat(64),delivery:{mode:'MANUAL',sent:false}}),
- checkRiderEligibility:async()=>{throw new Error('Ask this partner to create a Clerk account and verify this email before assignment.');},
+ checkRiderEligibility:async()=>{throw new ApiError(409,'Ask this partner to create a Clerk account and verify this email before assignment.','PARTNER_ACCOUNT_REQUIRED','email');},
  createCategory:async(input:any)=>({id:'synthetic-inline-category',...input,isActive:true}),
  openCatalogAssistance:async({vendorId}:{vendorId:string})=>({id:'fixture-assistance',vendorId,expiresAt:'2030-01-01T00:00:00Z'})
 });
+const emptyOverview=apiService.operations;
+if(new URLSearchParams(location.search).has('populated'))apiService.operations=async(city,days)=>{
+ const base=await emptyOverview(city,days);
+ return {...base,orders:6,delivered:4,active:1,capturedPaise:32000,receivedCashPaise:16000,pendingCashPaise:8000,
+ statuses:[{name:'DELIVERED',count:4},{name:'PLACED',count:1},{name:'CANCELLED',count:1}],payments:[{name:'ONLINE',count:4},{name:'COD',count:2}],
+ topVendors:[{id:vendors[0].id,name:vendors[0].name,orders:4},{id:vendors[1].id,name:vendors[1].name,orders:2}],
+ trend:base.trend.map((p:any,i:number)=>({...p,orders:i>3?2:0,capturedPaise:i>3? (i===6?12000:10000):0,receivedCashPaise:i===6?16000:0})),
+ definitions:{...base.definitions,money:'Explicit synthetic chart scenario: gross captured/received figures by order-created date, before refunds. Not a connected marketplace report.'}};
+};
 installClerkTokenGetter(async()=>'local-browser-fixture-only');
 createRoot(document.getElementById('root')!).render(new URLSearchParams(location.search).has('login')?<ClerkAdminRoot/>:<ToastProvider><App clerkAdmin={{id:'owner',name:'Demo Owner',role:'ADMIN',adminRole:'OWNER'}}/></ToastProvider>);
