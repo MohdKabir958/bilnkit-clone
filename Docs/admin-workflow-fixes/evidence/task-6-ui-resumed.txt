@@ -1,0 +1,14 @@
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/PartnerOnboarding.test.tsx (6 tests) 1413ms
+   ✓ rider wizard defaults pending, preserves Back values, and only submits on review 822ms
+ ✓ src/components/RiderIdentityWorkflow.test.tsx (3 tests) 283ms
+ ✓ src/auth/RiderInvitePage.test.tsx (3 tests) 138ms
+ ✓ src/services/ApiRetryAfter.test.ts (2 tests) 14ms
+
+ Test Files  4 passed (4)
+      Tests  14 passed (14)
+   Start at  01:27:30
+   Duration  6.57s (transform 1.52s, setup 0ms, collect 2.41s, tests 1.85s, environment 1.35s, prepare 593ms)
+

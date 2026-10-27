@@ -1,0 +1,14 @@
+import {Router} from 'express';
+import {requireAuth,requireRole,AuthenticatedRequest} from '../middleware/auth';
+import {clerkOnly} from '../config/authMode';
+import {fail,validParams} from '../utils/http';
+import {checkRiderEligibility,createRiderInvitation,listRiderInvitations,revokeRiderInvitation,redeemRiderInvitation} from '../services/riderOnboarding';
+import {AppError} from '../utils/appError';
+export const riderOnboardingRouter=Router();
+riderOnboardingRouter.use((_req,res,next)=>{res.set('Cache-Control','no-store');next();});
+const admin=[requireAuth,requireRole('ADMIN'),clerkOnly];
+riderOnboardingRouter.post('/v1/admin/riders/eligibility',...admin,async(req,res)=>{try{res.json({success:true,data:await checkRiderEligibility(req.body?.email)});}catch(e){fail(res,e,'Rider identity eligibility');}});
+riderOnboardingRouter.get('/v1/admin/rider-invitations',...admin,async(_req,res)=>{try{res.json({success:true,data:await listRiderInvitations()});}catch(e){fail(res,e,'Rider invitations');}});
+riderOnboardingRouter.post('/v1/admin/rider-invitations',...admin,async(req:AuthenticatedRequest,res)=>{try{res.status(201).json({success:true,data:await createRiderInvitation(req.user!.id,req.body??{})});}catch(e){fail(res,e,'Rider invitation');}});
+riderOnboardingRouter.delete('/v1/admin/rider-invitations/:id',...admin,validParams('id'),async(req:AuthenticatedRequest,res)=>{try{res.json({success:true,data:await revokeRiderInvitation(req.user!.id,req.params.id)});}catch(e){fail(res,e,'Revoke rider invitation');}});
+riderOnboardingRouter.post('/v1/partner/rider-invitations/redeem',requireAuth,clerkOnly,async(req:AuthenticatedRequest,res)=>{try{if(!req.user?.clerkUserId)throw new AppError(401,'INVALID_SESSION','Sign in with Clerk to verify this invitation.');res.json({success:true,data:await redeemRiderInvitation(req.user.clerkUserId,req.body?.token)});}catch(e){fail(res,e,'Verify rider invitation');}});

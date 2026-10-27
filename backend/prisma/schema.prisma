@@ -27,6 +27,25 @@ enum AdminAccessStatus {
   REVOKED
 }
 
+model RiderInvitation {
+  id                 String   @id @default(uuid())
+  email              String
+  tokenHash          String   @unique
+  state              String   @default("PENDING")
+  expiresAt          DateTime
+  createdById        String
+  acceptedBySubject  String?
+  redeemedAt         DateTime?
+  completedAt        DateTime?
+  completedDriverId  String?
+  revokedAt          DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([email, state, expiresAt])
+  @@index([state, createdAt])
+}
+
 model AdminAccess {
   id          String            @id @default(uuid())
   email       String?           @unique

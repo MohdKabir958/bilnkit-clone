@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
       <ToastProvider>
-        {clerkEnabled ? <ClerkAdminRoot /> : <App />}
+        {clerkEnabled || window.location.pathname==='/partner-invite' ? <ClerkAdminRoot /> : <App />}
       </ToastProvider>
     </ErrorBoundary>
   </React.StrictMode>

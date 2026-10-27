@@ -1,0 +1,61 @@
+prisma:engines binaries to download libquery-engine, schema-engine +982ms
+prisma:get-platform Found distro info:
+{
+  "targetDistro": "debian",
+  "familyDistro": "debian",
+  "originalDistro": "debian"
+} +5ms
+prisma:get-platform Trying platform-specific paths for "debian" (and "ubuntu") +0ms
+prisma:get-platform Found libssl.so file using platform-specific paths: libssl.so.3 +3ms
+prisma:get-platform The parsed libssl version is: 3.0.x +1ms
+prisma:fetch-engine:cache-dir The following error is being caught and just there for debugging: +2ms
+prisma:fetch-engine:cache-dir {
+  "errno": -2,
+  "code": "ENOENT",
+  "syscall": "mkdir",
+  "path": "/home/agent/.cache/prisma"
+} +1ms
+prisma:fetch-engine:cache-dir The following error is being caught and just there for debugging: +30ms
+prisma:fetch-engine:cache-dir {
+  "errno": -2,
+  "code": "ENOENT",
+  "syscall": "mkdir",
+  "path": "/home/agent/.cache/prisma"
+} +0ms
+prisma:loadEnv project root found at /workspace/bilnkit-clone/backend/package.json +1073ms
+prisma:getSchema prismaConfig {
+  "packagePath": "/workspace/bilnkit-clone/backend/package.json"
+} +1ms
+prisma:tryLoadEnv Environment variables loaded from /workspace/bilnkit-clone/backend/.env +1ms
+Environment variables loaded from .env
+prisma:getSchema Reading schema from single file /workspace/bilnkit-clone/backend/prisma/schema.prisma +1ms
+Prisma schema loaded from prisma/schema.prisma
+prisma:getConfig Using getConfig Wasm +2ms
+prisma:getConfig config data retrieved without errors in getConfig Wasm +33ms
+prisma:get-platform Found distro info:
+{
+  "targetDistro": "debian",
+  "familyDistro": "debian",
+  "originalDistro": "debian"
+} +2ms
+prisma:get-platform Trying platform-specific paths for "debian" (and "ubuntu") +0ms
+prisma:get-platform Found libssl.so file using platform-specific paths: libssl.so.3 +4ms
+prisma:get-platform The parsed libssl version is: 3.0.x +0ms
+prisma:getSchema Reading schema from single file /workspace/bilnkit-clone/backend/prisma/schema.prisma +1ms
+prisma:fetch-engine:cache-dir The following error is being caught and just there for debugging: +2ms
+prisma:fetch-engine:cache-dir {
+  "errno": -2,
+  "code": "ENOENT",
+  "syscall": "mkdir",
+  "path": "/home/agent/.cache/prisma"
+} +0ms
+prisma:getConfig Using getConfig Wasm +12ms
+prisma:getConfig config data retrieved without errors in getConfig Wasm +8ms
+prisma:getDMMF Using getDmmf Wasm +1ms
+prisma:getDMMF Using given datamodel +0ms
+prisma:getDMMF dmmf data retrieved without errors in getDmmf Wasm +620ms
+prisma:generator prismaCLIDir /workspace/bilnkit-clone/backend/node_modules/prisma +7ms
+prisma:generator prismaClientDir /workspace/bilnkit-clone/backend/node_modules/@prisma/client +0ms
+prisma:generator baseDir /workspace/bilnkit-clone/backend/prisma +0ms
+prisma:generator typescriptPath /workspace/bilnkit-clone/backend/node_modules/typescript +1ms
+prisma:GeneratorProcess child exited with code 0 on signal null +97ms

@@ -59,6 +59,8 @@ export async function freshAuthToken(force = false): Promise<string> {
   return token;
 }
 
+export type RiderInvitation={id:string;email:string;state:'PENDING'|'VERIFIED'|'COMPLETED'|'REVOKED';expiresAt:string;createdAt:string;redeemedAt:string|null};
+
 export class ApiError extends Error {
   /**
    * `code` / `field` come from the server's `{ success:false, message, code?, field? }` error body (contract 2).
@@ -102,7 +104,7 @@ async function send(path: string, init: RequestInit): Promise<{ response: Respon
       body?.message || `Request failed (${response.status}).`,
       typeof body?.code === 'string' ? body.code : undefined,
       typeof body?.field === 'string' ? body.field : undefined,
-      body && typeof body === 'object' && !Array.isArray(body) ? body : undefined,
+      (()=>{const extra=body&&typeof body==='object'&&!Array.isArray(body)?{...body}:{};const header=response.headers.get('Retry-After');if(header){const value=/^\d+$/.test(header.trim())?Number(header):Math.ceil((Date.parse(header)-Date.now())/1000);if(Number.isFinite(value)&&value>=0)extra.retryAfterSeconds=Math.min(86400,Math.max(1,value));}return Object.keys(extra).length?extra:undefined;})(),
     );
   }
   return { response, body };
@@ -305,6 +307,11 @@ export const apiService = {
   setCityCash: (id:string,codEnabled:boolean) => request(`/api/v1/admin/cities/${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify({codEnabled})}),
   fetchCash: (after?:string) => requestFull<{success:boolean;data:CashEntry[];nextCursor:string|null}>(`/api/v1/admin/cash${after?'?after='+encodeURIComponent(after):''}`),
   recordCash: (id:string,action:'remit'|'refund',reference:string) => request(`/api/v1/admin/cash/${encodeURIComponent(id)}/${action}`,{method:'POST',body:JSON.stringify({reference})}),
+  checkRiderEligibility: (email:string) => request<{eligible:boolean;email:string}>('/api/v1/admin/riders/eligibility',{method:'POST',body:JSON.stringify({email})}),
+  createRiderInvitation: (email:string,consentConfirmed:boolean) => request<RiderInvitation & {inviteUrl:string;delivery:{mode:'MANUAL';sent:false}}>('/api/v1/admin/rider-invitations',{method:'POST',body:JSON.stringify({email,consentConfirmed})}),
+  riderInvitations: () => request<RiderInvitation[]>('/api/v1/admin/rider-invitations'),
+  revokeRiderInvitation: (id:string) => request('/api/v1/admin/rider-invitations/'+encodeURIComponent(id),{method:'DELETE'}),
+  redeemRiderInvitation: (token:string) => request<{verified:boolean;approvalGranted:false}>('/api/v1/partner/rider-invitations/redeem',{method:'POST',body:JSON.stringify({token})}),
   createRider: (data: {email:string;name:string;phone:string;vehicleType:string;vehicleRegNo:string;emergencyPhone?:string;cityId:string;zoneId:string;approve:boolean}) => request<{id:string}>('/api/v1/admin/riders',{method:'POST',body:JSON.stringify(data)}),
   createStore: (data: {primaryCategoryId?:string;publicPhone?:string;description?:string;name:string;address:string;cityId:string;pinCode:string;locality:string;lat:number;lng:number;zoneId?:string;ownerEmail?:string}) => request<{id:string}>('/api/v1/admin/stores', {method:'POST',body:JSON.stringify(data)}),
 

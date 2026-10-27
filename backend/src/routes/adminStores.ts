@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { prisma } from '../db';
 import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/auth';
-import { clerkAdmins, usesClerk } from '../config/authMode';
+import { usesClerk } from '../config/authMode';
 import { indianPoint, kmBetween, text } from '../services/geography';
 import { normalizeAdminEmail } from '../services/adminAccess';
+import {eligibleRiderAccount} from '../services/riderOnboarding';
 import { verifiedPartnerIdentity } from '../services/clerkIdentity';
 import { AppError } from '../utils/appError';
 import { fail } from '../utils/http';
@@ -94,13 +95,12 @@ adminStoresRouter.post('/v1/admin/riders',requireAuth,requireRole('ADMIN'),async
     const cityId=text(b.cityId,'cityId',64),zoneId=text(b.zoneId,'zoneId',64);
     const row=await prisma.$transaction(async tx=>{
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${identity.id},81971))`;
-      const user=await tx.user.findUnique({where:{clerkUserId:identity.id}}),state=await tx.clerkIdentityState.findUnique({where:{clerkUserId:identity.id}});
-      if(!user||user.deletedAt||!['STUDENT','DRIVER'].includes(user.role)||state?.deleted||state?.suspended||state?.deleteRequested||clerkAdmins().includes(identity.id)||await tx.vendor.count({where:{userId:user.id}})||await tx.adminAccess.count({where:{OR:[{clerkUserId:identity.id},{email}],status:{in:['ACTIVE','INVITED']}}})) throw new AppError(409,'RIDER_UNAVAILABLE','Use a separate eligible partner account that has signed in to Grozo first.','email');
-      if(await tx.driverPartner.findUnique({where:{userId:user.id}})) throw new AppError(409,'RIDER_EXISTS','This rider already exists. Review their application or service area instead.','email');
+      const user=await eligibleRiderAccount(tx,identity.id,email);
       const city=await tx.city.findUnique({where:{id:cityId}}),zone=await tx.deliveryZone.findUnique({where:{id:zoneId}});
       if(!city?.active||!zone?.active||zone.cityId!==cityId) throw new AppError(400,'ZONE_MISMATCH','Choose an enabled delivery zone in the selected enabled city.','zoneId');
       await tx.user.update({where:{id:user.id},data:{role:'DRIVER'}});
       const rider=await tx.driverPartner.create({data:{userId:user.id,name,phone,runnerCode:await newRunnerCode(),...details.data,cityId,serviceZoneId:zoneId,approvalStatus:b.approve===true?'APPROVED':'PENDING',appliedAt:new Date(),reviewedAt:b.approve===true?new Date():null,dutyStatus:'OFFLINE'}});
+      await tx.riderInvitation.updateMany({where:{email,state:'VERIFIED',acceptedBySubject:identity.id,expiresAt:{gt:new Date()}},data:{state:'COMPLETED',completedAt:new Date(),completedDriverId:rider.id}});
       await tx.adminAuditLog.create({data:{action:'RIDER_ONBOARDED',targetType:'DRIVER',targetId:rider.id,summary:`Operator ${req.user!.id} created a ${rider.approvalStatus.toLowerCase()} offline rider with verified provider identity and service area.`}});
       return rider;
     });

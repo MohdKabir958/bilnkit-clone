@@ -1,0 +1,19 @@
+
+> kraveo-super-admin@1.0.0 test
+> vitest run --maxWorkers=1 --minWorkers=1 src/auth/RiderInvitePage.test.tsx src/components/RiderIdentityWorkflow.test.tsx src/components/PartnerOnboarding.test.tsx src/services/ApiRetryAfter.test.ts
+
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/PartnerOnboarding.test.tsx (6 tests) 1312ms
+   ✓ rider wizard defaults pending, preserves Back values, and only submits on review 634ms
+ ✓ src/components/RiderIdentityWorkflow.test.tsx (3 tests) 728ms
+   ✓ a 409 identity conflict is shown before Review and offers an invitation without creating a rider 538ms
+ ✓ src/auth/RiderInvitePage.test.tsx (3 tests) 206ms
+ ✓ src/services/ApiRetryAfter.test.ts (2 tests) 12ms
+
+ Test Files  4 passed (4)
+      Tests  14 passed (14)
+   Start at  19:53:35
+   Duration  9.47s (transform 1.13s, setup 0ms, collect 2.71s, tests 2.26s, environment 2.68s, prepare 451ms)
+

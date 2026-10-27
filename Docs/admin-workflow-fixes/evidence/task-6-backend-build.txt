@@ -1,0 +1,5 @@
+
+> kraveo-backend@1.0.0 build
+> tsc
+
+src/services/riderOnboarding.ts(22,309): error TS1005: ',' expected.

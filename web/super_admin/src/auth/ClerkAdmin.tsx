@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ClerkProvider, ClerkFailed, ClerkLoaded, ClerkLoading, SignIn, UserButton, useAuth } from '@clerk/react';
+import {RiderInvitePage} from './RiderInvitePage';
 import { App } from '../App';
 import { apiService, installClerkTokenGetter, clearAuthToken } from '../services/api';
 import type { AdminProfile } from '../types';
@@ -74,6 +75,6 @@ export function ClerkAdminRoot() {
   return <ClerkProvider publishableKey={key} afterSignOutUrl="/">
     <ClerkLoading><SignInLoading /></ClerkLoading>
     <ClerkFailed><SignInUnavailable /></ClerkFailed>
-    <ClerkLoaded><AdminSession /></ClerkLoaded>
+    <ClerkLoaded>{window.location.pathname==='/partner-invite'?<RiderInvitePage/>:<AdminSession/>}</ClerkLoaded>
   </ClerkProvider>;
 }
