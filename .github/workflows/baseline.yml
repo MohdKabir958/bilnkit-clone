@@ -69,6 +69,15 @@ jobs:
           cache-dependency-path: web/${{ matrix.component }}/package-lock.json
       - run: npm ci
       - run: npm run build
+      - name: Verify Clerk admin build with public test configuration
+        if: matrix.component == 'super_admin'
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import {execFileSync} from 'node:child_process';
+          const publicConfig=JSON.parse(readFileSync('../../Docs/clerk/android-staging-public.json','utf8'));
+          execFileSync('npm',['run','build'],{stdio:'inherit',env:{...process.env,VITE_AUTH_MODE:'clerk-test',VITE_CLERK_PUBLISHABLE_KEY:publicConfig.publishableKey,VITE_API_BASE_URL:publicConfig.backendOrigin,VITE_SOCKET_URL:publicConfig.backendOrigin}});
+          NODE
       - run: npm audit --omit=dev
       - if: matrix.component == 'super_admin'
         run: |

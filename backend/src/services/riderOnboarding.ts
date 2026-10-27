@@ -25,7 +25,7 @@ export async function eligibleRiderAccount(db:Db,subject:string,email:string) {
   if(stores||administrator)throw new AppError(409,'RIDER_UNAVAILABLE','An administrator or store owner cannot be repurposed as a rider.','email');
   const rider=await db.driverPartner.findUnique({where:{userId:user.id}});
   if(rider)throw new AppError(409,'RIDER_EXISTS','This partner already has an application. Review it in Applications.','email',{applicationId:rider.id});
-  if(await db.order.count({where:{customerId:user.id}}))throw new AppError(409,'CUSTOMER_HISTORY_CONFLICT','This account has customer orders. Ask the partner to use a separate rider account.','email');
+  if(await db.order.count({where:{customerId:user.id}})||await db.orderGroup.count({where:{customerId:user.id}}))throw new AppError(409,'CUSTOMER_HISTORY_CONFLICT','This account has customer orders. Ask the partner to use a separate rider account.','email');
   return user;
 }
 export async function checkRiderEligibility(rawEmail:unknown) {

@@ -1,5 +1,5 @@
 import type {Order,OrderStatus,TabType} from '../types';
-export interface OverviewScope {from:string;to:string;status?:string;paymentMethod?:string;vendorId?:string;activeOnly?:boolean;urgentOnly?:boolean;dutyStatus?:string;approvalStatus?:string;}
+export interface OverviewScope {from:string;to:string;status?:string;paymentMethod?:string;vendorId?:string;activeOnly?:boolean;urgentOnly?:boolean;dutyStatus?:string;onDuty?:boolean;approvalStatus?:string;}
 export type OverviewDrill=(tab:TabType,scope:OverviewScope)=>void;
 export interface OverviewData {
   from:string;to:string;days:number;refreshedAt:string;cityId:string|null;

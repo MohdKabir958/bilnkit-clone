@@ -1,0 +1,1 @@
+[1125763:1125763:1027/020342.022368:ERROR:third_party/crashpad/crashpad/util/linux/socket.cc:45] setsockopt: Operation not permitted (1)

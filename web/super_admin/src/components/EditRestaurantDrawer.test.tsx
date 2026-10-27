@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import React, { act } from 'react';
 import { EditRestaurantDrawer } from './EditRestaurantDrawer';
+import {mockVendorDirectory} from '../test/vendorDirectory';
 import { VendorManager } from './VendorManager';
 import { ApiError, apiService } from '../services/api';
 import { normalizeVendor, Vendor } from '../types';
@@ -267,13 +268,11 @@ describe('EditRestaurantDrawer', () => {
 describe('Edit restaurant on the vendor card', () => {
   const list = [vendor(), vendor({ id: 'v2', name: 'Chai Point', cuisines: [] })];
 
-  it('every restaurant card has the button and it opens the drawer for that restaurant', async () => {
-    vi.spyOn(apiService, 'fetchCategories').mockResolvedValue([]);
-    const host = await mount(<VendorManager vendors={list} onToggleVendor={vi.fn()} />);
-    const buttons = Array.from(host.querySelectorAll('button')).filter((b) => b.textContent?.trim() === "Edit store");
-    expect(buttons).toHaveLength(2);
-    await click(buttons[1]);
-    await flush();
+  it('each compact card opens details and profile editing for that store', async () => {
+    vi.spyOn(apiService, 'fetchCategories').mockResolvedValue([]);mockVendorDirectory(list);
+    const host=await mount(<VendorManager vendors={list} onToggleVendor={vi.fn()}/>);
+    const cards=Array.from(host.querySelectorAll('button[aria-label^="View details of"]'));expect(cards).toHaveLength(2);
+    await click(cards[1]);await flush();await click(byText('button','Edit store profile & access'));await flush();
     expect(document.querySelector('[role="dialog"]')!.textContent).toContain('Edit Chai Point');
   });
 
@@ -282,18 +281,21 @@ describe('Edit restaurant on the vendor card', () => {
     const fresh = vendor({ name: 'Renamed' });
     vi.spyOn(apiService, 'updateVendorProfile').mockResolvedValue({ vendor: fresh, changed: true, message: '' });
     const onProfileSaved = vi.fn();
+    mockVendorDirectory(list);
     const host = await mount(<VendorManager vendors={list} onToggleVendor={vi.fn()} onProfileSaved={onProfileSaved} />);
-    await click(Array.from(host.querySelectorAll('button')).find((b) => b.textContent?.trim() === "Edit store")!);
+    await click(host.querySelector('button[aria-label^="View details of"]'));await flush();await click(byText('button','Edit store profile & access'));
     await flush();
     await type(byId('er-name'), 'Renamed');
     await save();
     expect(onProfileSaved).toHaveBeenCalledWith(fresh);
-    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.getElementById('er-name')).toBeNull();
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
   });
 
   it('the header search also finds restaurants by their category names', async () => {
     // the legacy text no longer says Biryani, only the category link does
     const two = [vendor({ category: 'Campus kitchen' }), vendor({ id: 'v2', name: 'Chai Point', category: 'Cafe', cuisines: [] })];
+    mockVendorDirectory(two);
     const host = await mount(<VendorManager vendors={two} onToggleVendor={vi.fn()} query="biryani" />);
     expect(host.textContent).toContain('Shape Kitchen & Co');
     expect(host.textContent).not.toContain('Chai Point');
@@ -310,19 +312,18 @@ describe('360 px', () => {
 });
 
 describe('restaurants without categories (self sign-up)', () => {
-  it('the card says so and the hint opens Edit restaurant', async () => {
-    vi.spyOn(apiService, 'fetchCategories').mockResolvedValue([]);
-    const signup = vendor({ id: 'v7', name: 'Self Signup Dhaba', category: 'Tiffin', cuisines: [], tags: [] });
-    const host = await mount(<VendorManager vendors={[signup, vendor()]} onToggleVendor={vi.fn()} />);
-    const hints = Array.from(host.querySelectorAll('button')).filter((b) => b.textContent === 'No categories yet. Add some');
-    expect(hints).toHaveLength(1); // only the restaurant with an empty list; one with categories, or an older server (undefined), is not nagged
-    await click(hints[0]);
-    await flush();
+  it('shows the primary category and opens profile editing without a misleading missing-category warning', async () => {
+    vi.spyOn(apiService,'fetchCategories').mockResolvedValue([]);
+    const signup=vendor({id:'v7',name:'Self Signup Dhaba',category:'Tiffin',primaryCategoryId:'tiffin',cuisines:[],tags:[]});mockVendorDirectory([signup,vendor()]);
+    const host=await mount(<VendorManager vendors={[signup,vendor()]} onToggleVendor={vi.fn()}/>);
+    expect(host.textContent).toContain('Tiffin');expect(host.textContent).not.toContain('No categories yet');
+    await click(host.querySelector('button[aria-label="View details of Self Signup Dhaba"]'));await flush();await click(byText('button','Edit store profile & access'));await flush();
     expect(document.querySelector('[role="dialog"]')!.textContent).toContain('Edit Self Signup Dhaba');
   });
 
   it('an older server (no cuisines field) shows no hint', async () => {
     const old = normalizeVendor({ id: 'v8', name: 'Old', category: 'Cafe', rating: 1, isAcceptingOrders: true, address: 'x' });
+    mockVendorDirectory([old]);
     const host = await mount(<VendorManager vendors={[old]} onToggleVendor={vi.fn()} />);
     expect(host.textContent).not.toContain('No categories yet');
   });

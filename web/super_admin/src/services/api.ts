@@ -591,9 +591,10 @@ export const apiService = {
   },
 
   // ── Partner applications and accounts ──
-  async fetchApplications(status: ApprovalStatus | 'ALL' = 'PENDING', kind?: PartnerKind): Promise<{ counts: ApplicationCounts; data: Application[] }> {
+  async fetchApplications(status: ApprovalStatus | 'ALL' = 'PENDING', kind?: PartnerKind,cityId?:string): Promise<{ counts: ApplicationCounts; data: Application[] }> {
     const params = new URLSearchParams({ status });
     if (kind) params.set('kind', kind);
+    if(cityId)params.set('cityId',cityId);
     const body = await requestFull<{ counts: ApplicationCounts; data: Application[] }>(`/api/admin/applications?${params.toString()}`);
     return { counts: body.counts, data: Array.isArray(body.data) ? body.data : [] };
   },

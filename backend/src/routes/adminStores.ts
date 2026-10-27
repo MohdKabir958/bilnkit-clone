@@ -72,6 +72,11 @@ adminStoresRouter.patch('/v1/admin/stores/:id',requireAuth,requireRole('ADMIN'),
     if(publicPhone && !/^\+?[0-9 ()-]{10,16}$/.test(publicPhone)) throw new AppError(400,'BAD_PHONE','Enter a public business contact number.');
     const ownerSubject=b.ownerEmail?(await verifiedPartnerIdentity(normalizeAdminEmail(b.ownerEmail))).id:undefined;
     const row=await prisma.$transaction(async tx=>{
+      if(b.primaryCategoryId){
+        await tx.$queryRaw`SELECT id FROM "Category" WHERE id=${text(b.primaryCategoryId,'primaryCategoryId',64)} FOR SHARE`;
+        category=await tx.category.findUnique({where:{id:b.primaryCategoryId}});
+        if(!category?.isActive||!category.forRestaurants)throw new AppError(400,'CATEGORY_REQUIRED','Choose an active store category.','primaryCategoryId');
+      }
       let userId:string|undefined;
       if(ownerSubject) {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${ownerSubject},81971))`;

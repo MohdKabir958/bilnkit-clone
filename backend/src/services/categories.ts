@@ -499,7 +499,7 @@ const conflict = async (slug: string) => {
 const isUniqueViolation = (e: unknown) => (e as { code?: string })?.code === 'P2002';
 
 const CREATE_KEYS = ['name', 'nameHi', 'icon', 'forRestaurants', 'forDishes', 'showOnHome', 'isActive'];
-const PATCH_KEYS = [...CREATE_KEYS, 'isActive', 'sortOrder'];
+const PATCH_KEYS = [...CREATE_KEYS, 'sortOrder'];
 const rejectUnknownKeys = (b: Record<string, unknown>, allowed: string[]) => {
   const unknown = Object.keys(b).find((k) => !allowed.includes(k));
   if (unknown) throw bad(unknown.slice(0, 40), `Unknown field '${unknown.slice(0, 40)}'. You can send: ${allowed.join(', ')}.`);

@@ -454,3 +454,8 @@ A: 00/01/02/03/04/16/18. B: 05/06/07/08/09/10/11/12. C: 13/14/15/20/22. D: 17/19
 Source release: **`477d86743fb1accffffcc7ee99c5d4f1a7802821`**, retaining `fe8b9be`. Reviewable continuation commits separate backend support delivery, admin operations, mobile 1.16, and recovery/capture tooling. Full local results: backend **1238**, admin **859**, customer **480**, vendor **538**, delivery **418**, all zero failures. Capture-only Flutter skips (4/1/1) were separately enabled and passed with zero skips. Three Flutter analyses and the admin build passed. Fresh backup/restore preserved all **27** migration checksums and business/support outbox data.
 
 The all-26-task matrix above is the current acceptance record. Exact commands, logs and distinctions between mocks, real local services and physical/hosted checks are in [06_FULL_TEST_RESULTS.md](06_FULL_TEST_RESULTS.md). APK source/version/signature/checksums/download verification and CI links are in [10_FINAL_HANDOVER.md](10_FINAL_HANDOVER.md). Remaining external requirements are in [09_REMAINING_EXTERNAL_BLOCKERS.md](09_REMAINING_EXTERNAL_BLOCKERS.md). Production deployment, authentication cutover, live financial actions and paid resources remain explicitly gated.
+
+
+## Subsequent admin workflow follow-up
+
+The eight-task follow-up is tracked separately in [Docs/admin-workflow-fixes/00_TRACKER.md](../admin-workflow-fixes/00_TRACKER.md). Earlier test/APK evidence remains historical to its recorded source. New source must pass its own release gates; current local sandbox/provider limitations do not certify a new production release. No personal account is used.

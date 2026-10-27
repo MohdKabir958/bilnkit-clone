@@ -56,7 +56,7 @@ export async function marketplaceOverview(cityId:string|undefined,rawDays:unknow
     const [approvedStores,openStores,pendingStores,pendingRiders,riderGroups,urgentOrders]=await Promise.all([
       tx.vendor.count({where:{...vendorScope,approvalStatus:'APPROVED'}}),
       tx.vendor.count({where:{...vendorScope,approvalStatus:'APPROVED',isAcceptingOrders:true}}),
-      tx.vendor.count({where:{...vendorScope,approvalStatus:'PENDING'}}),
+      tx.vendor.count({where:{...vendorScope,approvalStatus:'PENDING',userId:{not:null}}}),
       tx.driverPartner.count({where:{...riderScope,approvalStatus:'PENDING'}}),
       tx.driverPartner.groupBy({by:['dutyStatus'],where:{...riderScope,approvalStatus:'APPROVED'},_count:{_all:true}}),
       tx.order.count({where:{createdAt:{gte:from,lte:to},...(cityId?{vendor:{cityId}}:{}),OR:[{otpLocked:true},{refundStatus:'FAILED'}]}})

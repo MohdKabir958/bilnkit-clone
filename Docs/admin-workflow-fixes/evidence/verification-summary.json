@@ -1,0 +1,56 @@
+{
+  "admin": {
+    "total": 886,
+    "passed": 886,
+    "failed": 0,
+    "skipped": 0,
+    "files": 67,
+    "success": true,
+    "command": "node node_modules/vitest/vitest.mjs run --pool=threads --poolOptions.threads.singleThread --reporter=default --reporter=json --outputFile=../../Docs/admin-workflow-fixes/evidence/admin-full-final.json",
+    "reportedDurationSeconds": 25.62,
+    "exitCode": 0
+  },
+  "backendFocused": {
+    "total": 26,
+    "passed": 26,
+    "failed": 0,
+    "skipped": 0,
+    "success": true,
+    "exitCode": 0,
+    "notFullRegression": true
+  },
+  "backendFull": {
+    "status": "BLOCKED",
+    "reason": "Local PostgreSQL networking and Prisma child-process sandbox restrictions; escalation aborted/declined. No hosted database was touched."
+  },
+  "flutterAnalysis": {
+    "customer": "PASS",
+    "vendor": "PASS",
+    "driver": "PASS"
+  },
+  "flutterTests": {
+    "status": "BLOCKED",
+    "reason": "Flutter tester cannot bind its local server socket (EPERM)."
+  },
+  "apk": {
+    "status": "BLOCKED",
+    "attempted": "customer 1.16.1+25 arm64 profile",
+    "reason": "Gradle FileLockContentionHandler cannot determine a usable wildcard IP; failure before compilation. Existing APKs are historical and have not been republished as new."
+  },
+  "screenshots": {
+    "status": "BLOCKED",
+    "reason": "Chromium setsockopt Operation not permitted; exited 133 before rendering. New captures/PDF not produced."
+  },
+  "hostedAcceptance": {
+    "status": "NOT_RUN",
+    "reason": "No approved isolated staging deployment, synthetic provider identities or deployment-control credentials supplied."
+  },
+  "personalAccountsUsed": false,
+  "environment": {
+    "node": "v24.19.0",
+    "flutter": "3.44.9",
+    "dart": "3.12.2",
+    "platform": "Linux x86_64",
+    "database": "Local disposable _test prerequisites only; no production database access"
+  }
+}

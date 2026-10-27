@@ -1,5 +1,5 @@
 import { clerkAuthEnabled } from '../services/api';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { Bike, Check, ClipboardCheck, Copy, KeyRound, Loader2, MapPin, Phone, RefreshCw, Store, X } from 'lucide-react';
 import { Application, ApplicationCounts, ApprovalStatus, PartnerKind } from '../types';
 import type { SavedPin } from '../lib/vendorLocation';
@@ -18,6 +18,7 @@ import { SkeletonCard } from './ui/Skeleton';
 import { useToast } from './ui/Toast';
 
 interface Props {
+  cityId?:string;
   /** Bumped by the app when a new application arrives over the socket, so the list reloads. */
   refreshKey: number;
   query?: string;
@@ -56,7 +57,7 @@ type Dialog =
   | { type: 'password'; app: Application }
   | null;
 
-export const ApplicationsPanel: React.FC<Props> = ({ refreshKey, query = '', onChanged, onAuthError, onLocationSaved }) => {
+export const ApplicationsPanel: React.FC<Props> = ({ refreshKey, query = '', onChanged, onAuthError, onLocationSaved,cityId='' }) => {
   const toast = useToast();
   const [status, setStatus] = useState<StatusFilter>('PENDING');
   const [kind, setKind] = useState<KindFilter>('ALL');
@@ -67,21 +68,25 @@ export const ApplicationsPanel: React.FC<Props> = ({ refreshKey, query = '', onC
   const [busyId, setBusyId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<Dialog>(null);
 
+  const generation=useRef(0);
   const load = useCallback(async () => {
+    const seq=++generation.current;
     setError('');
     try {
-      const result = await apiService.fetchApplications(status, kind === 'ALL' ? undefined : kind);
+      const result = await (cityId?apiService.fetchApplications(status, kind === 'ALL' ? undefined : kind,cityId):apiService.fetchApplications(status, kind === 'ALL' ? undefined : kind));
+      if(seq!==generation.current)return;
       setItems(result.data);
       setCounts(result.counts);
     } catch (e) {
+      if(seq!==generation.current)return;
       onAuthError(e);
       setError(e instanceof Error ? e.message : 'Applications could not be loaded.');
     } finally {
-      setLoading(false);
+      if(seq===generation.current)setLoading(false);
     }
-  }, [status, kind, onAuthError]);
+  }, [status, kind, onAuthError,cityId]);
 
-  useEffect(() => { setLoading(true); load(); }, [load, refreshKey]);
+  useEffect(() => { setItems([]);setDialog(null);setLoading(true); void load();return()=>{generation.current++;}; }, [load, refreshKey]);
 
   const decide = async (app: Application, next: ApprovalStatus, reason?: string) => {
     setBusyId(app.id);

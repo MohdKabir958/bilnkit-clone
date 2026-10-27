@@ -723,5 +723,10 @@
     "file": "backend/src/services/orderAdjustments.ts",
     "value": "STUDENT",
     "reason": "Existing internal Prisma Role.STUDENT value used only for server authorization/ownership; customer-facing role name remains Customer. Preserve historical IDs and API compatibility."
+  },
+  {
+    "file": "backend/src/services/riderOnboarding.ts",
+    "value": "STUDENT",
+    "reason": "Preserved PostgreSQL/API customer role enum used for business authorization; never displayed to the user."
   }
 ]

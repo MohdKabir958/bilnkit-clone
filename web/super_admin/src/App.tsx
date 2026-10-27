@@ -627,7 +627,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
   const changeCity=(value:string)=>{setOnboardingStoreId('');olderLoadedRef.current=false;setHasMoreOrders(false);setOrders([]);setSelectedCity(value);};
   const workspaceVendors=useMemo(()=>selectedCity?vendors.filter(v=>v.cityId===selectedCity):vendors,[vendors,selectedCity]);
   const workspaceOrders=useMemo(()=>selectedCity?orders.filter(o=>o.cityId===selectedCity||workspaceVendors.some(v=>v.id===o.vendorId)):orders,[orders,workspaceVendors,selectedCity]);
-  const workspaceDrivers=useMemo(()=>driverPartners.filter(d=>(!selectedCity||d.cityId===selectedCity)&&(!overviewScope?.dutyStatus||d.dutyStatus===overviewScope.dutyStatus)),[driverPartners,selectedCity,overviewScope]);
+  const workspaceDrivers=useMemo(()=>driverPartners.filter(d=>(!selectedCity||d.cityId===selectedCity)&&(!overviewScope?.dutyStatus||d.dutyStatus===overviewScope.dutyStatus)&&(!overviewScope?.onDuty||d.dutyStatus!=='OFFLINE')&&(!overviewScope?.approvalStatus||d.approvalStatus===overviewScope.approvalStatus)),[driverPartners,selectedCity,overviewScope]);
   const drillOverview=(tab:TabType,scope:OverviewScope)=>{handleSelectTab(tab);setOverviewScope(scope);};
   const navigateTask=(tab:TabType,create=false)=>{handleSelectTab(tab);if(create)setCreateVendorRequest(n=>n+1);};
   const clearQuery = useCallback(() => setSearchQuery(''), []);
@@ -700,7 +700,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
         <main id="main" tabIndex={-1} className="min-w-0 flex-1 p-4 pb-10 outline-none sm:p-6 sm:pb-12">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-k-md border border-kraveo-line bg-kraveo-surface px-4 py-3">
             <div className="flex min-w-0 flex-wrap items-center gap-3"><label className="text-xs font-semibold text-kraveo-ink2" htmlFor="workspace-city">Workspace city</label><select id="workspace-city" className="k-input !min-h-[38px] !w-auto max-w-full !py-1 text-sm" value={selectedCity} onChange={e=>changeCity(e.target.value)}><option value="">All cities</option>{cities.map(c=><option key={c.id} value={c.id}>{c.name}, {c.state}{c.active?'':' · paused'}</option>)}</select>{cityError&&<button className="text-xs underline" onClick={()=>void reloadCities()}>Retry cities</button>}</div>
-            <p className="text-xs text-kraveo-ink3">{['finance','settings','team','customers','applications','catalog','categories','analytics'].includes(activeTab)?'This page applies across the platform':selectedCity?'Orders and vendors shown for the selected city':'Showing your complete network'}</p>
+            <p className="text-xs text-kraveo-ink3">{['finance','settings','team','customers','catalog','categories','analytics'].includes(activeTab)?'This page applies across the platform':selectedCity?'Orders and vendors shown for the selected city':'Showing your complete network'}</p>
           </div>
           <div key={activeTab} className="animate-fade-up">
             {activeTab === 'map' && <LiveCommandCenter drivers={selectedCity?drivers.filter(d=>workspaceDrivers.some(r=>r.id===d.id)):drivers} orders={workspaceOrders} driverPartners={workspaceDrivers} vendors={workspaceVendors} onReassignDriver={handleReassignDriver} onOpenOrder={openOrder} loading={isLoading} query={searchQuery} />}
@@ -724,7 +724,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
                 onClearQuery={clearQuery}
               />
             )}
-            {activeTab === 'applications' && <ApplicationsPanel refreshKey={applicationsKey} query={searchQuery} onChanged={fetchBackendData} onAuthError={handleSessionError} onLocationSaved={handleVendorLocationSaved} />}
+            {activeTab === 'applications' && <ApplicationsPanel cityId={selectedCity} refreshKey={applicationsKey} query={searchQuery} onChanged={fetchBackendData} onAuthError={handleSessionError} onLocationSaved={handleVendorLocationSaved} />}
             {activeTab === 'vendors' && <VendorManager initialApprovalStatus={overviewScope?.approvalStatus} onOpenProducts={id=>{setOnboardingStoreId(id);handleSelectTab('inventory');}} onOpenCategories={()=>handleSelectTab('categories')} vendors={workspaceVendors} selectedCityId={selectedCity} createRequested={createVendorRequest} onOpenCoverage={()=>handleSelectTab('coverage')} orders={orders} busyVendorIds={busyVendorIds} onToggleVendor={handleToggleVendor} onLocationSaved={handleVendorLocationSaved} onCommissionSaved={handleVendorCommissionSaved} onProfileSaved={handleVendorProfileSaved} onAuthError={handleSessionError} onCreated={fetchBackendData} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} />}
             {activeTab === 'drivers' && <DriverManager selectedCityId={selectedCity} onOpenCoverage={()=>handleSelectTab('coverage')} onOpenApplications={()=>handleSelectTab('applications')} onAuthError={handleSessionError} drivers={workspaceDrivers} orders={orders} now={now} onCreated={fetchBackendData} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} />}
             {activeTab === 'customers' && <CustomersPanel query={searchQuery} onClearQuery={clearQuery} onAuthError={handleSessionError} />}

@@ -1,0 +1,753 @@
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/CategoriesPanel.test.tsx (32 tests) 2861ms
+ ✓ src/components/EditRestaurantDrawer.test.tsx (28 tests) 1643ms
+ ❯ src/components/DashboardFixes.test.tsx (14 tests | 1 failed) 359ms
+   × WEB-01 / WEB-18 VendorManager > the compact detail control is disabled during a server write and prevents duplicate mutations 27ms
+     → Cannot read properties of undefined (reading 'click')
+ ❯ src/components/FinanceWiring.test.tsx (10 tests | 4 failed) 419ms
+   × Restaurants: payout details > an approved restaurant has a closed "Payout details" section; nothing is fetched until it is opened 27ms
+     → Cannot read properties of null (reading 'click')
+   × Restaurants: payout details > a store that is not approved cannot open payout details 19ms
+     → Cannot read properties of null (reading 'disabled')
+   × Restaurants: payout details > a restaurant without an owner login says so 20ms
+     → Cannot read properties of null (reading 'click')
+   × Restaurants: payout details > edit, verify and reveal work from the restaurant card, and the full number is gone after closing 20ms
+     → Cannot read properties of null (reading 'click')
+ ✓ src/components/AdminWorkspace.test.tsx (11 tests) 1041ms
+   ✓ creates a vendor with city and confirmed coordinates, then shows closed-store instructions 355ms
+ ✓ src/CategoriesWiring.test.tsx (4 tests) 740ms
+   ✓ Categories tab > the sidebar has a Categories entry that opens the panel with the title from the header 317ms
+stderr | src/AppWorkspace.test.tsx > overview Add vendor opens a creation form, while later vendor navigation opens the list
+Warning: An update to VendorManager inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at VendorManager (/workspace/bilnkit-clone/web/super_admin/src/components/VendorManager.tsx:36:26)
+    at div
+    at main
+    at div
+    at div
+    at App (/workspace/bilnkit-clone/web/super_admin/src/App.tsx:84:16)
+    at ToastProvider (/workspace/bilnkit-clone/web/super_admin/src/components/ui/Toast.tsx:19:26)
+Warning: An update to VendorManager inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at VendorManager (/workspace/bilnkit-clone/web/super_admin/src/components/VendorManager.tsx:36:26)
+    at div
+    at main
+    at div
+    at div
+    at App (/workspace/bilnkit-clone/web/super_admin/src/App.tsx:84:16)
+    at ToastProvider (/workspace/bilnkit-clone/web/super_admin/src/components/ui/Toast.tsx:19:26)
+
+ ❯ src/AppWorkspace.test.tsx (4 tests | 1 failed) 1554ms
+   × new vendor completion navigates to inventory scoped to the created store 1150ms
+     → Found multiple elements with the role "option" and name "Grocery stores"
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<option[39m
+  [33mvalue[39m=[32m"groceries"[39m
+[36m>[39m
+  [0mGrocery stores[0m
+[36m</option>[39m
+
+Ignored nodes: comments, script, style
+[36m<option[39m
+  [33mvalue[39m=[32m"groceries"[39m
+[36m>[39m
+  [0mGrocery stores[0m
+[36m</option>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m"overflow: hidden;"[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-h-screen bg-kraveo-night text-kraveo-ink lg:flex"[39m
+    [36m>[39m
+      [36m<a[39m
+        [33mclass[39m=[32m"sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[90] focus:rounded-k-sm focus:bg-kraveo-g400 focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-kraveo-g950"[39m
+        [33mhref[39m=[32m"#main"[39m
+      [36m>[39m
+        [0mSkip to content[0m
+      [36m</a>[39m
+      [36m<aside[39m
+        [33maria-label[39m=[32m"Sidebar"[39m
+        [33mclass[39m=[32m"sticky top-0 hidden h-screen shrink-0 flex-col border-r border-kraveo-line bg-kraveo-surface transition-[width] duration-base ease-emphasized lg:flex w-64"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex h-[72px] items-center border-b border-kraveo-line px-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex min-w-0 items-center gap-3"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-label[39m=[32m"Grozo"[39m
+              [33mclass[39m=[32m"inline-flex shrink-0 items-center justify-center rounded-k-md bg-kraveo-cream text-kraveo-g800 shadow-k-soft "[39m
+              [33mrole[39m=[32m"img"[39m
+              [33mstyle[39m=[32m"width: 44px; height: 44px;"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m""[39m
+                [33mclass[39m=[32m"h-full w-full rounded-k-md object-contain"[39m
+                [33msrc[39m=[32m"/brand/grozo-icon.png"[39m
+              [36m/>[39m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"min-w-0"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"truncate font-display text-base font-extrabold leading-tight tracking-tight text-kraveo-ink"[39m
+              [36m>[39m
+                [0mGrozo[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"truncate text-xs font-semibold text-kraveo-ink3"[39m
+              [36m>[39m
+                [0mMarketplace workspace[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"Primary"[39m
+          [33mclass[39m=[32m"flex min-h-0 flex-1 flex-col px-3 py-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-h-0 flex-1 space-y-1 overflow-y-auto"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"k-label px-3 pb-1 pt-4"[39m
+            [36m>[39m
+              [0mDaily workspace[0m
+            [36m</p>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Overview"[39m
+              [33mclass[39m=[32m"k-reveal group relative flex min-h-[40px] w-full items-center gap-3 rounded-k-sm px-3 py-2 text-left text-sm font-semibold transition-all duration-fast ease-emphasized  text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink"[39m
+              [33mstyle[39m=[32m"--i: 0;"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-clipboard-check h-5 w-5 shrink-0 transition-transform duration-base ease-spring group-hover:scale-105"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"4"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mry[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"8"[39m
+                  [33mx[39m=[32m"8"[39m
+                  [33my[39m=[32m"2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m9 14 2 2 4-4"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"min-w-0 flex-1 truncate"[39m
+              [36m>[39m
+                [0mOverview[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Orders"[39m
+              [33mclass[39m=[32m"k-reveal group relative flex min-h-[40px] w-full items-center gap-3 rounded-k-sm px-3 py-2 text-left text-sm font-semibold transition-all duration-fast ease-emphasized  text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink"[39m
+              [33mstyle[39m=[32m"--i: 1;"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-shopping-bag h-5 w-5 shrink-0 transition-transform duration-base ease-spring group-hover:scale-105"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M3 6h18"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M16 10a4 4 0 0 1-8 0"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"min-w-0 flex-1 truncate"[39m
+              [36m>[39m
+                [0mOrders[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33maria-label[39m=[32m"Vendors"[39m
+              [33mclass[39m=[32m"k-revea...
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m"overflow: hidden;"[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-h-screen bg-kraveo-night text-kraveo-ink lg:flex"[39m
+    [36m>[39m
+      [36m<a[39m
+        [33mclass[39m=[32m"sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[90] focus:rounded-k-sm focus:bg-kraveo-g400 focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-kraveo-g950"[39m
+        [33mhref[39m=[32m"#main"[39m
+      [36m>[39m
+        [0mSkip to content[0m
+      [36m</a>[39m
+      [36m<aside[39m
+        [33maria-label[39m=[32m"Sidebar"[39m
+        [33mclass[39m=[32m"sticky top-0 hidden h-screen shrink-0 flex-col border-r border-kraveo-line bg-kraveo-surface transition-[width] duration-base ease-emphasized lg:flex w-64"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex h-[72px] items-center border-b border-kraveo-line px-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex min-w-0 items-center gap-3"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-label[39m=[32m"Grozo"[39m
+              [33mclass[39m=[32m"inline-flex shrink-0 items-center justify-center rounded-k-md bg-kraveo-cream text-kraveo-g800 shadow-k-soft "[39m
+              [33mrole[39m=[32m"img"[39m
+              [33mstyle[39m=[32m"width: 44px; height: 44px;"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m""[39m
+                [33mclass[39m=[32m"h-full w-full rounded-k-md object-contain"[39m
+                [33msrc[39m=[32m"/brand/grozo-icon.png"[39m
+              [36m/>[39m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"min-w-0"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"truncate font-display text-base font-extrabold leading-tight tracking-tight text-kraveo-ink"[39m
+              [36m>[39m
+                [0mGrozo[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"truncate text-xs font-semibold text-kraveo-ink3"[39m
+              [36m>[39m
+                [0mMarketplace workspace[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"Primary"[39m
+          [33mclass[39m=[32m"flex min-h-0 flex-1 flex-col px-3 py-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-h-0 flex-1 space-y-1 overflow-y-auto"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"k-label px-3 pb-1 pt-4"[39m
+            [36m>[39m
+              [0mDaily workspace[0m
+            [36m</p>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Overview"[39m
+              [33mclass[39m=[32m"k-reveal group relative flex min-h-[40px] w-full items-center gap-3 rounded-k-sm px-3 py-2 text-left text-sm font-semibold transition-all duration-fast ease-emphasized  text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink"[39m
+              [33mstyle[39m=[32m"--i: 0;"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-clipboard-check h-5 w-5 shrink-0 transition-transform duration-base ease-spring group-hover:scale-105"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"4"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mry[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"8"[39m
+                  [33mx[39m=[32m"8"[39m
+                  [33my[39m=[32m"2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m9 14 2 2 4-4"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"min-w-0 flex-1 truncate"[39m
+              [36m>[39m
+                [0mOverview[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Orders"[39m
+              [33mclass[39m=[32m"k-reveal group relative flex min-h-[40px] w-full items-center gap-3 rounded-k-sm px-3 py-2 text-left text-sm font-semibold transition-all duration-fast ease-emphasized  text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink"[39m
+              [33mstyle[39m=[32m"--i: 1;"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-shopping-bag h-5 w-5 shrink-0 transition-transform duration-base ease-spring group-hover:scale-105"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M3 6h18"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M16 10a4 4 0 0 1-8 0"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"min-w-0 flex-1 truncate"[39m
+              [36m>[39m
+                [0mOrders[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33maria-label[39m=[32m"Vendors"[39m
+              [33mclass[39m=[32m"k-revea...
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/AppWorkspace.test.tsx > new vendor completion navigates to inventory scoped to the created store
+TestingLibraryElementError: Found multiple elements with the role "option" and name "Grocery stores"
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<option[39m
+  [33mvalue[39m=[32m"groceries"[39m
+[36m>[39m
+  [0mGrocery stores[0m
+[36m</option>[39m
+
+Ignored nodes: comments, script, style
+[36m<option[39m
+  [33mvalue[39m=[32m"groceries"[39m
+[36m>[39m
+  [0mGrocery stores[0m
+[36m</option>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m"overflow: hidden;"[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-h-screen bg-kraveo-night text-kraveo-ink lg:flex"[39m
+    [36m>[39m
+      [36m<a[39m
+        [33mclass[39m=[32m"sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[90] focus:rounded-k-sm focus:bg-kraveo-g400 focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-kraveo-g950"[39m
+        [33mhref[39m=[32m"#main"[39m
+      [36m>[39m
+        [0mSkip to content[0m
+      [36m</a>[39m
+      [36m<aside[39m
+        [33maria-label[39m=[32m"Sidebar"[39m
+        [33mclass[39m=[32m"sticky top-0 hidden h-screen shrink-0 flex-col border-r border-kraveo-line bg-kraveo-surface transition-[width] duration-base ease-emphasized lg:flex w-64"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex h-[72px] items-center border-b border-kraveo-line px-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex min-w-0 items-center gap-3"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-label[39m=[32m"Grozo"[39m
+              [33mclass[39m=[32m"inline-flex shrink-0 items-center justify-center rounded-k-md bg-kraveo-cream text-kraveo-g800 shadow-k-soft "[39m
+              [33mrole[39m=[32m"img"[39m
+              [33mstyle[39m=[32m"width: 44px; height: 44px;"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m""[39m
+                [33mclass[39m=[32m"h-full w-full rounded-k-md object-contain"[39m
+                [33msrc[39m=[32m"/brand/grozo-icon.png"[39m
+              [36m/>[39m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"min-w-0"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"truncate font-display text-base font-extrabold leading-tight tracking-tight text-kraveo-ink"[39m
+              [36m>[39m
+                [0mGrozo[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"truncate text-xs font-semibold text-kraveo-ink3"[39m
+              [36m>[39m
+                [0mMarketplace workspace[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"Primary"[39m
+          [33mclass[39m=[32m"flex min-h-0 flex-1 flex-col px-3 py-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-h-0 flex-1 space-y-1 overflow-y-auto"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"k-label px-3 pb-1 pt-4"[39m
+            [36m>[39m
+              [0mDaily workspace[0m
+            [36m</p>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Overview"[39m
+              [33mclass[39m=[32m"k-reveal group relative flex min-h-[40px] w-full items-center gap-3 rounded-k-sm px-3 py-2 text-left text-sm font-semibold transition-all duration-fast ease-emphasized  text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink"[39m
+              [33mstyle[39m=[32m"--i: 0;"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-clipboard-check h-5 w-5 shrink-0 transition-transform duration-base ease-spring group-hover:scale-105"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"4"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mry[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"8"[39m
+                  [33mx[39m=[32m"8"[39m
+                  [33my[39m=[32m"2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m9 14 2 2 4-4"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"min-w-0 flex-1 truncate"[39m
+              [36m>[39m
+                [0mOverview[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Orders"[39m
+              [33mclass[39m=[32m"k-reveal group relative flex min-h-[40px] w-full items-center gap-3 rounded-k-sm px-3 py-2 text-left text-sm font-semibold transition-all duration-fast ease-emphasized  text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink"[39m
+              [33mstyle[39m=[32m"--i: 1;"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-shopping-bag h-5 w-5 shrink-0 transition-transform duration-base ease-spring group-hover:scale-105"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M3 6h18"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M16 10a4 4 0 0 1-8 0"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"min-w-0 flex-1 truncate"[39m
+              [36m>[39m
+                [0mOrders[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33maria-label[39m=[32m"Vendors"[39m
+              [33mclass[39m=[32m"k-revea...
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m"overflow: hidden;"[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"min-h-screen bg-kraveo-night text-kraveo-ink lg:flex"[39m
+    [36m>[39m
+      [36m<a[39m
+        [33mclass[39m=[32m"sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[90] focus:rounded-k-sm focus:bg-kraveo-g400 focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-kraveo-g950"[39m
+        [33mhref[39m=[32m"#main"[39m
+      [36m>[39m
+        [0mSkip to content[0m
+      [36m</a>[39m
+      [36m<aside[39m
+        [33maria-label[39m=[32m"Sidebar"[39m
+        [33mclass[39m=[32m"sticky top-0 hidden h-screen shrink-0 flex-col border-r border-kraveo-line bg-kraveo-surface transition-[width] duration-base ease-emphasized lg:flex w-64"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex h-[72px] items-center border-b border-kraveo-line px-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex min-w-0 items-center gap-3"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33maria-label[39m=[32m"Grozo"[39m
+              [33mclass[39m=[32m"inline-flex shrink-0 items-center justify-center rounded-k-md bg-kraveo-cream text-kraveo-g800 shadow-k-soft "[39m
+              [33mrole[39m=[32m"img"[39m
+              [33mstyle[39m=[32m"width: 44px; height: 44px;"[39m
+            [36m>[39m
+              [36m<img[39m
+                [33malt[39m=[32m""[39m
+                [33mclass[39m=[32m"h-full w-full rounded-k-md object-contain"[39m
+                [33msrc[39m=[32m"/brand/grozo-icon.png"[39m
+              [36m/>[39m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"min-w-0"[39m
+            [36m>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"truncate font-display text-base font-extrabold leading-tight tracking-tight text-kraveo-ink"[39m
+              [36m>[39m
+                [0mGrozo[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"truncate text-xs font-semibold text-kraveo-ink3"[39m
+              [36m>[39m
+                [0mMarketplace workspace[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"Primary"[39m
+          [33mclass[39m=[32m"flex min-h-0 flex-1 flex-col px-3 py-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-h-0 flex-1 space-y-1 overflow-y-auto"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"k-label px-3 pb-1 pt-4"[39m
+            [36m>[39m
+              [0mDaily workspace[0m
+            [36m</p>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Overview"[39m
+              [33mclass[39m=[32m"k-reveal group relative flex min-h-[40px] w-full items-center gap-3 rounded-k-sm px-3 py-2 text-left text-sm font-semibold transition-all duration-fast ease-emphasized  text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink"[39m
+              [33mstyle[39m=[32m"--i: 0;"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-clipboard-check h-5 w-5 shrink-0 transition-transform duration-base ease-spring group-hover:scale-105"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"4"[39m
+                  [33mrx[39m=[32m"1"[39m
+                  [33mry[39m=[32m"1"[39m
+                  [33mwidth[39m=[32m"8"[39m
+                  [33mx[39m=[32m"8"[39m
+                  [33my[39m=[32m"2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m9 14 2 2 4-4"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"min-w-0 flex-1 truncate"[39m
+              [36m>[39m
+                [0mOverview[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-label[39m=[32m"Orders"[39m
+              [33mclass[39m=[32m"k-reveal group relative flex min-h-[40px] w-full items-center gap-3 rounded-k-sm px-3 py-2 text-left text-sm font-semibold transition-all duration-fast ease-emphasized  text-kraveo-ink2 hover:bg-kraveo-surface2 hover:text-kraveo-ink"[39m
+              [33mstyle[39m=[32m"--i: 1;"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-shopping-bag h-5 w-5 shrink-0 transition-transform duration-base ease-spring group-hover:scale-105"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M3 6h18"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M16 10a4 4 0 0 1-8 0"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"min-w-0 flex-1 truncate"[39m
+              [36m>[39m
+                [0mOrders[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33maria-label[39m=[32m"Vendors"[39m
+              [33mclass[39m=[32m"k-revea...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/AppWorkspace.test.tsx:27:15
+     25|  vi.spyOn(apiService,'inventoryPage').mockResolvedValue({data:[],nextC…
+     26|  mount();fireEvent.click(screen.getByRole('button',{name:'Add vendor'}…
+     27|  await screen.findByRole('option',{name:'Grocery stores'});
+       |               ^
+     28|  const change=(label:string,value:string)=>fireEvent.change(screen.get…
+     29|  change('Store name','New store');change('Primary store category','gro…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/components/DashboardFixes.test.tsx > WEB-01 / WEB-18 VendorManager > the compact detail control is disabled during a server write and prevents duplicate mutations
+TypeError: Cannot read properties of undefined (reading 'click')
+ ❯ src/components/DashboardFixes.test.tsx:34:70
+     32| };
+     33| const flush = () => act(async () => { await new Promise((r) => setTime…
+     34| const click = (el: Element) => act(async () => { (el as HTMLElement).c…
+       |                                                                      ^
+     35| const byText = (selector: string, text: string, scope: ParentNode = do…
+     36|   Array.from(scope.querySelectorAll(selector)).find((el) => el.textCon…
+ ❯ Proxy.act node_modules/react/cjs/react.development.js:2512:16
+ ❯ click src/components/DashboardFixes.test.tsx:34:32
+ ❯ src/components/DashboardFixes.test.tsx:126:99
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/components/FinanceWiring.test.tsx > Restaurants: payout details > an approved restaurant has a closed "Payout details" section; nothing is fetched until it is opened
+TypeError: Cannot read properties of null (reading 'click')
+ ❯ src/test/dom.tsx:27:96
+     25| 
+     26| export const flush = () => act(async () => { await new Promise((resolv…
+     27| export const click = (el: Element | null | undefined) => act(async () …
+       |                                                                                                ^
+     28| 
+     29| /** Sets an input / textarea / select value the way a user typing woul…
+ ❯ Proxy.act node_modules/react/cjs/react.development.js:2512:16
+ ❯ Module.click src/test/dom.tsx:27:58
+ ❯ src/components/FinanceWiring.test.tsx:108:110
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/components/FinanceWiring.test.tsx > Restaurants: payout details > a store that is not approved cannot open payout details
+TypeError: Cannot read properties of null (reading 'disabled')
+ ❯ src/components/FinanceWiring.test.tsx:117:164
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/components/FinanceWiring.test.tsx > Restaurants: payout details > a restaurant without an owner login says so
+TypeError: Cannot read properties of null (reading 'click')
+ ❯ src/test/dom.tsx:27:96
+     25| 
+     26| export const flush = () => act(async () => { await new Promise((resolv…
+     27| export const click = (el: Element | null | undefined) => act(async () …
+       |                                                                                                ^
+     28| 
+     29| /** Sets an input / textarea / select value the way a user typing woul…
+ ❯ Proxy.act node_modules/react/cjs/react.development.js:2512:16
+ ❯ Module.click src/test/dom.tsx:27:58
+ ❯ src/components/FinanceWiring.test.tsx:122:110
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  src/components/FinanceWiring.test.tsx > Restaurants: payout details > edit, verify and reveal work from the restaurant card, and the full number is gone after closing
+TypeError: Cannot read properties of null (reading 'click')
+ ❯ src/test/dom.tsx:27:96
+     25| 
+     26| export const flush = () => act(async () => { await new Promise((resolv…
+     27| export const click = (el: Element | null | undefined) => act(async () …
+       |                                                                                                ^
+     28| 
+     29| /** Sets an input / textarea / select value the way a user typing woul…
+ ❯ Proxy.act node_modules/react/cjs/react.development.js:2512:16
+ ❯ Module.click src/test/dom.tsx:27:58
+ ❯ src/components/FinanceWiring.test.tsx:132:110
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+ Test Files  3 failed | 4 passed (7)
+      Tests  6 failed | 97 passed (103)
+   Start at  01:59:21
+   Duration  19.87s (transform 5.96s, setup 0ms, collect 9.59s, tests 8.62s, environment 972ms, prepare 136ms)
+
