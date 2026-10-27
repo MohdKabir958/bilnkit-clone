@@ -1,11 +1,20 @@
-import {prisma} from '../harness/db';
+import {prisma,cleanTestOrders} from '../harness/db';
 import {createWorld,purgeWorld,createApi,World,Api} from '../harness/journey';
 import {startTestServer,stopTestServer,TestServerInstance} from '../harness/app';
 jest.setTimeout(60000);
 describe('Authorized real marketplace dashboard',()=>{
  let w:World,server:TestServerInstance,api:Api;const tag='overviewcohort',ids:string[]=[];
  beforeAll(async()=>{server=await startTestServer();w=await createWorld(tag,'8',{customers:1,vendors:1,riders:1});api=createApi(server.baseUrl);});
- afterAll(async()=>{await prisma.cashLedgerEvent.deleteMany({where:{collection:{orderId:{in:ids}}}});await prisma.cashCollection.deleteMany({where:{orderId:{in:ids}}});await prisma.payment.deleteMany({where:{orderId:{in:ids}}});await prisma.order.deleteMany({where:{id:{in:ids}}});await purgeWorld(tag);await stopTestServer(server);await prisma.$disconnect();});
+ afterAll(async()=>{
+  try{
+   // Use the guarded disposable-database reset: production cash evidence remains append-only.
+   await cleanTestOrders();
+   await purgeWorld(tag);
+  }finally{
+   await stopTestServer(server);
+   await prisma.$disconnect();
+  }
+ });
  test('returns real zero counts, rejects unauthorized callers and validates bounded ranges',async()=>{
   const city=await prisma.city.create({data:{code:tag+'-empty',name:'Synthetic empty city',state:'Karnataka'}});
   try{const result=await api.raw(tag,'get','/api/v1/admin/dashboard?cityId='+city.id,w.admin.token);expect(result.status).toBe(200);expect(result.body.data).toMatchObject({orders:0,capturedPaise:0,receivedCashPaise:0,pendingCashPaise:0});expect(result.body.data.trend).toHaveLength(7);expect(result.body.data.statuses).toEqual([]);}finally{await prisma.city.delete({where:{id:city.id}});}
