@@ -13,11 +13,11 @@ async function pickup(lat='12.96'){
  render(<CreateStoreDrawer open initialCityId="blr" onClose={()=>{}} onCreated={()=>{}}/>);await screen.findByRole('option',{name:'Grocery stores'});
  fill('Store name','Synthetic local store');fill('Primary store category','groceries');fireEvent.click(screen.getByRole('button',{name:'Next: Pickup'}));
  for(const [label,value] of [['Pickup address','Synthetic confirmed test address'],['Area / locality','Test area'],['PIN code','560002'],['Pickup latitude',lat],['Pickup longitude','77.58']])fill(label,value);
- fireEvent.click(screen.getByRole('button',{name:'Next: Access'}));
+ fireEvent.click(screen.getByRole('button',{name:'Confirm pickup pin'}));fireEvent.click(screen.getByRole('button',{name:'Next: Access'}));
 }
 it('offers only actual covering zones and clears the selection when the pin moves outside',async()=>{
  await pickup();expect(screen.getByRole('option',{name:'Covered area · 3 km'})).toBeTruthy();expect(screen.queryByRole('option',{name:/Too far|Disabled area/})).toBeNull();
- fill('Delivery zone (optional)','central');fireEvent.click(screen.getByRole('button',{name:'Back'}));fill('Pickup latitude','13.5');fireEvent.click(screen.getByRole('button',{name:'Next: Access'}));
+ fill('Delivery zone (optional)','central');fireEvent.click(screen.getByRole('button',{name:'Back'}));fill('Pickup latitude','13.5');fireEvent.click(screen.getByRole('button',{name:'Confirm pickup pin'}));fireEvent.click(screen.getByRole('button',{name:'Next: Access'}));
  expect((screen.getByLabelText('Delivery zone (optional)') as HTMLSelectElement).value).toBe('');expect(screen.queryByRole('option',{name:'Covered area · 3 km'})).toBeNull();
 });
 it('creates a closed draft without inventing a zone when no enabled circle covers the pin',async()=>{
@@ -31,3 +31,5 @@ it('an authoritative stale-zone refusal retains the form, refreshes coverage and
  expect((await screen.findByRole('alert')).textContent).toContain('Coverage changed');expect(screen.queryByText('Store created')).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'Back'}));expect((screen.getByLabelText('Pickup address') as HTMLInputElement).value).toBe('Synthetic confirmed test address');
 });
+
+vi.mock('./PickupPinMap',()=>({default:()=>null}));

@@ -314,8 +314,10 @@ export const apiService = {
   revokeRiderInvitation: (id:string) => request('/api/v1/admin/rider-invitations/'+encodeURIComponent(id),{method:'DELETE'}),
   redeemRiderInvitation: (token:string) => request<{verified:boolean;approvalGranted:false}>('/api/v1/partner/rider-invitations/redeem',{method:'POST',body:JSON.stringify({token})}),
   createRider: (data: {email:string;name:string;phone:string;vehicleType:string;vehicleRegNo:string;emergencyPhone?:string;cityId:string;zoneId:string;approve:boolean}) => request<{id:string}>('/api/v1/admin/riders',{method:'POST',body:JSON.stringify(data)}),
-  createStore: (data: {primaryCategoryId?:string;publicPhone?:string;description?:string;name:string;address:string;cityId:string;pinCode:string;locality:string;lat:number;lng:number;zoneId?:string;ownerEmail?:string}) => request<{id:string}>('/api/v1/admin/stores', {method:'POST',body:JSON.stringify(data)}),
+  createStore: (data: {primaryCategoryId?:string;publicPhone?:string;description?:string;name:string;address:string;cityId:string;pinCode:string;locality:string;lat:number;lng:number;zoneId?:string;ownerEmail?:string;pinConfirmationMethod?:string}) => request<{id:string}>('/api/v1/admin/stores', {method:'POST',body:JSON.stringify(data)}),
 
+  searchPickupLocations: (q:string)=>request<{label:string;lat:number;lng:number;pinCode:string|null}[]>(`/api/v1/maps/search?q=${encodeURIComponent(q)}`),
+  saveConfirmedPickup: async(id:string,lat:number,lng:number,method:string)=>request<SavedPin>(`/api/v1/admin/vendors/${encodeURIComponent(id)}/pickup-pin`,{method:'PUT',body:JSON.stringify({lat,lng,method,confirmed:true})}),
   operations: (cityId: string, days: string) => request<any>(`/api/v1/admin/dashboard?${new URLSearchParams({days,...(cityId?{cityId}:{})})}`),
   dispatchPage: (cityId: string, after='') => requestFull<any>(`/api/v1/admin/dispatch?${new URLSearchParams({limit:'30',...(cityId?{cityId}:{}),...(after?{after}:{})})}`),
   retryDispatch: (id:string) => request(`/api/v1/admin/orders/${encodeURIComponent(id)}/dispatch/retry`,{method:'POST'}),

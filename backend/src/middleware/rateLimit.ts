@@ -96,6 +96,7 @@ export const normalizedPath = (rawPath: string): string => (rawPath || '/').toLo
 
 const MIN = 60_000;
 const RULES: Rule[] = [
+  {name:'MAP_SEARCH',scope:'user',max:30,windowMs:MIN,applies:(r,p)=>r.method==='GET'&&p==='/maps/search',message:'Too many place searches. Wait before trying again.'},
   {name:'RIDER_IDENTITY_CHECK',scope:'user',max:40,windowMs:10*MIN,applies:(r,p)=>r.method==='POST'&&p==='/admin/riders/eligibility',message:'Too many identity checks. Wait before checking another partner.'},
   {name:'RIDER_INVITATION_WRITE',scope:'user',max:20,windowMs:60*MIN,applies:(r,p)=>['POST','DELETE'].includes(r.method)&&p.startsWith('/admin/rider-invitations'),message:'Too many invitation changes. Wait before trying again.'},
   {name:'RIDER_INVITATION_REDEEM',scope:'user',max:10,windowMs:10*MIN,applies:(r,p)=>r.method==='POST'&&p==='/partner/rider-invitations/redeem',message:'Too many invitation attempts. Wait before trying again.'},

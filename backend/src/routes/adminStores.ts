@@ -23,6 +23,7 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
     if (!city?.active) throw new AppError(400,'CITY_REQUIRED','Choose an enabled city.','cityId');
     let category=b.primaryCategoryId?await prisma.category.findUnique({where:{id:text(b.primaryCategoryId,'primaryCategoryId',64)}}):null;
     if(b.primaryCategoryId&&(!category?.isActive||!category.forRestaurants)) throw new AppError(400,'CATEGORY_REQUIRED','Choose an active store category.');
+    if(b.pinConfirmationMethod!==undefined&&!['SEARCH','MAP','MANUAL'].includes(b.pinConfirmationMethod))throw new AppError(400,'BAD_LOCATION','Choose a valid pickup confirmation method.');
     const publicPhone=text(b.publicPhone,'publicPhone',16,false);
     if(publicPhone&&!/^\+?[0-9 ()-]{10,16}$/.test(publicPhone)) throw new AppError(400,'BAD_PHONE','Enter a public business contact number.');
     let ownerSubject: string | undefined;
@@ -53,7 +54,7 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
       if (b.zoneId && (!zone?.active || zone.cityId !== cityId || kmBetween({lat:b.lat,lng:b.lng},{lat:zone.centerLat,lng:zone.centerLng}) > zone.radiusKm)) throw new AppError(400,'ZONE_MISMATCH','Choose an enabled zone in this city that contains the store pickup location.','zoneId');
       const store = await tx.vendor.create({data:{name,address,cityId,pinCode,locality,lat:b.lat,lng:b.lng,userId:ownerId,category:category?.name??'Groceries',primaryCategoryId:category?.id,publicPhone:publicPhone||null,description:text(b.description,'description',600,false)||null,bannerImage:'',isAcceptingOrders:false,approvalStatus:'APPROVED',locationSource:'ADMIN',locationSetAt:new Date(),eta:''}});
       if (zone) await tx.vendorCoverage.create({data:{vendorId:store.id,zoneId:zone.id,active:true}});
-      await tx.adminAuditLog.create({data:{action:'STORE_CREATED',targetType:'VENDOR',targetId:store.id,summary:`Operator ${req.user!.id} created a closed store with confirmed pickup${ownerId?' and a verified partner owner':''}.`}});
+      await tx.adminAuditLog.create({data:{action:'STORE_CREATED',targetType:'VENDOR',targetId:store.id,summary:`Operator ${req.user!.id} created a closed store with confirmed ${b.pinConfirmationMethod??'MANUAL'} pickup${ownerId?' and a verified partner owner':''}.`}});
       return store;
     });
     invalidatePublicCategories();
@@ -114,4 +115,28 @@ adminStoresRouter.post('/v1/admin/riders',requireAuth,requireRole('ADMIN'),async
     req.app.get('io')?.to('admins').emit('partner_application',{kind:'DRIVER',id:row.id});
     res.status(201).json({success:true,data:row});
   }catch(e){fail(res,e,'Rider could not be created');}
+});
+
+// Explicit confirmed-pickup workflow. Historical pin APIs remain compatible; new UI uses this guard.
+adminStoresRouter.put('/v1/admin/vendors/:id/pickup-pin',requireAuth,requireRole('ADMIN'),async(req:AuthenticatedRequest,res)=>{
+ try{
+  const b=req.body??{};
+  if(!/^[A-Za-z0-9_-]{1,64}$/.test(req.params.id)||!indianPoint(b.lat,b.lng))throw new AppError(400,'BAD_LOCATION','Choose a confirmed store entrance in India.');
+  if(b.confirmed!==true||!['SEARCH','MAP','MANUAL'].includes(b.method))throw new AppError(400,'PIN_CONFIRMATION_REQUIRED','Confirm the pickup pin and its selection method.');
+  const row=await prisma.$transaction(async tx=>{
+   await tx.$queryRaw`SELECT id FROM "Vendor" WHERE id=${req.params.id} FOR UPDATE`;
+   const before=await tx.vendor.findUnique({where:{id:req.params.id}});
+   if(!before)throw new AppError(404,'NOT_FOUND','Store not found.');
+   const changed=before.lat!==b.lat||before.lng!==b.lng||!before.locationSource;
+   if(changed&&await tx.order.count({where:{vendorId:before.id,status:{notIn:['DELIVERED','CANCELLED']}}}))throw new AppError(409,'ACTIVE_ORDERS','Finish or cancel current store orders before moving the pickup.');
+   if(changed){
+    await tx.vendor.update({where:{id:before.id},data:{lat:b.lat,lng:b.lng,locationSource:'ADMIN',locationSetAt:new Date(),locationAccuracyM:null,isAcceptingOrders:false}});
+    await tx.vendorCoverage.updateMany({where:{vendorId:before.id,active:true},data:{active:false}});
+    await tx.adminAuditLog.create({data:{action:'VENDOR_PICKUP_CONFIRMED',targetType:'VENDOR',targetId:before.id,summary:`Operator ${req.user!.id} confirmed ${b.method} pickup at ${b.lat}, ${b.lng}. Previous ${before.lat}, ${before.lng}. Store closed and coverage paused pending review.`}});
+   }
+   const updated=await tx.vendor.findUniqueOrThrow({where:{id:before.id},select:{id:true,lat:true,lng:true,locationSource:true,locationSetAt:true,locationAccuracyM:true}});
+   return {...updated,hasLocation:true,coverageReviewRequired:changed};
+  });
+  res.json({success:true,data:row});
+ }catch(e){fail(res,e,'Confirm vendor pickup');}
 });
