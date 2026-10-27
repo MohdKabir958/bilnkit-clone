@@ -1,0 +1,12 @@
+{
+  "apkBuildCommit": "2b376f7f47f10fcbaf79ff14c567fea4374cdcb4",
+  "testedCommit": "b7af9985f79aec85ec29dbd3039b582805fd9481",
+  "equalRuntimePaths": [
+    "apps/customer_app/lib",
+    "apps/customer_app/android",
+    "apps/customer_app/pubspec.yaml",
+    "packages/kraveo_ui/lib"
+  ],
+  "comparisonExitCode": 0,
+  "note": "Later commits fix test scheduling/diagnostics only; the packaged application source is identical."
+}

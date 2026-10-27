@@ -1,0 +1,43 @@
+{
+  "testedCommit": "b7af9985f79aec85ec29dbd3039b582805fd9481",
+  "run": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/40465812093",
+  "allJobs": {
+    "backend": "success",
+    "web (landing)": "success",
+    "flutter (driver)": "success",
+    "web (super_admin)": "success",
+    "flutter (vendor)": "success",
+    "flutter (customer)": "success"
+  },
+  "backend": {
+    "total": 1266,
+    "passed": 1266,
+    "failed": 0,
+    "skipped": 0,
+    "invocations": 1,
+    "exitCode": 0,
+    "ciStepWallSeconds": 361.0,
+    "pricingConcurrencyRepetitions": 10,
+    "environment": "Ephemeral CI PostgreSQL16 with all migrations, Node24.19; no hosted DB"
+  },
+  "clerkHandoff": {
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "hostedAuthenticationVerified": false,
+    "fixtures": "Synthetic native channels and backend responses"
+  },
+  "fullCustomerRegressionAnalysisBundle": "PASS",
+  "sharedAuthenticationUiTests": "PASS",
+  "vendorDeliveryAdminChecks": "PASS",
+  "artifacts": {
+    "admin-b7af9985f79aec85ec29dbd3039b582805fd9481": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/40465812093/artifacts/12716860031",
+    "backend-and-pricing-b7af9985f79aec85ec29dbd3039b582805fd9481": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/40465812093/artifacts/12716841424",
+    "customer-clerk-handoff-b7af9985f79aec85ec29dbd3039b582805fd9481": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/40465812093/artifacts/12716149537"
+  },
+  "apkBuildProof": "customer-apk-build.json",
+  "publicDownloadProof": "download-verification.json",
+  "personalAccountUsed": false,
+  "productionDeploymentOrDatabaseOperations": false,
+  "localTesterApproval": "Review failed from usage limit; local runtime test not executed or bypassed. Tests run on existing authorized CI instead."
+}

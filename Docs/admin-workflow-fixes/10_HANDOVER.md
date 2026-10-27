@@ -11,7 +11,11 @@ Implementation branch: feature/production-readiness. Previous production-readine
 - **Delivery partners:** Invite rider and Review applications are separate. A manual expiring link verifies the intended Clerk identity; it does not send email or grant approval. Add Rider checks verified identity before Review. Unverified identity gives an email-field 409; actual throttling gives 429/Retry-After. Linking/approval remain explicit and new riders start OFFLINE.
 - **Catalog oversight:** Admin normally reviews/moderates and inspects stock. Approved vendors own their everyday products, prices, stock, batches/expiry and hours. Exceptional admin assistance requires a store, reason, confirmation and expiring actor-scoped audit reference.
 
-## Download the three latest APKs
+## Subsequent customer-only correction
+
+[Customer 1.16.2+26 handoff fix and download](../customer-handoff/README.md) supersedes the customer APK below. It explains rejected business-profile/role checks and protects against late account responses. Vendor and Delivery remain at 1.16.1+25. The original matched-set evidence below remains historical and is not relabelled.
+
+## Original three-APK handover (1.16.1+25)
 
 1.16.1+25, ARM64/API 24+, development-signed profile previews; Android split-ABI versionCode **2025**. All three APKs were downloaded from GitHub again: HTTP 200, exact byte counts and SHA-256 matches. Verification, package/signature metadata and build logs are in evidence/apks and evidence/*-apk-build-final.log.
 

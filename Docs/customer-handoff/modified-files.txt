@@ -1,0 +1,14 @@
+Committed hotfix paths since 5566395:
+.github/workflows/baseline.yml
+Docs/customer-handoff/README.md
+Docs/customer-handoff/evidence/customer-analysis.txt
+apps/customer_app/lib/config/app_info.dart
+apps/customer_app/lib/providers/session_provider.dart
+apps/customer_app/lib/screens/auth_screen.dart
+apps/customer_app/lib/services/customer_api_service.dart
+apps/customer_app/pubspec.yaml
+apps/customer_app/test/clerk/customer_handoff.dart
+packages/kraveo_ui/lib/src/auth/clerk_entry.dart
+scripts/qa/report_customer_handoff.py
+
+Final evidence and handover: Docs/customer-handoff/, Docs/admin-workflow-fixes/10_HANDOVER.md, Docs/production-readiness/00_MASTER_TRACKER.md

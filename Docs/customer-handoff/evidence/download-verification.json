@@ -1,0 +1,9 @@
+{
+  "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/e3e150d5cec080ea56c9f1c78a41d0eaa24434d4/clerk-staging/1.16.2-26/Grozo-Customer-Clerk-Test.apk",
+  "httpStatus": 200,
+  "bytes": 53639848,
+  "sha256": "3a353db7356b71a22eaa4db285b9f6d1cf3f61bcdf15e02d1b7cf0bd267f1dbd",
+  "matchesManifest": true,
+  "checkedAtUtc": "2026-10-27T07:17:56.967649+00:00",
+  "artifactCommit": "e3e150d5cec080ea56c9f1c78a41d0eaa24434d4"
+}
