@@ -4,12 +4,14 @@ import {createRoot,Root} from 'react-dom/client';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {apiService} from '../services/api';
 import {OperationsPanel} from './OperationsPanel';
+import {overviewFixture} from '../lib/overviewFixture.testdata';
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT=true;
+(globalThis as any).ResizeObserver=class {observe(){}unobserve(){}disconnect(){}};
 let host:HTMLDivElement,root:Root;const open=vi.fn(),auth=vi.fn();
 const click=async(label:string)=>act(async()=>{[...host.querySelectorAll('button')].find(b=>b.textContent===label)!.click();});
 beforeEach(async()=>{
  vi.spyOn(apiService,'fetchGeography').mockResolvedValue({cities:[{id:'blr',code:'blr',name:'Bengaluru',state:'Karnataka',active:true}],zones:[],coverage:[]});
- vi.spyOn(apiService,'operations').mockResolvedValue({orders:3,storeOrders:4,active:1,delivered:1,cancelled:1,customers:2,activeStores:2,onlineRiders:1,availableProducts:80,openSupportCases:1,grossPaise:65045,refundPaise:15000,commissionPaise:1200});
+ vi.spyOn(apiService,'operations').mockResolvedValue(overviewFixture);
  vi.spyOn(apiService,'dispatchPage').mockResolvedValue({data:[{id:'order-owned',vendor:{name:'Local Store'},status:'ACCEPTED',dispatchRound:2,dispatchNote:'OFFERS_EXHAUSTED',dispatchOffers:[]}],nextCursor:null});
  vi.spyOn(apiService,'supportPage').mockResolvedValue({data:[{id:'case-owned',subject:'Refund request',customer:{name:'Customer'},status:'OPEN',description:'Damaged pack',order:{id:'order-owned',status:'DELIVERED',paymentStatus:'PAID',refundStatus:'NONE'},notes:[]}],nextCursor:null});
  vi.spyOn(apiService,'auditPage').mockResolvedValue({data:[{id:'audit-one',createdAt:new Date().toISOString(),action:'DELIVERY_OFFERED',targetType:'ORDER',summary:'Offered to eligible rider'}],nextCursor:null});
@@ -24,8 +26,8 @@ it('a slow previous city response cannot overwrite the currently selected city m
  const pending=new Map<string,(value:any)=>void>();vi.mocked(apiService.operations).mockImplementation((city)=>new Promise(resolve=>pending.set(city,resolve)));
  await act(async()=>root.render(<OperationsPanel cityId="first-city" onAuthError={auth} onOpenOrder={open}/>));
  await act(async()=>root.render(<OperationsPanel cityId="second-city" onAuthError={auth} onOpenOrder={open}/>));
- await act(async()=>pending.get('second-city')!({orders:22,grossPaise:2200,refundPaise:0,commissionPaise:0}));
+ await act(async()=>pending.get('second-city')!({...overviewFixture,orders:22,capturedPaise:2200}));
  expect(host.textContent).toContain('₹22.00');
- await act(async()=>pending.get('first-city')!({orders:11,grossPaise:1100,refundPaise:0,commissionPaise:0}));
+ await act(async()=>pending.get('first-city')!({...overviewFixture,orders:11,capturedPaise:1100}));
  expect(host.textContent).toContain('₹22.00');expect(host.textContent).not.toContain('₹11.00');
 });

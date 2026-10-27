@@ -237,6 +237,15 @@ orderRouter.get('/orders', requireAuth, async (req: AuthenticatedRequest, res: R
       if (str(req.query.customerId)) f.customerId = str(req.query.customerId);
       if (typeof req.query.status === 'string' && STATUSES.has(req.query.status)) f.status = req.query.status as any;
       if (typeof req.query.paymentStatus === 'string' && ['PENDING', 'PAID', 'FAILED', 'REFUNDED'].includes(req.query.paymentStatus)) f.paymentStatus = req.query.paymentStatus as any;
+      if(req.query.from!==undefined||req.query.to!==undefined){
+        const from=typeof req.query.from==='string'?new Date(req.query.from):new Date(NaN),to=typeof req.query.to==='string'?new Date(req.query.to):new Date(NaN);
+        if(!Number.isFinite(from.getTime())||!Number.isFinite(to.getTime())||from>to||to.getTime()-from.getTime()>90*86400000)return bad(res,'Choose a valid range of at most 90 days.','from');
+        f.createdAt={gte:from,lte:to};
+      }
+      if(req.query.paymentMethod!==undefined){if(!['ONLINE','COD'].includes(String(req.query.paymentMethod)))return bad(res,'Choose online or COD.','paymentMethod');f.paymentMethod=String(req.query.paymentMethod);}
+      for(const key of ['activeOnly','urgentOnly'])if(req.query[key]!==undefined&&!['true','false'].includes(String(req.query[key])))return bad(res,'Use true or false.',key);
+      if(req.query.activeOnly==='true')and.push({status:{notIn:['DELIVERED','CANCELLED']}});
+      if(req.query.urgentOnly==='true')and.push({OR:[{otpLocked:true},{refundStatus:'FAILED'}]});
       and.push(f);
     } else if (user.role === 'STUDENT') {
       and.push({ customerId: user.id });

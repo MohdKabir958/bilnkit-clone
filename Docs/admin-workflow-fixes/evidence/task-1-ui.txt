@@ -1,0 +1,587 @@
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+stderr | src/components/OperationsPanel.test.tsx > renders actual paise metrics, dispatch escalation and audit responses
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+
+stderr | src/components/OperationsPanel.test.tsx > retries through the backend and opens the actual linked order for financial review
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+
+stderr | src/components/OperationsPanel.test.tsx > submits a requester-visible reply and handles authentication errors
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+
+stderr | src/components/OperationsPanel.test.tsx > a slow previous city response cannot overwrite the currently selected city metrics
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+Error: Uncaught [ReferenceError: ResizeObserver is not defined]
+    at reportException (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/workspace/bilnkit-clone/web/super_admin/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at reportUncaughtErrorInDEV (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:22877:5)
+    at captureCommitPhaseError (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27165:5) ReferenceError: ResizeObserver is not defined
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+    at commitHookEffectListMount (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+    at commitPassiveMountOnFiber (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+    at commitPassiveMountEffects_complete (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+    at commitPassiveMountEffects_begin (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+    at commitPassiveMountEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+    at flushPassiveEffectsImpl (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+    at flushPassiveEffects (/workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/react-dom/cjs/react-dom.development.js:26808:9
+    at flushActQueue (/workspace/bilnkit-clone/web/super_admin/node_modules/react/cjs/react.development.js:2667:24)
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+The above error occurred in the <ForwardRef> component:
+
+    at /workspace/bilnkit-clone/web/super_admin/node_modules/recharts/lib/component/ResponsiveContainer.js:31:21
+    at div
+    at section
+    at div
+    at div
+    at OverviewDashboard (/workspace/bilnkit-clone/web/super_admin/src/components/OverviewDashboard.tsx:10:30)
+    at section
+    at OperationsPanel (/workspace/bilnkit-clone/web/super_admin/src/components/OperationsPanel.tsx:17:28)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+
+ ❯ src/components/OperationsPanel.test.tsx (4 tests | 4 failed) 591ms
+   × renders actual paise metrics, dispatch escalation and audit responses 311ms
+     → ResizeObserver is not defined
+   × retries through the backend and opens the actual linked order for financial review 90ms
+     → ResizeObserver is not defined
+   × submits a requester-visible reply and handles authentication errors 75ms
+     → ResizeObserver is not defined
+   × a slow previous city response cannot overwrite the currently selected city metrics 114ms
+     → ResizeObserver is not defined
+ ✓ src/components/OverviewDashboard.test.tsx (3 tests) 285ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/OperationsPanel.test.tsx > renders actual paise metrics, dispatch escalation and audit responses
+ FAIL  src/components/OperationsPanel.test.tsx > retries through the backend and opens the actual linked order for financial review
+ FAIL  src/components/OperationsPanel.test.tsx > submits a requester-visible reply and handles authentication errors
+ FAIL  src/components/OperationsPanel.test.tsx > a slow previous city response cannot overwrite the currently selected city metrics
+ReferenceError: ResizeObserver is not defined
+ ❯ node_modules/recharts/lib/component/ResponsiveContainer.js:101:20
+ ❯ commitHookEffectListMount node_modules/react-dom/cjs/react-dom.development.js:23189:26
+ ❯ commitPassiveMountOnFiber node_modules/react-dom/cjs/react-dom.development.js:24970:11
+ ❯ commitPassiveMountEffects_complete node_modules/react-dom/cjs/react-dom.development.js:24930:9
+ ❯ commitPassiveMountEffects_begin node_modules/react-dom/cjs/react-dom.development.js:24917:7
+ ❯ commitPassiveMountEffects node_modules/react-dom/cjs/react-dom.development.js:24905:3
+ ❯ flushPassiveEffectsImpl node_modules/react-dom/cjs/react-dom.development.js:27078:3
+ ❯ flushPassiveEffects node_modules/react-dom/cjs/react-dom.development.js:27023:14
+ ❯ node_modules/react-dom/cjs/react-dom.development.js:26808:9
+ ❯ flushActQueue node_modules/react/cjs/react.development.js:2667:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  4 failed | 3 passed (7)
+   Start at  01:33:16
+   Duration  2.80s (transform 611ms, setup 0ms, collect 1.10s, tests 877ms, environment 484ms, prepare 114ms)
+

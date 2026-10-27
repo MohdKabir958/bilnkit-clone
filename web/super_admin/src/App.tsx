@@ -1,3 +1,5 @@
+import {OverviewOrders} from './components/OverviewOrders';
+import type {OverviewScope} from './lib/overview';
 import { TeamAccessPanel } from './components/TeamAccessPanel';
 import type { DeliveryCity } from './components/GeographyPanel';
 import { OperationsPanel } from './components/OperationsPanel';
@@ -59,6 +61,8 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
   const [adminProfile, setAdminProfile] = useState<AdminProfile | undefined>(clerkAdmin);
   const [activeTab, setActiveTab] = useState<TabType>('operations');
   const [selectedCity,setSelectedCity]=useState('');
+  const [overviewDays,setOverviewDays]=useState('7');
+  const [overviewScope,setOverviewScope]=useState<OverviewScope|null>(null);
   const [onboardingStoreId,setOnboardingStoreId]=useState('');
   const [cities,setCities]=useState<DeliveryCity[]>([]);
   const [cityError,setCityError]=useState('');
@@ -614,6 +618,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
 
   const handleSelectTab = useCallback((tab: TabType) => {
     setCreateVendorRequest(0);
+    setOverviewScope(null);
     setActiveTab(tab);
     setSearchQuery('');
   }, []);
@@ -622,7 +627,8 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
   const changeCity=(value:string)=>{setOnboardingStoreId('');olderLoadedRef.current=false;setHasMoreOrders(false);setOrders([]);setSelectedCity(value);};
   const workspaceVendors=useMemo(()=>selectedCity?vendors.filter(v=>v.cityId===selectedCity):vendors,[vendors,selectedCity]);
   const workspaceOrders=useMemo(()=>selectedCity?orders.filter(o=>o.cityId===selectedCity||workspaceVendors.some(v=>v.id===o.vendorId)):orders,[orders,workspaceVendors,selectedCity]);
-  const workspaceDrivers=useMemo(()=>selectedCity?driverPartners.filter(d=>d.cityId===selectedCity):driverPartners,[driverPartners,selectedCity]);
+  const workspaceDrivers=useMemo(()=>driverPartners.filter(d=>(!selectedCity||d.cityId===selectedCity)&&(!overviewScope?.dutyStatus||d.dutyStatus===overviewScope.dutyStatus)),[driverPartners,selectedCity,overviewScope]);
+  const drillOverview=(tab:TabType,scope:OverviewScope)=>{handleSelectTab(tab);setOverviewScope(scope);};
   const navigateTask=(tab:TabType,create=false)=>{handleSelectTab(tab);if(create)setCreateVendorRequest(n=>n+1);};
   const clearQuery = useCallback(() => setSearchQuery(''), []);
   const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
@@ -698,7 +704,9 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
           </div>
           <div key={activeTab} className="animate-fade-up">
             {activeTab === 'map' && <LiveCommandCenter drivers={selectedCity?drivers.filter(d=>workspaceDrivers.some(r=>r.id===d.id)):drivers} orders={workspaceOrders} driverPartners={workspaceDrivers} vendors={workspaceVendors} onReassignDriver={handleReassignDriver} onOpenOrder={openOrder} loading={isLoading} query={searchQuery} />}
-            {activeTab === 'orders' && <OrdersTable orders={workspaceOrders} attentionIds={attentionIds} onAdvance={handleStatusChange} onOpenOrder={openOrder} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} now={now} hasMore={hasMoreOrders} loadingOlder={loadingOlder} onLoadOlder={handleLoadOlder} />}
+            {overviewScope&&<div className="k-inset mb-4 flex flex-wrap items-center justify-between gap-3 p-3 text-sm"><p>Overview selection · {new Date(overviewScope.from).toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata'})}–{new Date(overviewScope.to).toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata'})} IST{overviewScope.status?` · ${overviewScope.status.replace(/_/g,' ')}`:''}{overviewScope.paymentMethod?` · ${overviewScope.paymentMethod}`:''}{activeTab!=='orders'?' · current network snapshot; order range retained':''}</p><button className="k-btn-ghost" onClick={()=>setOverviewScope(null)}>Clear overview selection</button></div>}
+            {activeTab === 'orders'&&overviewScope&&<OverviewOrders scope={overviewScope} cityId={selectedCity} onAuthError={handleSessionError} onOpenOrder={openOrder} onAdvance={handleStatusChange} now={now}/>}
+            {activeTab === 'orders' && !overviewScope && <OrdersTable orders={workspaceOrders} attentionIds={attentionIds} onAdvance={handleStatusChange} onOpenOrder={openOrder} loading={isLoading} query={searchQuery} onClearQuery={clearQuery} now={now} hasMore={hasMoreOrders} loadingOlder={loadingOlder} onLoadOlder={handleLoadOlder} />}
             {activeTab === 'attention' && (
               <NeedsAttentionPanel
                 entries={attentionEntries}
@@ -724,7 +732,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
             {activeTab === 'catalog' && <CatalogPanel vendors={vendors} query={searchQuery} onClearQuery={clearQuery} onAuthError={handleSessionError} pendingCounts={pendingDishes} onPendingChanged={refreshPendingDishes} />}
             {activeTab === 'finance' && <FinancePanel vendors={vendors} driverPartners={driverPartners} pendingSettlements={pendingSettlements} onSettlementsChanged={refreshPendingSettlements} onAuthError={handleSessionError} />}
             {activeTab === 'settings' && <SettingsPanel onAuthError={handleSessionError} />}
-            {activeTab === 'operations' && <OperationsPanel cityId={selectedCity} onCityChange={changeCity} onNavigate={navigateTask} vendorCount={workspaceVendors.length} cityCount={cities.length} onAuthError={handleSessionError} onOpenOrder={openOrder} />}
+            {activeTab === 'operations' && <OperationsPanel initialDays={overviewDays} onDaysChange={setOverviewDays} onDrill={drillOverview} cityId={selectedCity} onCityChange={changeCity} onNavigate={navigateTask} vendorCount={workspaceVendors.length} cityCount={cities.length} onAuthError={handleSessionError} onOpenOrder={openOrder} />}
             {activeTab === 'inventory' && <InventoryPanel initialVendorId={onboardingStoreId} vendors={workspaceVendors} selectedCityId={selectedCity} onAuthError={handleSessionError} />}
             {activeTab === 'coverage' && <GeographyPanel selectedCityId={selectedCity} drivers={driverPartners} vendors={vendors} onChanged={fetchBackendData} onSessionError={handleSessionError} />}
             {activeTab === 'team' && <TeamAccessPanel owner={adminProfile?.adminRole==='OWNER'} onSessionError={handleSessionError} onSelfChanged={()=>{void apiService.validateSession().then(setAdminProfile).catch(handleAuthFailure);}} />}

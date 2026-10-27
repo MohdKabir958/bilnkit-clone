@@ -1,3 +1,4 @@
+import type {OverviewScope} from '../lib/overview';
 /// <reference types="vite/client" />
 import {
   AdminProfile,
@@ -315,7 +316,7 @@ export const apiService = {
   createRider: (data: {email:string;name:string;phone:string;vehicleType:string;vehicleRegNo:string;emergencyPhone?:string;cityId:string;zoneId:string;approve:boolean}) => request<{id:string}>('/api/v1/admin/riders',{method:'POST',body:JSON.stringify(data)}),
   createStore: (data: {primaryCategoryId?:string;publicPhone?:string;description?:string;name:string;address:string;cityId:string;pinCode:string;locality:string;lat:number;lng:number;zoneId?:string;ownerEmail?:string}) => request<{id:string}>('/api/v1/admin/stores', {method:'POST',body:JSON.stringify(data)}),
 
-  operations: (cityId: string, days: string) => request<any>(`/api/v1/admin/operations?${new URLSearchParams({days,...(cityId?{cityId}:{})})}`),
+  operations: (cityId: string, days: string) => request<any>(`/api/v1/admin/dashboard?${new URLSearchParams({days,...(cityId?{cityId}:{})})}`),
   dispatchPage: (cityId: string, after='') => requestFull<any>(`/api/v1/admin/dispatch?${new URLSearchParams({limit:'30',...(cityId?{cityId}:{}),...(after?{after}:{})})}`),
   retryDispatch: (id:string) => request(`/api/v1/admin/orders/${encodeURIComponent(id)}/dispatch/retry`,{method:'POST'}),
   supportPage: (status:string, after='') => requestFull<any>(`/api/v1/admin/support-cases?${new URLSearchParams({limit:'30',...(status?{status}:{}),...(after?{after}:{})})}`),
@@ -364,11 +365,12 @@ export const apiService = {
   },
 
   /** One page of orders, newest first (the server default is 100). `cursor` = the id of the last order already loaded. */
-  async fetchOrderPage(cursor?: string | null, limit?: number, cityId?: string): Promise<{ orders: Order[]; nextCursor: string | null }> {
+  async fetchOrderPage(cursor?: string | null, limit?: number, cityId?: string, scope?:OverviewScope): Promise<{ orders: Order[]; nextCursor: string | null }> {
     const params = new URLSearchParams();
     if (limit) params.set('limit', String(limit));
     if (cursor) params.set('cursor', cursor);
     if(cityId) params.set('cityId',cityId);
+    if(scope)for(const key of ['from','to','status','paymentMethod','vendorId','activeOnly','urgentOnly'] as const){const value=scope[key];if(value!==undefined)params.set(key,String(value));}
     const query = params.toString();
     const body = await requestFull<any>(`/api/orders${query ? `?${query}` : ''}`);
     const data = Array.isArray(body?.data) ? body.data : Array.isArray(body) ? body : [];

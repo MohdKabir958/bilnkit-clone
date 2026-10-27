@@ -1,16 +1,16 @@
+import {OverviewDashboard} from './OverviewDashboard';
+import type {OverviewDrill} from '../lib/overview';
 import { useEffect, useState, useRef } from 'react';
 import { apiService } from '../services/api';
 import type {TabType} from '../types';
-import {Store,MapPinned,Package,ShoppingBag,ArrowUpRight} from 'lucide-react';
 import {OperationsSlaPanel} from './OperationsSlaPanel';
 import {OperationalHealthPanel} from './OperationalHealthPanel';
 import {OperationalExceptionsPanel} from './OperationalExceptionsPanel';
 import type { DeliveryCity } from './GeographyPanel';
-const rupees=(paise:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(paise/100);
 const box='k-panel space-y-3';
 const input='k-input mt-1 block';
-export function OperationsPanel({onAuthError,onOpenOrder,cityId,onCityChange,onNavigate,vendorCount=0,cityCount=0}:{onAuthError:(e:unknown)=>void;onOpenOrder:(id:string)=>void;cityId?:string;onCityChange?:(id:string)=>void;onNavigate?:(tab:TabType,create?:boolean)=>void;vendorCount?:number;cityCount?:number}) {
-  const [cities,setCities]=useState<DeliveryCity[]>([]),[localCity,setLocalCity]=useState(''),[days,setDays]=useState('7');
+export function OperationsPanel({onAuthError,onOpenOrder,cityId,onCityChange,onNavigate,vendorCount=0,cityCount=0,onDrill,initialDays='7',onDaysChange}:{onAuthError:(e:unknown)=>void;onOpenOrder:(id:string)=>void;cityId?:string;onCityChange?:(id:string)=>void;onNavigate?:(tab:TabType,create?:boolean)=>void;vendorCount?:number;cityCount?:number;onDrill?:OverviewDrill;initialDays?:string;onDaysChange?:(value:string)=>void}) {
+  const [cities,setCities]=useState<DeliveryCity[]>([]),[localCity,setLocalCity]=useState(''),[days,setDays]=useState(initialDays);
   const city=cityId??localCity;
   const setCity=(value:string)=>{setLocalCity(value);onCityChange?.(value);};
   const [metrics,setMetrics]=useState<any>(null),[offers,setOffers]=useState<any[]>([]),[cases,setCases]=useState<any[]>([]),[audit,setAudit]=useState<any[]>([]);
@@ -35,22 +35,12 @@ export function OperationsPanel({onAuthError,onOpenOrder,cityId,onCityChange,onN
   useEffect(()=>{void load();},[city,days,status]);
   const action=async(fn:()=>Promise<unknown>)=>{setBusy(true);try{await fn();await load();}catch(e){fail(e);setBusy(false);}};
   const loadMore=async(type:'offers'|'cases'|'audit')=>{setBusy(true);try{const r=type==='offers'?await apiService.dispatchPage(city,next.offers):type==='cases'?await apiService.supportPage(status,next.cases):await apiService.auditPage(next.audit);if(type==='offers')setOffers(v=>[...v,...r.data]);else if(type==='cases')setCases(v=>[...v,...r.data]);else setAudit(v=>[...v,...r.data]);setNext(v=>({...v,[type]:r.nextCursor??''}));}catch(e){fail(e);}finally{setBusy(false);}};
-  return <section className="space-y-6"><header className="flex flex-wrap items-end justify-between gap-4"><div><p className="k-label mb-2">GROZO OPERATIONS</p><h2 className="text-3xl font-bold tracking-tight">Your marketplace overview</h2><p className="mt-2 max-w-2xl text-sm text-kraveo-ink2">Start a task below, or review orders and delivery performance for your selected city.</p></div></header>
-    {onNavigate&&<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{[
-      {title:'Add vendor',hint:'Create a store and confirm pickup',tab:'vendors' as const,create:true,Icon:Store},
-      {title:'View all vendors',hint:`${vendorCount} stores in this workspace`,tab:'vendors' as const,Icon:ShoppingBag},
-      {title:'Manage cities',hint:`${cityCount} configured service cities`,tab:'coverage' as const,Icon:MapPinned},
-      {title:'Products & stock',hint:'Add products, images and inventory',tab:'inventory' as const,Icon:Package}
-    ].map(task=><button key={task.title} className="k-panel group flex items-start gap-3 text-left transition-colors hover:border-kraveo-g400" onClick={()=>onNavigate(task.tab,task.create)}><span className="rounded-k-sm bg-kraveo-g50 p-2.5"><task.Icon className="h-5 w-5 text-kraveo-g700"/></span><span className="min-w-0 flex-1"><span className="block text-sm font-bold">{task.title}</span><span className="mt-1 block text-xs leading-relaxed text-kraveo-ink2">{task.hint}</span></span><ArrowUpRight className="h-4 w-4 text-kraveo-ink3"/></button>)}</div>}
-    {onNavigate&&vendorCount===0&&!busy&&<div className="rounded-k-md border border-kraveo-line bg-kraveo-surface p-5"><h3 className="font-bold">Set up your first service area</h3><p className="mt-2 text-sm text-kraveo-ink2">1. Add a city and zone. 2. Add a vendor. 3. Add products and stock. 4. Open the store when it is ready.</p></div>}
-    <div className="k-panel flex flex-wrap items-end gap-4">{cityId===undefined&&<label className="min-w-[180px] text-xs font-semibold text-kraveo-ink2">City <select className={input} value={city} onChange={e=>setCity(e.target.value)}><option value="">All cities</option>{cities.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>}<label className="min-w-[160px] text-xs font-semibold text-kraveo-ink2">Order period <select className={input} value={days} onChange={e=>setDays(e.target.value)}>{['1','7','30','90'].map(d=><option key={d} value={d}>{d} days</option>)}</select></label><button className="k-btn-primary" disabled={busy} onClick={()=>void load()}>Refresh overview</button></div>
+  return <section className="space-y-6"><header className="flex flex-wrap items-end justify-between gap-4"><div><p className="k-label mb-2">GROZO OPERATIONS</p><h2 className="text-3xl font-bold tracking-tight">Your marketplace overview</h2><p className="mt-2 max-w-2xl text-sm text-kraveo-ink2">Orders, received funds, stores and delivery availability for your selected city.</p></div></header>
+    <div className="k-panel flex flex-wrap items-end gap-4">{cityId===undefined&&<label className="min-w-[180px] text-xs font-semibold text-kraveo-ink2">City <select className={input} value={city} onChange={e=>setCity(e.target.value)}><option value="">All cities</option>{cities.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>}<label className="min-w-[160px] text-xs font-semibold text-kraveo-ink2">Order period <select className={input} value={days} onChange={e=>{setDays(e.target.value);onDaysChange?.(e.target.value);}}>{['1','7','30','90'].map(d=><option key={d} value={d}>{d==='1'?'Today':`${d} days`}</option>)}</select></label><button className="k-btn-primary" disabled={busy} onClick={()=>void load()}>Refresh overview</button></div>
     {error&&<p className="rounded-k-md border border-kraveo-danger/30 bg-kraveo-danger/5 p-4 text-sm text-kraveo-danger" role="alert">{error}</p>}{busy&&<p role="status">Loading…</p>}
-    {metrics && <>
-      <dl className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Object.entries({Orders:metrics.orders,'Active deliveries':metrics.active,'Gross paid sales':rupees(metrics.grossPaise),'Open requests':metrics.openSupportCases}).map(([label,value]) => <div key={label} className="k-stat"><dt className="k-label">{label}</dt><dd className="k-num mt-3 text-3xl">{value == null ? '—' : String(value)}</dd><p className="mt-2 text-xs text-kraveo-ink3">{label === 'Open requests' ? 'Across the platform' : `Orders created in the last ${days} days`}</p></div>)}
-      </dl>
-      <section aria-label="Network and order health" className="k-panel"><div className="mb-4 flex flex-wrap items-center justify-between gap-2"><h2 className="font-bold">Network and order health</h2><span className="text-xs text-kraveo-ink3">Server-reported metrics</span></div><dl className="grid gap-x-6 gap-y-5 sm:grid-cols-3 xl:grid-cols-5">{Object.entries({'Store orders':metrics.storeOrders,Delivered:metrics.delivered,Cancelled:metrics.cancelled,Customers:metrics.customers,'Active stores':metrics.activeStores,'Online riders':metrics.onlineRiders,'Available SKUs':metrics.availableProducts,Refunds:rupees(metrics.refundPaise),'Delivered commission':rupees(metrics.commissionPaise)}).map(([label,value]) => <div key={label}><dt className="text-xs text-kraveo-ink2">{label}</dt><dd className="k-num mt-1 text-xl">{value == null ? '—' : String(value)}</dd></div>)}</dl></section>
-    </>}
+    {metrics?.trend&&<OverviewDashboard data={metrics} onDrill={onDrill}/>}
+    {metrics&&!metrics.trend&&<p role="alert">The backend dashboard version does not match this admin build. Deploy the matching backend before using these figures.</p>}
+    {onNavigate&&<div className="flex flex-wrap gap-2"><button className="k-btn-ghost" onClick={()=>onNavigate('vendors',true)}>Add vendor</button><button className="k-btn-ghost" onClick={()=>onNavigate('coverage')}>Cities & zones</button></div>}
     <OperationsSlaPanel onAuthError={onAuthError}/>
     <OperationalHealthPanel onAuthError={onAuthError}/>
     <OperationalExceptionsPanel cityId={city} onAuthError={onAuthError} onOpenOrder={onOpenOrder} onNavigate={onNavigate}/>

@@ -1,3 +1,4 @@
+import {marketplaceOverview} from '../services/overview';
 import { fulfillmentWhere, fulfillmentAuthorized, requireRiderAt } from '../services/marketplace';
 import { checkVendorProfileText, checkVendorBanner } from '../services/vendorProfile';
 import { Router, Response } from 'express';
@@ -130,3 +131,5 @@ operationsRouter.get('/v1/admin/operations',...admin,wrap(async(r,s)=>{
   const [stores,riders,products,openCases]=await Promise.all([prisma.vendor.count({where:{approvalStatus:'APPROVED',...(cityId?{cityId}:{})}}),prisma.driverPartner.count({where:{approvalStatus:'APPROVED',dutyStatus:{in:['ONLINE','IN_TRANSIT']},...(cityId?{cityId}:{})}}),prisma.menuItem.count({where:{approvalStatus:'APPROVED',deletedAt:null,isAvailable:true,stockQty:{gt:0},...(cityId?{vendor:{cityId}}:{})}}),prisma.supportCase.count({where:{status:{not:'RESOLVED'},...(cityId?{order:{vendor:{cityId}}}:{})}})]);
   ok(s,{from:from.toISOString(),days,cityId:cityId??null,...metrics,activeStores:stores,onlineRiders:riders,availableProducts:products,openSupportCases:openCases});
 }));
+
+operationsRouter.get('/v1/admin/dashboard',...admin,wrap(async(r,s)=>{const cityId=r.query.cityId===undefined?undefined:text(r.query.cityId,'cityId',64);ok(s,await marketplaceOverview(cityId,r.query.days));}));

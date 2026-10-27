@@ -417,6 +417,8 @@ model Order {
   @@index([groupId])
   @@index([customerId, createdAt])
   @@index([customerId, couponCode])
+  @@index([createdAt])
+  @@index([vendorId, createdAt])
   @@index([vendorId, status])
   @@index([driverId, status])
   @@index([status, createdAt])

@@ -6,7 +6,7 @@ Baseline: `dec347b0ad073bc608f45f395560126f8340480e`. Target: `feature/productio
 | --- | --- | --- | --- |
 | 5 | Pickup-aware zone validation | Source implemented; UI tests pass; map preview follows Task 4 | pickupCoverage.ts, CreateStoreDrawer, adminStores.ts; 20 UI tests passed; database recheck blocked by declined sandbox network permission |
 | 6 | Rider eligibility, invitation and 409/429 handling | Source implemented; 14 focused UI tests pass; full backend verification blocked | riderOnboarding service/routes, additive RiderInvitation migration, CreateRiderDrawer, RiderInvitations, RiderInvitePage, ApiRetryAfter; see 06_RIDER_INVITATIONS.md |
-| 1 | Authorized dashboard aggregates and interactive charts | Pending | In progress |
+| 1 | Authorized dashboard aggregates and interactive charts | Source implemented; 7 UI + 16 backend unit tests pass; SQL integration pending | overview.ts, OverviewDashboard, OverviewOrders; city/date server filters, IST calendar ranges, real money definitions |
 | 2 | Compact vendor directory and details | Pending | In progress |
 | 3 | Inline categories and Customer visibility | Pending | In progress |
 | 4 | Places provider and confirmed map pin | Pending | In progress |
