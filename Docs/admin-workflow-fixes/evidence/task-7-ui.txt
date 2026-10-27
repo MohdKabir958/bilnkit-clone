@@ -1,0 +1,13 @@
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/PartnerOnboarding.test.tsx (6 tests) 1586ms
+   ✓ rider wizard defaults pending, preserves Back values, and only submits on review 933ms
+ ✓ src/components/InventoryPanel.test.tsx (5 tests) 245ms
+ ✓ src/components/PhysicalInventoryDrawer.test.tsx (2 tests) 39ms
+
+ Test Files  3 passed (3)
+      Tests  13 passed (13)
+   Start at  01:55:09
+   Duration  5.10s (transform 1.31s, setup 0ms, collect 1.94s, tests 1.87s, environment 686ms, prepare 91ms)
+

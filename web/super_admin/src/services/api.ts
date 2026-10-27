@@ -328,6 +328,7 @@ export const apiService = {
   inventoryPage: (opts: {q:string;vendorId:string;cityId:string;lowStock:boolean;after:string}) => requestFull<any>(`/api/v1/admin/products?${new URLSearchParams(Object.fromEntries(Object.entries({...opts,limit:'50'}).filter(([,v]) => v !== '' && v !== false).map(([k,v])=>[k,String(v)])))}`),
   productBatches: (id:string,after='') => requestFull<any>(`/api/v1/products/${encodeURIComponent(id)}/batches?limit=100${after?'&after='+encodeURIComponent(after):''}`),
   productReservations: (id:string) => request<any[]>(`/api/v1/products/${encodeURIComponent(id)}/reservations`),
+  openCatalogAssistance: (input:{vendorId:string;reason:string;confirmed:boolean})=>request<{id:string;vendorId:string;expiresAt:string}>('/api/v1/admin/catalog/assistance',{method:'POST',body:JSON.stringify(input)}),
   productBatchTracking: (id:string,input:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/batch-tracking`,{method:'PUT',body:JSON.stringify(input)}),
   receiveProductBatch: (id:string,input:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/batches`,{method:'POST',body:JSON.stringify(input)}),
   correctProductBatch: (id:string,batchId:string,input:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/batches/${encodeURIComponent(batchId)}/stock`,{method:'POST',body:JSON.stringify(input)}),

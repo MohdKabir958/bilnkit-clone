@@ -20,7 +20,7 @@ const NAV_ITEMS: Array<{ id: TabType; label: string; hint: string; icon: React.E
   { id: 'operations', label: 'Overview', hint: 'Daily performance and next actions', icon: ClipboardCheck },
   { id: 'orders', label: 'Orders', hint: 'Orders, delivery status and payment state', icon: ShoppingBag },
   { id: 'vendors', label: 'Vendors', hint: 'All vendors, availability and store details', icon: Store },
-  { id: 'inventory', label: 'Products & stock', hint: 'Products, photos and stock adjustments', icon: Package },
+  { id: 'inventory', label: 'Catalog oversight', hint: 'Moderate products and inspect stock exceptions', icon: Package },
   { id: 'drivers', label: 'Delivery partners', hint: 'Partner accounts, duty and assignments', icon: Bike },
   { id: 'map', label: 'Live map', hint: 'Delivery partner positions and dispatch', icon: MapPinned },
   { id: 'attention', label: 'Needs attention', hint: 'Stuck orders, refunds and verification issues', icon: TriangleAlert },

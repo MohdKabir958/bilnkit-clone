@@ -1,3 +1,4 @@
+import {openCatalogAssistance,bindCatalogAssistance,checkAssistanceStore,auditCatalogAssistance} from '../services/catalogAssistance';
 import { Router, Response } from 'express';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../db';
@@ -12,7 +13,7 @@ import { getSettings } from '../services/settings';
 import { fromPaise, ruleFromColumns, toPaise } from '../services/pricing';
 
 export const productsRouter = Router();
-const wrap = (fn: (r: AuthenticatedRequest, s: Response) => Promise<any>) => async (r: AuthenticatedRequest, s: Response) => { try { await fn(r, s); } catch (e) {
+const wrap = (fn: (r: AuthenticatedRequest, s: Response) => Promise<any>) => async (r: AuthenticatedRequest, s: Response) => { try { await bindCatalogAssistance(r);await fn(r, s); } catch (e) {
   if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') return fail(s, new AppError(409, 'ALREADY_EXISTS', 'This SKU or request already exists.'), 'products');
   fail(s, e, 'products');
 } };
@@ -27,6 +28,7 @@ const pagination = (r: AuthenticatedRequest) => {
   return { take, ...(after ? { cursor: { id: after as string }, skip: 1 } : {}), orderBy: { id: 'asc' as const } };
 };
 const owner = async (r: AuthenticatedRequest, vendorId: string) => {
+  checkAssistanceStore(r,vendorId);
   const v = await prisma.vendor.findUnique({ where: { id: vendorId } });
   if (!v || !(r.user!.role === 'ADMIN' || (r.user!.role === 'VENDOR' && v.userId === r.user!.id && v.approvalStatus === 'APPROVED'))) throw new AppError(404, 'NOT_FOUND', 'Store not found.');
   return v;
@@ -53,6 +55,8 @@ async function productViews(rows: any[], managing: boolean) {
     return managing ? {...managedView(projected), countedStockQty:m.stockQty, ...(m.batchTracking ? {batchSummary:batches} : {})} : publicMenuItem(projected);
   });
 }
+
+productsRouter.post('/v1/admin/catalog/assistance',requireAuth,requireRole('ADMIN'),wrap(async(r,s)=>ok(s,await openCatalogAssistance(r.user!.id,r.body??{}),201)));
 
 const manager = [requireAuth, requireRole('VENDOR', 'ADMIN'), requireApprovedPartner] as const;
 
@@ -121,6 +125,7 @@ async function writeProduct(r: AuthenticatedRequest, vendorId: string, id?: stri
     }
     const m = id ? await tx.menuItem.update({ where: { id }, data: { ...data, ...(r.user!.role === 'VENDOR' ? { approvalStatus: 'PENDING', rejectionReason: null, reviewedAt: null, reviewedByUserId: null } : {}) } }) : await tx.menuItem.create({ data: { ...data, vendorId, approvalStatus: r.user!.role === 'ADMIN' ? 'APPROVED' : 'PENDING', createdBy: r.user!.role } });
     await tx.adminAuditLog.create({ data: { action: id ? 'PRODUCT_UPDATED' : 'PRODUCT_CREATED', targetType: 'MENU_ITEM', targetId: m.id, summary: `${r.user!.role} ${r.user!.id} saved SKU ${sku}` } });
+    await auditCatalogAssistance(tx,r,m.id);
     return managedView(m);
   });
 }
@@ -152,6 +157,7 @@ productsRouter.post('/v1/products/:id/stock', ...manager, validParams('id'), wra
     const row = await tx.menuItem.update({ where: { id: item.id }, data: { stockQty: { increment: delta }, stockVersion: { increment: 1 } } });
     await tx.stockMovement.create({ data: { menuItemId: item.id, delta, kind: 'ADJUST', reason, actorId: r.user!.id, reference } });
     await tx.adminAuditLog.create({ data: { action: 'STOCK_ADJUSTED', targetType: 'MENU_ITEM', targetId: item.id, summary: `${r.user!.role} ${r.user!.id}: ${delta} units; ${reason}` } });
+    await auditCatalogAssistance(tx,r,item.id);
     return row;
   }); ok(s, managedView(result));
 }));
@@ -180,7 +186,8 @@ productsRouter.post('/v1/inventory/reservations/:id/disposition', ...manager, va
     const order=await tx.order.findUniqueOrThrow({where:{id:seed.orderId},select:{status:true,paymentStatus:true,paymentMethod:true}});
     if(order.status!=='CANCELLED'&&(!['ACCEPTED','PREPARING','READY_FOR_PICKUP'].includes(order.status)||order.paymentStatus!=='PAID'&&order.paymentMethod!=='COD'))throw new AppError(409,'PACKING_NOT_STARTED','Accept a confirmed order before recording its physical packing.');
     if(['PICKED_UP','ARRIVED_AT_GATE','DELIVERED'].includes(order.status))throw new AppError(409,'PACKING_FINISHED','Stock is already with the delivery partner. Contact support for a post-delivery issue.');
-    return recordStockDisposition(tx,seed.id,{action,quantity,reason,clientRequestId,actorId:r.user!.id,...(b.batchId?{batchId:text(b.batchId,'batchId',64)}:{})});
+    const outcome=await recordStockDisposition(tx,seed.id,{action,quantity,reason,clientRequestId,actorId:r.user!.id,...(b.batchId?{batchId:text(b.batchId,'batchId',64)}:{})});
+    await auditCatalogAssistance(tx,r,seed.menuItemId);return outcome;
   });ok(s,result);
 }));
 productsRouter.get('/v1/products/:id/batches', ...manager, validParams('id'), wrap(async (r,s)=>{
@@ -199,7 +206,7 @@ productsRouter.put('/v1/products/:id/batch-tracking', ...manager, validParams('i
     const available=await tx.stockBatch.aggregate({where:{menuItemId:item.id},_sum:{availableQty:true}});
     if(current.stockQty!==0||held||available._sum.availableQty)throw new AppError(409,'STOCK_COUNT_REQUIRED','Reconcile shelf stock and active reservations to zero before changing batch tracking. Then receive each counted lot.');
     const result=await tx.menuItem.update({where:{id:item.id},data:{batchTracking:b.enabled,stockVersion:{increment:1}}});
-    await tx.adminAuditLog.create({data:{action:'BATCH_TRACKING_CHANGED',targetType:'MENU_ITEM',targetId:item.id,summary:`${r.user!.id}: tracking ${b.enabled}; ${reason}`}});return result;
+    await tx.adminAuditLog.create({data:{action:'BATCH_TRACKING_CHANGED',targetType:'MENU_ITEM',targetId:item.id,summary:`${r.user!.id}: tracking ${b.enabled}; ${reason}`}});await auditCatalogAssistance(tx,r,item.id);return result;
   });ok(s,managedView(result));
 }));
 productsRouter.post('/v1/products/:id/batches', ...manager, validParams('id'), wrap(async(r,s)=>{
@@ -223,6 +230,7 @@ productsRouter.post('/v1/products/:id/batches', ...manager, validParams('id'), w
     const batch=await tx.stockBatch.upsert({where:{menuItemId_lotCode:{menuItemId:item.id,lotCode}},create:{menuItemId:item.id,lotCode,availableQty:quantity,expiresAt},update:{availableQty:{increment:quantity}}});
     await tx.menuItem.update({where:{id:item.id},data:{stockQty:{increment:quantity},stockVersion:{increment:1}}});
     await tx.stockMovement.create({data:{menuItemId:item.id,delta:quantity,kind:'BATCH_RECEIVED',reason,actorId:r.user!.id,reference,details:{batchId:batch.id,lotCode,expiresAt:expiresAt?.toISOString()??null}}});
+    await auditCatalogAssistance(tx,r,item.id);
     return batch;
   });ok(s,result,201);
 }));
@@ -241,6 +249,6 @@ productsRouter.post('/v1/products/:id/batches/:batchId/stock', ...manager, valid
     if(batch.availableQty+delta<0||current.stockQty+delta<0||current.stockQty+delta>1000000)throw bad('delta','This correction would make the available stock invalid.');
     const result=await tx.stockBatch.update({where:{id:batch.id},data:{availableQty:{increment:delta}}});
     await tx.menuItem.update({where:{id:item.id},data:{stockQty:{increment:delta},stockVersion:{increment:1}}});
-    await tx.stockMovement.create({data:{menuItemId:item.id,delta,kind:delta<0?'BATCH_WRITE_OFF':'BATCH_CORRECTION',reason,actorId:r.user!.id,reference,details:{batchId:batch.id,lotCode:batch.lotCode}}});return result;
+    await tx.stockMovement.create({data:{menuItemId:item.id,delta,kind:delta<0?'BATCH_WRITE_OFF':'BATCH_CORRECTION',reason,actorId:r.user!.id,reference,details:{batchId:batch.id,lotCode:batch.lotCode}}});await auditCatalogAssistance(tx,r,item.id);return result;
   });ok(s,result);
 }));

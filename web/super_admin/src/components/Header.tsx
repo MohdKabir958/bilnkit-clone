@@ -18,7 +18,7 @@ interface HeaderProps {
 
 const TITLES: Record<TabType, { title: string; subtitle: string; searchHint: string }> = {
   operations: {title: 'Overview', subtitle: 'Your marketplace at a glance', searchHint: ''},
-  inventory: { title: 'Products & stock', subtitle: 'Grocery SKUs, stock adjustments and product moderation', searchHint: '' },
+  inventory: { title: 'Catalog oversight', subtitle: 'Review products, inspect stock and support stores by exception', searchHint: '' },
   coverage: { title: 'Cities & zones', subtitle: 'Cities, service areas and store opening hours', searchHint: '' },
   map: { title: 'Live command center', subtitle: 'Dispatch, delivery partners and the delivery pipeline', searchHint: 'Search orders, stores, localities, delivery partners' },
   orders: { title: 'Orders', subtitle: 'Latest 100 orders, with payment and live status', searchHint: 'Search order, customer, phone, store, rider or payment id' },

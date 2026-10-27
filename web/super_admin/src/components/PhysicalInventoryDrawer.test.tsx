@@ -32,3 +32,8 @@ it('retries an unconfirmed inspection with its same request ID and keeps other w
  expect(write.mock.calls[0]).toEqual(['return-a',expect.objectContaining({action:'RETURN',quantity:1,clientRequestId:expect.any(String)})]);
  expect(button('Retry unconfirmed change')).toBeUndefined();
 });
+it('default catalog inspection is read-only and exposes no packing or stock mutation controls',async()=>{
+ await act(async()=>root.render(<PhysicalInventoryDrawer readOnly product={{id:'milk',name:'Fresh milk'}} onClose={()=>{}} onAuthError={()=>{}}/>));
+ expect(document.body.textContent).toContain('Read-only inspection');expect(document.body.textContent).toContain('LOT-A');
+ expect(button('RETURN')).toBeUndefined();expect(button('Receive lot')).toBeUndefined();expect(button('Correct this lot')).toBeUndefined();expect(document.querySelector('form')).toBeNull();
+});
