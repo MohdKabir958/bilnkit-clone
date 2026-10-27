@@ -1,3 +1,14 @@
+# Latest Grozo Android previews — 1.16.1+25
+
+- [Customer APK](clerk-staging/1.16.1-25/Grozo-Customer-Clerk-Test.apk?raw=true)
+- [Vendor APK](clerk-staging/1.16.1-25/Grozo-Vendor-Clerk-Test.apk?raw=true)
+- [Delivery APK](clerk-staging/1.16.1-25/Grozo-Delivery-Clerk-Test.apk?raw=true)
+- [Checksums, build source and limitations](clerk-staging/1.16.1-25/README.md)
+
+Compiled API: https://grozo-backend-3wdf.onrender.com/api. Development-signed ARM64 previews; Firebase push and real-device/provider acceptance remain pending. Hosted services were not deployed or modified. Historical versions follow.
+
+---
+
 # Latest Grozo Android handover — 1.16.0+24
 
 Source: `477d86743fb1accffffcc7ee99c5d4f1a7802821` on feature/production-readiness.
