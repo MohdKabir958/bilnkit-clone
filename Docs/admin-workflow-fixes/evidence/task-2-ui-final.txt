@@ -1,0 +1,10 @@
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/VendorDirectory.test.tsx (3 tests) 470ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  01:39:55
+   Duration  2.92s (transform 949ms, setup 0ms, collect 1.42s, tests 470ms, environment 575ms, prepare 91ms)
+

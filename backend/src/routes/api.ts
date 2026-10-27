@@ -1,3 +1,4 @@
+import {vendorDirectoryRouter} from './vendorDirectory';
 import { jobsRouter } from './jobs';
 import { payoutReadinessRouter } from './payoutReadiness';
 import { orderAdjustmentsRouter } from './orderAdjustments';
@@ -63,6 +64,7 @@ apiRouter.use(jobsRouter);
 apiRouter.use(rateLimitMiddleware);
 apiRouter.use(adminTeamRouter);
 apiRouter.use(adminStoresRouter);
+apiRouter.use(vendorDirectoryRouter);
 apiRouter.use(riderOnboardingRouter);
 apiRouter.use(marketplaceRouter);
 apiRouter.use(geographyRouter);

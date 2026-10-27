@@ -377,6 +377,9 @@ export const apiService = {
     return { orders: data.map(normalizeOrder), nextCursor: typeof body?.nextCursor === 'string' && body.nextCursor ? body.nextCursor : null };
   },
 
+  vendorDirectory: (filters:Record<string,string>)=>request<{total:number;page:number;limit:number;rows:(Vendor&{productCount:number;cityName:string})[]}>(`/api/v1/admin/vendor-directory?${new URLSearchParams(filters)}`),
+  vendorDetails: async(id:string)=>{const raw=await request<any>(`/api/v1/admin/vendor-directory/${encodeURIComponent(id)}`);return {...raw,...normalizeVendor(raw)};},
+  vendorAudit: (id:string,after='')=>request<{rows:{id:string;createdAt:string;action:string;summary:string}[];nextCursor:string|null}>(`/api/v1/admin/vendor-directory/${encodeURIComponent(id)}/audit${after?'?after='+encodeURIComponent(after):''}`),
   async fetchVendors(): Promise<Vendor[]> {
     const data = await request<any[]>('/api/vendors');
     return (Array.isArray(data) ? data : []).map(normalizeVendor);

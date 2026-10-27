@@ -1,0 +1,4 @@
+src/components/VendorManager.tsx(92,95): error TS2345: Argument of type '{ vendorId: string; after: string; }' is not assignable to parameter of type '{ q: string; vendorId: string; cityId: string; lowStock: boolean; after: string; }'.
+  Type '{ vendorId: string; after: string; }' is missing the following properties from type '{ q: string; vendorId: string; cityId: string; lowStock: boolean; after: string; }': q, cityId, lowStock
+src/components/VendorManager.tsx(94,407): error TS2322: Type '{ src: any; alt: any; className: string; }' is not assignable to type 'IntrinsicAttributes & { url: string; name: string; }'.
+  Property 'src' does not exist on type 'IntrinsicAttributes & { url: string; name: string; }'.
