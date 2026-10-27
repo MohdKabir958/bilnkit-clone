@@ -107,3 +107,23 @@ jobs:
           channel: stable
           cache: true
       - run: bash scripts/check_flutter.sh ${{ matrix.role }}
+      - name: Customer Clerk session handoff regressions
+        if: matrix.role == 'customer'
+        working-directory: apps/customer_app
+        run: |
+          mkdir -p ../../Docs/customer-handoff/evidence
+          set -o pipefail
+          flutter test --no-pub --dart-define=AUTH_MODE=clerk-test test/clerk/customer_handoff.dart --reporter=expanded 2>&1 | tee ../../Docs/customer-handoff/evidence/clerk-tests.log
+      - name: Shared authentication UI regressions
+        if: matrix.role == 'customer'
+        working-directory: packages/kraveo_ui
+        run: |
+          flutter pub get
+          flutter test --no-pub
+      - name: Preserve customer handoff evidence
+        if: always() && matrix.role == 'customer'
+        uses: actions/upload-artifact@v4
+        with:
+          name: customer-clerk-handoff-${{ github.sha }}
+          path: Docs/customer-handoff/evidence
+          if-no-files-found: warn

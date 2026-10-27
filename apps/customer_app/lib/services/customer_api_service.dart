@@ -13,6 +13,7 @@ class CustomerApiService {
   static const String _tokenPrefKey = 'kraveo_customer_jwt_token';
   static String? _cachedToken;
   static int _tokenEpoch = 0;
+  static int _profileEpoch = 0;
 
   /// Message shown (and thrown) when an authenticated call is rejected with HTTP 401.
   static const String sessionExpiredMessage =
@@ -119,6 +120,7 @@ class CustomerApiService {
   /// Clears the persisted student session after logout or token rejection.
   static Future<void> clearToken() async {
     _tokenEpoch++;
+    _profileEpoch++;
     selectedAddressId = null;
     _cachedToken = null;
     try {
@@ -131,14 +133,29 @@ class CustomerApiService {
   /// [onUnauthorized] fires; on network trouble the token is kept so the user is not
   /// logged out just because they opened the app offline.
   static Future<ProfileResult?> fetchProfile() async {
+    final epoch = ++_profileEpoch;
     try {
       final token = await getSavedToken();
+      final identity = ClerkSessions.instance.identity.value;
+      if (epoch != _profileEpoch) return null;
       if (token == null || token.isEmpty) return null;
       final response = await _get(
         Uri.parse('${ApiConfig.baseUrl}/auth/profile'),
-        headers: await getAuthHeaders(),
+        headers: {
+          ...ApiConfig.clientHeaders,
+          'Content-Type': 'application/json',
+          'Authorization':
+              token.startsWith('Bearer ') ? token : 'Bearer $token',
+        },
         timeout: const Duration(seconds: 10),
       );
+      final current = ClerkSessions.instance.identity.value;
+      if (epoch != _profileEpoch ||
+          (GrozoAuthConfig.usesClerk &&
+              (identity.userId != current.userId ||
+                  identity.sessionId != current.sessionId))) {
+        return null;
+      }
       if (await _rejectIfUnauthorized(response)) {
         return const ProfileResult(
             success: false, statusCode: 401, message: sessionExpiredMessage);

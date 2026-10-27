@@ -14,12 +14,16 @@ class ClerkEntryScreen extends StatefulWidget {
       this.role = ClerkEntryRole.customer,
       this.onContinue,
       this.onApply,
+      this.accessError,
       this.preview = false,
       this.client});
   final String appName;
   final ClerkEntryRole role;
   final Future<void> Function()? onContinue;
   final VoidCallback? onApply;
+
+  /// Explains a failed business-profile check without signing out of Clerk.
+  final String? accessError;
   final bool preview;
   final ClerkSessions? client;
   @override
@@ -236,12 +240,14 @@ class _ClerkEntryScreenState extends State<ClerkEntryScreen> {
               const Text(
                   'Authentication preview: a staging backend is not configured. Shopping, store operations and deliveries are unavailable.'),
             ],
-            if (message != null)
+            if (message != null || widget.accessError != null)
               Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Semantics(
                       liveRegion: true,
-                      child: Text(message!, style: theme.bodySmall))),
+                      child: Text(message ?? widget.accessError!,
+                          key: const ValueKey('clerk-access-error'),
+                          style: theme.bodySmall))),
             const SizedBox(height: 12),
             Text('Secure sign-in with Clerk',
                 textAlign: TextAlign.center,
