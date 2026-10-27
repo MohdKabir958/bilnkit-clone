@@ -40,6 +40,9 @@ jobs:
           mkdir -p ../Docs/production-readiness/evidence/ci
           set -o pipefail
           npm test -- --json --outputFile=../Docs/production-readiness/evidence/ci/backend.json 2>&1 | tee ../Docs/production-readiness/evidence/ci/backend.log
+      - name: Publish bounded backend failure diagnostics
+        if: always()
+        run: python3 ../scripts/qa/report_jest_results.py ../Docs/production-readiness/evidence/ci/backend.json
       - name: Repeated pricing concurrency with the CI-sized connection pool
         run: node ../scripts/qa/run_pricing_concurrency.mjs ci-pool-two 2 10 --testNamePattern='recalculate and edits running together'
       - name: Preserve backend and pricing evidence
