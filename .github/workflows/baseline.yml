@@ -108,12 +108,18 @@ jobs:
           cache: true
       - run: bash scripts/check_flutter.sh ${{ matrix.role }}
       - name: Customer Clerk session handoff regressions
+        id: customer_handoff
         if: matrix.role == 'customer'
         working-directory: apps/customer_app
         run: |
           mkdir -p ../../Docs/customer-handoff/evidence
           set -o pipefail
           flutter test --no-pub --dart-define=AUTH_MODE=clerk-test test/clerk/customer_handoff.dart --reporter=expanded 2>&1 | tee ../../Docs/customer-handoff/evidence/clerk-tests.log
+      - name: Publish bounded Clerk handoff diagnostics
+        if: always() && matrix.role == 'customer'
+        env:
+          HANDOFF_OUTCOME: ${{ steps.customer_handoff.outcome }}
+        run: python3 scripts/qa/report_customer_handoff.py
       - name: Shared authentication UI regressions
         if: matrix.role == 'customer'
         working-directory: packages/kraveo_ui
