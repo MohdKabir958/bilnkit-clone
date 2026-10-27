@@ -234,21 +234,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Continue to shopping'));
     await tester.pumpAndSettle();
-    // Native channels/protected-storage futures can finish outside frame scheduling.
-    // Wait for the actual profile outcome, not just for animations to stop.
-    final checked = Completer<void>();
-    void profileChecked() {
-      if (session.accessError != null && !checked.isCompleted) {
-        checked.complete();
-      }
+    // The SDK fixture was initialized in real-async service tests above. Drive
+    // both native/storage callbacks and Flutter frames until the real outcome.
+    await tester.tap(find.text('Continue to shopping'));
+    for (var frame = 0; frame < 50 && session.accessError == null; frame++) {
+      await tester.pump(const Duration(milliseconds: 20));
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     }
-
-    session.addListener(profileChecked);
-    await tester.runAsync(() async {
-      await tester.tap(find.text('Continue to shopping'));
-      await checked.future.timeout(const Duration(seconds: 5));
-    });
-    session.removeListener(profileChecked);
     await tester.pumpAndSettle();
     expect(session.accessError, contains('administrator account'));
     expect(find.byKey(const ValueKey('clerk-access-error')), findsOneWidget);
