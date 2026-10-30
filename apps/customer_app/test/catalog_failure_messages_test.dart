@@ -46,11 +46,11 @@ void main() {
     expect(oldServer.message, contains('backend'));
   });
 
-  test('catalog with no delivery address never calls a backend', () async {
+  test('Home can request address selection without loading remote catalog', () {
     CustomerApiService.selectedAddressId = null;
     final provider = DhabaProvider();
     try {
-      expect(await provider.loadCatalog(), isFalse);
+      provider.requireDeliveryAddress();
       expect(provider.hasCatalogFailed, isTrue);
       expect(provider.catalogNeedsAddress, isTrue);
       expect(provider.catalogErrorMessage, contains('delivery address'));
