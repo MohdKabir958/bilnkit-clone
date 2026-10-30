@@ -1,10 +1,14 @@
+import { requireFulfillmentCapacity } from './capacity';
+import { preparationTransitionData } from './preparation';
+import { pendingCheckoutProtected, reconcileCheckoutsBeforeReplacement } from './checkoutRecovery';
+import { requirePaymentMethod } from './paymentCapabilities';
 import { isCashOrder, fulfillmentAuthorized, fulfillmentWhere, requireMarketplaceStore, requireRiderAt } from './marketplace';
 import { stageNotificationIntents, drainNotificationIntents } from './push/intents';
 import { ensureDispatchOffer, acceptDispatchOffer, riderServesOrders } from './dispatch';
-import { lockProducts, reserveStock, settleStock } from './inventory';
+import { lockProducts, reserveStock, settleStock, ensureOrderStockSafe } from './inventory';
 import { errSummary } from '../utils/log';
 import { Prisma } from '@prisma/client';
-import { createHmac, randomInt, timingSafeEqual } from 'crypto';
+import { createHmac, randomInt, timingSafeEqual, randomUUID } from 'crypto';
 import { prisma } from '../db';
 import { MAX_ACTIVE_ORDERS_PER_RIDER, MAX_UNPAID_OPEN_ORDERS, OTP_MAX_ATTEMPTS, RECONCILE_MIN_AGE_MS, paymentWindowMin } from '../config/orderFlow';
 import { ownedAddress, addressSnapshot, deliveryEligibility } from './geography';
@@ -13,7 +17,7 @@ import { lockGroupRows } from './groupLock';
 import { publishOrderChange, getIo } from '../realtime';
 import { executeRefund, refundExtraPayment, runInBackground, ExtraRefundInput } from './refundService';
 import { writeAudit } from './audit';
-import { createRazorpayOrder } from './paymentService';
+import { getPaymentProvider, withProviderTimeout, toProviderError } from './paymentService';
 import { queuePush } from './push/pushService';
 import { pushEventsForChange, pushEventsForGroupChange } from './push/events';
 import { validateAndCalculateOrder, normaliseCoupon, couponEligibilityProblem } from '../utils/validation';
@@ -273,7 +277,7 @@ const isAbandonedCheckout = (o: OrderWithRelations, now = Date.now()): boolean =
   !isCashOrder(o) && o.status === 'PLACED' &&
   (o.paymentStatus === 'PENDING' || o.paymentStatus === 'FAILED') &&
   !o.paidAt &&
-  o.payments.every((p) => p.status !== 'PAID' && p.status !== 'REFUNDED' && p.capturedAmountPaise == null && !(p.status === 'PENDING' && now - p.createdAt.getTime() < RECONCILE_MIN_AGE_MS));
+  o.payments.every((p) => p.status !== 'PAID' && p.status !== 'REFUNDED' && p.capturedAmountPaise == null) && !pendingCheckoutProtected(o, now);
 
 /**
  * isAbandonedCheckout for an order that may belong to a group (Docs/22): a group is abandoned only as a whole, judged by its PRIMARY
@@ -290,6 +294,16 @@ export const countUnpaidOpen = async (tx: Tx, customerId: string): Promise<numbe
     SELECT COUNT(DISTINCT COALESCE("groupId", "id"))::int AS n FROM "Order"
     WHERE "customerId" = ${customerId} AND "status"::text NOT IN ('DELIVERED', 'CANCELLED') AND "paymentStatus"::text IN ('PENDING', 'FAILED')`;
   return rows[0]?.n ?? 0;
+};
+
+/** Preserve coupon and global-limit errors while refusing a second payment on an overlapping checkout. */
+export const blockPendingCheckout = async (tx: Tx, customerId: string, pendingOrderId: string, coupon?: string | null): Promise<never> => {
+  if (coupon) {
+    const problem = await couponEligibilityProblem(tx, customerId, coupon);
+    if (problem) throw new OrderFlowError(400, 'COUPON_NOT_APPLICABLE', problem, { field: 'couponCode' });
+  }
+  if (await countUnpaidOpen(tx, customerId) >= MAX_UNPAID_OPEN_ORDERS) throw new OrderFlowError(429, 'TOO_MANY_UNPAID_ORDERS', 'Resolve an existing unpaid order before starting another.');
+  throw new OrderFlowError(409, 'PAYMENT_IN_PROGRESS', 'Your earlier payment may still be processing. Resume that order or recheck its payment status.', { pendingOrderId, actions: ['RESUME', 'RECHECK', 'CONTACT_SUPPORT'] });
 };
 
 export const placeOrder = async (customerId: string, input: PlaceOrderInput): Promise<{ order: OrderWithRelations; replay: boolean }> => {
@@ -321,6 +335,7 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
   // A coupon that was sent but gives nothing is an error the customer must see, not a silently ignored field.
   if (priced.couponProblem) throw new OrderFlowError(400, 'COUPON_NOT_APPLICABLE', priced.couponProblem, { field: 'couponCode' });
 
+  await reconcileCheckoutsBeforeReplacement(customerId, [input.vendorId]);
   const replaced: ChangeResult[] = [];
   try {
     const outcome = await prisma.$transaction(
@@ -341,8 +356,10 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
 
         const address = await ownedAddress(tx, customerId, input.addressId, true);
         const eligible = await deliveryEligibility(tx, address, input.vendorId, true);
+        let capacitySnapshot: Prisma.InputJsonValue | undefined;
         if (input.workflowVersion === 2) {
           const store = await requireMarketplaceStore(tx, input.vendorId, true);
+          requirePaymentMethod(input.paymentMethod ?? 'ONLINE', !!store.city?.codEnabled);
           if (input.paymentMethod === 'COD' && !store.city?.codEnabled) throw new OrderFlowError(409,'COD_UNAVAILABLE','Cash on delivery is not enabled in this city. Choose online payment.');
         } else if (input.paymentMethod === 'COD') throw new OrderFlowError(400,'INVALID_PAYMENT_METHOD','Use marketplace checkout for cash on delivery.');
 
@@ -365,10 +382,14 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
         // customers replacing carts with opposite SKUs must acquire one common order.
         await lockProducts(tx, [...input.items.map((i) => i.itemId), ...staleLocks.flatMap((l) => (l.group ?? [l.order]).flatMap((o) => o.items.flatMap((i) => i.menuItemId ? [i.menuItemId] : [])))]);
         for (const l of staleLocks) {
+          const creation = await tx.paymentCreation.findUnique({where:{orderId:l.order.id}});
+          if (creation && ['CREATING','UNKNOWN'].includes(creation.state)) throw new OrderFlowError(409,'PAYMENT_START_PENDING','Payment setup is being checked. Resume the earlier order.',{pendingOrderId:l.order.id});
+          if (pendingCheckoutProtected((l.group ?? [l.order])[0])) await blockPendingCheckout(tx, customerId, l.order.id, priced.appliedCoupon);
           const r = await cancelInTx(tx, l.order, { id: 'system', role: 'SYSTEM' }, 'SYSTEM', REPLACED_REASON, { guard: (o, g) => isAbandonedOrder(o, g) }, l.group);
           if (r.changed) replaced.push(r);
         }
 
+        if(input.workflowVersion===2) capacitySnapshot=await requireFulfillmentCapacity(tx,input.vendorId,address,{lock:true,paymentMethod:input.paymentMethod??'ONLINE'}) as unknown as Prisma.InputJsonValue;
         priced = await validateAndCalculateOrder(input.vendorId, input.items, input.couponCode, eligible.feePaise, tx);
         if (!priced.isValid || priced.couponProblem) throw new OrderFlowError(409, 'CART_CHANGED', priced.errorMessage || priced.couponProblem || 'The cart changed. Refresh the quote.');
 
@@ -383,6 +404,7 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
         const created = await tx.order.create({
           data: {
             customerId,
+            capacitySnapshot,
             workflowVersion: input.workflowVersion ?? 1,
             paymentMethod: input.paymentMethod ?? 'ONLINE',
             vendorId: input.vendorId,
@@ -444,32 +466,58 @@ export const placeOrder = async (customerId: string, input: PlaceOrderInput): Pr
 /** Razorpay checkout params for the owner's unpaid order. One Razorpay order per Grozo order (reused on retry). */
 export const createPaymentForOrder = async (orderId: string, actor: Actor) => {
   await preAuthorize(orderId, (o) => actor.role === 'STUDENT' && o.customerId === actor.id);
-  return withOrderLock(orderId, async (tx, order, group) => {
+  const claimToken = randomUUID();
+  const prepared = await withOrderLock(orderId, async (tx, order, group) => {
     if (actor.role !== 'STUDENT' || order.customerId !== actor.id) throw notFound();
-    // Docs/22: ONE payment per combined order, held by the primary child. A sibling can never be paid on its own.
-    if (order.groupId && order.groupIndex !== 0) {
-      throw new OrderFlowError(409, 'PAY_VIA_GROUP', 'This order is part of a combined order. Pay with the first order of the combined order.', { payOrderId: group?.[0]?.id ?? null });
-    }
-    if (isCashOrder(order)) throw new OrderFlowError(409,'CASH_ORDER','This order is payable in cash to the assigned rider at delivery.');
+    if (order.groupId && order.groupIndex !== 0) throw new OrderFlowError(409, 'PAY_VIA_GROUP', 'Pay with the first order of the combined order.', { payOrderId: group?.[0]?.id ?? null });
+    if (isCashOrder(order)) throw new OrderFlowError(409, 'CASH_ORDER', 'Pay the assigned rider in cash at delivery.');
     if (order.paymentStatus === 'PAID' || order.paymentStatus === 'REFUNDED') throw new OrderFlowError(409, 'ALREADY_PAID', 'This order is already paid.');
-    if (order.status !== 'PLACED') throw new OrderFlowError(409, 'ORDER_CLOSED', order.status === 'CANCELLED' ? 'This order was cancelled.' : 'This order can no longer be paid.');
-    if (Date.now() - order.createdAt.getTime() >= paymentWindowMin() * 60_000) {
-      throw new OrderFlowError(409, 'PAYMENT_WINDOW_EXPIRED', 'The time to pay for this order is over. Please place the order again.');
+    if (order.status !== 'PLACED') throw new OrderFlowError(409, 'ORDER_CLOSED', 'This order can no longer be paid.');
+    if (Date.now() - order.createdAt.getTime() >= paymentWindowMin() * 60_000) throw new OrderFlowError(409, 'PAYMENT_WINDOW_EXPIRED', 'The time to pay is over. Please refresh this order.');
+    requirePaymentMethod('ONLINE');
+    if(order.workflowVersion===2) {
+      const address=await ownedAddress(tx,actor.id,order.addressId??undefined,true);
+      await requireFulfillmentCapacity(tx,order.vendorId,address,{lock:true,paymentMethod:'ONLINE',excludeOrderId:order.id});
     }
-    // What the customer pays through this payment: the whole group's total for the primary child of a combined order, else the order total.
-    const payable = payableAmount(order);
-    const amountPaise = Math.round(payable * 100);
+    const payable = payableAmount(order), amountPaise = Math.round(payable * 100);
     if (!Number.isFinite(payable) || amountPaise < 100) throw new OrderFlowError(400, 'AMOUNT_TOO_SMALL', 'Payment amount must be at least ₹1.00.');
-
-    const reusable = [...order.payments].reverse().find((p) => (p.status === 'PENDING' || p.status === 'FAILED') && Math.round(p.amount * 100) === amountPaise);
+    const reusable = [...order.payments].reverse().find(p => ['PENDING', 'FAILED'].includes(p.status) && Math.round(p.amount * 100) === amountPaise);
     if (reusable) return { razorpayOrderId: reusable.razorpayOrderId, amountInPaise: amountPaise, reused: true };
-
-    // Created while holding the order lock, so a double tap on "Pay" cannot open two Razorpay orders.
-    const result = await createRazorpayOrder(order.id, payable);
-    if (!result.success || !result.razorpayOrderId) throw new OrderFlowError(503, 'PROVIDER_UNAVAILABLE', result.error || 'Payment provider is unavailable.');
-    await tx.payment.create({ data: { orderId: order.id, razorpayOrderId: result.razorpayOrderId, amount: payable, status: 'PENDING' } });
-    return { razorpayOrderId: result.razorpayOrderId, amountInPaise: amountPaise, reused: false };
+    const intent = await tx.paymentCreation.findUnique({ where: { orderId } });
+    if (intent && intent.state !== 'FAILED') return { intent, amountInPaise: amountPaise };
+    await tx.paymentCreation.upsert({ where: { orderId }, create: { orderId, amountPaise, claimToken },
+      update: { amountPaise, claimToken, state: 'CREATING', lastErrorCode: null } });
+    return { claimToken, amountInPaise: amountPaise };
   });
+  if ('razorpayOrderId' in prepared) return prepared;
+  if ('intent' in prepared) {
+    // A double tap waits without a database connection. It never starts a second provider order.
+    for (let n = 0; n < 20; n++) {
+      const intent = await prisma.paymentCreation.findUniqueOrThrow({ where: { orderId } });
+      if (intent.providerOrderId && intent.state === 'CREATED') return { razorpayOrderId: intent.providerOrderId, amountInPaise: intent.amountPaise, reused: true };
+      if (intent.state !== 'CREATING') break;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    throw new OrderFlowError(409, 'PAYMENT_START_PENDING', 'Payment setup is being checked. Reopen this order before starting another payment.', { pendingOrderId: orderId });
+  }
+  let providerOrderId: string;
+  try {
+    const result = await withProviderTimeout(getPaymentProvider().createOrder({ receipt: `rcpt_${orderId}`.slice(0, 40), amountPaise: prepared.amountInPaise, notes: { orderId, platform: 'Grozo' } }));
+    providerOrderId = result.id;
+  } catch (err) {
+    const error = toProviderError(err);
+    await prisma.paymentCreation.updateMany({ where: { orderId, claimToken, state: 'CREATING' }, data: { state: error.transient ? 'UNKNOWN' : 'FAILED', lastErrorCode: error.providerCode ?? 'PROVIDER_ERROR' } });
+    throw new OrderFlowError(503, 'PROVIDER_UNAVAILABLE', 'Payment setup could not be confirmed. Check this order before retrying.');
+  }
+  // The provider call held no order lock or pooled database connection. Save even when cancellation won the race:
+  // the payment is now traceable, and any later capture goes through the existing late-payment refund path.
+  await prisma.$transaction(async tx => {
+    await lockOrderInTx(tx, orderId);
+    const saved = await tx.paymentCreation.updateMany({ where: { orderId, claimToken, state: 'CREATING' }, data: { state: 'CREATED', providerOrderId } });
+    if (!saved.count) throw new OrderFlowError(409, 'PAYMENT_START_PENDING', 'Payment setup requires operator review.');
+    await tx.payment.create({ data: { orderId, razorpayOrderId: providerOrderId, amount: prepared.amountInPaise / 100, status: 'PENDING', providerStatus: 'created' } });
+  });
+  return { razorpayOrderId: providerOrderId, amountInPaise: prepared.amountInPaise, reused: false };
 };
 
 export type PaidOutcome = 'PAID' | 'ALREADY_PAID' | 'LATE_PAYMENT_REFUND' | 'AMOUNT_MISMATCH' | 'DUPLICATE_PAYMENT' | 'UNKNOWN_PAYMENT' | 'ORDER_MISMATCH';
@@ -608,7 +656,7 @@ export const markPaymentFailed = async (razorpayOrderId: string) => {
  */
 export const GROUP_WAITING_MESSAGE = 'Waiting for the other store(s) in this combined order to accept.';
 
-export const advanceStatus = async (orderId: string, actor: Actor, target: string): Promise<{ order: OrderWithRelations; idempotent: boolean }> => {
+export const advanceStatus = async (orderId: string, actor: Actor, target: string, preparationEstimate?: unknown): Promise<{ order: OrderWithRelations; idempotent: boolean }> => {
   // Nothing below needs a lock to be refused: ownership first (404), then the role / target rules (403 / 400).
   if (actor.role === 'VENDOR') await preAuthorize(orderId, (o) => o.vendorUserId === actor.id);
   else if (actor.role === 'DRIVER') await preAuthorize(orderId, (o) => o.driverId === actor.id);
@@ -631,10 +679,12 @@ export const advanceStatus = async (orderId: string, actor: Actor, target: strin
       throw new OrderFlowError(409, 'INVALID_TRANSITION', `Invalid order state transition from '${order.status}' to '${target}'. Allowed next state: ${NEXT_STATUS[order.status]}.`);
     }
     if (!fulfillmentAuthorized(order)) throw new OrderFlowError(409, 'PAYMENT_NOT_CONFIRMED', 'This order is not paid yet.');
-    if(actor.role==='DRIVER' && (target==='PICKED_UP'||target==='ARRIVED_AT_GATE')) {
+    if((actor.role==='DRIVER'||order.workflowVersion===2) && (target==='PICKED_UP'||target==='ARRIVED_AT_GATE')) {
       const address=order.addressSnapshot as any;
       await requireRiderAt(tx,order,target==='PICKED_UP'?order.vendor:(address&&typeof address.lat==='number'&&typeof address.lng==='number'?address:null));
     }
+    if (['READY_FOR_PICKUP','PICKED_UP'].includes(target) && await tx.orderAdjustment.count({where:{orderId:order.id,state:'PROPOSED'}})) throw new OrderFlowError(409,'CUSTOMER_DECISION_PENDING','Wait for the customer to review the proposed item changes before marking the order ready.');
+    if (['READY_FOR_PICKUP','PICKED_UP','ARRIVED_AT_GATE'].includes(target)) await ensureOrderStockSafe(tx,(group??[order]).map(o=>o.id));
     if (target === 'PICKED_UP' && !order.driverId) throw new OrderFlowError(409, 'NO_RIDER', 'Assign a rider before marking the order picked up.');
 
     if (group) {
@@ -651,12 +701,12 @@ export const advanceStatus = async (orderId: string, actor: Actor, target: strin
         return groupResult(tx, order, group, group.map((c) => c.id));
       }
       const gnow = new Date();
-      await tx.order.update({ where: { id: order.id }, data: { status: target as any, ...(target === 'ACCEPTED' ? { acceptedAt: gnow } : {}), ...(target === 'PICKED_UP' ? { pickedUpAt: gnow } : {}) } });
+      await tx.order.update({ where: { id: order.id }, data: { status: target as any, ...preparationTransitionData(order,target,gnow,preparationEstimate), ...(target === 'ACCEPTED' ? { acceptedAt: gnow } : {}), ...(target === 'PICKED_UP' ? { pickedUpAt: gnow } : {}) } });
       return groupResult(tx, order, group, [order.id]);
     }
 
     const now = new Date();
-    const data: Prisma.OrderUpdateInput = { status: target as any };
+    const data: Prisma.OrderUpdateInput = { status: target as any, ...preparationTransitionData(order,target,new Date(),preparationEstimate) };
     if (target === 'ACCEPTED') data.acceptedAt = now;
     if (target === 'PICKED_UP') data.pickedUpAt = now;
     if (target === 'ARRIVED_AT_GATE') Object.assign(data, { otpCode: secureOtp(), otpExpiresAt:new Date(Date.now()+10*60000), otpAttempts: 0, otpLocked: false });

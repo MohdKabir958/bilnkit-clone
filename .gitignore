@@ -84,3 +84,6 @@ __pycache__/
 
 # Isolated vendor registration regression evidence.
 !Docs/vendor-registration-fix/evidence/**/backend-full-run.log
+
+# Isolated rider registration regression evidence.
+!Docs/rider-registration-fix/evidence/**/backend-full-run.log

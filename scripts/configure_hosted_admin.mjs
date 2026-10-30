@@ -14,7 +14,10 @@ function httpsOrigin(value, name) {
 try {
   const api = httpsOrigin(process.env.GROZO_BACKEND_ORIGIN, 'GROZO_BACKEND_ORIGIN');
   const key = process.env.VITE_CLERK_PUBLISHABLE_KEY || '';
-  const clerk = key ? httpsOrigin('https://' + Buffer.from(key.replace(/^pk_(test|live)_/, ''), 'base64').toString('ascii').replace(/\$$/, ''), 'Clerk frontend origin') : '';
+  const encoded = key.replace(/^pk_(test|live)_/, '');
+  const decoded = key ? Buffer.from(encoded, 'base64').toString('ascii') : '';
+  if (key && (!/^pk_(test|live)_/.test(key) || !/^[A-Za-z0-9+/=_-]+$/.test(encoded) || !/^[a-z0-9]+(?:[.-][a-z0-9]+)*\$$/.test(decoded))) throw new Error('Invalid Clerk publishable key.');
+  const clerk = key ? httpsOrigin('https://' + decoded.slice(0, -1), 'Clerk frontend origin') : '';
   if (key && (!/^pk_(test|live)_/.test(key) || !new URL(clerk).hostname.match(/^[a-z0-9.-]+$/))) throw new Error('Invalid Clerk publishable key.');
   const images = (process.env.GROZO_PRODUCT_IMAGE_ORIGINS || '').split(',').filter(Boolean).map(v => httpsOrigin(v.trim(), 'Product image origin'));
   const socket = api.replace(/^https:/, 'wss:');

@@ -1,0 +1,95 @@
+{
+  "capturedAt": "2026-10-27T04:57:43.305Z",
+  "renderer": "Chromium; actual implemented React components",
+  "timezone": "Asia/Kolkata",
+  "api": "explicit synthetic in-memory fixtures; no hosted identity",
+  "login": "Not captured; no real or personal provider account used",
+  "screens": [
+    {
+      "name": "01-overview",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "02-vendor-directory",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "03-vendor-details",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "04-inline-category",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "05-pickup-search",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "06-pickup-pin-coverage",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "06b-selected-zone-radius",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "07-rider-invitation",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "07b-rider-identity-conflict",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "08-catalog-oversight",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "09-mobile-overview",
+      "width": 390,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "10-synthetic-overview-charts",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "11-synthetic-overview-breakdowns",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    }
+  ],
+  "uncaughtErrors": [],
+  "applicationSourceCommit": "8668d448a29ad3f60b3b2a521eee8b4913ac9afc",
+  "applicationSourceUnchangedThrough": "cba6e5cba8b8bc917ec9f6a6bf646426aebd8e85",
+  "captureHarnessSha256": {
+    "scripts/ui_ux/admin-workflow/capture.mjs": "dd64bd6d213e0995c306713b6f5da254ad23454e99a6e862d65c412023f9f85a",
+    "scripts/ui_ux/admin-workflow/entry.tsx": "4338f1c8ba6eb8f3e01735abf17c4315b495b241e6039b07ff757b3eee4a4aab"
+  },
+  "acceptance": "Local fixture-rendered visual review only; not hosted backend/provider/physical-device verification."
+}

@@ -1,3 +1,4 @@
+import { validateGpsFix, GpsMetadata } from './services/gps';
 import { usesClerk } from './config/authMode';
 import { setDispatchPublisher } from './services/dispatch';
 import { errSummary } from './utils/log';
@@ -193,7 +194,7 @@ export const attachRealtime = (io: SocketIOServer) => {
       if (now - (socket.data.lastLocationAt ?? 0) < 2000) return; // at most one fix every 2 s per socket
       socket.data.lastLocationAt = now;
       try {
-        await recordRiderLocation(user.id, data.lat, data.lng, data.heading);
+        await recordRiderLocation(user.id, data.lat, data.lng, data.heading, data);
       } catch {
         // invalid input or not an approved rider: ignore silently (the REST endpoint reports errors)
       }
@@ -273,7 +274,7 @@ export const publishOrderChange = async (order: OrderWithRelations, opts: { wasP
  * Throws { status, code, message } for the REST endpoint.
  */
 const locationWindows=new SlidingWindow();
-export const recordRiderLocation = async (riderUserId: string, lat: unknown, lng: unknown, heading: unknown) => {
+export const recordRiderLocation = async (riderUserId: string, lat: unknown, lng: unknown, heading: unknown, metadata:GpsMetadata={}) => {
   if(!isValidCoordinate(lat,lng)|| (lat as number)<6 || (lat as number)>38 || (lng as number)<68 || (lng as number)>98) throw Object.assign(new Error('Choose valid Indian coordinates.'),{status:400,code:'BAD_COORDINATES'});
   const max=Number(process.env.RL_RIDER_LOCATION_MAX??(process.env.NODE_ENV==='test'?100000:30));
   const limit=locationWindows.hit(riderUserId,Number.isFinite(max)&&max>0?max:30,60000);
@@ -287,8 +288,10 @@ export const recordRiderLocation = async (riderUserId: string, lat: unknown, lng
     if(driver.approvalStatus!=='APPROVED'||driver.user?.deletedAt||driver.user?.role!=='DRIVER'||!active.length) {
       await tx.driverLocation.deleteMany({where:{driverId:riderUserId}});return {loc:null,driver,active};
     }
+    const previous=await tx.driverLocation.findUnique({where:{driverId:riderUserId}});
+    const fix=validateGpsFix(lat,lng,metadata,previous);
     const h=typeof heading==='number'&&Number.isFinite(heading)?((heading%360)+360)%360:0,name=driver.user?.name||driver.name;
-    const loc=await tx.driverLocation.upsert({where:{driverId:riderUserId},update:{lat:lat as number,lng:lng as number,heading:h,driverName:name,lastUpdated:new Date()},create:{driverId:riderUserId,driverName:name,lat:lat as number,lng:lng as number,heading:h}});
+    const loc=await tx.driverLocation.upsert({where:{driverId:riderUserId},update:{lat:lat as number,lng:lng as number,heading:h,driverName:name,accuracyMeters:fix.accuracyMeters,measuredAt:fix.measuredAt,lastUpdated:new Date()},create:{driverId:riderUserId,driverName:name,lat:lat as number,lng:lng as number,heading:h,accuracyMeters:fix.accuracyMeters,measuredAt:fix.measuredAt}});
     return {loc,driver,active};
   });
   if(!result.loc) throw Object.assign(new Error('Location sharing is allowed only during an active assigned delivery.'),{status:409,code:'NO_ACTIVE_DELIVERY'});

@@ -8,7 +8,7 @@ import os from 'os';
 import path from 'path';
 import supertest from 'supertest';
 import jwt from 'jsonwebtoken';
-import { prisma, cleanTestOrders } from '../harness/db';
+import { prisma, cleanTestOrders, ensureTestCategories } from '../harness/db';
 import { startTestServer, stopTestServer, TestServerInstance } from '../harness/app';
 import { generateTestToken } from '../harness/auth';
 import { setPaymentProvider } from '../../src/services/paymentService';
@@ -86,6 +86,8 @@ describe('Backend hardening', () => {
 
   beforeAll(async () => {
     await cleanTestOrders();
+    // Product creation must have its taxonomy when this suite runs on a fresh database by itself.
+    await ensureTestCategories();
     W = await createWorld('hd', '8', { customers: 4, vendors: 2, riders: 3 });
     server = await startTestServer(0);
     api = createApi(server.baseUrl);
@@ -289,7 +291,7 @@ describe('Backend hardening', () => {
       // (Bug hunt BE1-01: an abandoned checkout is replaced by the next one, so each order gets a payment in flight to stay "live".)
       const a = await api.place(c1, v1, { couponCode: 'KRAVEO20' });
       expect((await api.createPayment(c1, a.body.data.id)).status).toBe(200);
-      const b = await api.place(c1, v1, { couponCode: 'KRAVEO20' });
+      const b = await api.place(c1, W.vendors[1], { couponCode: 'KRAVEO20' });
       expect((await api.createPayment(c1, b.body.data.id)).status).toBe(200);
       const c = await api.place(c1, v1, { couponCode: 'KRAVEO20' });
       expect([a.status, b.status, c.status]).toEqual([201, 201, 400]);
@@ -599,7 +601,8 @@ describe('Backend hardening', () => {
   // 8. Config guards
   // =========================================================================================
   describe('8. configuration', () => {
-    const FULL = { JWT_SECRET: 's', DATABASE_URL: 'postgresql://x', ADMIN_PASSCODE: 'p', RAZORPAY_KEY_ID: 'k', RAZORPAY_KEY_SECRET: 'ks', RAZORPAY_WEBHOOK_SECRET: 'w', GOOGLE_WEB_CLIENT_ID: 'g' };
+    // Configuration now validates a selected database as well as a PostgreSQL scheme.
+    const FULL = { JWT_SECRET: 's', DATABASE_URL: 'postgresql://localhost/config_fixture_test', ADMIN_PASSCODE: 'p', RAZORPAY_KEY_ID: 'k', RAZORPAY_KEY_SECRET: 'ks', RAZORPAY_WEBHOOK_SECRET: 'w', GOOGLE_WEB_CLIENT_ID: 'g' };
 
     test('assertRuntimeConfig: every hard setting is required, GOOGLE_WEB_CLIENT_ID is only a warning', () => {
       expect(assertRuntimeConfig(FULL)).toEqual({ warnings: [] });

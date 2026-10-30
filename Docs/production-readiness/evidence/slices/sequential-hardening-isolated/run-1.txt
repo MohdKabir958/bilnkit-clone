@@ -1,0 +1,67 @@
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order b49f68e4-afaf-4d94-ac7a-9d9306122faf
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 10
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order c4c14f2f-d9ae-47a8-9b36-d0f4f824c5f4
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 20
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order f4a9ea6f-c028-4583-a935-4f55b711b366
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 30
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order f76f7ebd-8eb8-49de-8c89-e45d0da49368
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (hd-cust-2) earned +10 Grozo Coins! Total Balance: 10
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order c7677f16-e04b-435f-81e5-60905be4686c
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (hd-cust-1) earned +10 Grozo Coins! Total Balance: 40
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 9568081c-4ef1-4d46-b346-7245ca5e87c3
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order af080087-a328-44bc-a4a5-ea4208c2ea36
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+Test Suites: 1 passed, 1 total
+Tests:       40 passed, 40 total
+Snapshots:   0 total
+Time:        29.401 s
+Ran all test suites matching test/e2e/hardening.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/sequential-hardening-isolated/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

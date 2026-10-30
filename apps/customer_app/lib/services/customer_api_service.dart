@@ -8,11 +8,24 @@ import '../config/api_config.dart';
 import '../models/auth_results.dart';
 import '../models/food_category.dart';
 
+/// A catalog HTTP failure with non-sensitive details suitable for mapping to user guidance.
+/// Never include bearer tokens, response bodies or private account data in diagnostics.
+class CatalogApiFailure implements Exception {
+  const CatalogApiFailure(this.statusCode, {this.code, this.field});
+  final int statusCode;
+  final String? code;
+  final String? field;
+
+  @override
+  String toString() => 'Catalog request failed: HTTP $statusCode, code: ${code ?? 'unknown'}';
+}
+
 class CustomerApiService {
   static String? selectedAddressId;
   static const String _tokenPrefKey = 'kraveo_customer_jwt_token';
   static String? _cachedToken;
   static int _tokenEpoch = 0;
+  static int _profileEpoch = 0;
 
   /// Message shown (and thrown) when an authenticated call is rejected with HTTP 401.
   static const String sessionExpiredMessage =
@@ -119,6 +132,7 @@ class CustomerApiService {
   /// Clears the persisted student session after logout or token rejection.
   static Future<void> clearToken() async {
     _tokenEpoch++;
+    _profileEpoch++;
     selectedAddressId = null;
     _cachedToken = null;
     try {
@@ -131,14 +145,29 @@ class CustomerApiService {
   /// [onUnauthorized] fires; on network trouble the token is kept so the user is not
   /// logged out just because they opened the app offline.
   static Future<ProfileResult?> fetchProfile() async {
+    final epoch = ++_profileEpoch;
     try {
       final token = await getSavedToken();
+      final identity = ClerkSessions.instance.identity.value;
+      if (epoch != _profileEpoch) return null;
       if (token == null || token.isEmpty) return null;
       final response = await _get(
         Uri.parse('${ApiConfig.baseUrl}/auth/profile'),
-        headers: await getAuthHeaders(),
+        headers: {
+          ...ApiConfig.clientHeaders,
+          'Content-Type': 'application/json',
+          'Authorization':
+              token.startsWith('Bearer ') ? token : 'Bearer $token',
+        },
         timeout: const Duration(seconds: 10),
       );
+      final current = ClerkSessions.instance.identity.value;
+      if (epoch != _profileEpoch ||
+          (GrozoAuthConfig.usesClerk &&
+              (identity.userId != current.userId ||
+                  identity.sessionId != current.sessionId))) {
+        return null;
+      }
       if (await _rejectIfUnauthorized(response)) {
         return const ProfileResult(
             success: false, statusCode: 401, message: sessionExpiredMessage);
@@ -265,11 +294,11 @@ class CustomerApiService {
       }).query;
       final response =
           await authorizedRequest('GET', '/v1/vendors/nearby?$query');
-      final body = jsonDecode(response.body);
-      if (response.statusCode != 200 || body is! Map || body['data'] is! List) {
-        throw Exception(body is Map
-            ? body['message'] ?? 'Unable to load nearby stores.'
-            : 'Unable to load nearby stores.');
+      final body = _json(response);
+      if (response.statusCode != 200 || body['data'] is! List) {
+        throw CatalogApiFailure(response.statusCode,
+            code: body['code'] is String ? body['code'] as String : null,
+            field: body['field'] is String ? body['field'] as String : null);
       }
       vendors.addAll((body['data'] as List)
           .whereType<Map>()
@@ -359,6 +388,7 @@ class CustomerApiService {
   static Future<Map<String, String>> getAuthHeaders() async {
     final token = await getSavedToken();
     final headers = <String, String>{
+      ...ApiConfig.clientHeaders,
       'Content-Type': 'application/json',
     };
     if (token != null && token.isNotEmpty) {

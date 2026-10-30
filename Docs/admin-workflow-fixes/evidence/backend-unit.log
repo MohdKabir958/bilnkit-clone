@@ -1,0 +1,35 @@
+node:events:487
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EPERM: operation not permitted 0.0.0.0
+    at Server.setupListenHandle [as _listen2] (node:net:2145:21)
+    at listenInCluster (node:net:2224:12)
+    at Server.listen (node:net:2344:7)
+    at Test.serverAddress (/workspace/bilnkit-clone/backend/node_modules/supertest/lib/test.js:63:35)
+    at new Test (/workspace/bilnkit-clone/backend/node_modules/supertest/lib/test.js:49:14)
+    at Object.obj.<computed> [as get] (/workspace/bilnkit-clone/backend/node_modules/supertest/index.js:40:18)
+    at Object.<anonymous> (/workspace/bilnkit-clone/backend/test/unit/deployment_contract.test.ts:58:66)
+    at Promise.finally.completed (/workspace/bilnkit-clone/backend/node_modules/jest-circus/build/jestAdapterInit.js:1561:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/workspace/bilnkit-clone/backend/node_modules/jest-circus/build/jestAdapterInit.js:1501:10)
+    at _callCircusTest (/workspace/bilnkit-clone/backend/node_modules/jest-circus/build/jestAdapterInit.js:1011:40)
+    at _runTest (/workspace/bilnkit-clone/backend/node_modules/jest-circus/build/jestAdapterInit.js:951:3)
+    at /workspace/bilnkit-clone/backend/node_modules/jest-circus/build/jestAdapterInit.js:853:7
+    at _runTestsForDescribeBlock (/workspace/bilnkit-clone/backend/node_modules/jest-circus/build/jestAdapterInit.js:866:11)
+    at _runTestsForDescribeBlock (/workspace/bilnkit-clone/backend/node_modules/jest-circus/build/jestAdapterInit.js:861:11)
+    at run (/workspace/bilnkit-clone/backend/node_modules/jest-circus/build/jestAdapterInit.js:765:3)
+    at runAndTransformResultsToJestFormat (/workspace/bilnkit-clone/backend/node_modules/jest-circus/build/jestAdapterInit.js:1993:21)
+    at jestAdapter (/workspace/bilnkit-clone/backend/node_modules/jest-circus/build/runner.js:111:19)
+    at runTestInternal (/workspace/bilnkit-clone/backend/node_modules/jest-runner/build/index.js:276:16)
+    at runTest (/workspace/bilnkit-clone/backend/node_modules/jest-runner/build/index.js:344:7)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:2203:8)
+    at processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EPERM',
+  errno: -1,
+  syscall: 'listen',
+  address: '0.0.0.0'
+}
+
+Node.js v24.19.0

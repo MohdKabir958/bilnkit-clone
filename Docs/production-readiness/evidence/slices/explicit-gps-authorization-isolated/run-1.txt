@@ -1,0 +1,12 @@
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 73a0bb54-2449-4a6b-b9f3-6bf770305577
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+Test Suites: 1 passed, 1 total
+Tests:       12 passed, 12 total
+Snapshots:   0 total
+Time:        8.702 s, estimated 28 s
+Ran all test suites matching test/e2e/marketplace_workflow.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/explicit-gps-authorization-isolated/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

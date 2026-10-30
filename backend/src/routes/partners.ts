@@ -11,7 +11,7 @@ import { dropFromPartnerRooms, addToPartnerRooms } from '../realtime';
 import { errSummary } from '../utils/log';
 import { clientIp } from '../middleware/rateLimit';
 import { NAME_RE } from '../utils/names';
-import { validParams } from '../utils/http';
+import { validParams,ID_RE } from '../utils/http';
 import { disableUserTokens } from '../services/push/deviceTokens';
 import { checkVendorLocation } from '../config/campus';
 import { vendorLocationView, checkAccuracy, devicePinData, describePin } from '../services/vendorLocation';
@@ -533,14 +533,16 @@ const applicationRow = (kind: Kind, row: any) => ({
 
 partnerRouter.get('/admin/applications', requireAuth, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
   try {
+    const cityId=req.query.cityId;if(cityId!==undefined&&(typeof cityId!=='string'||!ID_RE.test(cityId)))return res.status(400).json({success:false,field:'cityId',message:'Choose a valid city.'});
+    const cityWhere=cityId?{cityId:String(cityId)}:{};
     const wanted = String(req.query.status ?? 'PENDING').toUpperCase();
     const kindFilter = String(req.query.kind ?? '').toUpperCase();
     const statusWhere = wanted === 'ALL' ? {} : (['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'].includes(wanted) ? { approvalStatus: wanted as ApprovalStatus } : { approvalStatus: 'PENDING' as ApprovalStatus });
     const [vendors, drivers, vc, dc] = await Promise.all([
-      kindFilter === 'DRIVER' ? [] : retryStaleRead(() => prisma.vendor.findMany({ where: { ...statusWhere, userId: { not: null } }, include: { user: { select: { id: true, name: true, phone: true } }, ...CUISINES_INCLUDE }, orderBy: { createdAt: 'desc' }, take: 200 })),
-      kindFilter === 'VENDOR' ? [] : prisma.driverPartner.findMany({ where: statusWhere, include: { user: { select: { id: true, name: true, phone: true } } }, orderBy: { createdAt: 'desc' }, take: 200 }),
-      prisma.vendor.groupBy({ by: ['approvalStatus'], _count: true, where: { userId: { not: null } } }),
-      prisma.driverPartner.groupBy({ by: ['approvalStatus'], _count: true }),
+      kindFilter === 'DRIVER' ? [] : retryStaleRead(() => prisma.vendor.findMany({ where: { ...statusWhere,...cityWhere, userId: { not: null } }, include: { user: { select: { id: true, name: true, phone: true } }, ...CUISINES_INCLUDE }, orderBy: { createdAt: 'desc' }, take: 200 })),
+      kindFilter === 'VENDOR' ? [] : prisma.driverPartner.findMany({ where:{...statusWhere,...cityWhere}, include: { user: { select: { id: true, name: true, phone: true } } }, orderBy: { createdAt: 'desc' }, take: 200 }),
+      prisma.vendor.groupBy({ by: ['approvalStatus'], _count: true, where: {...cityWhere, userId: { not: null } } }),
+      prisma.driverPartner.groupBy({ by: ['approvalStatus'], _count: true,where:cityWhere }),
     ]);
     const counts: Record<string, number> = { PENDING: 0, APPROVED: 0, REJECTED: 0, SUSPENDED: 0 };
     for (const g of [...vc, ...dc]) counts[g.approvalStatus] += g._count;

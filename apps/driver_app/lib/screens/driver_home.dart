@@ -13,6 +13,7 @@ import '../widgets/ui/icon_action.dart';
 import '../widgets/ui/radar_pulse.dart';
 import '../widgets/ui/screen_header.dart';
 import '../services/driver_api_service.dart';
+import '../services/support_api.dart';
 import '../services/payout/payout_api.dart';
 import '../services/payout/payout_controller.dart';
 import '../services/push/push_controller.dart';
@@ -148,6 +149,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   @override
   void onPushForeground(PushPayload payload) {
     if (!mounted) return;
+    if (payload.caseId != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('Support has replied to your request.'),
+          action: SnackBarAction(
+              label: 'Read reply', onPressed: () => onPushTap(payload))));
+      return;
+    }
     // The app is open and already updates over the socket: no banner, just one refresh. An off-duty rider has no pool.
     if (payload.event == PushEvent.newDelivery && !_rider.onDuty) return;
     unawaited(_rider.pollNow());
@@ -156,11 +164,23 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   @override
   void onPushTap(PushPayload payload) {
     if (!mounted) return;
+    if (payload.caseId != null) {
+      Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+              builder: (_) => SupportCenter(
+                  call: SupportApi.call, initialCaseId: payload.caseId)));
+      return;
+    }
     // Close pushed pages (runner pass, ...) but leave any open dialog alone.
     Navigator.of(context)
         .popUntil((route) => route.isFirst || route is! PageRoute);
     switch (payload.event) {
+      case PushEvent.supportUpdated:
+        break;
       case PushEvent.newDelivery:
+        // Even an expired notification opens only the refreshed offers list. The
+        // server owns expiry/eligibility; notification data never accepts a job.
         _goTab(0);
         if (_rider.onDuty) unawaited(_rider.pollNow());
       case PushEvent.pickupReady:

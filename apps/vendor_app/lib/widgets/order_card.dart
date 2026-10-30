@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:kraveo_ui/kraveo_ui.dart';
 import '../models/order_model.dart';
+import '../screens/order_adjustment_screen.dart';
 import '../services/failure_messages.dart';
 import '../services/order_queue_controller.dart';
 import 'group_note.dart';
@@ -232,6 +233,11 @@ class _OrderCardState extends State<OrderCard> {
 
           const SizedBox(height: 10),
           _MetaLine(order: order),
+          if (order.riderAtPickup && inKitchen)
+            Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text('Delivery partner is waiting at pickup',
+                    style: KraveoType.body.copyWith(color: k.ink))),
           if (order.isGrouped && !status.isTerminal) ...[
             const SizedBox(height: 10),
             GroupNote(order: order),
@@ -267,6 +273,22 @@ class _OrderCardState extends State<OrderCard> {
 
           const SizedBox(height: 14),
 
+          if ((isAccepted || isPreparing) && order.vendorId != null) ...[
+            TextButton.icon(
+                onPressed: busy
+                    ? null
+                    : () async {
+                        await Navigator.push<void>(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    OrderAdjustmentScreen(orderId: order.id)));
+                        await _c.refresh();
+                      },
+                icon: const Icon(Icons.rule_outlined),
+                label: const Text('Report shortage / propose replacement')),
+            const SizedBox(height: 8),
+          ],
           // ONE obvious action for this state
           if (isIncoming)
             KButton(

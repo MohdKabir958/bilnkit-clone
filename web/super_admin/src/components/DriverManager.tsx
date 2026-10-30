@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Bike, ChevronRight, Moon, Phone, Plus, SearchX, Truck, Users, Zap } from 'lucide-react';
 import { DriverPartner, Order } from '../types';
 import { tripsTodayByRider } from '../lib/dashboardStats';
+import {RiderInvitationForm,RiderInvitationsPanel} from './RiderInvitations';
 import {CreateRiderDrawer} from './CreateRiderDrawer';
 import {clerkAuthEnabled} from '../services/api';
 import { AddPartnerDrawer } from './AddPartnerDrawer';
@@ -62,6 +63,7 @@ const NO_ORDERS: Order[] = [];
 export const DriverManager: React.FC<DriverManagerProps> = ({ selectedCityId='',onOpenCoverage,onOpenApplications,onAuthError,drivers, orders = NO_ORDERS, now = Date.now(), onCreated, loading = false, query = '', onClearQuery }) => {
   const [filter, setFilter] = useState<DutyFilter>('ALL');
   const [showAdd, setShowAdd] = useState(false);
+  const [showInvite,setShowInvite]=useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selectedDriver = drivers.find((d) => d.id === selectedId) ?? null;
 
@@ -112,7 +114,7 @@ export const DriverManager: React.FC<DriverManagerProps> = ({ selectedCityId='',
           </button>
         ))}
       </div>
-      <button onClick={() => setShowAdd(true)} className="k-btn-accent"><Plus className="h-4 w-4" aria-hidden="true" /> Add rider</button>
+      <div className="flex flex-wrap gap-2">{clerkAuthEnabled&&<button className="k-btn-ghost" onClick={()=>setShowInvite(true)}>Invite rider</button>}{onOpenApplications&&<button className="k-btn-ghost" onClick={onOpenApplications}>Review applications</button>}<button onClick={() => setShowAdd(true)} className="k-btn-accent"><Plus className="h-4 w-4" aria-hidden="true" /> Add rider</button></div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 2xl:grid-cols-3">
@@ -180,6 +182,7 @@ export const DriverManager: React.FC<DriverManagerProps> = ({ selectedCityId='',
           </div>
         )}
       </Drawer>
+      {clerkAuthEnabled&&<><RiderInvitationsPanel onAuthError={onAuthError??(()=>{})}/><Drawer open={showInvite} onClose={()=>setShowInvite(false)} title="Invite delivery partner"><RiderInvitationForm onAuthError={onAuthError}/></Drawer></>}
       {clerkAuthEnabled?<CreateRiderDrawer open={showAdd} initialCityId={selectedCityId} onClose={()=>setShowAdd(false)} onCreated={()=>onCreated?.()} onAuthError={onAuthError} onOpenCoverage={onOpenCoverage} onOpenApplications={onOpenApplications}/>:<AddPartnerDrawer open={showAdd} kind="DRIVER" onClose={() => setShowAdd(false)} onCreated={() => onCreated?.()} />}
     </div>
   );

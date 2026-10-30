@@ -6,6 +6,8 @@ import { createRoot, Root } from 'react-dom/client';
 import { ToastProvider } from './ui/Toast';
 import { ErrorBoundary } from './ErrorBoundary';
 import { NeedsAttentionPanel } from './NeedsAttentionPanel';
+import {apiService} from '../services/api';
+import {mockVendorDirectory} from '../test/vendorDirectory';
 import { VendorManager } from './VendorManager';
 import { DriverManager } from './DriverManager';
 import { OrdersTable } from './OrdersTable';
@@ -109,24 +111,21 @@ describe('WEB-18 confirm before OTP reset and refund retry', () => {
 });
 
 describe('WEB-01 / WEB-18 VendorManager', () => {
-  const orders = [order('1'), order('2', { status: 'PREPARING' }), order('3', { status: 'DELIVERED' }), order('4', { vendorId: 'v2', status: 'PLACED' })];
-
-  it('"Active orders" is counted from the loaded orders, not the missing server field', async () => {
-    const h = await mount(<VendorManager vendors={[vendor(), vendor({ id: 'v2', name: 'Campus Cafe' }), vendor({ id: 'v3', name: 'Quiet Kitchen' })]} orders={orders} onToggleVendor={() => {}} />);
-    const cards = Array.from(h.querySelectorAll('article'));
-    const active = (name: string) => cards.find((c) => c.textContent?.includes(name))!.textContent!.match(/Active orders(\d+)/)?.[1];
-    expect(active('Sharma Dhaba')).toBe('2');
-    expect(active('Campus Cafe')).toBe('1');
-    expect(active('Quiet Kitchen')).toBe('0');
+  it('current-order counts come from the complete server directory, independently of loaded order pages', async () => {
+    const list=[vendor({activeOrdersCount:12}),vendor({id:'v2',name:'Synthetic Store Two',activeOrdersCount:7}),vendor({id:'v3',name:'Synthetic Store Three',activeOrdersCount:0})];
+    mockVendorDirectory(list);
+    const h=await mount(<VendorManager vendors={list} orders={[]} onToggleVendor={()=>{}}/>);
+    const cards=Array.from(h.querySelectorAll('button[aria-label^="View details of"]'));
+    expect(cards).toHaveLength(3);expect(cards[0].textContent).toContain('12 current orders');expect(cards[1].textContent).toContain('7 current orders');expect(cards[2].textContent).toContain('0 current orders');
   });
-
-  it('the switch is disabled while that restaurant\'s request is running', async () => {
-    const onToggle = vi.fn();
-    const h = await mount(<VendorManager vendors={[vendor()]} orders={orders} busyVendorIds={new Set(['v1'])} onToggleVendor={onToggle} />);
-    const sw = h.querySelector('[role="switch"]') as HTMLButtonElement;
-    expect(sw.disabled).toBe(true);
-    await click(sw);
-    expect(onToggle).not.toHaveBeenCalled();
+  it('the compact detail control is disabled during a server write and prevents duplicate mutations', async () => {
+    const store=vendor();mockVendorDirectory([store]);vi.spyOn(window,'confirm').mockReturnValue(true);
+    let finish!:(v:Vendor)=>void;const toggle=vi.spyOn(apiService,'toggleVendorStatus').mockImplementation(()=>new Promise(resolve=>{finish=resolve;}));
+    const h=await mount(<VendorManager vendors={[store]} onToggleVendor={()=>{}}/>);
+    await click(h.querySelector('button[aria-label^="View details of"]')!);await flush();
+    const control=[...document.querySelectorAll('button')].find(b=>b.textContent==='Close store')!;await click(control);expect(control.disabled).toBe(true);await click(control);expect(toggle).toHaveBeenCalledTimes(1);
+    await act(async()=>finish({...store,isAcceptingOrders:false}));
+    expect([...document.querySelectorAll('button')].some(b=>b.textContent==='Open store')).toBe(true);
   });
 });
 

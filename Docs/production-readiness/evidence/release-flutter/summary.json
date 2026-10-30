@@ -1,0 +1,50 @@
+[
+  {
+    "app": "customer",
+    "command": "flutter test --no-pub --concurrency=2 --reporter json",
+    "passed": 480,
+    "failed": 0,
+    "skipped": 4,
+    "skippedTests": [
+      "capture customer loading empty and offline HTTP states",
+      "capture implemented item-change approval using synthetic service fixtures",
+      "capture customer production screens using isolated grocery fixtures",
+      "capture actual reference implementation"
+    ],
+    "elapsedMs": 84188,
+    "success": true,
+    "exitCode": 0,
+    "analysis": "No issues found",
+    "frozenDependencies": true
+  },
+  {
+    "app": "vendor",
+    "command": "flutter test --no-pub --concurrency=2 --reporter json",
+    "passed": 538,
+    "failed": 0,
+    "skipped": 1,
+    "skippedTests": [
+      "capture vendor production screens with isolated service fixtures"
+    ],
+    "elapsedMs": 94823,
+    "success": true,
+    "exitCode": 0,
+    "analysis": "No issues found",
+    "frozenDependencies": true
+  },
+  {
+    "app": "driver",
+    "command": "flutter test --no-pub --concurrency=2 --reporter json",
+    "passed": 418,
+    "failed": 0,
+    "skipped": 1,
+    "skippedTests": [
+      "capture rider production screens with isolated service fixtures"
+    ],
+    "elapsedMs": 67658,
+    "success": true,
+    "exitCode": 0,
+    "analysis": "No issues found",
+    "frozenDependencies": true
+  }
+]

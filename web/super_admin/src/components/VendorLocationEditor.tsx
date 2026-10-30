@@ -1,3 +1,4 @@
+import {PickupLocationPicker} from './PickupLocationPicker';
 import React, { useState } from 'react';
 import { ExternalLink, Loader2 } from 'lucide-react';
 import { apiService } from '../services/api';
@@ -39,19 +40,21 @@ export const VendorLocationEditor: React.FC<Props> = ({ id, name, pin, onSaved, 
   const [text, setText] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [candidate,setCandidate]=useState({lat:'',lng:''}),[pinConfirmed,setPinConfirmed]=useState(false),[method,setMethod]=useState('MANUAL');
   const has = vendorHasRealPin(pin);
   const inputId = `vloc-${id}`;
 
-  const open = () => { setText(has && typeof pin.lat === 'number' && typeof pin.lng === 'number' ? formatLatLng(pin.lat, pin.lng) : ''); setError(''); setEditing(true); };
+  const open = () => {setCandidate({lat:has?String(pin.lat):'',lng:has?String(pin.lng):''});setPinConfirmed(false);setMethod('MANUAL'); setText(has && typeof pin.lat === 'number' && typeof pin.lng === 'number' ? formatLatLng(pin.lat, pin.lng) : ''); setError(''); setEditing(true); };
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = parseLocationInput(text);
     if (!parsed.ok) { setError(parsed.message); return; }
+    if(!pinConfirmed){setError('Confirm the exact pickup pin before saving.');return;}
     setSaving(true); setError('');
     try {
-      const saved = await apiService.setVendorLocation(id, parsed.lat, parsed.lng);
+      const saved = await apiService.saveConfirmedPickup(id, parsed.lat, parsed.lng,method);
       onSaved?.(id, saved);
-      toast.success('Location saved', `${name} is now on the map.`);
+      toast.success('Location saved', `${name}: review coverage before reopening after a moved pickup.`);
       setEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The location could not be saved.');
@@ -77,9 +80,11 @@ export const VendorLocationEditor: React.FC<Props> = ({ id, name, pin, onSaved, 
       </div>
       {editing && (
         <form onSubmit={save} className="mt-3 space-y-2" noValidate>
-          <Field label="Location (paste from Google Maps, e.g. 23.0745, 76.8590)" htmlFor={inputId} error={error}>
-            <input id={inputId} className="k-input" inputMode="decimal" autoComplete="off" autoFocus value={text} onChange={(e) => { setText(e.target.value); setError(''); }} placeholder="23.0745, 76.8590" aria-invalid={Boolean(error)} aria-describedby={error ? `${inputId}-msg` : undefined} />
-          </Field>
+          <PickupLocationPicker lat={candidate.lat} lng={candidate.lng} confirmed={pinConfirmed} initialQuery={name} onChange={p=>{setCandidate({lat:String(p.lat),lng:String(p.lng)});setText(`${p.lat}, ${p.lng}`);setMethod(p.method);setPinConfirmed(false);setError('');}} onConfirm={()=>setPinConfirmed(true)}/>
+          <p className="text-xs text-kraveo-ink2">Moving this pickup closes the store and pauses coverage for review. Current orders must finish first.</p>
+          <details><summary className="cursor-pointer text-sm">Paste verified map coordinates</summary><Field label="Location (paste from Google Maps, e.g. 23.0745, 76.8590)" htmlFor={inputId} error={error}>
+            <input id={inputId} className="k-input" inputMode="decimal" autoComplete="off" autoFocus value={text} onChange={(e) => { setText(e.target.value);setPinConfirmed(false);setMethod('MANUAL');const p=parseLocationInput(e.target.value);setCandidate({lat:p.ok?String(p.lat):'',lng:p.ok?String(p.lng):''}); setError(''); }} placeholder="23.0745, 76.8590" aria-invalid={Boolean(error)} aria-describedby={error ? `${inputId}-msg` : undefined} />
+          </Field></details>
           <div className="flex gap-2">
             <button type="button" className="k-btn-ghost flex-1 !min-h-[44px] text-xs" onClick={() => setEditing(false)} disabled={saving}>Cancel</button>
             <button type="submit" className="k-btn-primary flex-1 !min-h-[44px] text-xs" disabled={saving} aria-busy={saving}>{saving ? <><Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />Saving…</> : 'Save location'}</button>

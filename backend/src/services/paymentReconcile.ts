@@ -134,7 +134,7 @@ export const reconcilePendingPayments = async (now: Date, breaker: Breaker): Pro
       return { transient: perr.transient };
     }
     const found = items.find((i) => i.status === 'captured') ?? items.find((i) => i.status === 'authorized');
-    if (!found) return;
+    if (!found) { await prisma.payment.updateMany({where:{id:row.id,status:{in:['PENDING','FAILED']}},data:{lastProviderCheckedAt:now,providerStatus:items.some(i=>i.status!=='failed')?'PROCESSING':'NO_CAPTURE'}}); return; }
     const expectedPaise = Math.round(payableAmount(row.order) * 100);
     const check = await confirmPayment(found, { razorpayOrderId: row.razorpayOrderId, expectedPaise });
     if (check.kind === 'UNAVAILABLE') return { transient: check.transient };

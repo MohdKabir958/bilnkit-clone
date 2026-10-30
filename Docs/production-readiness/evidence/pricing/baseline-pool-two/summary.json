@@ -1,0 +1,23 @@
+{
+  "database": "grozo_pricing_1792955867402_test",
+  "connectionLimit": 2,
+  "poolTimeoutSeconds": 1,
+  "command": [
+    "node",
+    "/tmp/grozo-pricing-run.mjs",
+    "baseline-pool-two",
+    "2",
+    "1",
+    "--testNamePattern=recalculate and edits running together"
+  ],
+  "results": [
+    {
+      "round": 1,
+      "exitCode": 1,
+      "durationMs": 8136,
+      "passed": 0,
+      "failed": 1,
+      "skipped": 42
+    }
+  ]
+}

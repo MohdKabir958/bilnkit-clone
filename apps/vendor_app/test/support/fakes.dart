@@ -22,7 +22,8 @@ Map<String, dynamic> orderJson({
   List<Map<String, dynamic>>? items,
   double total = 245,
 }) {
-  final created = createdAt ?? DateTime.now().toUtc().subtract(const Duration(minutes: 1));
+  final created =
+      createdAt ?? DateTime.now().toUtc().subtract(const Duration(minutes: 1));
   return {
     'id': id,
     'status': status,
@@ -36,28 +37,70 @@ Map<String, dynamic> orderJson({
     'dropoffNotes': dropoffNotes,
     'createdAt': created.toUtc().toIso8601String(),
     'updatedAt': (updatedAt ?? created).toUtc().toIso8601String(),
-    'paidAt': (paidAt ?? (paymentStatus == 'PENDING' ? null : created))?.toUtc().toIso8601String(),
+    'paidAt': (paidAt ?? (paymentStatus == 'PENDING' ? null : created))
+        ?.toUtc()
+        .toIso8601String(),
     'acceptedAt': acceptedAt?.toUtc().toIso8601String(),
     'pickedUpAt': null,
     'deliveredAt': null,
-    'cancelledAt': status == 'CANCELLED' ? (updatedAt ?? created).toUtc().toIso8601String() : null,
+    'cancelledAt': status == 'CANCELLED'
+        ? (updatedAt ?? created).toUtc().toIso8601String()
+        : null,
     'cancelledBy': cancelledBy,
     'cancelReason': cancelReason,
     'items': items ??
         [
-          {'id': 'oi-1', 'menuItemId': 'm-1', 'name': 'Paneer Butter Masala', 'quantity': 1, 'price': 180.0},
-          {'id': 'oi-2', 'menuItemId': 'm-2', 'name': 'Tandoori Roti', 'quantity': 2, 'price': 12.5},
+          {
+            'id': 'oi-1',
+            'menuItemId': 'm-1',
+            'name': 'Paneer Butter Masala',
+            'quantity': 1,
+            'price': 180.0
+          },
+          {
+            'id': 'oi-2',
+            'menuItemId': 'm-2',
+            'name': 'Tandoori Roti',
+            'quantity': 2,
+            'price': 12.5
+          },
         ],
-    'vendor': {'id': 'ven-42', 'name': 'Sharma Dhaba', 'address': 'Ashta Road', 'lat': 23.07, 'lng': 76.85},
-    'customer': {'id': 'cust-1', 'name': customerName, 'phone': null, 'hostelBlock': 'BH1'},
+    'vendor': {
+      'id': 'ven-42',
+      'name': 'Sharma Dhaba',
+      'address': 'Ashta Road',
+      'lat': 23.07,
+      'lng': 76.85
+    },
+    'customer': {
+      'id': 'cust-1',
+      'name': customerName,
+      'phone': null,
+      'hostelBlock': 'BH1'
+    },
     'driver': driver,
     'vendorId': 'ven-42',
     // Like the server: the accept deadline is only sent while PLACED + PAID.
-    'acceptBy': status == 'PLACED' && paymentStatus == 'PAID' ? (paidAt ?? created).add(const Duration(minutes: 10)).toUtc().toIso8601String() : null,
+    'acceptBy': status == 'PLACED' && paymentStatus == 'PAID'
+        ? (paidAt ?? created)
+            .add(const Duration(minutes: 10))
+            .toUtc()
+            .toIso8601String()
+        : null,
   };
 }
 
-OrderModel order({String id = 'ord-a1b2c3', String status = 'PLACED', String paymentStatus = 'PAID', DateTime? updatedAt, DateTime? createdAt, Map<String, dynamic>? driver, String? cancelledBy, String? cancelReason, String? notes, List<Map<String, dynamic>>? items}) =>
+OrderModel order(
+        {String id = 'ord-a1b2c3',
+        String status = 'PLACED',
+        String paymentStatus = 'PAID',
+        DateTime? updatedAt,
+        DateTime? createdAt,
+        Map<String, dynamic>? driver,
+        String? cancelledBy,
+        String? cancelReason,
+        String? notes,
+        List<Map<String, dynamic>>? items}) =>
     OrderModel.fromJson(orderJson(
       id: id,
       status: status,
@@ -78,7 +121,8 @@ class FakeBackend implements VendorBackend {
   final List<String> calls = [];
 
   /// Override the next answers (consumed first-in first-out) for a call kind.
-  ApiResult<OrdersPage>? Function(OrderScope scope, String? cursor)? onFetchOrders;
+  ApiResult<OrdersPage>? Function(OrderScope scope, String? cursor)?
+      onFetchOrders;
   final List<ApiResult<OrderModel>> statusAnswers = [];
   final List<ApiResult<OrderModel>> rejectAnswers = [];
   final List<ApiResult<OrderModel>> fetchOrderAnswers = [];
@@ -99,14 +143,16 @@ class FakeBackend implements VendorBackend {
 
   void put(OrderModel o) => server[o.id] = o;
 
-  OrderModel _advance(OrderModel o, OrderStatus to, {CancelledBy? by, String? reason}) {
+  OrderModel _advance(OrderModel o, OrderStatus to,
+      {CancelledBy? by, String? reason}) {
     final j = orderJson(
       id: o.id,
       status: to.wire,
       paymentStatus: to == OrderStatus.cancelled ? 'REFUNDED' : 'PAID',
       createdAt: o.createdAt,
       updatedAt: o.createdAt.add(Duration(seconds: 30 + (++_version))),
-      acceptedAt: to.rank >= 1 && to != OrderStatus.cancelled ? DateTime.now() : null,
+      acceptedAt:
+          to.rank >= 1 && to != OrderStatus.cancelled ? DateTime.now() : null,
       cancelledBy: by?.name.toUpperCase(),
       cancelReason: reason,
     );
@@ -114,19 +160,27 @@ class FakeBackend implements VendorBackend {
   }
 
   /// What the real server does on its own (expiry job, customer cancel ...).
-  void serverChange(String id, OrderStatus to, {CancelledBy? by, String? reason}) => server[id] = _advance(server[id]!, to, by: by, reason: reason);
+  void serverChange(String id, OrderStatus to,
+          {CancelledBy? by, String? reason}) =>
+      server[id] = _advance(server[id]!, to, by: by, reason: reason);
 
   @override
-  Future<ApiResult<OrdersPage>> fetchOrders(OrderScope scope, {String? cursor, int limit = 50}) async {
+  Future<ApiResult<OrdersPage>> fetchOrders(OrderScope scope,
+      {String? cursor, int limit = 50}) async {
     calls.add('list:${scope.name}${cursor == null ? '' : ':$cursor'}');
     final override = onFetchOrders?.call(scope, cursor);
     if (override != null) return override;
     if (scope == OrderScope.active) {
-      return ApiResult.success(OrdersPage(orders: server.values.where((o) => o.isPaid || o.status.isTerminal).toList()));
+      return ApiResult.success(OrdersPage(
+          orders: server.values
+              .where((o) => o.isPaid || o.status.isTerminal)
+              .toList()));
     }
     final start = cursor == null ? 0 : int.parse(cursor);
     final page = history.skip(start).take(historyPageSize).toList();
-    final next = start + historyPageSize < history.length ? '${start + historyPageSize}' : null;
+    final next = start + historyPageSize < history.length
+        ? '${start + historyPageSize}'
+        : null;
     return ApiResult.success(OrdersPage(orders: page, nextCursor: next));
   }
 
@@ -135,17 +189,23 @@ class FakeBackend implements VendorBackend {
     calls.add('get:$id');
     if (fetchOrderAnswers.isNotEmpty) return fetchOrderAnswers.removeAt(0);
     final o = server[id];
-    return o == null ? const ApiResult.failure(ApiFailure.notFound) : ApiResult.success(o);
+    return o == null
+        ? const ApiResult.failure(ApiFailure.notFound)
+        : ApiResult.success(o);
   }
 
   @override
-  Future<ApiResult<OrderModel>> updateStatus(String id, OrderStatus status) async {
+  Future<ApiResult<OrderModel>> updateStatus(String id, OrderStatus status,
+      {int? preparationMinutes}) async {
     calls.add('status:$id:${status.wire}');
     if (gate != null) await gate!.future;
     if (statusAnswers.isNotEmpty) return statusAnswers.removeAt(0);
     final o = server[id];
     if (o == null) return const ApiResult.failure(ApiFailure.notFound);
-    if (o.status == OrderStatus.cancelled) return const ApiResult.failure(ApiFailure.conflict, message: 'Order was cancelled');
+    if (o.status == OrderStatus.cancelled) {
+      return const ApiResult.failure(ApiFailure.conflict,
+          message: 'Order was cancelled');
+    }
     server[id] = _advance(o, status);
     return ApiResult.success(server[id]);
   }
@@ -157,7 +217,8 @@ class FakeBackend implements VendorBackend {
     if (rejectAnswers.isNotEmpty) return rejectAnswers.removeAt(0);
     final o = server[id];
     if (o == null) return const ApiResult.failure(ApiFailure.notFound);
-    server[id] = _advance(o, OrderStatus.cancelled, by: CancelledBy.vendor, reason: reason);
+    server[id] = _advance(o, OrderStatus.cancelled,
+        by: CancelledBy.vendor, reason: reason);
     return ApiResult.success(server[id]);
   }
 
@@ -183,16 +244,22 @@ class FakeBackend implements VendorBackend {
   }
 
   @override
-  Future<ApiResult<DishModel>> addDish(String vendorId, {required String name, required String category, required double price, bool isVeg = true}) async {
+  Future<ApiResult<DishModel>> addDish(String vendorId,
+      {required String name,
+      required String category,
+      required double price,
+      bool isVeg = true}) async {
     calls.add('dish:add:$vendorId:$name');
     lastIsVeg = isVeg;
     if (dishAnswer != null) return dishAnswer!;
-    final d = DishModel(id: 'new-${menu.length}', name: name, category: category, price: price);
+    final d = DishModel(
+        id: 'new-${menu.length}', name: name, category: category, price: price);
     return ApiResult.success(d);
   }
 
   @override
-  Future<ApiResult<DishModel>> updateDish(String itemId, {bool? isAvailable, double? price}) async {
+  Future<ApiResult<DishModel>> updateDish(String itemId,
+      {bool? isAvailable, double? price}) async {
     calls.add('dish:update:$itemId:${isAvailable ?? ''}:${price ?? ''}');
     if (dishAnswer != null) return dishAnswer!;
     return const ApiResult.success(null);
@@ -221,7 +288,8 @@ class FakeSocket extends OrderSocket {
     onConnected?.call();
   }
 
-  void emit(String event, Object? payload) => onOrderEvent?.call(event, payload);
+  void emit(String event, Object? payload) =>
+      onOrderEvent?.call(event, payload);
 
   /// Simulates the server's `join_room` ack.
   void answerJoin(bool ok) => onRoomJoined?.call(ok);
@@ -252,7 +320,8 @@ class FakeAlarm implements AlarmSink {
 
 /// A started controller over [backend] for widget tests. Dispose it at the end of the test
 /// (its poll timer would otherwise outlive the test).
-Future<OrderQueueController> startController(FakeBackend backend, {FakeAlarm? alarm, FakeSocket? socket}) async {
+Future<OrderQueueController> startController(FakeBackend backend,
+    {FakeAlarm? alarm, FakeSocket? socket}) async {
   final c = OrderQueueController(
     backend: backend,
     vendorId: 'ven-42',

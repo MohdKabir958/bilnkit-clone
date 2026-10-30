@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ClerkProvider, ClerkFailed, ClerkLoaded, ClerkLoading, SignIn, UserButton, useAuth } from '@clerk/react';
+import {RiderInvitePage} from './RiderInvitePage';
 import { App } from '../App';
 import { apiService, installClerkTokenGetter, clearAuthToken } from '../services/api';
 import type { AdminProfile } from '../types';
@@ -51,7 +52,9 @@ function AdminSession() {
     let active = true;
     installClerkTokenGetter(force => getToken({skipCache:force}));
     apiService.validateSession().then(profile => { if (active) {setAdmin(profile);setVerifiedFor(`${userId}:${sessionId}`);} })
-      .catch(reason => { if (active) setError(reason instanceof ApiError && reason.status === 403
+      .catch(reason => { if (active) setError(reason instanceof ApiError && reason.code === 'DEPLOYMENT_MISMATCH'
+        ? reason.message
+        : reason instanceof ApiError && reason.status === 403
         ? 'This account has not been approved as a Grozo administrator.'
         : reason instanceof ApiError && reason.status === 401
         ? 'Grozo could not authenticate this Clerk session (401). Sign out and retry. If this continues, ask the operator to check the Clerk instance and allowed website origin.'
@@ -72,6 +75,6 @@ export function ClerkAdminRoot() {
   return <ClerkProvider publishableKey={key} afterSignOutUrl="/">
     <ClerkLoading><SignInLoading /></ClerkLoading>
     <ClerkFailed><SignInUnavailable /></ClerkFailed>
-    <ClerkLoaded><AdminSession /></ClerkLoaded>
+    <ClerkLoaded>{window.location.pathname==='/partner-invite'?<RiderInvitePage/>:<AdminSession/>}</ClerkLoaded>
   </ClerkProvider>;
 }

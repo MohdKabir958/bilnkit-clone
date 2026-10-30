@@ -1,0 +1,636 @@
+
+> kraveo-super-admin@1.0.0 test
+> vitest run --maxWorkers=1 --minWorkers=1 src/components/RiderIdentityWorkflow.test.tsx src/components/PartnerOnboarding.test.tsx src/services/ApiRetryAfter.test.ts
+
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/PartnerOnboarding.test.tsx (6 tests) 1101ms
+   ✓ rider wizard defaults pending, preserves Back values, and only submits on review 509ms
+ ❯ src/components/RiderIdentityWorkflow.test.tsx (3 tests | 1 failed) 385ms
+   × a 409 identity conflict is shown before Review and offers an invitation without creating a rider 240ms
+     → Unable to find a label with the text of: Partner's verified email
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m"overflow: hidden;"[39m
+[36m>[39m
+  [36m<div />[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"fixed inset-0 z-[70] flex items-end justify-end sm:items-stretch"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"absolute inset-0 animate-fade-in bg-black/70 backdrop-blur-sm"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-labelledby[39m=[32m":r0:"[39m
+      [33maria-modal[39m=[32m"true"[39m
+      [33mclass[39m=[32m"relative flex max-h-[92vh] w-full animate-slide-up flex-col rounded-t-k-2xl border border-kraveo-line bg-kraveo-surface shadow-k-lift outline-none sm:max-h-none sm:max-w-xl sm:animate-slide-in-right sm:rounded-none sm:rounded-l-k-2xl sm:border-y-0 sm:border-r-0"[39m
+      [33mrole[39m=[32m"dialog"[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33maria-hidden[39m=[32m"true"[39m
+        [33mclass[39m=[32m"mx-auto mt-2 h-1 w-10 rounded-full bg-kraveo-line sm:hidden"[39m
+      [36m/>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"flex items-start justify-between gap-3 border-b border-kraveo-line px-5 py-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex min-w-0 items-center gap-3"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex h-10 w-10 shrink-0 items-center justify-center rounded-k-sm bg-kraveo-g400/15 text-kraveo-g400"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-bike h-5 w-5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"18.5"[39m
+                [33mcy[39m=[32m"17.5"[39m
+                [33mr[39m=[32m"3.5"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"5.5"[39m
+                [33mcy[39m=[32m"17.5"[39m
+                [33mr[39m=[32m"3.5"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"15"[39m
+                [33mcy[39m=[32m"5"[39m
+                [33mr[39m=[32m"1"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 17.5V14l-3-3 4-3 2 3h2"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</span>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-w-0"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"truncate font-display text-lg font-bold tracking-tight text-kraveo-ink"[39m
+              [33mid[39m=[32m":r0:"[39m
+            [36m>[39m
+              [0mAdd delivery partner[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"truncate text-xs text-kraveo-ink3"[39m
+            [36m>[39m
+              [0mVerified identity → vehicle → service area → review[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33maria-label[39m=[32m"Close panel"[39m
+          [33mclass[39m=[32m"k-icon-btn shrink-0"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x h-4 w-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-y-auto px-5 py-5"[39m
+      [36m>[39m
+        [36m<form[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-4"[39m
+          [36m>[39m
+            [36m<ol[39m
+              [33maria-label[39m=[32m"Onboarding progress"[39m
+              [33mclass[39m=[32m"grid grid-cols-4 gap-2"[39m
+            [36m>[39m
+              [36m<li[39m
+                [33maria-current[39m=[32m"step"[39m
+                [33mclass[39m=[32m"min-w-0"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"w-full rounded-k-sm px-1 py-2 text-xs font-semibold bg-kraveo-g50 text-kraveo-g800"[39m
+                  [33mdisabled[39m=[32m""[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"block"[39m
+                  [36m>[39m
+                    [0m1[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"mt-1 block break-words"[39m
+                  [36m>[39m
+                    [0mIdentity[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m"min-w-0"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"w-full rounded-k-sm px-1 py-2 text-xs font-semibold bg-kraveo-surface2 text-kraveo-ink2"[39m
+                  [33mdisabled[39m=[32m""[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"block"[39m
+                  [36m>[39m
+                    [0m2[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"mt-1 block break-words"[39m
+                  [36m>[39m
+                    [0mVehicle[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m"min-w-0"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"w-full rounded-k-sm px-1 py-2 text-xs font-semibold bg-kraveo-surface2 text-kraveo-ink2"[39m
+                  [33mdisabled[39m=[32m""[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"block"[39m
+                  [36m>[39m
+                    [0m3[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"mt-1 block break-words"[39m
+                  [36m>[39m
+                    [0mArea[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m"min-w-0"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"w-full rounded-k-sm px-1 py-2 text-xs font-semibold bg-kraveo-surface2 text-kraveo-ink2"[39m
+                  [33mdisabled[39m=[32m""[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"block"[39m
+                  [36m>[39m
+                    [0m4[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"mt-1 block break-words"[39m
+                  [36m>[39m
+                    [0mReview[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+            [36m</ol>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"text-lg font-bold outline-none"[39m
+              [33mtabindex[39m=[32m"-1"[39m
+            [36m>[39m
+              [0mStep [0m
+              [0m1[0m
+              [0m of [0m
+              [0m4[0m
+              [0m: [0m
+              [0mIdentity[0m
+            [36m</h3>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"rounded-k-md border border-kraveo-danger/30 p-3 text-sm"[39m
+            [33mrole[39m=[32m"alert"[39m
+          [36m>[39m
+            [0mVerify this email before assignment.[0m
+          [36m</p>[39m
+          [36m<fieldset[39m
+            [33mclass[39m=[32m"space-y-5"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-sm text-kraveo-ink2"[39m
+            [36m>[39m
+              [0mAsk the partner to sign in to Grozo and verify their email first. Use a separate partner account. Customer accounts never gain rider approval just by signing in.[0m
+            [36m</p>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-medium"[39m
+            [36m>[39m
+              [0mPartner's verified email[0m
+              [36m<input[39m
+                [33maria-describedby[39m=[32m"rider-email-error"[39m
+                [33maria-invalid[39m=[32m"true"[39m
+                [33mclass[39m=[32m"k-input mt-2 w-full"[39m
+                [33mmaxlength[39m=[32m"254"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtype[39m=[32m"email"[39m
+                [33mvalue[39m=[32m"synthetic-rider@example.invalid"[39m
+              [36m/>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"mt-2 block text-sm text-kraveo-danger"[39m
+                [33mid[39m=[32m"rider-email-error"[39m
+              [36m>[39m
+                [0mVerify this email before assignment.[0m
+              [36m</span>[39m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-medium"[39m
+            [36m>[39m
+              [0mRider full name[0m
+              [36m<input[39m
+                [33maria-invalid[39m=[32m"false"[39m
+                [33mclass[39m=[32m"k-input mt-2 w-full"[39m
+                [33mmaxlength[39m=[32m"60"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtype[39m=[32m"text"[39m
+                [33mvalue[39m=[32m"Synthetic Rider"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-medium"[39m
+            [36m>[39m
+              [0mRider mobile number[0m
+              [36m<input[39m
+                [33maria-invalid[39m=[32m"false"[39m
+                [33mclass[39m=[32m"k-input mt-2 w-full"[39m
+                [33mmaxlength[39m=[32m"20"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtype[39m=[32m"tel"[39m
+                [33mvalue[39m=[32m"9000000881"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-xs text-kraveo-ink2"[39m
+            [36m>[39m
+              [0mExisting riders should be managed in Applications or Cities & zones. This form never replaces an account or unsuspends it.[0m
+            [36m</p>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"k-btn-ghost"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mCreate onboarding invitation[0m
+            [36m</button>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex gap-3 border-t border-kraveo-line pt-4"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"k-btn-primary flex-1"[39m
+                [33mtype[39m=[32m"submit"[39m
+              [36m>[39m
+                [0mNext: Vehicle[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</fieldset>[39m
+        [36m</form>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ✓ src/services/ApiRetryAfter.test.ts (2 tests) 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/RiderIdentityWorkflow.test.tsx > a 409 identity conflict is shown before Review and offers an invitation without creating a rider
+TestingLibraryElementError: Unable to find a label with the text of: Partner's verified email
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m"overflow: hidden;"[39m
+[36m>[39m
+  [36m<div />[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"fixed inset-0 z-[70] flex items-end justify-end sm:items-stretch"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"absolute inset-0 animate-fade-in bg-black/70 backdrop-blur-sm"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-labelledby[39m=[32m":r0:"[39m
+      [33maria-modal[39m=[32m"true"[39m
+      [33mclass[39m=[32m"relative flex max-h-[92vh] w-full animate-slide-up flex-col rounded-t-k-2xl border border-kraveo-line bg-kraveo-surface shadow-k-lift outline-none sm:max-h-none sm:max-w-xl sm:animate-slide-in-right sm:rounded-none sm:rounded-l-k-2xl sm:border-y-0 sm:border-r-0"[39m
+      [33mrole[39m=[32m"dialog"[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33maria-hidden[39m=[32m"true"[39m
+        [33mclass[39m=[32m"mx-auto mt-2 h-1 w-10 rounded-full bg-kraveo-line sm:hidden"[39m
+      [36m/>[39m
+      [36m<header[39m
+        [33mclass[39m=[32m"flex items-start justify-between gap-3 border-b border-kraveo-line px-5 py-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex min-w-0 items-center gap-3"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex h-10 w-10 shrink-0 items-center justify-center rounded-k-sm bg-kraveo-g400/15 text-kraveo-g400"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-bike h-5 w-5"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"18.5"[39m
+                [33mcy[39m=[32m"17.5"[39m
+                [33mr[39m=[32m"3.5"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"5.5"[39m
+                [33mcy[39m=[32m"17.5"[39m
+                [33mr[39m=[32m"3.5"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"15"[39m
+                [33mcy[39m=[32m"5"[39m
+                [33mr[39m=[32m"1"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 17.5V14l-3-3 4-3 2 3h2"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</span>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"min-w-0"[39m
+          [36m>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"truncate font-display text-lg font-bold tracking-tight text-kraveo-ink"[39m
+              [33mid[39m=[32m":r0:"[39m
+            [36m>[39m
+              [0mAdd delivery partner[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"truncate text-xs text-kraveo-ink3"[39m
+            [36m>[39m
+              [0mVerified identity → vehicle → service area → review[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33maria-label[39m=[32m"Close panel"[39m
+          [33mclass[39m=[32m"k-icon-btn shrink-0"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x h-4 w-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</header>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-y-auto px-5 py-5"[39m
+      [36m>[39m
+        [36m<form[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-4"[39m
+          [36m>[39m
+            [36m<ol[39m
+              [33maria-label[39m=[32m"Onboarding progress"[39m
+              [33mclass[39m=[32m"grid grid-cols-4 gap-2"[39m
+            [36m>[39m
+              [36m<li[39m
+                [33maria-current[39m=[32m"step"[39m
+                [33mclass[39m=[32m"min-w-0"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"w-full rounded-k-sm px-1 py-2 text-xs font-semibold bg-kraveo-g50 text-kraveo-g800"[39m
+                  [33mdisabled[39m=[32m""[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"block"[39m
+                  [36m>[39m
+                    [0m1[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"mt-1 block break-words"[39m
+                  [36m>[39m
+                    [0mIdentity[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m"min-w-0"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"w-full rounded-k-sm px-1 py-2 text-xs font-semibold bg-kraveo-surface2 text-kraveo-ink2"[39m
+                  [33mdisabled[39m=[32m""[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"block"[39m
+                  [36m>[39m
+                    [0m2[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"mt-1 block break-words"[39m
+                  [36m>[39m
+                    [0mVehicle[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m"min-w-0"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"w-full rounded-k-sm px-1 py-2 text-xs font-semibold bg-kraveo-surface2 text-kraveo-ink2"[39m
+                  [33mdisabled[39m=[32m""[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"block"[39m
+                  [36m>[39m
+                    [0m3[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"mt-1 block break-words"[39m
+                  [36m>[39m
+                    [0mArea[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+              [36m<li[39m
+                [33mclass[39m=[32m"min-w-0"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"w-full rounded-k-sm px-1 py-2 text-xs font-semibold bg-kraveo-surface2 text-kraveo-ink2"[39m
+                  [33mdisabled[39m=[32m""[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"block"[39m
+                  [36m>[39m
+                    [0m4[0m
+                  [36m</span>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"mt-1 block break-words"[39m
+                  [36m>[39m
+                    [0mReview[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+              [36m</li>[39m
+            [36m</ol>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"text-lg font-bold outline-none"[39m
+              [33mtabindex[39m=[32m"-1"[39m
+            [36m>[39m
+              [0mStep [0m
+              [0m1[0m
+              [0m of [0m
+              [0m4[0m
+              [0m: [0m
+              [0mIdentity[0m
+            [36m</h3>[39m
+          [36m</div>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"rounded-k-md border border-kraveo-danger/30 p-3 text-sm"[39m
+            [33mrole[39m=[32m"alert"[39m
+          [36m>[39m
+            [0mVerify this email before assignment.[0m
+          [36m</p>[39m
+          [36m<fieldset[39m
+            [33mclass[39m=[32m"space-y-5"[39m
+          [36m>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-sm text-kraveo-ink2"[39m
+            [36m>[39m
+              [0mAsk the partner to sign in to Grozo and verify their email first. Use a separate partner account. Customer accounts never gain rider approval just by signing in.[0m
+            [36m</p>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-medium"[39m
+            [36m>[39m
+              [0mPartner's verified email[0m
+              [36m<input[39m
+                [33maria-describedby[39m=[32m"rider-email-error"[39m
+                [33maria-invalid[39m=[32m"true"[39m
+                [33mclass[39m=[32m"k-input mt-2 w-full"[39m
+                [33mmaxlength[39m=[32m"254"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtype[39m=[32m"email"[39m
+                [33mvalue[39m=[32m"synthetic-rider@example.invalid"[39m
+              [36m/>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"mt-2 block text-sm text-kraveo-danger"[39m
+                [33mid[39m=[32m"rider-email-error"[39m
+              [36m>[39m
+                [0mVerify this email before assignment.[0m
+              [36m</span>[39m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-medium"[39m
+            [36m>[39m
+              [0mRider full name[0m
+              [36m<input[39m
+                [33maria-invalid[39m=[32m"false"[39m
+                [33mclass[39m=[32m"k-input mt-2 w-full"[39m
+                [33mmaxlength[39m=[32m"60"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtype[39m=[32m"text"[39m
+                [33mvalue[39m=[32m"Synthetic Rider"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"block text-sm font-medium"[39m
+            [36m>[39m
+              [0mRider mobile number[0m
+              [36m<input[39m
+                [33maria-invalid[39m=[32m"false"[39m
+                [33mclass[39m=[32m"k-input mt-2 w-full"[39m
+                [33mmaxlength[39m=[32m"20"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtype[39m=[32m"tel"[39m
+                [33mvalue[39m=[32m"9000000881"[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-xs text-kraveo-ink2"[39m
+            [36m>[39m
+              [0mExisting riders should be managed in Applications or Cities & zones. This form never replaces an account or unsuspends it.[0m
+            [36m</p>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"k-btn-ghost"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [0mCreate onboarding invitation[0m
+            [36m</button>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex gap-3 border-t border-kraveo-line pt-4"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"k-btn-primary flex-1"[39m
+                [33mtype[39m=[32m"submit"[39m
+              [36m>[39m
+                [0mNext: Vehicle[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</fieldset>[39m
+        [36m</form>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ getAllByLabelText node_modules/@testing-library/dom/dist/queries/label-text.js:111:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/RiderIdentityWorkflow.test.tsx:13:314
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 10 passed (11)
+   Start at  19:45:36
+   Duration  5.46s (transform 682ms, setup 0ms, collect 1.46s, tests 1.50s, environment 1.45s, prepare 236ms)
+

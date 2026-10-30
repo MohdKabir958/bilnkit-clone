@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/product_api.dart';
+import 'preparation_settings_screen.dart';
+import 'store_performance_screen.dart';
 
 class StoreProfileScreen extends StatefulWidget {
   const StoreProfileScreen({super.key, this.api, this.vendorId});
@@ -39,7 +41,8 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
       error = null;
     });
     try {
-      final result = await api.call('GET', '/v1/partner/store${widget.vendorId==null?'':'?vendorId=${Uri.encodeComponent(widget.vendorId!)}'}');
+      final result = await api.call('GET',
+          '/v1/partner/store${widget.vendorId == null ? '' : '?vendorId=${Uri.encodeComponent(widget.vendorId!)}'}');
       if (!mounted) return;
       final data = Map<String, dynamic>.from(result['data']);
       setState(() {
@@ -80,11 +83,14 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
       saved = null;
     });
     try {
-      final result = await api.call('PUT', '/v1/partner/store${widget.vendorId==null?'':'?vendorId=${Uri.encodeComponent(widget.vendorId!)}'}', {
-        'name': name.text.trim(),
-        'address': address.text.trim(),
-        'bannerImage': banner.text.trim()
-      });
+      final result = await api.call(
+          'PUT',
+          '/v1/partner/store${widget.vendorId == null ? '' : '?vendorId=${Uri.encodeComponent(widget.vendorId!)}'}',
+          {
+            'name': name.text.trim(),
+            'address': address.text.trim(),
+            'bannerImage': banner.text.trim()
+          });
       if (!mounted) return;
       setState(() {
         store = Map<String, dynamic>.from(result['data']);
@@ -100,7 +106,22 @@ class _StoreProfileScreenState extends State<StoreProfileScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Store profile')),
+        appBar: AppBar(title: const Text('Store profile'), actions: [
+          if (store?['id'] != null)
+            IconButton(
+                tooltip: 'Store performance',
+                icon: const Icon(Icons.insights),
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => StorePerformanceScreen(
+                        vendorId: '${store!['id']}', api: api)))),
+          if (store?['id'] != null)
+            IconButton(
+                tooltip: 'Packing and busy mode',
+                icon: const Icon(Icons.schedule),
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => PreparationSettingsScreen(
+                        vendorId: '${store!['id']}', api: api))))
+        ]),
         body: Center(
             child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 620),

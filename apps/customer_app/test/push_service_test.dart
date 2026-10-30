@@ -323,7 +323,7 @@ void main() {
     test('a tap from the background routes each customer event to its order', () async {
       final push = make();
       await push.onSessionStarted('u1');
-      for (final e in PushEvent.values) {
+      for (final e in PushEvent.values.where((e) => e != PushEvent.supportUpdated)) {
         fcm.opened.add(PushMessage(messageId: 'm-${e.key}', data: pushData(e.key, orderId: 'ord-${e.key}')));
         final tap = push.takePendingTap();
         expect(tap, isNotNull, reason: e.key);

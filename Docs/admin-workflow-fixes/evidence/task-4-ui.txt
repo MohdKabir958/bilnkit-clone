@@ -1,0 +1,36 @@
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/VendorLocation.test.tsx (12 tests) 326ms
+ ✓ src/components/AdminWorkspace.test.tsx (11 tests) 866ms
+stderr | src/components/StoreCoverageWorkflow.test.tsx > offers only actual covering zones and clears the selection when the pin moves outside
+Warning: A suspended resource finished loading inside a test, but the event was not wrapped in act(...).
+
+When testing, code that resolves suspended data should be wrapped into act(...):
+
+act(() => {
+  /* finish loading suspended data */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+Warning: A suspended resource finished loading inside a test, but the event was not wrapped in act(...).
+
+When testing, code that resolves suspended data should be wrapped into act(...):
+
+act(() => {
+  /* finish loading suspended data */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+
+ ✓ src/components/StoreCoverageWorkflow.test.tsx (3 tests) 737ms
+   ✓ offers only actual covering zones and clears the selection when the pin moves outside 326ms
+ ✓ src/components/PickupLocationPicker.test.tsx (3 tests) 83ms
+
+ Test Files  4 passed (4)
+      Tests  29 passed (29)
+   Start at  01:48:39
+   Duration  4.98s (transform 1.05s, setup 0ms, collect 1.75s, tests 2.01s, environment 589ms, prepare 332ms)
+

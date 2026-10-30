@@ -12,6 +12,7 @@ vi.mock('./components/CampusMap', () => ({ default: () => null }));
 import { App } from './App';
 import { ToastProvider } from './components/ui/Toast';
 import { ApiError, apiService } from './services/api';
+import {mockVendorDirectory} from './test/vendorDirectory';
 import { normalizeVendor } from './types';
 import { parseCategory } from './lib/categoryParse';
 import { rawCategory, rawNorthIndian, rawVendor } from './test/taxonomyFixtures';
@@ -37,6 +38,7 @@ const nav = (label: string) => Array.from(document.querySelectorAll('nav[aria-la
 const mockApi = (vendors = [normalizeVendor(rawVendor())]) => {
   vi.spyOn(apiService, 'validateSession').mockResolvedValue({ id: 'a1', name: 'Admin', phone: '1', role: 'ADMIN' } as any);
   vi.spyOn(apiService, 'fetchOrderPage').mockResolvedValue({ orders: [], nextCursor: null });
+  mockVendorDirectory(vendors);
   const fetchVendors = vi.spyOn(apiService, 'fetchVendors').mockResolvedValue(vendors);
   vi.spyOn(apiService, 'fetchDrivers').mockResolvedValue([]);
   vi.spyOn(apiService, 'fetchDriverLocations').mockResolvedValue([]);
@@ -111,14 +113,15 @@ describe('Vendors tab: edit restaurant', () => {
     const api = mockApi();
     vi.spyOn(apiService, 'fetchCategories').mockResolvedValue([parseCategory(rawCategory())!, parseCategory(rawNorthIndian())!]);
     const fresh = normalizeVendor(rawVendor({ name: 'Shape Kitchen Deluxe', category: 'Biryani', cuisines: [{ id: '72077a2d-9b97-48de-9956-8d0167228f34', name: 'Biryani', icon: 'biryani' }] }));
-    vi.spyOn(apiService, 'updateVendorProfile').mockResolvedValue({ vendor: fresh, changed: true, message: 'Restaurant saved.' });
+    vi.spyOn(apiService, 'updateVendorProfile').mockImplementation(async()=>{api.fetchVendors.mockResolvedValue([fresh]);vi.mocked(apiService.vendorDetails).mockResolvedValue({...fresh,coverage:[]});return { vendor: fresh, changed: true, message: 'Restaurant saved.' };});
     await mount();
     await flush();
     await click(nav('Vendors'));
     await flush();
     expect(document.body.textContent).toContain('Shape Kitchen & Co');
     const before = api.fetchVendors.mock.calls.length;
-    await click(Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.trim() === "Edit store"));
+    await click(document.querySelector('button[aria-label="View details of Shape Kitchen & Co"]'));await flush();
+    await click(Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.trim() === "Edit store profile & access"));
     await flush();
     const name = document.getElementById('er-name') as HTMLInputElement;
     await act(async () => {
@@ -127,7 +130,7 @@ describe('Vendors tab: edit restaurant', () => {
     });
     await click(Array.from(document.querySelectorAll('[role="dialog"] button')).find((b) => b.textContent === 'Save changes'));
     await flush();
-    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.getElementById('er-name')).toBeNull();
     expect(document.body.textContent).toContain('Shape Kitchen Deluxe');
     expect(api.fetchVendors.mock.calls.length).toBeGreaterThan(before);
   });

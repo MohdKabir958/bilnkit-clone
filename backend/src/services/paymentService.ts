@@ -61,6 +61,7 @@ export const toProviderError = (err: any): PaymentProviderError => {
 // never touch the network; tests can inject a failing provider with setPaymentProvider().
 // ----------------------------------------------------------------------------
 export interface ProviderRefund {
+  receipt?: string;
   id: string;
   amountPaise: number;
   status: string; // pending | processed | failed
@@ -124,13 +125,13 @@ const razorpayProvider: PaymentProvider = {
     const razorpay = getRazorpayClient();
     if (!razorpay) throw notConfigured();
     const refund = await sdk(() => razorpay.payments.refund(paymentId, { amount: amountPaise, speed: 'normal', receipt, notes }));
-    return { id: refund.id, amountPaise: Number(refund.amount ?? amountPaise), status: refund.status };
+    return { id: refund.id, amountPaise: Number(refund.amount ?? amountPaise), status: refund.status, receipt: refund.receipt ?? undefined };
   },
   async listRefunds(paymentId) {
     const razorpay = getRazorpayClient();
     if (!razorpay) throw notConfigured();
     const page = await sdk(() => razorpay.payments.fetchMultipleRefund(paymentId, { count: 100 }));
-    return (page.items ?? []).map((r: any) => ({ id: r.id, amountPaise: Number(r.amount ?? 0), status: String(r.status) }));
+    return (page.items ?? []).map((r: any) => ({ id: r.id, amountPaise: Number(r.amount ?? 0), status: String(r.status), receipt: typeof r.receipt === 'string' ? r.receipt : undefined }));
   },
   async fetchPayment(paymentId) {
     const razorpay = getRazorpayClient();
@@ -180,13 +181,13 @@ export const createSimulatedProvider = (): SimulatedProvider => {
     async createOrder() {
       return { id: `rzp_order_sim_${crypto.randomBytes(8).toString('hex')}` };
     },
-    async refundPayment({ paymentId, amountPaise }) {
+    async refundPayment({ paymentId, amountPaise, receipt }) {
       const existing = refunds.get(paymentId) ?? [];
       const already = existing.filter((r) => r.status !== 'failed').reduce((s, r) => s + r.amountPaise, 0);
       // Grozo only does full refunds, and Razorpay refuses to refund more than was captured: a second
       // full refund of the same payment fails. Mirror that so a double refund would show up in tests.
-      if (already > 0) throw new PaymentProviderError('The total refund amount is greater than the refund payment amount', 400, false, 'BAD_REQUEST_ERROR');
-      const refund = { id: `rfnd_sim_${crypto.randomBytes(7).toString('hex')}`, amountPaise, status: 'processed' };
+      if ((payments.has(paymentId) ? already + amountPaise > payments.get(paymentId)!.amountPaise : already > 0)) throw new PaymentProviderError('The total refund amount is greater than the refund payment amount', 400, false, 'BAD_REQUEST_ERROR');
+      const refund = { id: `rfnd_sim_${crypto.randomBytes(7).toString('hex')}`, amountPaise, status: 'processed', receipt };
       refunds.set(paymentId, [...existing, refund]);
       const known = payments.get(paymentId);
       if (known && known.status === 'captured' && amountPaise >= known.amountPaise) known.status = 'refunded';

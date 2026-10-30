@@ -1,0 +1,20 @@
+[
+  {
+    "filename": "Grozo-Customer-Clerk-Test.apk",
+    "compiledSupportUpdateEventPresent": true,
+    "expectedApiOrigin": "https://grozo-backend-3wdf.onrender.com",
+    "sourceCommit": "477d86743fb1accffffcc7ee99c5d4f1a7802821"
+  },
+  {
+    "filename": "Grozo-Vendor-Clerk-Test.apk",
+    "compiledSupportUpdateEventPresent": true,
+    "expectedApiOrigin": "https://grozo-backend-3wdf.onrender.com",
+    "sourceCommit": "477d86743fb1accffffcc7ee99c5d4f1a7802821"
+  },
+  {
+    "filename": "Grozo-Delivery-Clerk-Test.apk",
+    "compiledSupportUpdateEventPresent": true,
+    "expectedApiOrigin": "https://grozo-backend-3wdf.onrender.com",
+    "sourceCommit": "477d86743fb1accffffcc7ee99c5d4f1a7802821"
+  }
+]

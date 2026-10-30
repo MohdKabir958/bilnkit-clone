@@ -1,0 +1,20 @@
+FAIL test/e2e/pricing_catalog.test.ts
+  ● Test suite failed to run
+
+    [96msrc/services/jobs.ts[0m:[93m120[0m:[93m44[0m - [91merror[0m[90m TS2353: [0mObject literal may only specify known properties, and 'actorId' does not exist in type '(Without<AdminAuditLogCreateInput, AdminAuditLogUncheckedCreateInput> & AdminAuditLogUncheckedCreateInput) | (Without<...> & AdminAuditLogCreateInput)'.
+
+    [7m120[0m       await tx.adminAuditLog.create({data:{actorId,actorRole:'ADMIN',action:'BACKGROUND_JOB_RETRY',targetType:'BACKGROUND_JOB',targetId:name,summary:reason.trim()}});
+    [7m   [0m [91m                                           ~~~~~~~[0m
+
+      [96mnode_modules/.prisma/client/index.d.ts[0m:[93m26636[0m:[93m5[0m
+        [7m26636[0m     data: XOR<AdminAuditLogCreateInput, AdminAuditLogUncheckedCreateInput>
+        [7m     [0m [96m    ~~~~[0m
+        The expected type comes from property 'data' which is declared here on type '{ select?: AdminAuditLogSelect<DefaultArgs> | null | undefined; data: (Without<AdminAuditLogCreateInput, AdminAuditLogUncheckedCreateInput> & AdminAuditLogUncheckedCreateInput) | (Without<...> & AdminAuditLogCreateInput); }'
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        9.288 s, estimated 12 s
+Ran all test suites matching test/e2e/pricing_catalog.test.ts with tests matching "recalculate and edits running together".
+Test results written to: ../Docs/production-readiness/evidence/pricing/final-pool-two-migrated/run-4.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

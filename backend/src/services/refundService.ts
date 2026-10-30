@@ -1,3 +1,4 @@
+import { applyPartialRefundEvent } from './partialRefunds';
 import { drainNotificationIntents } from './push/intents';
 import { prisma } from '../db';
 import { REFUND_LEASE_MS, REFUND_BACKOFF_BASE_MS, REFUND_BACKOFF_MAX_MS, MAX_REFUND_ATTEMPTS } from '../config/orderFlow';
@@ -114,7 +115,7 @@ export const recordSuccess = async (orderId: string, paymentRowId: string, refun
 /** Refunds Razorpay already holds for this payment (failed ones do not count). */
 const refundState = async (paymentId: string) => {
   const list = (await withProviderTimeout(getPaymentProvider().listRefunds(paymentId))).filter((r) => r.status !== 'failed');
-  return { list, paise: list.reduce((sum, r) => sum + r.amountPaise, 0) };
+  return { list, paise: list.reduce((sum, r) => sum + r.amountPaise, 0), processedPaise: list.filter(r => r.status === 'processed').reduce((sum, r) => sum + r.amountPaise, 0) };
 };
 
 /**
@@ -123,7 +124,7 @@ const refundState = async (paymentId: string) => {
  */
 const refundAtProvider = async (input: { paymentId: string; amountPaise: number; receipt: string; reason: string; orderId: string }): Promise<ProviderRefund> => {
   const before = await refundState(input.paymentId);
-  if (before.paise >= input.amountPaise && before.list.length > 0) return before.list[0]; // refunded earlier (e.g. we crashed before saving it)
+  if (before.paise >= input.amountPaise && before.list.length > 0) return { ...before.list[0], status: before.processedPaise >= input.amountPaise ? 'processed' : 'pending' }; // refunded earlier (e.g. we crashed before saving it)
   try {
     const refund = await withProviderTimeout(getPaymentProvider().refundPayment({
       paymentId: input.paymentId,
@@ -132,13 +133,13 @@ const refundAtProvider = async (input: { paymentId: string; amountPaise: number;
       notes: { orderId: input.orderId, reason: input.reason.slice(0, 200) },
     }));
     if (refund.status === 'failed') throw new PaymentProviderError('The payment provider declined the refund.', 400, false);
-    return refund;
+    return { ...refund, status: refund.status === 'processed' && before.processedPaise === before.paise ? 'processed' : 'pending' };
   } catch (err) {
     const perr = toProviderError(err);
     if (!perr.transient && perr.statusCode !== null) {
       try {
         const after = await refundState(input.paymentId);
-        if (after.paise >= input.amountPaise && after.list.length > 0) return after.list[0];
+        if (after.paise >= input.amountPaise && after.list.length > 0) return { ...after.list[0], status: after.processedPaise >= input.amountPaise ? 'processed' : 'pending' };
       } catch {
         // could not confirm: report the original answer
       }
@@ -147,7 +148,7 @@ const refundAtProvider = async (input: { paymentId: string; amountPaise: number;
   }
 };
 
-export type RefundOutcome = 'DONE' | 'FAILED' | 'SKIPPED';
+export type RefundOutcome = 'DONE' | 'PENDING' | 'FAILED' | 'SKIPPED';
 export type RefundResult = { outcome: RefundOutcome; transient: boolean };
 
 /** Same as executeRefund, but also says whether a FAILED outcome was transient (the maintenance circuit breaker needs that). */
@@ -185,6 +186,14 @@ export const runRefund = async (orderId: string, now: Date = new Date()): Promis
       reason: order.cancelReason ?? 'Order cancelled',
       orderId,
     });
+    if (refund.status !== 'processed') {
+      await prisma.$transaction(async tx => {
+        await tx.payment.update({where:{id:payment.id}, data:{razorpayRefundId:refund.id,providerStatus:'refund_pending'}});
+        await tx.order.updateMany({where:{id:orderId,refundStatus:{in:CLAIMABLE}},data:{refundStatus:'PENDING',refundError:null,refundLeaseUntil:new Date(now.getTime()+REFUND_BACKOFF_BASE_MS),refundAttempts:{decrement:1}}});
+      });
+      await publish(orderId);
+      return {outcome:'PENDING',transient:false};
+    }
     await recordSuccess(orderId, payment.id, refund.id, amountPaise);
     return { outcome: 'DONE', transient: false };
   } catch (err) {
@@ -229,6 +238,10 @@ export const refundExtraPayment = async (input: ExtraRefundInput, now: Date = ne
     }
     if (!(amountPaise > 0)) throw new PaymentProviderError('The extra payment has no recorded amount.', 400, false);
     const refund = await refundAtProvider({ paymentId: providerPaymentId, amountPaise, receipt: `rx_${providerPaymentId}`, reason: 'Duplicate payment for an order that was already paid', orderId });
+    if (refund.status !== 'processed') {
+      if (paymentRowId) await prisma.payment.updateMany({where:{id:paymentRowId,status:{in:['PENDING','FAILED']}},data:{razorpayRefundId:refund.id,providerStatus:'refund_pending',refundedAt:new Date(now.getTime()+REFUND_BACKOFF_BASE_MS)}});
+      return {outcome:'PENDING',transient:false};
+    }
     if (paymentRowId) {
       await prisma.payment.updateMany({
         where: { id: paymentRowId, status: { in: ['PENDING', 'FAILED'] } },
@@ -270,6 +283,7 @@ export const applyRefundEvent = async (
   event: 'refund.processed' | 'refund.failed',
   e: { refundId: string | null; paymentId: string | null; amountPaise: number | null; reason: string | null },
 ): Promise<RefundEventResult> => {
+  if (await applyPartialRefundEvent(event,e)) return event==='refund.processed'?'CONFIRMED':'FAILED_RECORDED';
   if (!e.paymentId) return 'IGNORED';
   const payment = await prisma.payment.findFirst({ where: { razorpayPaymentId: e.paymentId }, include: { order: true } });
   if (!payment) {
@@ -281,7 +295,12 @@ export const applyRefundEvent = async (
 
   if (event === 'refund.processed') {
     if (!e.refundId || payment.status !== 'PAID' || order.paymentStatus !== 'PAID' || !order.refundStatus || !CLAIMABLE.includes(order.refundStatus)) return 'IGNORED';
-    if (e.amountPaise === null || e.amountPaise < capturedPaise) return 'IGNORED'; // a partial refund made by hand is not "the order is refunded"
+    if (e.amountPaise === null) return 'IGNORED';
+    if(e.amountPaise<capturedPaise) {
+      if(!await prisma.paymentRefund.count({where:{paymentId:payment.id}}))return 'IGNORED';
+      const verified=await refundState(e.paymentId);
+      if(verified.processedPaise<capturedPaise) return 'IGNORED';
+    }
     await recordSuccess(order.id, payment.id, e.refundId, capturedPaise);
     return 'CONFIRMED';
   }

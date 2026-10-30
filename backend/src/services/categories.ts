@@ -153,7 +153,7 @@ const withCounts = async (client: Tx | typeof prisma, where: Prisma.Sql): Promis
     FROM "Category" c
     LEFT JOIN (
       SELECT vc."categoryId", COUNT(*) FILTER (WHERE v."approvalStatus" = 'APPROVED') AS visible, COUNT(*) AS total
-      FROM "VendorCategory" vc JOIN "Vendor" v ON v."id" = vc."vendorId"
+      FROM (SELECT "vendorId","categoryId" FROM "VendorCategory" UNION SELECT id AS "vendorId","primaryCategoryId" AS "categoryId" FROM "Vendor" WHERE "primaryCategoryId" IS NOT NULL) vc JOIN "Vendor" v ON v."id" = vc."vendorId"
       GROUP BY vc."categoryId"
     ) r ON r."categoryId" = c."id"
     LEFT JOIN (
@@ -498,8 +498,8 @@ const conflict = async (slug: string) => {
 };
 const isUniqueViolation = (e: unknown) => (e as { code?: string })?.code === 'P2002';
 
-const CREATE_KEYS = ['name', 'nameHi', 'icon', 'forRestaurants', 'forDishes', 'showOnHome'];
-const PATCH_KEYS = [...CREATE_KEYS, 'isActive', 'sortOrder'];
+const CREATE_KEYS = ['name', 'nameHi', 'icon', 'forRestaurants', 'forDishes', 'showOnHome', 'isActive'];
+const PATCH_KEYS = [...CREATE_KEYS, 'sortOrder'];
 const rejectUnknownKeys = (b: Record<string, unknown>, allowed: string[]) => {
   const unknown = Object.keys(b).find((k) => !allowed.includes(k));
   if (unknown) throw bad(unknown.slice(0, 40), `Unknown field '${unknown.slice(0, 40)}'. You can send: ${allowed.join(', ')}.`);
@@ -513,12 +513,13 @@ export const createCategory = async (b: Record<string, unknown>, actor: Actor) =
   const forRestaurants = b.forRestaurants === undefined ? true : checkBool(b.forRestaurants, 'forRestaurants');
   const forDishes = b.forDishes === undefined ? true : checkBool(b.forDishes, 'forDishes');
   const showOnHome = b.showOnHome === undefined ? false : checkBool(b.showOnHome, 'showOnHome');
+  const isActive=b.isActive===undefined?true:checkBool(b.isActive,'isActive');
   if (!forRestaurants && !forDishes) throw bad('forDishes', 'A category must be usable for stores, for products, or both.');
   try {
     const created = await prisma.$transaction(async (tx) => {
       if ((await tx.category.count()) >= MAX_CATEGORIES) throw new AppError(409, 'TOO_MANY_CATEGORIES', `There are already ${MAX_CATEGORIES} categories. Delete or merge unused ones first.`);
       const next = (await tx.category.aggregate({ _max: { sortOrder: true } }))._max.sortOrder ?? 0;
-      return tx.category.create({ data: { name, slug, nameHi, icon, forRestaurants, forDishes, showOnHome, sortOrder: next + 1 } });
+      return tx.category.create({ data: { name, slug, nameHi, icon, forRestaurants, forDishes, showOnHome, isActive, sortOrder: next + 1 } });
     }, TX_OPTS);
     invalidatePublicCategories();
     await writeAudit('CATEGORY_CREATED', 'CATEGORY', created.id, `Admin created category "${name}" (stores ${forRestaurants}, products ${forDishes}, home ${showOnHome}, icon ${icon})`);
@@ -570,7 +571,7 @@ export const patchCategory = async (id: string, b: Record<string, unknown>, acto
         if (dishes > 0) throw new AppError(409, 'CATEGORY_IN_USE', `${dishes} product${dishes === 1 ? ' uses' : 'es use'} this category, so it cannot stop being a product category. Merge it into another one first.`, 'forDishes', { dishes });
       }
       if (diff.forRestaurants === false) {
-        const restaurants = await tx.vendorCategory.count({ where: { categoryId: id } });
+        const restaurants = await tx.vendor.count({where:{OR:[{primaryCategoryId:id},{cuisines:{some:{categoryId:id}}}]}});
         if (restaurants > 0) throw new AppError(409, 'CATEGORY_IN_USE', `${restaurants} store${restaurants === 1 ? ' uses' : 's use'} this category, so it cannot stop being a store category. Merge it into another one first.`, 'forRestaurants', { restaurants });
       }
       if (diff.slug !== undefined && diff.slug !== before.slug) {
@@ -582,10 +583,11 @@ export const patchCategory = async (id: string, b: Record<string, unknown>, acto
       const renamed = diff.name !== undefined;
       let moved = { dishes: 0, restaurants: 0 };
       if (renamed) {
-        const links = await tx.vendorCategory.findMany({ where: { categoryId: id }, select: { vendorId: true }, orderBy: { vendorId: 'asc' } });
-        const vendorIds = links.map((l) => l.vendorId);
+        const linked=await tx.vendor.findMany({where:{OR:[{primaryCategoryId:id},{cuisines:{some:{categoryId:id}}}]} ,select:{id:true},orderBy:{id:'asc'}});
+        const vendorIds=linked.map(v=>v.id);
         await lockVendors(tx, vendorIds);
         await rederiveVendorCategories(tx, vendorIds);
+        await tx.vendor.updateMany({where:{primaryCategoryId:id},data:{category:diff.name!}});
         await tx.$queryRaw`SELECT "id" FROM "MenuItem" WHERE "categoryId" = ${id} ORDER BY "id" FOR UPDATE`;
         const dishes = await tx.$executeRaw`UPDATE "MenuItem" SET "category" = ${diff.name!} WHERE "categoryId" = ${id}`;
         moved = { dishes, restaurants: vendorIds.length };
@@ -662,12 +664,12 @@ export const mergeCategory = async (fromId: string, b: Record<string, unknown>, 
     assertNotProtected(from, 'merge away'); // the preview refuses it too, so the admin never sees a merge that would fail on apply
     const [dishes, links] = await Promise.all([
       tx.menuItem.count({ where: { categoryId: fromId } }),
-      tx.vendorCategory.findMany({ where: { categoryId: fromId }, select: { vendorId: true } }),
+      tx.vendor.findMany({ where: {OR:[{primaryCategoryId:fromId},{cuisines:{some:{categoryId:fromId}}}]}, select: { id: true } }),
     ]);
     if (!into.isActive) throw new AppError(409, 'CATEGORY_INACTIVE', `"${into.name}" is hidden. Choose an active category to merge into.`, 'intoId');
     if (dishes > 0 && !into.forDishes) throw new AppError(409, 'CATEGORY_INCOMPATIBLE', `"${into.name}" is not a product category, but ${dishes} products would move into it.`, 'intoId', { dishes });
     if (links.length > 0 && !into.forRestaurants) throw new AppError(409, 'CATEGORY_INCOMPATIBLE', `"${into.name}" is not a store category, but ${links.length} stores would move into it.`, 'intoId', { restaurants: links.length });
-    return { from, into, dishes, vendorIds: links.map((l) => l.vendorId) };
+    return { from, into, dishes, vendorIds: links.map((l) => l.id) };
   };
 
   if (dryRun) {
@@ -682,7 +684,7 @@ export const mergeCategory = async (fromId: string, b: Record<string, unknown>, 
     if (!locked.includes(intoId)) throw new AppError(404, 'NOT_FOUND', 'The category to merge into was not found.', 'intoId');
     const p = await plan(tx);
     const bothLinks = await tx.vendorCategory.findMany({ where: { categoryId: { in: [fromId, intoId] } }, select: { vendorId: true } });
-    const vendorIds = uniqueSorted(bothLinks.map((l) => l.vendorId));
+    const vendorIds = uniqueSorted([...bothLinks.map((l) => l.vendorId),...p.vendorIds]);
     await lockVendors(tx, vendorIds);
     await tx.$queryRaw`SELECT "id" FROM "MenuItem" WHERE "categoryId" = ${fromId} ORDER BY "id" FOR UPDATE`;
 
@@ -703,6 +705,7 @@ export const mergeCategory = async (fromId: string, b: Record<string, unknown>, 
         WHERE vc."vendorId" = r."vendorId" AND vc."categoryId" = r."categoryId" AND vc."position" <> r.rn - 1`;
     }
     await rederiveVendorCategories(tx, vendorIds);
+    await tx.vendor.updateMany({where:{primaryCategoryId:fromId},data:{primaryCategoryId:intoId,category:p.into.name}});
     const dishes = await tx.$executeRaw`UPDATE "MenuItem" SET "categoryId" = ${intoId}, "category" = ${p.into.name} WHERE "categoryId" = ${fromId}`;
     await tx.category.delete({ where: { id: fromId } });
     return { from: p.from, into: p.into, dishes, restaurants: p.vendorIds.length };
@@ -726,7 +729,7 @@ export const deleteCategory = async (id: string, actor: Actor) => {
     if ((await lockCategories(tx, [id], 'UPDATE')).length === 0) throw new AppError(404, 'NOT_FOUND', 'Category not found (it may already be deleted).');
     const row = await tx.category.findUniqueOrThrow({ where: { id }, select: { slug: true } });
     assertNotProtected(row, 'delete');
-    const [dishes, restaurants] = await Promise.all([tx.menuItem.count({ where: { categoryId: id } }), tx.vendorCategory.count({ where: { categoryId: id } })]);
+    const [dishes, restaurants] = await Promise.all([tx.menuItem.count({ where: { categoryId: id } }), tx.vendor.count({where:{OR:[{primaryCategoryId:id},{cuisines:{some:{categoryId:id}}}]}})]);
     if (dishes + restaurants > 0) {
       throw new AppError(409, 'CATEGORY_IN_USE', `This category is used by ${restaurants} store${restaurants === 1 ? '' : 's'} and ${dishes} product${dishes === 1 ? '' : 'es'}. Hide it, or merge it into another category.`, undefined, { restaurants, dishes });
     }

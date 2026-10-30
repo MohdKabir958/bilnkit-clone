@@ -148,7 +148,9 @@ describe('Grocery SKU inventory and independent store orders', () => {
     const itemId=products[1][9].id;
     const r=await order(1,second,{items:[{itemId,quantity:3}]});expect(r.status).toBe(201);
     const payment=await req.post('/api/payments/create-order').set(h(second)).send({orderId:r.body.data.id});expect(payment.status).toBe(200);
-    await prisma.order.update({where:{id:r.body.data.id},data:{createdAt:new Date(Date.now()-20*60000)}});
+    // The simulated provider attempt is old too; a fresh payment remains protected even on an older order.
+    await prisma.order.update({where:{id:r.body.data.id},data:{createdAt:new Date(Date.now()-25*60000)}});
+    await prisma.payment.updateMany({where:{orderId:r.body.data.id},data:{createdAt:new Date(Date.now()-25*60000)}});
     await runOrderMaintenance();await runOrderMaintenance();
     expect((await prisma.order.findUniqueOrThrow({where:{id:r.body.data.id}})).status).toBe('CANCELLED');
     expect((await prisma.menuItem.findUniqueOrThrow({where:{id:itemId}})).stockQty).toBe(20);

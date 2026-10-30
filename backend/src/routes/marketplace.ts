@@ -1,3 +1,8 @@
+import { assessFulfillmentCapacity } from '../services/capacity';
+import { ownedAddress } from '../services/geography';
+import { recordAvailabilityLocation } from '../services/gps';
+import { appendLegacyCashEvent } from '../services/cashReconciliation';
+import { paymentCapabilities } from '../services/paymentCapabilities';
 import { Router } from 'express';
 import { prisma } from '../db';
 import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/auth';
@@ -25,7 +30,11 @@ const input=(b:any)=>{
 marketplaceRouter.post('/v2/checkout/quote',...customer,wrap(async(r,s)=>{
   const b=input(r.body??{}),store=await requireMarketplaceStore(prisma,b.vendorId);
   const quote=await quoteOrder(r.user!.id,{restaurants:[{vendorId:b.vendorId,items:b.items}],addressId:b.addressId,couponCode:b.couponCode});
-  s.json({success:true,data:{...quote,maxRestaurants:1,paymentMethods:store.city?.codEnabled?['ONLINE','COD']:['ONLINE']}});
+  const address=await ownedAddress(prisma,r.user!.id,b.addressId);
+  const capacity=await assessFulfillmentCapacity(prisma,b.vendorId,address);
+  const capabilities=paymentCapabilities(!!store.city?.codEnabled);
+  const methods=capacity.canCheckout?capabilities.paymentMethods.filter(m=>m!=='ONLINE'||capacity.onlineAllowed):[];
+  s.json({success:true,data:{...quote,maxRestaurants:1,capacity,paymentMethods:methods,paymentCapabilities:capabilities}});
 }));
 marketplaceRouter.post('/v2/checkout',...customer,wrap(async(r,s)=>{
   const b=input(r.body??{}),clientRequestId=text(r.body?.clientRequestId,'clientRequestId',64);
@@ -36,9 +45,7 @@ marketplaceRouter.post('/v2/checkout',...customer,wrap(async(r,s)=>{
 
 // First-party on-duty GPS only; a separate ephemeral availability point is never exposed to customers.
 marketplaceRouter.post('/v1/drivers/availability-location',requireAuth,requireRole('DRIVER'),requireApprovedPartner,wrap(async(r,s)=>{
-  if(!indianPoint(r.body?.lat,r.body?.lng)) throw new AppError(400,'BAD_LOCATION','Send a current location in India.');
-  const d=await prisma.driverPartner.updateMany({where:{userId:r.user!.id,approvalStatus:'APPROVED',dutyStatus:{in:['ONLINE','IN_TRANSIT']}},data:{availabilityLat:r.body.lat,availabilityLng:r.body.lng,availabilityAt:new Date()}});
-  if(!d.count) throw new AppError(409,'RIDER_OFFLINE','Go on duty before sharing your availability.');
+  await recordAvailabilityLocation(r.user!.id,r.body?.lat,r.body?.lng,r.body??{});
   s.json({success:true});
 }));
 marketplaceRouter.get('/v1/partner/stores',requireAuth,requireRole('VENDOR'),requireApprovedPartner,wrap(async(r,s)=>{
@@ -81,6 +88,7 @@ for(const action of ['remit','refund'] as const) marketplaceRouter.post(`/v1/adm
     const previous=action==='remit'?cash.remittanceReference:cash.refundReference;
     if(previous) {if(previous!==reference) throw new AppError(409,'ALREADY_RECORDED','This cash event is already recorded with a different reference.');return cash;}
     if(action==='refund'&&!cash.remittedAt) throw new AppError(409,'CASH_NOT_REMITTED','Record cash handover before recording a platform-funded cash refund.');
+    await appendLegacyCashEvent(tx,cash,action,r.user!.id,reference);
     const updated=await tx.cashCollection.update({where:{id:cash.id},data:action==='remit'?{remittedAt:new Date(),remittedById:r.user!.id,remittanceReference:reference}:{refundedAt:new Date(),refundedById:r.user!.id,refundReference:reference}});
     if(action==='refund') await tx.order.update({where:{id:cash.orderId},data:{paymentStatus:'REFUNDED',refundStatus:'MANUAL_CASH_REFUND'}});
     await tx.adminAuditLog.create({data:{action:action==='remit'?'CASH_REMITTED':'CASH_REFUND_RECORDED',targetType:'ORDER',targetId:cash.orderId,summary:`Operator ${r.user!.id} recorded full cash ${action}; receipt ${reference}. No gateway transfer was performed.`}});

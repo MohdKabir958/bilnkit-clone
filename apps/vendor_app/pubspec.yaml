@@ -1,7 +1,7 @@
 name: vendor_app
 description: "Grozo vendor products, inventory and order management app"
 publish_to: 'none'
-version: 1.14.0+21
+version: 1.16.0+24
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

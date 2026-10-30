@@ -1,0 +1,19 @@
+{
+  "database": "grozo_final_1792952085880_test",
+  "databaseHost": "127.0.0.1",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "command": "node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/rider-registration-fix/evidence/backend-targeted/backend-full-run.json test/e2e/clerk_migration.test.ts",
+  "invocations": 1,
+  "passed": 37,
+  "failed": 1,
+  "skipped": 0,
+  "total": 38,
+  "suites": 1,
+  "durationMs": 13858,
+  "exitCode": 1,
+  "startedAt": "2026-10-25T18:14:58.380Z",
+  "finishedAt": "2026-10-25T18:15:12.240Z"
+}

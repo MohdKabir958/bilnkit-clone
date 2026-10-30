@@ -1,0 +1,27 @@
+{
+  "database": "grozo_dispatch_1792994545179_test",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "connectionLimit": 4,
+  "poolTimeoutSeconds": 1,
+  "command": [
+    "node",
+    "/tmp/grozo-dispatch-runner.mjs",
+    "fulfillment-policies",
+    "4",
+    "1",
+    "test/unit/fulfillment_readiness.test.ts"
+  ],
+  "results": [
+    {
+      "round": 1,
+      "exitCode": 0,
+      "durationMs": 12858,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    }
+  ]
+}

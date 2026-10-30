@@ -454,7 +454,7 @@ describe('create and edit', () => {
     expect(props.onChanged).toHaveBeenCalled(); // vendor and dish names elsewhere were rewritten
   });
 
-  it('Edit: clearing the Hindi name sends null; the Active switch is only in the edit form', async () => {
+  it('Edit: clearing the Hindi name sends null; Active is configurable in both create and edit forms', async () => {
     vi.spyOn(apiService, 'fetchCategories').mockResolvedValue([BIRYANI()]);
     const update = vi.spyOn(apiService, 'updateCategory').mockResolvedValue({ category: cat(rawCategory({ nameHi: null, isActive: false })), changed: true, message: 'Category saved.' });
     await mount(render().element);
@@ -471,7 +471,7 @@ describe('create and edit', () => {
     await mount(render().element);
     await flush();
     const created = await openCreate();
-    expect(created.querySelector('button[role="switch"][aria-label="Active"]')).toBeNull();
+    expect(created.querySelector('button[role="switch"][aria-label="Active"]')!.getAttribute('aria-checked')).toBe('true');
   });
 
   it('Escape closes the drawer and focus returns to the button that opened it', async () => {

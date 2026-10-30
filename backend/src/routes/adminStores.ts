@@ -1,9 +1,11 @@
+import {invalidatePublicCategories} from '../services/categories';
 import { Router } from 'express';
 import { prisma } from '../db';
 import { requireAuth, requireRole, AuthenticatedRequest } from '../middleware/auth';
-import { clerkAdmins, usesClerk } from '../config/authMode';
+import { usesClerk } from '../config/authMode';
 import { indianPoint, kmBetween, text } from '../services/geography';
 import { normalizeAdminEmail } from '../services/adminAccess';
+import {eligibleRiderAccount} from '../services/riderOnboarding';
 import { verifiedPartnerIdentity } from '../services/clerkIdentity';
 import { AppError } from '../utils/appError';
 import { fail } from '../utils/http';
@@ -19,8 +21,9 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
     if (!/^[1-9]\d{5}$/.test(pinCode) || !indianPoint(b.lat,b.lng)) throw new AppError(400,'BAD_LOCATION','Enter a six-digit PIN and a confirmed location in India.');
     const city = await prisma.city.findUnique({where:{id:cityId}});
     if (!city?.active) throw new AppError(400,'CITY_REQUIRED','Choose an enabled city.','cityId');
-    const category=b.primaryCategoryId?await prisma.category.findUnique({where:{id:text(b.primaryCategoryId,'primaryCategoryId',64)}}):null;
+    let category=b.primaryCategoryId?await prisma.category.findUnique({where:{id:text(b.primaryCategoryId,'primaryCategoryId',64)}}):null;
     if(b.primaryCategoryId&&(!category?.isActive||!category.forRestaurants)) throw new AppError(400,'CATEGORY_REQUIRED','Choose an active store category.');
+    if(b.pinConfirmationMethod!==undefined&&!['SEARCH','MAP','MANUAL'].includes(b.pinConfirmationMethod))throw new AppError(400,'BAD_LOCATION','Choose a valid pickup confirmation method.');
     const publicPhone=text(b.publicPhone,'publicPhone',16,false);
     if(publicPhone&&!/^\+?[0-9 ()-]{10,16}$/.test(publicPhone)) throw new AppError(400,'BAD_PHONE','Enter a public business contact number.');
     let ownerSubject: string | undefined;
@@ -29,6 +32,13 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
       ownerSubject = (await verifiedPartnerIdentity(normalizeAdminEmail(b.ownerEmail))).id;
     }
     const row = await prisma.$transaction(async tx => {
+      if(b.primaryCategoryId){
+        await tx.$queryRaw`SELECT id FROM "Category" WHERE id=${text(b.primaryCategoryId,'primaryCategoryId',64)} FOR SHARE`;
+        category=await tx.category.findUnique({where:{id:b.primaryCategoryId}});
+        if(!category?.isActive||!category.forRestaurants)throw new AppError(400,'CATEGORY_REQUIRED','Choose an active store category.','primaryCategoryId');
+      }
+      await tx.$queryRaw`SELECT id FROM "City" WHERE id=${cityId} FOR SHARE`;
+      if(!(await tx.city.findUnique({where:{id:cityId}}))?.active)throw new AppError(400,'CITY_REQUIRED','Choose an enabled city.','cityId');
       let ownerId: string | undefined;
       if (ownerSubject) {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${ownerSubject}, 81971))`;
@@ -39,13 +49,15 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
         await tx.user.update({where:{id:owner.id},data:{role:'VENDOR'}});
         ownerId = owner.id;
       }
+      if(b.zoneId)await tx.$queryRaw`SELECT id FROM "DeliveryZone" WHERE id=${text(b.zoneId,'zoneId',64)} FOR SHARE`;
       const zone = b.zoneId ? await tx.deliveryZone.findUnique({where:{id:text(b.zoneId,'zoneId',64)}}) : null;
       if (b.zoneId && (!zone?.active || zone.cityId !== cityId || kmBetween({lat:b.lat,lng:b.lng},{lat:zone.centerLat,lng:zone.centerLng}) > zone.radiusKm)) throw new AppError(400,'ZONE_MISMATCH','Choose an enabled zone in this city that contains the store pickup location.','zoneId');
       const store = await tx.vendor.create({data:{name,address,cityId,pinCode,locality,lat:b.lat,lng:b.lng,userId:ownerId,category:category?.name??'Groceries',primaryCategoryId:category?.id,publicPhone:publicPhone||null,description:text(b.description,'description',600,false)||null,bannerImage:'',isAcceptingOrders:false,approvalStatus:'APPROVED',locationSource:'ADMIN',locationSetAt:new Date(),eta:''}});
       if (zone) await tx.vendorCoverage.create({data:{vendorId:store.id,zoneId:zone.id,active:true}});
-      await tx.adminAuditLog.create({data:{action:'STORE_CREATED',targetType:'VENDOR',targetId:store.id,summary:`Operator ${req.user!.id} created a closed store with confirmed pickup${ownerId?' and a verified partner owner':''}.`}});
+      await tx.adminAuditLog.create({data:{action:'STORE_CREATED',targetType:'VENDOR',targetId:store.id,summary:`Operator ${req.user!.id} created a closed store with confirmed ${b.pinConfirmationMethod??'MANUAL'} pickup${ownerId?' and a verified partner owner':''}.`}});
       return store;
     });
+    invalidatePublicCategories();
     res.status(201).json({success:true,data:row});
   } catch(e) { fail(res,e,'Store could not be created'); }
 });
@@ -54,12 +66,17 @@ adminStoresRouter.post('/v1/admin/stores',requireAuth,requireRole('ADMIN'),async
 adminStoresRouter.patch('/v1/admin/stores/:id',requireAuth,requireRole('ADMIN'),async(req:AuthenticatedRequest,res)=>{
   try {
     const b=req.body??{};
-    const category=b.primaryCategoryId?await prisma.category.findUnique({where:{id:text(b.primaryCategoryId,'primaryCategoryId',64)}}):null;
+    let category=b.primaryCategoryId?await prisma.category.findUnique({where:{id:text(b.primaryCategoryId,'primaryCategoryId',64)}}):null;
     if(b.primaryCategoryId&&(!category?.isActive||!category.forRestaurants)) throw new AppError(400,'CATEGORY_REQUIRED','Choose an active store category.');
     const publicPhone=b.publicPhone===undefined?undefined:text(b.publicPhone,'publicPhone',16,false);
     if(publicPhone && !/^\+?[0-9 ()-]{10,16}$/.test(publicPhone)) throw new AppError(400,'BAD_PHONE','Enter a public business contact number.');
     const ownerSubject=b.ownerEmail?(await verifiedPartnerIdentity(normalizeAdminEmail(b.ownerEmail))).id:undefined;
     const row=await prisma.$transaction(async tx=>{
+      if(b.primaryCategoryId){
+        await tx.$queryRaw`SELECT id FROM "Category" WHERE id=${text(b.primaryCategoryId,'primaryCategoryId',64)} FOR SHARE`;
+        category=await tx.category.findUnique({where:{id:b.primaryCategoryId}});
+        if(!category?.isActive||!category.forRestaurants)throw new AppError(400,'CATEGORY_REQUIRED','Choose an active store category.','primaryCategoryId');
+      }
       let userId:string|undefined;
       if(ownerSubject) {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${ownerSubject},81971))`;
@@ -73,7 +90,7 @@ adminStoresRouter.patch('/v1/admin/stores/:id',requireAuth,requireRole('ADMIN'),
       const updated=await tx.vendor.update({where:{id:store.id},data:{...(category?{primaryCategoryId:category.id,category:category.name}:{}),...(userId?{userId}:{}),...(publicPhone!==undefined?{publicPhone:publicPhone||null}:{}),...(b.description===undefined?{}:{description:text(b.description,'description',600,false)||null})}});
       await tx.adminAuditLog.create({data:{action:'STORE_MARKETPLACE_UPDATED',targetType:'VENDOR',targetId:store.id,summary:`Operator ${req.user!.id} updated category, public contact or verified ownership.`}});
       return updated;
-    });res.json({success:true,data:row});
+    });invalidatePublicCategories();res.json({success:true,data:row});
   }catch(e){fail(res,e,'Store configuration could not be saved');}
 });
 
@@ -91,17 +108,40 @@ adminStoresRouter.post('/v1/admin/riders',requireAuth,requireRole('ADMIN'),async
     const cityId=text(b.cityId,'cityId',64),zoneId=text(b.zoneId,'zoneId',64);
     const row=await prisma.$transaction(async tx=>{
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${identity.id},81971))`;
-      const user=await tx.user.findUnique({where:{clerkUserId:identity.id}}),state=await tx.clerkIdentityState.findUnique({where:{clerkUserId:identity.id}});
-      if(!user||user.deletedAt||!['STUDENT','DRIVER'].includes(user.role)||state?.deleted||state?.suspended||state?.deleteRequested||clerkAdmins().includes(identity.id)||await tx.vendor.count({where:{userId:user.id}})||await tx.adminAccess.count({where:{OR:[{clerkUserId:identity.id},{email}],status:{in:['ACTIVE','INVITED']}}})) throw new AppError(409,'RIDER_UNAVAILABLE','Use a separate eligible partner account that has signed in to Grozo first.','email');
-      if(await tx.driverPartner.findUnique({where:{userId:user.id}})) throw new AppError(409,'RIDER_EXISTS','This rider already exists. Review their application or service area instead.','email');
+      const user=await eligibleRiderAccount(tx,identity.id,email);
       const city=await tx.city.findUnique({where:{id:cityId}}),zone=await tx.deliveryZone.findUnique({where:{id:zoneId}});
       if(!city?.active||!zone?.active||zone.cityId!==cityId) throw new AppError(400,'ZONE_MISMATCH','Choose an enabled delivery zone in the selected enabled city.','zoneId');
       await tx.user.update({where:{id:user.id},data:{role:'DRIVER'}});
       const rider=await tx.driverPartner.create({data:{userId:user.id,name,phone,runnerCode:await newRunnerCode(),...details.data,cityId,serviceZoneId:zoneId,approvalStatus:b.approve===true?'APPROVED':'PENDING',appliedAt:new Date(),reviewedAt:b.approve===true?new Date():null,dutyStatus:'OFFLINE'}});
+      await tx.riderInvitation.updateMany({where:{email,state:'VERIFIED',acceptedBySubject:identity.id,expiresAt:{gt:new Date()}},data:{state:'COMPLETED',completedAt:new Date(),completedDriverId:rider.id}});
       await tx.adminAuditLog.create({data:{action:'RIDER_ONBOARDED',targetType:'DRIVER',targetId:rider.id,summary:`Operator ${req.user!.id} created a ${rider.approvalStatus.toLowerCase()} offline rider with verified provider identity and service area.`}});
       return rider;
     });
     req.app.get('io')?.to('admins').emit('partner_application',{kind:'DRIVER',id:row.id});
     res.status(201).json({success:true,data:row});
   }catch(e){fail(res,e,'Rider could not be created');}
+});
+
+// Explicit confirmed-pickup workflow. Historical pin APIs remain compatible; new UI uses this guard.
+adminStoresRouter.put('/v1/admin/vendors/:id/pickup-pin',requireAuth,requireRole('ADMIN'),async(req:AuthenticatedRequest,res)=>{
+ try{
+  const b=req.body??{};
+  if(!/^[A-Za-z0-9_-]{1,64}$/.test(req.params.id)||!indianPoint(b.lat,b.lng))throw new AppError(400,'BAD_LOCATION','Choose a confirmed store entrance in India.');
+  if(b.confirmed!==true||!['SEARCH','MAP','MANUAL'].includes(b.method))throw new AppError(400,'PIN_CONFIRMATION_REQUIRED','Confirm the pickup pin and its selection method.');
+  const row=await prisma.$transaction(async tx=>{
+   await tx.$queryRaw`SELECT id FROM "Vendor" WHERE id=${req.params.id} FOR UPDATE`;
+   const before=await tx.vendor.findUnique({where:{id:req.params.id}});
+   if(!before)throw new AppError(404,'NOT_FOUND','Store not found.');
+   const changed=before.lat!==b.lat||before.lng!==b.lng||!before.locationSource;
+   if(changed&&await tx.order.count({where:{vendorId:before.id,status:{notIn:['DELIVERED','CANCELLED']}}}))throw new AppError(409,'ACTIVE_ORDERS','Finish or cancel current store orders before moving the pickup.');
+   if(changed){
+    await tx.vendor.update({where:{id:before.id},data:{lat:b.lat,lng:b.lng,locationSource:'ADMIN',locationSetAt:new Date(),locationAccuracyM:null,isAcceptingOrders:false}});
+    await tx.vendorCoverage.updateMany({where:{vendorId:before.id,active:true},data:{active:false}});
+    await tx.adminAuditLog.create({data:{action:'VENDOR_PICKUP_CONFIRMED',targetType:'VENDOR',targetId:before.id,summary:`Operator ${req.user!.id} confirmed ${b.method} pickup at ${b.lat}, ${b.lng}. Previous ${before.lat}, ${before.lng}. Store closed and coverage paused pending review.`}});
+   }
+   const updated=await tx.vendor.findUniqueOrThrow({where:{id:before.id},select:{id:true,lat:true,lng:true,locationSource:true,locationSetAt:true,locationAccuracyM:true}});
+   return {...updated,hasLocation:true,coverageReviewRequired:changed};
+  });
+  res.json({success:true,data:row});
+ }catch(e){fail(res,e,'Confirm vendor pickup');}
 });

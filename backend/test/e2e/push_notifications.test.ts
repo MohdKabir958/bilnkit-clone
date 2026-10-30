@@ -305,7 +305,7 @@ describe('Push notifications', () => {
       const otp=(await prisma.order.findUniqueOrThrow({where:{id}})).otpCode!;secrets.otps.add(otp);
       expect((await setStatus(id,'DELIVERED',tRider,{otpCode:otp})).status).toBe(200);await flush();
       expect(fake.to(id,'ORDER_PICKED_UP')[0].token).toBe(TOK.cust);expect(fake.to(id,'RIDER_AT_GATE')[0].token).toBe(TOK.cust);expect(fake.to(id,'ORDER_DELIVERED')[0].token).toBe(TOK.cust);
-      for(const message of fake.sent.filter(m=>m.data.orderId===id)){expect(Object.keys(message.data).sort()).toEqual(['event','orderId','v']);expect(message.collapseKey).toBe(`${message.data.event}:${id}`);}
+      for(const message of fake.sent.filter(m=>m.data.orderId===id)){expect(Object.keys(message.data).sort()).toEqual(message.data.event==='NEW_DELIVERY'?['event','offerExpiresAt','offerId','orderId','v']:['event','orderId','v']);expect(message.collapseKey).toBe(`${message.data.event}:${id}`);}
     });
 
     test('NEW_DELIVERY goes only to approved ONLINE riders without an active order', async () => {
@@ -839,6 +839,13 @@ describe('Push notifications', () => {
     });
   });
 
+  test('item-change review alert reaches only the owning customer',async()=>{
+    await registerAll();const id=await placePaid();fake.sent.length=0;
+    await notifyOrderEvent(id,'ORDER_UPDATED');
+    expect(fake.to(id,'ORDER_UPDATED').map(m=>m.token)).toEqual([TOK.cust]);
+    expect(fake.to(id,'ORDER_UPDATED')[0].body).toBe('The store proposed an item change. Open your order to review it.');
+  });
+
   // =========================================================================
   // Privacy scan over everything sent by every test above
   // =========================================================================
@@ -852,7 +859,8 @@ describe('Push notifications', () => {
       const phones = [STUDENT, STUDENT2, STUDENT3, VENDOR, RIDER, RIDER2, ADMIN].map((u) => u.phone.replace(/\D/g, '').slice(-10));
       for (const m of everything) {
         const all = JSON.stringify(m);
-        expect(Object.keys(m.data).sort()).toEqual(['event', 'orderId', 'v']);
+        expect(Object.keys(m.data).sort()).toEqual(m.data.event==='NEW_DELIVERY'?['event','offerExpiresAt','offerId','orderId','v']:['event','orderId','v']);
+        if(m.data.event==='NEW_DELIVERY'){expect(m.data.offerId).toMatch(/^[A-Za-z0-9_-]{1,64}$/);expect(Date.parse(m.data.offerExpiresAt!)).toBeGreaterThan(0);expect(m.ttlSeconds).toBeLessThanOrEqual(45);}
         expect(m.data.v).toBe('1');
         for (const otp of secrets.otps) expect(all).not.toContain(otp);
         for (const p of phones) expect(all.replace(/\D/g, '')).not.toContain(p);

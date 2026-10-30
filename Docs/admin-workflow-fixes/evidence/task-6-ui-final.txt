@@ -1,0 +1,17 @@
+
+> kraveo-super-admin@1.0.0 test
+> vitest run --maxWorkers=1 --minWorkers=1 src/components/RiderIdentityWorkflow.test.tsx src/components/PartnerOnboarding.test.tsx src/services/ApiRetryAfter.test.ts
+
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/PartnerOnboarding.test.tsx (6 tests) 952ms
+   ✓ rider wizard defaults pending, preserves Back values, and only submits on review 534ms
+ ✓ src/components/RiderIdentityWorkflow.test.tsx (3 tests) 405ms
+ ✓ src/services/ApiRetryAfter.test.ts (2 tests) 12ms
+
+ Test Files  3 passed (3)
+      Tests  11 passed (11)
+   Start at  19:47:13
+   Duration  5.38s (transform 786ms, setup 0ms, collect 1.54s, tests 1.37s, environment 1.51s, prepare 216ms)
+

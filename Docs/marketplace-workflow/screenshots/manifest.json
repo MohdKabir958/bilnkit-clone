@@ -1,11 +1,18 @@
 {
-  "capturedAt": "2026-10-25T13:06:00.303Z",
+  "capturedAt": "2026-10-26T14:13:19.203Z",
   "renderer": "Chromium; actual implemented React components",
+  "timezone": "Asia/Kolkata",
   "api": "explicit synthetic in-memory fixtures; no hosted identity",
-  "login": "Actual Clerk SDK cannot reach provider from this workspace; screenshot is implemented recovery state, not hosted sign-in verification.",
+  "login": "Actual Clerk SDK recovery state rendered; provider session not verified.",
   "screens": [
     {
       "name": "01-overview",
+      "width": 1440,
+      "overflow": false,
+      "fixture": true
+    },
+    {
+      "name": "15-operational-health",
       "width": 1440,
       "overflow": false,
       "fixture": true
@@ -83,7 +90,7 @@
       "fixture": true
     },
     {
-      "name": "11-login-recovery",
+      "name": "11-login-current",
       "width": 1440,
       "overflow": false,
       "fixture": true

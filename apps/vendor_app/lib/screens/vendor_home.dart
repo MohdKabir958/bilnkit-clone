@@ -230,6 +230,25 @@ class _VendorHomeScreenState extends State<VendorHomeScreen>
   /// A push told us something: reload once; a tap also shows the kitchen queue and, for a new order that is
   /// still waiting for an answer, its takeover.
   Future<void> _onPushAction(PushAction action) async {
+    if (mounted && action.kind == PushActionKind.supportUpdated) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Text('Support has replied to your request.'),
+          action: SnackBarAction(
+              label: 'Read reply',
+              onPressed: () => _onPushAction(PushAction(
+                  PushActionKind.showSupport, null, action.caseId)))));
+      return;
+    }
+    if (mounted &&
+        action.kind == PushActionKind.showSupport &&
+        action.caseId != null) {
+      await Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+              builder: (_) => SupportCenter(
+                  call: ProductApi().call, initialCaseId: action.caseId)));
+      return;
+    }
     final c = _orders;
     if (!mounted || c == null || c.isDisposed) return;
     if (action.kind == PushActionKind.showQueue && _currentIndex != 0) {

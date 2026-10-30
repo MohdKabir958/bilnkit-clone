@@ -11,12 +11,18 @@
  * database every ~40 ms while a wave runs) and after every wave. The seed is printed on failure.
  */
 import { randomUUID } from 'crypto';
+import { mkdirSync, writeFileSync } from 'fs';
+import path from 'path';
+import os from 'os';
 import { prisma, cleanTestOrders } from '../harness/db';
 import { startTestServer, stopTestServer, TestServerInstance } from '../harness/app';
 import { generateTestToken } from '../harness/auth';
 import { setPaymentProvider } from '../../src/services/paymentService';
 import { runOrderMaintenance } from '../../src/services/orderMaintenance';
 import { __waitForBackgroundWork } from '../../src/services/refundService';
+import { runDailySettlementJob } from '../../src/services/settlement';
+import { flushNotificationIntents } from '../../src/services/push/intents';
+import { runPushMaintenance } from '../../src/services/push/pushService';
 import {
   World, Customer, Vendor, Rider, Watcher, Ledger, Api, createWorld, purgeWorld, createLedger, createApi, keysOf, RAW_KEYS, STATUS_RANK, isTerminal, sleep, minutesFromNow,
 } from '../harness/journey';
@@ -25,6 +31,7 @@ jest.setTimeout(420_000);
 
 const SEED = Number(process.env.STRESS_SEED ?? 20261002);
 const WAVES = Number(process.env.STRESS_WAVES ?? 10);
+const PILOT = process.env.QA_PILOT === 'true';
 const ACTIVE = ['ACCEPTED', 'PREPARING', 'READY_FOR_PICKUP', 'PICKED_UP', 'ARRIVED_AT_GATE'];
 
 const mulberry32 = (a: number) => () => {
@@ -161,6 +168,21 @@ describe(`Lifecycle stress (seed ${SEED})`, () => {
     }
     if (rng() < 0.35) { const r = pick(W.riders); add(() => api.partnerStatus(W.admin, 'driver', r.profileId, 'SUSPENDED')); }
     if (rng() < 0.2) { const v = pick(W.vendors); add(() => api.partnerStatus(W.admin, 'vendor', v.vendorId, 'SUSPENDED')); }
+    if (PILOT) {
+      // Exercise real HTTP paths alongside checkout, callbacks, offers and rider updates.
+      // Optimistic stock conflicts and concurrent suspension are legitimate business rejections.
+      for (const c of W.customers) add(() => api.raw(c.id, 'get', `/api/v1/vendors/${pick(W.vendors).vendorId}/products`, c.token));
+      for (const v of W.vendors) add(async () => {
+        const item = v.items[0];
+        const current = await api.raw(v.id, 'get', `/api/v1/vendors/${v.vendorId}/products`, v.token);
+        if (current.status !== 200) return;
+        const row = current.body.data.find((p: any) => p.id === item.id);
+        if (row) await api.raw(v.id, 'post', `/api/v1/products/${item.id}/stock`, v.token, { delta: 1, expectedVersion: row.stockVersion, reason: 'Controlled synthetic pilot stock receipt', clientRequestId: randomUUID() });
+      });
+      add(() => api.raw(W.admin.id, 'get', '/api/v1/admin/operations', W.admin.token));
+      add(() => runDailySettlementJob(new Date()));
+      add(async () => { await flushNotificationIntents(new Date()); await runPushMaintenance(new Date(), { awaitCompletion: true }); });
+    }
     // time: the job runs with an advancing injected clock
     const offset = pick([0, 0, 0, 5, 11, 16]);
     add(() => runOrderMaintenance(minutesFromNow(offset)));
@@ -448,12 +470,16 @@ describe(`Lifecycle stress (seed ${SEED})`, () => {
   test(`seeded simulation: ${WAVES} waves, ~40 orders, invariants I1-I10 after every wave`, async () => {
     rng = mulberry32(SEED);
     let totalActions = 0;
+    const started = performance.now(), cpu = process.cpuUsage(), initialMemory = process.memoryUsage();
+    const callStart = api.calls.length;
+    let peakConcurrentActions = 0, succeeded = false;
     try {
       for (let w = 0; w < WAVES; w++) {
         const stop = startSampler(`wave ${w}`);
         const info = await wave(w);
         await stop();
         totalActions += info.n;
+        peakConcurrentActions = Math.max(peakConcurrentActions, info.n);
         await sampleOnce(`wave ${w} end`);
         // Non-quiescent checks (provider may still be down inside this wave's refunds): safety invariants only.
         await checkMoney(`wave ${w} (live)`, false);
@@ -486,9 +512,26 @@ describe(`Lifecycle stress (seed ${SEED})`, () => {
       expect(by('DELIVERED')).toBeGreaterThanOrEqual(3);
       expect(refundedN).toBeGreaterThanOrEqual(3);
       assertClean('final');
+      succeeded = true;
     } catch (e) {
       console.error(`STRESS test failed with seed=${SEED}: ${(e as Error).message.slice(0, 400)}`);
       throw e;
+    } finally {
+      if (PILOT) {
+        const calls = api.calls.slice(callStart);
+        const values = calls.map(c => c.durationMs).sort((a,b) => a-b);
+        const percentile = (p: number) => values.length ? values[Math.min(values.length-1, Math.ceil(values.length*p)-1)] : 0;
+        const routes: Record<string, { count: number; errors5xx: number; success2xx: number; maxMs: number; maxResponseBytes: number }> = {};
+        for (const c of calls) {
+          const key = `${c.method.toUpperCase()} ${c.url.replace(/st-(?:ven|cust|rider|vown)-\d+(?:-i\d+)?/g, ':fixture')}`;
+          const r = routes[key] ??= { count: 0, errors5xx: 0, success2xx: 0, maxMs: 0, maxResponseBytes: 0 };
+          r.count++; r.errors5xx += Number(c.status >= 500); r.success2xx += Number(c.status >= 200 && c.status < 300);
+          r.maxMs = Math.max(r.maxMs, c.durationMs); r.maxResponseBytes = Math.max(r.maxResponseBytes, c.responseBytes);
+        }
+        const directory = path.resolve(__dirname, '../../../Docs/production-readiness/evidence/performance');
+        mkdirSync(directory, { recursive: true });
+        writeFileSync(path.join(directory, 'pilot.json'), JSON.stringify({ succeeded, seed: SEED, waves: WAVES, fixture: {customers:6, stores:3, riders:5}, elapsedMs:performance.now()-started, httpRequests:calls.length, peakConcurrentActions, latencyMs:{p50:percentile(.5), p95:percentile(.95), maximum:percentile(1)}, cpuMicroseconds:process.cpuUsage(cpu), initialMemory, finalMemory:process.memoryUsage(), node:process.version, cpus:os.availableParallelism(), routes, limits:'Local in-process HTTP and real PostgreSQL/Socket.io; simulated payment provider; FCM unconfigured; not a production capacity or memory-leak certification.' }, null, 2)+'\n');
+      }
     }
   });
 

@@ -1,19 +1,19 @@
 {
-  "database": "grozo_final_1792949425395_test",
+  "database": "grozo_final_1793015366472_test",
   "databaseHost": "127.0.0.1",
   "node": "v24.19.0",
   "platform": "linux",
   "architecture": "x64",
   "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
-  "command": "node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/vendor-registration-fix/evidence/backend-final/backend-full-run.json",
+  "command": "node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/production-readiness/evidence/backend-final/backend-full-run.json",
   "invocations": 1,
-  "passed": 1142,
+  "passed": 1233,
   "failed": 0,
   "skipped": 0,
-  "total": 1142,
-  "suites": 47,
-  "durationMs": 387984,
+  "total": 1233,
+  "suites": 56,
+  "durationMs": 496958,
   "exitCode": 0,
-  "startedAt": "2026-10-25T17:30:36.556Z",
-  "finishedAt": "2026-10-25T17:37:04.588Z"
+  "startedAt": "2026-10-26T11:49:39.221Z",
+  "finishedAt": "2026-10-26T11:57:56.217Z"
 }

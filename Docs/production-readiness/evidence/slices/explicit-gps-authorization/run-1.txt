@@ -1,0 +1,30 @@
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 396c0346-9fca-4f2d-b5b5-3c3c76e0e322
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+FAIL test/e2e/marketplace_workflow.test.ts (27.112 s)
+  ● Single-store marketplace: real transactions, cash accounting and broadcast races › GPS exceptions require independent admin approval, remain scope-bound and never replace delivery code proof
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "ARRIVAL_LOCATION_REQUIRED"
+    Received: undefined
+
+      104 |   const path=`/api/v1/admin/gps-exceptions/${created.body.data.id}/approve`;
+      105 |   expect((await raw(W.admin,'post',path,{})).body.code).toBe('INDEPENDENT_APPROVAL_REQUIRED');
+    > 106 |   expect((await raw(W.admin,'patch',`/api/orders/${id}/status`,{status:'PICKED_UP'})).body.code).toBe('ARRIVAL_LOCATION_REQUIRED');
+          |                                                                                                  ^
+      107 |   const supervisorId=tag+'-gps-supervisor';await prisma.user.upsert({where:{id:supervisorId},create:{id:supervisorId,name:'Independent GPS reviewer',role:'ADMIN'},update:{role:'ADMIN',deletedAt:null}});
+      108 |   const supervisor={token:generateTestToken({id:supervisorId,role:'ADMIN',phone:''})};
+      109 |   expect((await raw(supervisor,'post',path,{})).status).toBe(200);
+
+      at Object.<anonymous> (test/e2e/marketplace_workflow.test.ts:106:98)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 11 passed, 12 total
+Snapshots:   0 total
+Time:        27.547 s
+Ran all test suites matching test/e2e/marketplace_workflow.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/explicit-gps-authorization/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

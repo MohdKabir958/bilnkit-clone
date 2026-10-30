@@ -20,11 +20,11 @@ export const createBreaker = (limit = PROVIDER_BREAKER_FAILURES): Breaker => {
 /** What `fn` reports back: `transient: true` when the provider could not be reached or answered 5xx/429; `neutral: true` when the provider was not asked at all. */
 export type PoolResult = { transient?: boolean; neutral?: boolean } | void;
 
-export const runPool = async <T>(items: T[], breaker: Breaker, fn: (item: T) => Promise<PoolResult>, concurrency = PROVIDER_CONCURRENCY): Promise<number> => {
+export const runPool = async <T>(items: T[], breaker: Breaker, fn: (item: T) => Promise<PoolResult>, concurrency = PROVIDER_CONCURRENCY, signal?: AbortSignal): Promise<number> => {
   let next = 0;
   let processed = 0;
   const worker = async () => {
-    while (!breaker.open && next < items.length) {
+    while (!signal?.aborted && !breaker.open && next < items.length) {
       const item = items[next++];
       processed += 1;
       let r: PoolResult;
@@ -38,5 +38,6 @@ export const runPool = async <T>(items: T[], breaker: Breaker, fn: (item: T) => 
     }
   };
   await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
+  if (signal?.aborted) throw Object.assign(new Error('Provider batch stopped after worker ownership ended.'), { code: 'JOB_ABORTED' });
   return processed;
 };

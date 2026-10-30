@@ -1,0 +1,1 @@
+{"app": "vendor", "filename": "Grozo-Vendor-Clerk-Test.apk", "bytes": 51730853, "preview": false, "exitCode": 0}

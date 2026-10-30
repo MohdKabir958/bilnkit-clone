@@ -215,7 +215,10 @@ class ApiPartnerAuthService implements PartnerAuthService {
       response = await _client
           .post(
             Uri.parse('${ApiConfig.baseUrl}/auth/partner-login'),
-            headers: const {'Content-Type': 'application/json'},
+            headers: {
+              ...ApiConfig.clientHeaders,
+              'Content-Type': 'application/json'
+            },
             body: jsonEncode(
                 {'phone': phone, 'password': password, 'role': kPartnerRole}),
           )
@@ -264,6 +267,7 @@ class ApiPartnerAuthService implements PartnerAuthService {
         final response = await _client
             .post(Uri.parse('${ApiConfig.baseUrl}/partner/clerk-application'),
                 headers: {
+                  ...ApiConfig.clientHeaders,
                   'Content-Type': 'application/json',
                   'Authorization': 'Bearer $token'
                 },
@@ -287,7 +291,10 @@ class ApiPartnerAuthService implements PartnerAuthService {
       response = await _client
           .post(
             Uri.parse('${ApiConfig.baseUrl}/auth/partner-signup'),
-            headers: const {'Content-Type': 'application/json'},
+            headers: {
+              ...ApiConfig.clientHeaders,
+              'Content-Type': 'application/json'
+            },
             body: jsonEncode(form.toSignupJson()),
           )
           .timeout(_loginTimeout);
@@ -305,6 +312,7 @@ class ApiPartnerAuthService implements PartnerAuthService {
           .put(
             Uri.parse('${ApiConfig.baseUrl}/partner/application'),
             headers: {
+              ...ApiConfig.clientHeaders,
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $token'
             },
@@ -368,6 +376,7 @@ class ApiPartnerAuthService implements PartnerAuthService {
         Uri.parse(
             '${ApiConfig.baseUrl}${GrozoAuthConfig.usesClerk ? '/partner/driver/onboarding' : '/partner/me'}'),
         headers: {
+          ...ApiConfig.clientHeaders,
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token'
         },
@@ -414,6 +423,7 @@ class ApiPartnerAuthService implements PartnerAuthService {
       await _client.post(
         Uri.parse('${ApiConfig.baseUrl}/auth/logout'),
         headers: {
+          ...ApiConfig.clientHeaders,
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token'
         },

@@ -15,7 +15,7 @@ import { BAD_LABEL_MESSAGE, badLabel } from '../utils/labels';
  * Every state change runs in a transaction that first takes a row lock on the dish (SELECT ... FOR UPDATE), re-reads it, decides,
  * writes, commits. Two parallel requests for the same dish (double click on approve, a restaurant editing while an admin approves)
  * therefore run one after the other and the second sees the first one's result; approve / delete / restore are idempotent.
- * Audit rows are written after the commit and only by the caller that actually changed something.
+ * Pricing edits/recalculations commit their audit row atomically. Other catalog events retain their existing best-effort audit behavior.
  */
 type Tx = Prisma.TransactionClient;
 export type Actor = { id: string; role: string };
@@ -107,6 +107,10 @@ const pricePreview = (before: { price: number; vendorPrice: number }, after: Dis
 // Locking helpers
 // ---------------------------------------------------------------------------------------------------------------------
 export const TX_OPTS = { maxWait: 10_000, timeout: 20_000 };
+
+/** Price mutations must not commit without their audit evidence. Uses the held connection. */
+const pricingAudit = (tx: Tx, action: string, targetType: string, targetId: string, summary: string) =>
+  tx.adminAuditLog.create({ data: { action, targetType, targetId, summary: summary.slice(0, 300) } });
 
 /** Row-locks the dish and returns it with its restaurant, or null when it does not exist. */
 export const lockDish = async (tx: Tx, id: string): Promise<DishRow | null> => {
@@ -509,15 +513,10 @@ export const adminEditDish = async (itemId: string, b: Record<string, unknown>, 
       if (override !== undefined) Object.assign(full, { commissionType: override ? override.type : null, commissionValue: override ? override.value : null });
     }
     const updated = await tx.menuItem.update({ where: { id: itemId }, data: full, include: WITH_VENDOR });
+    await pricingAudit(tx, 'DISH_EDITED', 'MENU_ITEM', itemId,
+      `Admin edited "${updated.name}" (${updated.vendor.name}): ${Object.keys(b).join(', ')}; store Rs ${item.vendorPrice} -> Rs ${updated.vendorPrice}, customer Rs ${item.price} -> Rs ${updated.price}`);
     return { item: updated, before: item, priced };
   }, TX_OPTS);
-  const changedKeys = Object.keys(b).join(', ');
-  await writeAudit(
-    'DISH_EDITED',
-    'MENU_ITEM',
-    itemId,
-    `Admin edited "${out.item.name}" (${out.item.vendor.name}): ${changedKeys}; store Rs ${out.before.vendorPrice} -> Rs ${out.item.vendorPrice}, customer Rs ${out.before.price} -> Rs ${out.item.price}`,
-  );
   return { item: out.item, settings, preview: pricePreview(out.before, out.priced) };
 };
 
@@ -580,12 +579,13 @@ export const setVendorCommission = async (vendorId: string, b: Record<string, un
     if (rows.length === 0) throw new AppError(404, 'NOT_FOUND', 'Vendor not found');
     const before = await tx.vendor.findUniqueOrThrow({ where: { id: vendorId }, select: VENDOR_SELECT });
     const row = await tx.vendor.update({ where: { id: vendorId }, data: { commissionType: rule ? rule.type : null, commissionValue: rule ? rule.value : null }, select: VENDOR_SELECT });
+    await pricingAudit(tx, 'VENDOR_COMMISSION_SET', 'VENDOR', vendorId,
+      `Admin set the commission of ${row.name}: ${describeRule(ruleFromColumns(before.commissionType, before.commissionValue))} -> ${describeRule(rule)}`);
     return { before, row };
   }, TX_OPTS);
   const settings = await getSettings();
   const dishes = await prisma.menuItem.findMany({ where: { vendorId, deletedAt: null }, include: WITH_VENDOR });
   const staleDishes = dishes.filter((d) => toPaise(priceFor(d.vendorPrice, rulesOf(d), settings).price) !== toPaise(d.price)).length;
-  await writeAudit('VENDOR_COMMISSION_SET', 'VENDOR', vendorId, `Admin set the commission of ${updated.row.name}: ${describeRule(ruleFromColumns(updated.before.commissionType, updated.before.commissionValue))} -> ${describeRule(rule)}`);
   return {
     vendor: { id: updated.row.id, name: updated.row.name, commissionType: updated.row.commissionType, commissionValue: updated.row.commissionValue },
     effective: rule ? { ...rule, source: 'VENDOR' as const } : { ...settings.commission, source: 'GLOBAL' as const },
@@ -604,7 +604,9 @@ export const recalculatePrices = async (opts: { dryRun: boolean; vendorId?: stri
   const scope = opts.vendorId ? Prisma.sql`WHERE "vendorId" = ${opts.vendorId}` : Prisma.empty;
   const out = await prisma.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT "id" FROM "MenuItem" ${scope} ORDER BY "id" FOR UPDATE`;
-    const settings = await getSettings();
+    // Use the current transaction connection: a second pool acquisition here
+    // can exhaust a small pool while concurrent writers hold/wait for row locks.
+    const settings = await getSettings(tx);
     const items = await tx.menuItem.findMany({ where: opts.vendorId ? { vendorId: opts.vendorId } : {}, include: WITH_VENDOR, orderBy: { id: 'asc' } });
     const changes: { id: string; name: string; vendorName: string; vendorPrice: number; oldPrice: number; newPrice: number; deleted: boolean }[] = [];
     for (const item of items) {
@@ -614,13 +616,14 @@ export const recalculatePrices = async (opts: { dryRun: boolean; vendorId?: stri
         if (!opts.dryRun) await tx.menuItem.update({ where: { id: item.id }, data: { price: next } });
       }
     }
+    if (!opts.dryRun) {
+      const summary = changes.length > 0
+        ? `Admin recalculated customer prices: ${changes.length} of ${items.length} products changed${opts.vendorId ? ' (one store)' : ''}`
+        : `Admin recalculated customer prices: nothing to change (${items.length} products)`;
+      await pricingAudit(tx, 'PRICES_RECALCULATED', 'MENU_ITEM', opts.vendorId ?? 'all', summary);
+    }
     return { total: items.length, changes };
   }, { maxWait: 10_000, timeout: 60_000 });
-  if (!opts.dryRun && out.changes.length > 0) {
-    await writeAudit('PRICES_RECALCULATED', 'MENU_ITEM', opts.vendorId ?? 'all', `Admin recalculated customer prices: ${out.changes.length} of ${out.total} products changed${opts.vendorId ? ' (one store)' : ''}`);
-  } else if (!opts.dryRun) {
-    await writeAudit('PRICES_RECALCULATED', 'MENU_ITEM', opts.vendorId ?? 'all', `Admin recalculated customer prices: nothing to change (${out.total} products)`);
-  }
   const SAMPLE = 500;
   return {
     dryRun: opts.dryRun,

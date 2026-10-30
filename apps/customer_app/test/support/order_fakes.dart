@@ -3,9 +3,39 @@ import 'dart:async';
 import 'package:customer_app/models/order.dart';
 import 'package:customer_app/models/order_group.dart';
 import 'package:customer_app/providers/order_provider.dart';
+import 'package:customer_app/providers/cart_provider.dart';
 import 'package:customer_app/services/order_api.dart';
 import 'package:customer_app/services/order_realtime.dart';
 import 'package:customer_app/services/payment_gateway.dart';
+
+/// Explicit current-server quote for older checkout widget scenarios. The fake
+/// API's default remains 404 so compatibility-controller tests still exercise it.
+void supplyWidgetQuote(OrderProvider orders, CartProvider cart) {
+  final api = orders.api;
+  if (api is! FakeOrderApi || api.onQuote != null) return;
+  api.onQuote = (_) async => OrderResult.ok(OrderQuote(
+        restaurantCount: cart.restaurantCount,
+        subtotal: cart.subtotal,
+        baseFee: cart.baseDeliveryFee,
+        extraRestaurants: (cart.restaurantCount - 1).clamp(0, 20),
+        extraRestaurantFee: 15,
+        extraTotal: cart.extraRestaurantFees,
+        feeTotal: cart.deliveryFee,
+        discount: cart.couponDiscountAmount,
+        couponCode: cart.appliedCouponCode,
+        total: cart.grandTotal,
+        perRestaurant: [
+          for (final store in cart.restaurants)
+            QuoteLine(
+                vendorId: store.id,
+                vendorName: store.name,
+                subtotal: store.subtotal,
+                fee: 0)
+        ],
+        maxRestaurants: cart.maxRestaurants,
+        paymentMethods: const ['ONLINE'],
+      ));
+}
 
 /// An `OrderView` JSON exactly as contract 2.1 describes it.
 Map<String, dynamic> orderJson({
@@ -34,12 +64,14 @@ Map<String, dynamic> orderJson({
   bool? vendorHasLocation,
   Map<String, dynamic>? group,
 }) {
-  final created = createdAt ?? DateTime.now().toUtc().subtract(const Duration(minutes: 2));
+  final created =
+      createdAt ?? DateTime.now().toUtc().subtract(const Duration(minutes: 2));
   return {
     'id': id,
     'status': status,
     'paymentStatus': paymentStatus,
-    'totalAmount': totalAmount ?? subtotal + deliveryFee + taxAndPackaging - discount,
+    'totalAmount':
+        totalAmount ?? subtotal + deliveryFee + taxAndPackaging - discount,
     'deliveryFee': deliveryFee,
     'subtotal': subtotal,
     'taxAndPackaging': taxAndPackaging,
@@ -57,18 +89,46 @@ Map<String, dynamic> orderJson({
     'cancelReason': cancelReason,
     'items': items ??
         [
-          {'id': 'oi-1', 'menuItemId': 'm-thali', 'name': 'Paneer Thali', 'quantity': 1, 'price': 115.0},
-          {'id': 'oi-2', 'menuItemId': 'm-paratha', 'name': 'Aloo Paratha', 'quantity': 1, 'price': 90.0},
+          {
+            'id': 'oi-1',
+            'menuItemId': 'm-thali',
+            'name': 'Paneer Thali',
+            'quantity': 1,
+            'price': 115.0
+          },
+          {
+            'id': 'oi-2',
+            'menuItemId': 'm-paratha',
+            'name': 'Aloo Paratha',
+            'quantity': 1,
+            'price': 90.0
+          },
         ],
     'vendorId': vendorId,
-    'vendor': {'id': vendorId, 'name': vendorName, 'address': 'Kothri', 'lat': 23.07, 'lng': 76.85, if (vendorHasLocation != null) 'hasLocation': vendorHasLocation},
+    'vendor': {
+      'id': vendorId,
+      'name': vendorName,
+      'address': 'Kothri',
+      'lat': 23.07,
+      'lng': 76.85,
+      if (vendorHasLocation != null) 'hasLocation': vendorHasLocation
+    },
     if (dropoff != null) 'dropoff': dropoff,
     if (group != null) 'group': group,
-    'customer': {'id': 'u1', 'name': 'Aarav Sharma', 'phone': '+91 9876543210', 'hostelBlock': 'Block 2'},
+    'customer': {
+      'id': 'u1',
+      'name': 'Aarav Sharma',
+      'phone': '+91 9876543210',
+      'hostelBlock': 'Block 2'
+    },
     'driver': driver,
     if (otpCode != null) 'otpCode': otpCode,
-    'payBy': status == 'PLACED' && paymentStatus != 'PAID' ? created.add(const Duration(minutes: 15)).toIso8601String() : null,
-    'acceptBy': status == 'PLACED' && paymentStatus == 'PAID' ? created.add(const Duration(minutes: 10)).toIso8601String() : null,
+    'payBy': status == 'PLACED' && paymentStatus != 'PAID'
+        ? created.add(const Duration(minutes: 15)).toIso8601String()
+        : null,
+    'acceptBy': status == 'PLACED' && paymentStatus == 'PAID'
+        ? created.add(const Duration(minutes: 10)).toIso8601String()
+        : null,
     'refundStatus': refundStatus,
     'isReviewed': isReviewed,
   };
@@ -105,7 +165,8 @@ OrderModel orderModel({
 Map<String, dynamic> groupRefJson({
   required String id,
   required int index,
-  required List<({String orderId, String status, String vendor, int items})> stops,
+  required List<({String orderId, String status, String vendor, int items})>
+      stops,
 }) =>
     {
       'id': id,
@@ -118,7 +179,12 @@ Map<String, dynamic> groupRefJson({
             'orderId': stops[i].orderId,
             'index': i,
             'status': stops[i].status,
-            'vendor': {'name': stops[i].vendor, 'address': 'Gate ${i + 1}', 'lat': 23.0768, 'lng': 76.8524},
+            'vendor': {
+              'name': stops[i].vendor,
+              'address': 'Gate ${i + 1}',
+              'lat': 23.0768,
+              'lng': 76.8524
+            },
             'itemCount': stops[i].items,
           },
       ],
@@ -141,7 +207,15 @@ List<Map<String, dynamic>> groupChildrenJson({
   List<String> vendorIds = const ['gx-ven-1', 'gx-ven-2'],
   List<String> vendorNames = const ['Kitchen 1', 'Kitchen 2'],
 }) {
-  final stops = [for (var i = 0; i < ids.length; i++) (orderId: ids[i], status: statuses[i], vendor: vendorNames[i], items: i == 0 ? 2 : 1)];
+  final stops = [
+    for (var i = 0; i < ids.length; i++)
+      (
+        orderId: ids[i],
+        status: statuses[i],
+        vendor: vendorNames[i],
+        items: i == 0 ? 2 : 1
+      )
+  ];
   // money per child as the backend splits it: totals 190 + 70 = 260 (discount 50 split 40 / 10)
   const subtotals = [180.0, 90.0];
   const fees = [25.0, 15.0];
@@ -167,11 +241,29 @@ List<Map<String, dynamic>> groupChildrenJson({
         updatedAt: updatedAt,
         items: i == 0
             ? [
-                {'id': 'oi-a', 'menuItemId': 'm-thali', 'name': 'Paneer Thali', 'quantity': 1, 'price': 90.0},
-                {'id': 'oi-b', 'menuItemId': 'm-paratha', 'name': 'Aloo Paratha', 'quantity': 1, 'price': 90.0},
+                {
+                  'id': 'oi-a',
+                  'menuItemId': 'm-thali',
+                  'name': 'Paneer Thali',
+                  'quantity': 1,
+                  'price': 90.0
+                },
+                {
+                  'id': 'oi-b',
+                  'menuItemId': 'm-paratha',
+                  'name': 'Aloo Paratha',
+                  'quantity': 1,
+                  'price': 90.0
+                },
               ]
             : [
-                {'id': 'oi-c', 'menuItemId': 'm-roll', 'name': 'Paneer Roll', 'quantity': 1, 'price': 90.0},
+                {
+                  'id': 'oi-c',
+                  'menuItemId': 'm-roll',
+                  'name': 'Paneer Roll',
+                  'quantity': 1,
+                  'price': 90.0
+                },
               ],
         group: groupRefJson(id: groupId, index: i, stops: stops),
       ),
@@ -186,7 +278,8 @@ Map<String, dynamic> groupViewJson({
   String paymentStatus = 'PENDING',
   double total = 260,
 }) {
-  final kids = orders ?? groupChildrenJson(groupId: id, paymentStatus: paymentStatus);
+  final kids =
+      orders ?? groupChildrenJson(groupId: id, paymentStatus: paymentStatus);
   return {
     'id': id,
     'status': status,
@@ -206,23 +299,63 @@ Map<String, dynamic> groupViewJson({
 }
 
 /// The real `data` of `POST /orders/quote` for 2 restaurants + KRAVEO50 (Docs/22 10.2).
-Map<String, dynamic> quoteJson({int count = 2, int max = 3, double total = 260}) => {
+Map<String, dynamic> quoteJson(
+        {int count = 2, int max = 3, double total = 260}) =>
+    {
+      'paymentMethods': ['ONLINE'],
       'restaurantCount': count,
       'subtotal': 270,
-      'fees': {'total': 40, 'base': 25, 'baseWaived': false, 'extraRestaurants': count - 1, 'extraRestaurantFee': 15, 'extraTotal': 15.0 * (count - 1)},
+      'fees': {
+        'total': 40,
+        'base': 25,
+        'baseWaived': false,
+        'extraRestaurants': count - 1,
+        'extraRestaurantFee': 15,
+        'extraTotal': 15.0 * (count - 1)
+      },
       'discount': 50,
       'couponCode': 'KRAVEO50',
       'total': total,
       'perRestaurant': [
-        {'vendorId': 'gx-ven-1', 'vendorName': 'Kitchen 1', 'subtotal': 180, 'fee': 25},
-        {'vendorId': 'gx-ven-2', 'vendorName': 'Kitchen 2', 'subtotal': 90, 'fee': 15},
+        {
+          'vendorId': 'gx-ven-1',
+          'vendorName': 'Kitchen 1',
+          'subtotal': 180,
+          'fee': 25
+        },
+        {
+          'vendorId': 'gx-ven-2',
+          'vendorName': 'Kitchen 2',
+          'subtotal': 90,
+          'fee': 15
+        },
       ],
       'maxRestaurants': max,
     };
 
 /// A group as the app holds it: [groupChildrenJson] parsed.
-List<OrderModel> groupChildren({String groupId = 'grp-1', List<String> statuses = const ['PLACED', 'PLACED'], String paymentStatus = 'PENDING', String refundStatus = 'NONE', List<String?> cancelledBy = const [null, null], List<String?> cancelReasons = const [null, null], String? otpCode, Map<String, dynamic>? driver, DateTime? updatedAt}) => [
-      for (final j in groupChildrenJson(groupId: groupId, statuses: statuses, paymentStatus: paymentStatus, refundStatus: refundStatus, cancelledBy: cancelledBy, cancelReasons: cancelReasons, otpCode: otpCode, driver: driver, updatedAt: updatedAt)) OrderModel.tryParse(j)!,
+List<OrderModel> groupChildren(
+        {String groupId = 'grp-1',
+        List<String> statuses = const ['PLACED', 'PLACED'],
+        String paymentStatus = 'PENDING',
+        String refundStatus = 'NONE',
+        List<String?> cancelledBy = const [null, null],
+        List<String?> cancelReasons = const [null, null],
+        String? otpCode,
+        Map<String, dynamic>? driver,
+        DateTime? updatedAt}) =>
+    [
+      for (final j in groupChildrenJson(
+          groupId: groupId,
+          statuses: statuses,
+          paymentStatus: paymentStatus,
+          refundStatus: refundStatus,
+          cancelledBy: cancelledBy,
+          cancelReasons: cancelReasons,
+          otpCode: otpCode,
+          driver: driver,
+          updatedAt: updatedAt))
+        OrderModel.tryParse(j)!,
     ];
 
 /// Scriptable [OrderApi]. Each handler may be replaced per test; calls are recorded.
@@ -243,13 +376,15 @@ class FakeOrderApi implements OrderApi {
   final Map<String, OrderModel> byKey = {};
 
   Future<OrderResult<OrderModel>> Function(CreateOrderRequest r)? onCreate;
-  Future<OrderResult<OrdersPage>> Function(String scope, String? cursor)? onFetchList;
+  Future<OrderResult<OrdersPage>> Function(String scope, String? cursor)?
+      onFetchList;
   Future<OrderResult<OrderModel>> Function(String id)? onFetch;
   Future<OrderResult<OrderModel>> Function(String id)? onCancel;
   Future<OrderResult<PaymentSession>> Function(String id)? onCreatePayment;
   Future<OrderResult<OrderModel?>> Function(PaymentProof p)? onVerify;
   Future<OrderResult<ReviewReceipt>> Function(ReviewRequest r)? onReview;
-  Future<OrderResult<OrderGroupView>> Function(CreateGroupRequest r)? onCreateGroup;
+  Future<OrderResult<OrderGroupView>> Function(CreateGroupRequest r)?
+      onCreateGroup;
   Future<OrderResult<OrderGroupView>> Function(String id)? onFetchGroup;
   Future<OrderResult<OrderQuote>> Function(QuoteRequest r)? onQuote;
 
@@ -261,7 +396,8 @@ class FakeOrderApi implements OrderApi {
   final Map<String, OrderModel> server = {};
 
   @override
-  Future<OrderResult<OrderModel>> createOrder(CreateOrderRequest request) async {
+  Future<OrderResult<OrderModel>> createOrder(
+      CreateOrderRequest request) async {
     creates.add(request);
     if (onCreate != null) return onCreate!(request);
     final existing = byKey[request.clientRequestId];
@@ -273,7 +409,8 @@ class FakeOrderApi implements OrderApi {
   }
 
   @override
-  Future<OrderResult<OrderGroupView>> createGroup(CreateGroupRequest request) async {
+  Future<OrderResult<OrderGroupView>> createGroup(
+      CreateGroupRequest request) async {
     groupCreates.add(request);
     if (onCreateGroup != null) return onCreateGroup!(request);
     final existing = groupByKey[request.clientRequestId];
@@ -292,7 +429,10 @@ class FakeOrderApi implements OrderApi {
     fetchedGroups.add(groupId);
     if (onFetchGroup != null) return onFetchGroup!(groupId);
     final g = groupServer[groupId];
-    return g == null ? const OrderResult.fail(OrderApiError(OrderErrorKind.notFound, statusCode: 404)) : OrderResult.ok(g);
+    return g == null
+        ? const OrderResult.fail(
+            OrderApiError(OrderErrorKind.notFound, statusCode: 404))
+        : OrderResult.ok(g);
   }
 
   @override
@@ -300,11 +440,13 @@ class FakeOrderApi implements OrderApi {
     quotes.add(request);
     if (onQuote != null) return onQuote!(request);
     // Like an old server: no quote endpoint (the app then shows its local estimate).
-    return const OrderResult.fail(OrderApiError(OrderErrorKind.notFound, statusCode: 404));
+    return const OrderResult.fail(
+        OrderApiError(OrderErrorKind.notFound, statusCode: 404));
   }
 
   @override
-  Future<OrderResult<OrdersPage>> fetchOrders({required String scope, int limit = 20, String? cursor}) async {
+  Future<OrderResult<OrdersPage>> fetchOrders(
+      {required String scope, int limit = 20, String? cursor}) async {
     fetchScopes.add(scope);
     fetchCursors.add(cursor);
     if (onFetchList != null) return onFetchList!(scope, cursor);
@@ -316,14 +458,22 @@ class FakeOrderApi implements OrderApi {
     fetchedIds.add(orderId);
     if (onFetch != null) return onFetch!(orderId);
     final o = server[orderId];
-    return o == null ? const OrderResult.fail(OrderApiError(OrderErrorKind.notFound, statusCode: 404)) : OrderResult.ok(o);
+    return o == null
+        ? const OrderResult.fail(
+            OrderApiError(OrderErrorKind.notFound, statusCode: 404))
+        : OrderResult.ok(o);
   }
 
   @override
-  Future<OrderResult<OrderModel>> cancelOrder(String orderId, {String? reason}) async {
+  Future<OrderResult<OrderModel>> cancelOrder(String orderId,
+      {String? reason}) async {
     cancels.add(orderId);
     if (onCancel != null) return onCancel!(orderId);
-    final o = orderModel(id: orderId, status: 'CANCELLED', cancelledBy: 'CUSTOMER', updatedAt: DateTime.now().toUtc().add(const Duration(seconds: 1)));
+    final o = orderModel(
+        id: orderId,
+        status: 'CANCELLED',
+        cancelledBy: 'CUSTOMER',
+        updatedAt: DateTime.now().toUtc().add(const Duration(seconds: 1)));
     server[orderId] = o;
     return OrderResult.ok(o);
   }
@@ -333,9 +483,16 @@ class FakeOrderApi implements OrderApi {
     paymentStarts.add(orderId);
     if (onCreatePayment != null) return onCreatePayment!(orderId);
     // A combined order is paid on its primary id for the GROUP total.
-    final groupTotal = groupServer.values.where((g) => g.payOrderId == orderId).map((g) => (g.total * 100).round()).firstOrNull;
+    final groupTotal = groupServer.values
+        .where((g) => g.payOrderId == orderId)
+        .map((g) => (g.total * 100).round())
+        .firstOrNull;
     final total = groupTotal ?? server[orderId]?.totalPaise ?? 24500;
-    return OrderResult.ok(PaymentSession(orderId: orderId, keyId: 'rzp_test_x', razorpayOrderId: 'order_rzp_$orderId', amountPaise: total));
+    return OrderResult.ok(PaymentSession(
+        orderId: orderId,
+        keyId: 'rzp_test_x',
+        razorpayOrderId: 'order_rzp_$orderId',
+        amountPaise: total));
   }
 
   @override
@@ -349,7 +506,8 @@ class FakeOrderApi implements OrderApi {
   Future<OrderResult<ReviewReceipt>> submitReview(ReviewRequest request) async {
     reviews.add(request);
     if (onReview != null) return onReview!(request);
-    return const OrderResult.ok(ReviewReceipt(coinsEarned: 10, totalCoins: 130));
+    return const OrderResult.ok(
+        ReviewReceipt(coinsEarned: 10, totalCoins: 130));
   }
 }
 
@@ -372,7 +530,11 @@ class FakeRealtime implements OrderRealtime {
   bool get isConnected => _connected && !disposed;
 
   @override
-  void connect({required String token, required void Function(Object? payload) onOrderUpdated, required void Function(Object? payload) onRiderLocation, required void Function() onConnected}) {
+  void connect(
+      {required String token,
+      required void Function(Object? payload) onOrderUpdated,
+      required void Function(Object? payload) onRiderLocation,
+      required void Function() onConnected}) {
     this.token = token;
     _onOrder = onOrderUpdated;
     _onRider = onRiderLocation;
@@ -402,7 +564,10 @@ class FakeRealtime implements OrderRealtime {
 
 /// A payment sheet that answers with [next] (or waits for [gate]).
 class FakeGateway implements PaymentGateway {
-  GatewayResult next = const GatewayResult.success(PaymentProof(razorpayOrderId: 'order_rzp', razorpayPaymentId: 'pay_1', razorpaySignature: 'sig'));
+  GatewayResult next = const GatewayResult.success(PaymentProof(
+      razorpayOrderId: 'order_rzp',
+      razorpayPaymentId: 'pay_1',
+      razorpaySignature: 'sig'));
   final List<PaymentSession> opened = [];
   Completer<void>? gate;
 
@@ -414,7 +579,11 @@ class FakeGateway implements PaymentGateway {
   }
 }
 
-OrderProvider fakeOrders(FakeOrderApi api, {FakeGateway? gateway, DateTime Function()? clock, String? token = 'jwt-test'}) => OrderProvider(
+OrderProvider fakeOrders(FakeOrderApi api,
+        {FakeGateway? gateway,
+        DateTime Function()? clock,
+        String? token = 'jwt-test'}) =>
+    OrderProvider(
       api: api,
       gateway: gateway ?? FakeGateway(),
       realtimeFactory: FakeRealtime.new,

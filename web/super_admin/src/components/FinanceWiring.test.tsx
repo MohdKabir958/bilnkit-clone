@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act } from 'react';
 import { FinancePanel } from './FinancePanel';
 import { Sidebar } from './Sidebar';
+import {mockVendorDirectory} from '../test/vendorDirectory';
 import { VendorManager } from './VendorManager';
 import { apiService, ApiError } from '../services/api';
 import { parseByDay, parseByDish, parseByRestaurant, parseFinanceSummary, parsePayoutAccountResult, parseReveal, parseRiderPayoutPage, parseRiders, parseSettlementPage } from '../lib/financeParse';
@@ -94,30 +95,31 @@ describe('Sidebar', () => {
 
 describe('Restaurants: payout details', () => {
   const render = async (vendors: any[]) => {
+    mockVendorDirectory(vendors);
     const host = await mount(<VendorManager vendors={vendors} onToggleVendor={() => {}} onAuthError={vi.fn()} />);
     await flush();
-    return host;
+    return document.body;
   };
 
   it('an approved restaurant has a closed "Payout details" section; nothing is fetched until it is opened', async () => {
     const fetchAccount = vi.spyOn(apiService, 'fetchPayoutAccount').mockResolvedValue(parsePayoutAccountResult({ data: rawAccount() })!);
     const host = await render([vendor()]);
     expect(fetchAccount).not.toHaveBeenCalled();
-    await click(host.querySelector('button[aria-label="Payout details of Sharma Dhaba"]'));
+    await click(host.querySelector('button[aria-label="View details of Sharma Dhaba"]'));await flush();await click(host.querySelector('button[role="tab"][id="vendor-tab-Payouts"]'));
     await flush();
     expect(fetchAccount).toHaveBeenCalledWith('u-owner1');
     expect(host.textContent).toContain('XXXXXX7890');
     expect(host.textContent).toContain('HDFC0001234');
   });
 
-  it('a restaurant that is not approved has no payout section', async () => {
+  it('a store that is not approved cannot open payout details', async () => {
     const host = await render([vendor({ approvalStatus: 'PENDING' })]);
-    expect(host.querySelector('button[aria-label="Payout details of Sharma Dhaba"]')).toBeNull();
+    await click(host.querySelector('button[aria-label="View details of Sharma Dhaba"]'));await flush();expect((host.querySelector('button[id="vendor-tab-Payouts"]') as HTMLButtonElement).disabled).toBe(true);expect(host.textContent).not.toContain('XXXXXX7890');
   });
 
   it('a restaurant without an owner login says so', async () => {
     const host = await render([vendor({ userId: undefined })]);
-    await click(host.querySelector('button[aria-label="Payout details of Sharma Dhaba"]'));
+    await click(host.querySelector('button[aria-label="View details of Sharma Dhaba"]'));await flush();await click(host.querySelector('button[role="tab"][id="vendor-tab-Payouts"]'));
     expect(host.textContent).toContain('no owner login');
   });
 
@@ -127,7 +129,7 @@ describe('Restaurants: payout details', () => {
     const reveal = vi.spyOn(apiService, 'revealPayoutAccount').mockResolvedValue(parseReveal(rawReveal())!);
     const save = vi.spyOn(apiService, 'savePayoutAccount').mockRejectedValue(new ApiError(503, 'Payout encryption is not configured on the server.', 'PAYOUT_ENCRYPTION_NOT_CONFIGURED'));
     const host = await render([vendor()]);
-    await click(host.querySelector('button[aria-label="Payout details of Sharma Dhaba"]'));
+    await click(host.querySelector('button[aria-label="View details of Sharma Dhaba"]'));await flush();await click(host.querySelector('button[role="tab"][id="vendor-tab-Payouts"]'));
     await flush();
     await click(host.querySelector('button[role="switch"][aria-label$="payout details verified"]'));
     await flush();

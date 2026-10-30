@@ -1,3 +1,4 @@
+import type {OverviewScope} from '../lib/overview';
 /// <reference types="vite/client" />
 import {
   AdminProfile,
@@ -59,6 +60,8 @@ export async function freshAuthToken(force = false): Promise<string> {
   return token;
 }
 
+export type RiderInvitation={id:string;email:string;state:'PENDING'|'VERIFIED'|'COMPLETED'|'REVOKED';expiresAt:string;createdAt:string;redeemedAt:string|null};
+
 export class ApiError extends Error {
   /**
    * `code` / `field` come from the server's `{ success:false, message, code?, field? }` error body (contract 2).
@@ -102,7 +105,7 @@ async function send(path: string, init: RequestInit): Promise<{ response: Respon
       body?.message || `Request failed (${response.status}).`,
       typeof body?.code === 'string' ? body.code : undefined,
       typeof body?.field === 'string' ? body.field : undefined,
-      body && typeof body === 'object' && !Array.isArray(body) ? body : undefined,
+      (()=>{const extra=body&&typeof body==='object'&&!Array.isArray(body)?{...body}:{};const header=response.headers.get('Retry-After');if(header){const value=/^\d+$/.test(header.trim())?Number(header):Math.ceil((Date.parse(header)-Date.now())/1000);if(Number.isFinite(value)&&value>=0)extra.retryAfterSeconds=Math.min(86400,Math.max(1,value));}return Object.keys(extra).length?extra:undefined;})(),
     );
   }
   return { response, body };
@@ -147,10 +150,24 @@ export const clearAuthToken = () => {
 
 export const isAuthenticated = (): boolean => getAuthToken().trim().length > 10;
 
+export function publicClerkFrontendOrigin(): string | null {
+  const key = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || '';
+  if (!/^pk_(test|live)_/.test(key)) return null;
+  try {
+    const value = atob(key.replace(/^pk_(test|live)_/, ''));
+    return /^[a-z0-9]+(?:[.-][a-z0-9]+)*\$$/.test(value) ? `https://${value.slice(0,-1)}` : null;
+  } catch { return null; }
+}
+
 const getHeaders = async (extraHeaders: Record<string, string> = {}) => {
   const token = (await freshAuthToken()).replace(/^Bearer\s+/i, '');
+  const instance = publicClerkFrontendOrigin();
   return {
+    ...(instance ? { 'X-Grozo-Clerk-Frontend': instance } : {}),
     'Content-Type': 'application/json',
+    'X-Grozo-Auth-Mode': import.meta.env.VITE_AUTH_MODE || 'legacy',
+    'X-Grozo-Client-Protocol': '1',
+    'X-Grozo-Client': 'admin/web',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...extraHeaders,
   };
@@ -255,6 +272,34 @@ const orderOrNull = (raw: any): Order | null => {
 };
 
 export const apiService = {
+  backgroundJobs: () => request<any[]>('/api/admin/jobs'),
+  retryBackgroundJob: (name:string,reason:string) => request(`/api/admin/jobs/${encodeURIComponent(name)}/retry`,{method:'POST',body:JSON.stringify({reason})}),
+  backgroundJobRuns: (name:string) => request<any[]>(`/api/admin/jobs/${encodeURIComponent(name)}/runs`),
+  complianceReminders: () => request<any[]>('/api/v1/admin/compliance/expiry'),
+  fetchSellerCompliance: (id:string) => request<any>(`/api/v1/vendors/${encodeURIComponent(id)}/compliance`),
+  saveSellerCompliance: (id:string,data:Record<string,unknown>) => request<any>(`/api/v1/vendors/${encodeURIComponent(id)}/compliance`,{method:'PUT',body:JSON.stringify(data)}),
+  reviewSellerCompliance: (id:string,data:Record<string,unknown>) => request<any>(`/api/v1/admin/vendors/${encodeURIComponent(id)}/compliance/review`,{method:'POST',body:JSON.stringify(data)}),
+  fetchPayoutReadiness: (id:string) => request<any>(`/api/v1/admin/settlements/${encodeURIComponent(id)}/readiness`),
+  planSettlementPayout: (id:string,requestKey:string) => request<any>(`/api/v1/admin/settlements/${encodeURIComponent(id)}/payout-plan`,{method:'POST',body:JSON.stringify({requestKey})}),
+
+  supportOwners: () => request<{id:string;name:string;email:string|null}[]>('/api/v1/admin/support-owners'),
+  operationExceptions: (cityId='') => request<any>(`/api/v1/admin/operations/exceptions${cityId?'?cityId='+encodeURIComponent(cityId):''}`),
+  recordOperationResolution: (input:Record<string,unknown>) => request('/api/v1/admin/operations/resolutions',{method:'POST',body:JSON.stringify(input)}),
+  cashLedger: (id:string) => request<any>(`/api/v1/admin/cash/${encodeURIComponent(id)}/ledger`),
+  cashEvidence: (id:string,input:Record<string,unknown>) => request(`/api/v1/admin/cash/${encodeURIComponent(id)}/evidence`,{method:'POST',body:JSON.stringify(input)}),
+  riderCashBalance: (id:string) => request<any>(`/api/v1/admin/riders/${encodeURIComponent(id)}/cash-balance`),
+  cashCloses: () => request<any[]>('/api/v1/admin/cash-closes'),
+  createCashClose: (id:string,input:Record<string,unknown>) => request(`/api/v1/admin/riders/${encodeURIComponent(id)}/cash-close`,{method:'POST',body:JSON.stringify(input)}),
+  reviewCashClose: (id:string,approved:boolean,reason:string) => request(`/api/v1/admin/cash-closes/${encodeURIComponent(id)}/review`,{method:'POST',body:JSON.stringify({approved,reason})}),
+  downloadSupportEvidence: async(caseId:string,id:string) => {
+    const controller=new AbortController(),timer=window.setTimeout(()=>controller.abort(),20000);
+    try {
+      const response=await fetch(`${API_BASE_URL}/api/v1/support-cases/${encodeURIComponent(caseId)}/evidence/${encodeURIComponent(id)}`,{headers:await getHeaders(),signal:controller.signal,cache:'no-store'});
+      if(!response.ok){const body=await response.json().catch(()=>({}));throw new ApiError(response.status,body.message||'Support photo is unavailable.');}
+      const blob=await response.blob();if(!['image/jpeg','image/png','image/webp'].includes(blob.type))throw new ApiError(502,'Unsupported evidence format.');
+      const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`support-evidence-${id}`;link.click();window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+    } finally{window.clearTimeout(timer);}
+  },
   fetchAdminTeam: () => request<import('../components/TeamAccessPanel').TeamMember[]>('/api/v1/admin/team'),
   inviteAdmin: (email: string, role: 'OWNER' | 'ADMIN') => request('/api/v1/admin/team', {method:'POST',body:JSON.stringify({email,role})}),
   changeAdminRole: (id: string, role: 'OWNER' | 'ADMIN') => request(`/api/v1/admin/team/${encodeURIComponent(id)}`, {method:'PATCH',body:JSON.stringify({role})}),
@@ -263,17 +308,31 @@ export const apiService = {
   setCityCash: (id:string,codEnabled:boolean) => request(`/api/v1/admin/cities/${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify({codEnabled})}),
   fetchCash: (after?:string) => requestFull<{success:boolean;data:CashEntry[];nextCursor:string|null}>(`/api/v1/admin/cash${after?'?after='+encodeURIComponent(after):''}`),
   recordCash: (id:string,action:'remit'|'refund',reference:string) => request(`/api/v1/admin/cash/${encodeURIComponent(id)}/${action}`,{method:'POST',body:JSON.stringify({reference})}),
+  checkRiderEligibility: (email:string) => request<{eligible:boolean;email:string}>('/api/v1/admin/riders/eligibility',{method:'POST',body:JSON.stringify({email})}),
+  createRiderInvitation: (email:string,consentConfirmed:boolean) => request<RiderInvitation & {inviteUrl:string;delivery:{mode:'MANUAL';sent:false}}>('/api/v1/admin/rider-invitations',{method:'POST',body:JSON.stringify({email,consentConfirmed})}),
+  riderInvitations: () => request<RiderInvitation[]>('/api/v1/admin/rider-invitations'),
+  revokeRiderInvitation: (id:string) => request('/api/v1/admin/rider-invitations/'+encodeURIComponent(id),{method:'DELETE'}),
+  redeemRiderInvitation: (token:string) => request<{verified:boolean;approvalGranted:false}>('/api/v1/partner/rider-invitations/redeem',{method:'POST',body:JSON.stringify({token})}),
   createRider: (data: {email:string;name:string;phone:string;vehicleType:string;vehicleRegNo:string;emergencyPhone?:string;cityId:string;zoneId:string;approve:boolean}) => request<{id:string}>('/api/v1/admin/riders',{method:'POST',body:JSON.stringify(data)}),
-  createStore: (data: {primaryCategoryId?:string;publicPhone?:string;description?:string;name:string;address:string;cityId:string;pinCode:string;locality:string;lat:number;lng:number;zoneId?:string;ownerEmail?:string}) => request<{id:string}>('/api/v1/admin/stores', {method:'POST',body:JSON.stringify(data)}),
+  createStore: (data: {primaryCategoryId?:string;publicPhone?:string;description?:string;name:string;address:string;cityId:string;pinCode:string;locality:string;lat:number;lng:number;zoneId?:string;ownerEmail?:string;pinConfirmationMethod?:string}) => request<{id:string}>('/api/v1/admin/stores', {method:'POST',body:JSON.stringify(data)}),
 
-  operations: (cityId: string, days: string) => request<any>(`/api/v1/admin/operations?${new URLSearchParams({days,...(cityId?{cityId}:{})})}`),
+  searchPickupLocations: (q:string)=>request<{label:string;lat:number;lng:number;pinCode:string|null}[]>(`/api/v1/maps/search?q=${encodeURIComponent(q)}`),
+  saveConfirmedPickup: async(id:string,lat:number,lng:number,method:string)=>request<SavedPin>(`/api/v1/admin/vendors/${encodeURIComponent(id)}/pickup-pin`,{method:'PUT',body:JSON.stringify({lat,lng,method,confirmed:true})}),
+  operations: (cityId: string, days: string) => request<any>(`/api/v1/admin/dashboard?${new URLSearchParams({days,...(cityId?{cityId}:{})})}`),
   dispatchPage: (cityId: string, after='') => requestFull<any>(`/api/v1/admin/dispatch?${new URLSearchParams({limit:'30',...(cityId?{cityId}:{}),...(after?{after}:{})})}`),
   retryDispatch: (id:string) => request(`/api/v1/admin/orders/${encodeURIComponent(id)}/dispatch/retry`,{method:'POST'}),
   supportPage: (status:string, after='') => requestFull<any>(`/api/v1/admin/support-cases?${new URLSearchParams({limit:'30',...(status?{status}:{}),...(after?{after}:{})})}`),
-  replySupport: (id:string,message:string,status:string) => request(`/api/v1/admin/support-cases/${encodeURIComponent(id)}/notes`,{method:'POST',body:JSON.stringify({message,status})}),
+  replySupport: (id:string,message:string,status:string,details:Record<string,unknown>={}) => request(`/api/v1/admin/support-cases/${encodeURIComponent(id)}/notes`,{method:'POST',body:JSON.stringify({...details,message,status})}),
   auditPage: (after='') => requestFull<any>(`/api/v1/admin/audit?${new URLSearchParams({limit:'50',...(after?{after}:{})})}`),
   configureRiderServiceArea: (id:string, zoneId:string) => request(`/api/v1/admin/drivers/${encodeURIComponent(id)}/service-area`, {method:'PUT',body:JSON.stringify({zoneId})}),
   inventoryPage: (opts: {q:string;vendorId:string;cityId:string;lowStock:boolean;after:string}) => requestFull<any>(`/api/v1/admin/products?${new URLSearchParams(Object.fromEntries(Object.entries({...opts,limit:'50'}).filter(([,v]) => v !== '' && v !== false).map(([k,v])=>[k,String(v)])))}`),
+  productBatches: (id:string,after='') => requestFull<any>(`/api/v1/products/${encodeURIComponent(id)}/batches?limit=100${after?'&after='+encodeURIComponent(after):''}`),
+  productReservations: (id:string) => request<any[]>(`/api/v1/products/${encodeURIComponent(id)}/reservations`),
+  openCatalogAssistance: (input:{vendorId:string;reason:string;confirmed:boolean})=>request<{id:string;vendorId:string;expiresAt:string}>('/api/v1/admin/catalog/assistance',{method:'POST',body:JSON.stringify(input)}),
+  productBatchTracking: (id:string,input:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/batch-tracking`,{method:'PUT',body:JSON.stringify(input)}),
+  receiveProductBatch: (id:string,input:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/batches`,{method:'POST',body:JSON.stringify(input)}),
+  correctProductBatch: (id:string,batchId:string,input:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/batches/${encodeURIComponent(batchId)}/stock`,{method:'POST',body:JSON.stringify(input)}),
+  stockDisposition: (id:string,input:Record<string,unknown>) => request(`/api/v1/inventory/reservations/${encodeURIComponent(id)}/disposition`,{method:'POST',body:JSON.stringify(input)}),
   productMovements: (id:string) => requestFull<any>(`/api/v1/products/${encodeURIComponent(id)}/stock-movements?limit=100`),
   adjustProductStock: (id:string, data:Record<string,unknown>) => request(`/api/v1/products/${encodeURIComponent(id)}/stock`, {method:'POST',body:JSON.stringify(data)}),
   createGroceryProduct: (vendorId:string,data:Record<string,unknown>) => request(`/api/v1/vendors/${encodeURIComponent(vendorId)}/products`, {method:'POST',body:JSON.stringify(data)}),
@@ -309,17 +368,21 @@ export const apiService = {
   },
 
   /** One page of orders, newest first (the server default is 100). `cursor` = the id of the last order already loaded. */
-  async fetchOrderPage(cursor?: string | null, limit?: number, cityId?: string): Promise<{ orders: Order[]; nextCursor: string | null }> {
+  async fetchOrderPage(cursor?: string | null, limit?: number, cityId?: string, scope?:OverviewScope): Promise<{ orders: Order[]; nextCursor: string | null }> {
     const params = new URLSearchParams();
     if (limit) params.set('limit', String(limit));
     if (cursor) params.set('cursor', cursor);
     if(cityId) params.set('cityId',cityId);
+    if(scope)for(const key of ['from','to','status','paymentMethod','vendorId','activeOnly','urgentOnly'] as const){const value=scope[key];if(value!==undefined)params.set(key,String(value));}
     const query = params.toString();
     const body = await requestFull<any>(`/api/orders${query ? `?${query}` : ''}`);
     const data = Array.isArray(body?.data) ? body.data : Array.isArray(body) ? body : [];
     return { orders: data.map(normalizeOrder), nextCursor: typeof body?.nextCursor === 'string' && body.nextCursor ? body.nextCursor : null };
   },
 
+  vendorDirectory: (filters:Record<string,string>)=>request<{total:number;page:number;limit:number;rows:(Vendor&{productCount:number;cityName:string})[]}>(`/api/v1/admin/vendor-directory?${new URLSearchParams(filters)}`),
+  vendorDetails: async(id:string)=>{const raw=await request<any>(`/api/v1/admin/vendor-directory/${encodeURIComponent(id)}`);return {...raw,...normalizeVendor(raw)};},
+  vendorAudit: (id:string,after='')=>request<{rows:{id:string;createdAt:string;action:string;summary:string}[];nextCursor:string|null}>(`/api/v1/admin/vendor-directory/${encodeURIComponent(id)}/audit${after?'?after='+encodeURIComponent(after):''}`),
   async fetchVendors(): Promise<Vendor[]> {
     const data = await request<any[]>('/api/vendors');
     return (Array.isArray(data) ? data : []).map(normalizeVendor);
@@ -528,9 +591,10 @@ export const apiService = {
   },
 
   // ── Partner applications and accounts ──
-  async fetchApplications(status: ApprovalStatus | 'ALL' = 'PENDING', kind?: PartnerKind): Promise<{ counts: ApplicationCounts; data: Application[] }> {
+  async fetchApplications(status: ApprovalStatus | 'ALL' = 'PENDING', kind?: PartnerKind,cityId?:string): Promise<{ counts: ApplicationCounts; data: Application[] }> {
     const params = new URLSearchParams({ status });
     if (kind) params.set('kind', kind);
+    if(cityId)params.set('cityId',cityId);
     const body = await requestFull<{ counts: ApplicationCounts; data: Application[] }>(`/api/admin/applications?${params.toString()}`);
     return { counts: body.counts, data: Array.isArray(body.data) ? body.data : [] };
   },

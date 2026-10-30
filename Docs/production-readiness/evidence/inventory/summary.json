@@ -1,0 +1,1 @@
+{"command":"node scripts/qa/run_inventory_regression.mjs","database":"grozo_inventory_1792994698681_test","durationMs":11462,"exitCode":0}

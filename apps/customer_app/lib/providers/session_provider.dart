@@ -30,8 +30,12 @@ enum SessionStatus {
 
 /// Result of a tap on "Continue with Google", already phrased for the student.
 class SignInOutcome {
-  const SignInOutcome.ok() : cancelled = false, error = null;
-  const SignInOutcome.cancelled() : cancelled = true, error = null;
+  const SignInOutcome.ok()
+      : cancelled = false,
+        error = null;
+  const SignInOutcome.cancelled()
+      : cancelled = true,
+        error = null;
   const SignInOutcome.failed(String this.error) : cancelled = false;
 
   /// The student closed the Google picker: show nothing.
@@ -46,10 +50,16 @@ class SignInOutcome {
 /// The signed-in student and their drop-off point. Single source of truth for
 /// "who am I" so Home, Me and checkout agree.
 class SessionProvider with ChangeNotifier {
-  SessionProvider({SessionStatus initial = SessionStatus.checking, GoogleAuthService? googleAuth})
+  SessionProvider(
+      {SessionStatus initial = SessionStatus.checking,
+      GoogleAuthService? googleAuth})
       : _status = initial,
         _googleAuth = googleAuth ?? PlatformGoogleAuthService() {
-    if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = (_) { if (!_disposed) _endSession(); };
+    if (GrozoAuthConfig.usesClerk) {
+      ClerkSessions.instance.onIdentityChanged = (_) {
+        if (!_disposed) _endSession();
+      };
+    }
   }
 
   final GoogleAuthService _googleAuth;
@@ -58,6 +68,8 @@ class SessionProvider with ChangeNotifier {
   CustomerUser? _user;
   bool _savingProfile = false;
   bool _signingIn = false;
+  String? _accessError;
+  int _restoreEpoch = 0;
 
   /// Name Google gave us for a brand-new account (pre-fills sign-up step 1).
   String? _googleName;
@@ -66,7 +78,14 @@ class SessionProvider with ChangeNotifier {
   /// Selected server-owned delivery address, cleared when the account changes.
   bool _disposed = false;
   @override
-  void dispose() { _disposed = true; if (GrozoAuthConfig.usesClerk) ClerkSessions.instance.onIdentityChanged = null; super.dispose(); }
+  void dispose() {
+    _disposed = true;
+    if (GrozoAuthConfig.usesClerk) {
+      ClerkSessions.instance.onIdentityChanged = null;
+    }
+    super.dispose();
+  }
+
   int _addressEpoch = 0;
   DeliveryAddress? _address;
   DeliveryAddress? get selectedAddress => _address;
@@ -77,6 +96,7 @@ class SessionProvider with ChangeNotifier {
     CustomerApiService.selectedAddressId = address.id;
     notifyListeners();
   }
+
   Future<void> refreshDeliveryAddress() async {
     final userId = _user?.id;
     final epoch = _addressEpoch;
@@ -85,15 +105,21 @@ class SessionProvider with ChangeNotifier {
       final rows = await AddressApi.list();
       if (_disposed || _user?.id != userId || epoch != _addressEpoch) return;
       final defaults = rows.where((a) => a.isDefault);
-      if (defaults.isNotEmpty) { selectDeliveryAddress(defaults.first); }
-      else { _address = null; CustomerApiService.selectedAddressId = null; notifyListeners(); }
-    } catch (_) { /* Keep the selection on a transient network failure. */ }
+      if (defaults.isNotEmpty) {
+        selectDeliveryAddress(defaults.first);
+      } else {
+        _address = null;
+        CustomerApiService.selectedAddressId = null;
+        notifyListeners();
+      }
+    } catch (_) {/* Keep the selection on a transient network failure. */}
   }
 
   SessionStatus get status => _status;
   CustomerUser? get user => _user;
   bool get isSavingProfile => _savingProfile;
   bool get isSigningIn => _signingIn;
+  String? get accessError => _accessError;
 
   /// The stored hostel mapped onto [kHostelBlocks] (legacy free-text included), or null if unset.
   String? get hostel => normalizeHostelBlock(_user?.hostelBlock, kHostelBlocks);
@@ -107,7 +133,8 @@ class SessionProvider with ChangeNotifier {
   String get selectedHostel => deliveryPoint ?? 'Choose delivery address';
 
   /// Name to pre-fill in sign-up step 1.
-  String? get suggestedName => _newAccount ? (_googleName ?? _user?.name) : (_user?.name ?? _googleName);
+  String? get suggestedName =>
+      _newAccount ? (_googleName ?? _user?.name) : (_user?.name ?? _googleName);
 
   /// Called once per new sign-in (after Google sign-in or session restore) with the fresh user.
   /// Lets the app shell seed provider state such as the coin balance.
@@ -124,6 +151,21 @@ class SessionProvider with ChangeNotifier {
 
   /// Validates the saved token at app start.
   Future<void> restore() async {
+    // Establish the native identity first. Its initial event resets account-owned
+    // state; it must not invalidate the profile request that follows it.
+    if (GrozoAuthConfig.usesClerk) {
+      try {
+        await ClerkSessions.instance.initialize();
+      } catch (_) {
+        if (_disposed) return;
+        _status = SessionStatus.unreachable;
+        notifyListeners();
+        return;
+      }
+    }
+    if (_disposed) return;
+    final epoch = ++_restoreEpoch;
+    _accessError = null;
     if (_status != SessionStatus.checking) {
       // A retry from the "can't reach Grozo" screen. (The first call starts as `checking`,
       // and notifying from initState would rebuild the tree mid-build.)
@@ -131,7 +173,14 @@ class SessionProvider with ChangeNotifier {
       notifyListeners();
     }
     final result = await CustomerApiService.fetchProfile();
-    if (result == null) return _endSession();
+    if (_disposed || epoch != _restoreEpoch) return;
+    if (result == null) {
+      return _endSession(
+          reason: GrozoAuthConfig.usesClerk &&
+                  ClerkSessions.instance.identity.value.signedIn
+              ? 'Secure sign-in could not supply a session. Sign out and sign in again.'
+              : null);
+    }
     if (result.networkError) {
       _status = SessionStatus.unreachable;
       notifyListeners();
@@ -148,12 +197,29 @@ class SessionProvider with ChangeNotifier {
         return;
       }
       await CustomerApiService.clearToken();
-      return _endSession();
+      if (_disposed || epoch != _restoreEpoch) return;
+      return _endSession(
+          reason: code == 401
+              ? 'Grozo could not verify your sign-in. Sign out and sign in again. If this continues, contact support.'
+              : code == 403
+                  ? 'This account cannot access Grozo Customer. Check your account status or use another account.'
+                  : 'Grozo could not load your account profile. Retry or contact support.');
     }
     final user = CustomerUser.fromJson(result.user!);
     if (user.role != 'STUDENT') {
       await CustomerApiService.clearToken();
-      return _endSession();
+      if (_disposed || epoch != _restoreEpoch) return;
+      return _endSession(
+          reason: switch (user.role) {
+        'ADMIN' =>
+          'This is a Grozo administrator account. Sign out and use a separate customer account to shop.',
+        'VENDOR' =>
+          'This is a store partner account. Open Grozo Vendor, or sign out and use a customer account to shop.',
+        'DRIVER' =>
+          'This is a delivery partner account. Open Grozo Delivery, or sign out and use a customer account to shop.',
+        _ =>
+          'This account cannot access Grozo Customer. Sign out and use a customer account.',
+      });
     }
     _begin(user, needsProfile: result.needsProfile);
   }
@@ -162,9 +228,13 @@ class SessionProvider with ChangeNotifier {
   /// session moves to `needsProfile` or `signedIn`; otherwise the outcome says what to show.
   Future<SignInOutcome> signInWithGoogle() async {
     if (GrozoAuthConfig.usesClerk) {
-      if (!await ClerkSessions.instance.authenticate()) return const SignInOutcome.cancelled();
+      if (!await ClerkSessions.instance.authenticate()) {
+        return const SignInOutcome.cancelled();
+      }
       await restore();
-      return _user == null ? const SignInOutcome.failed("Grozo could not verify this account.") : const SignInOutcome.ok();
+      return _user == null
+          ? const SignInOutcome.failed("Grozo could not verify this account.")
+          : const SignInOutcome.ok();
     }
     if (_signingIn) return const SignInOutcome.cancelled();
     _signingIn = true;
@@ -175,7 +245,9 @@ class SessionProvider with ChangeNotifier {
       if (credential == null) {
         final failure = google.failure ?? GoogleAuthFailure.other;
         final message = googleFailureMessage(failure);
-        return message == null ? const SignInOutcome.cancelled() : SignInOutcome.failed(message);
+        return message == null
+            ? const SignInOutcome.cancelled()
+            : SignInOutcome.failed(message);
       }
       final result = await CustomerApiService.googleSignIn(credential.idToken);
       final user = result.user;
@@ -195,26 +267,48 @@ class SessionProvider with ChangeNotifier {
   }
 
   static String _serverFailure(GoogleLoginResult r) {
-    if (r.networkError) return 'We couldn\'t reach ${BrandConfig.name}. Check your connection and try again.';
-    if (r.roleNotAllowed) return r.message ?? 'This Google account belongs to a ${BrandConfig.name} partner and can\'t be used in the customer app.';
-    if (r.rejected) return r.message ?? 'Google sign-in was rejected. Please try again, or pick a different Google account.';
-    if (r.rateLimited) return r.message ?? 'Too many attempts. Please wait a moment and try again.';
-    if (r.unavailable || (r.statusCode != null && r.statusCode! >= 500)) return '${BrandConfig.name} is unavailable right now. Please try again in a little while.';
+    if (r.networkError) {
+      return 'We couldn\'t reach ${BrandConfig.name}. Check your connection and try again.';
+    }
+    if (r.roleNotAllowed) {
+      return r.message ??
+          'This Google account belongs to a ${BrandConfig.name} partner and can\'t be used in the customer app.';
+    }
+    if (r.rejected) {
+      return r.message ??
+          'Google sign-in was rejected. Please try again, or pick a different Google account.';
+    }
+    if (r.rateLimited) {
+      return r.message ??
+          'Too many attempts. Please wait a moment and try again.';
+    }
+    if (r.unavailable || (r.statusCode != null && r.statusCode! >= 500)) {
+      return '${BrandConfig.name} is unavailable right now. Please try again in a little while.';
+    }
     return r.message ?? 'We couldn\'t sign you in. Please try again.';
   }
 
   /// Test seam: enters a session state without a network round trip.
   @visibleForTesting
-  void beginForTest(Map<String, dynamic> userJson, {bool needsProfile = false, String? googleName, bool isNewAccount = false}) {
+  void beginForTest(Map<String, dynamic> userJson,
+      {bool needsProfile = false,
+      String? googleName,
+      bool isNewAccount = false}) {
     _googleName = googleName;
     _newAccount = isNewAccount;
     _begin(CustomerUser.fromJson(userJson), needsProfile: needsProfile);
   }
 
   void _begin(CustomerUser user, {required bool needsProfile}) {
-    if (_user?.id != user.id) { _addressEpoch++; _address = null; CustomerApiService.selectedAddressId = null; }
+    _accessError = null;
+    if (_user?.id != user.id) {
+      _addressEpoch++;
+      _address = null;
+      CustomerApiService.selectedAddressId = null;
+    }
     _user = user;
-    _status = needsProfile ? SessionStatus.needsProfile : SessionStatus.signedIn;
+    _status =
+        needsProfile ? SessionStatus.needsProfile : SessionStatus.signedIn;
     onUserLoaded?.call(user);
     if (!needsProfile) unawaited(refreshDeliveryAddress());
     notifyListeners();
@@ -222,14 +316,26 @@ class SessionProvider with ChangeNotifier {
 
   /// PUT /auth/profile with only the given fields. On success the stored user is replaced by the
   /// server's copy and the status follows `needsProfile` (sign-up completes here).
-  Future<ProfileResult> saveProfile({String? name, String? phone, bool? isStudent, String? hostelBlock, int? avatarId}) async {
+  Future<ProfileResult> saveProfile(
+      {String? name,
+      String? phone,
+      bool? isStudent,
+      String? hostelBlock,
+      int? avatarId}) async {
     _savingProfile = true;
     notifyListeners();
-    final result = await CustomerApiService.updateProfile(name: name, phone: phone, isStudent: isStudent, hostelBlock: hostelBlock, avatarId: avatarId);
+    final result = await CustomerApiService.updateProfile(
+        name: name,
+        phone: phone,
+        isStudent: isStudent,
+        hostelBlock: hostelBlock,
+        avatarId: avatarId);
     _savingProfile = false;
     if (_user != null && result.success && result.user != null) {
       _user = CustomerUser.fromJson(result.user!);
-      _status = result.needsProfile ? SessionStatus.needsProfile : SessionStatus.signedIn;
+      _status = result.needsProfile
+          ? SessionStatus.needsProfile
+          : SessionStatus.signedIn;
     }
     notifyListeners();
     return result;
@@ -246,8 +352,11 @@ class SessionProvider with ChangeNotifier {
         debugPrint('[Session] before-sign-out hook failed (ignored): $e');
       }
     }
-    if (GrozoAuthConfig.usesClerk) { await CustomerApiService.logout(token: token); }
-    else { unawaited(CustomerApiService.logout(token: token)); }
+    if (GrozoAuthConfig.usesClerk) {
+      await CustomerApiService.logout(token: token);
+    } else {
+      unawaited(CustomerApiService.logout(token: token));
+    }
     await CustomerApiService.clearToken();
     if (GrozoAuthConfig.usesClerk) await ClerkSessions.instance.signOut();
     _endSession();
@@ -265,12 +374,15 @@ class SessionProvider with ChangeNotifier {
   }
 
   /// A 401 came back from an authenticated call (token already cleared by the service).
-  void expire() => _endSession();
+  void expire() =>
+      _endSession(reason: CustomerApiService.sessionExpiredMessage);
 
   /// Retry after `unreachable`.
   Future<void> retryRestore() => restore();
 
-  void _endSession() {
+  void _endSession({String? reason}) {
+    _restoreEpoch++;
+    _accessError = reason;
     final wasActive = _user != null || _status != SessionStatus.signedOut;
     // Forget the Google account too, so the next sign-in starts from the account picker.
     if (_user != null) unawaited(_googleAuth.signOut());

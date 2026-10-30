@@ -1,13 +1,31 @@
-# Final backend regression — 25 October 2026
+# Complete backend regression — 26 October 2026
 
-Source implementation: `c5d8636c02deedbd67cc1fb7fe0411cc0db8eff8`.
+Latest backend implementation commit: `ca886b496dfac2ecb351882d5451e692a0c6035a`, retaining verified checkpoint `fe8b9be`. All migrations applied to a new isolated local UTF8 PostgreSQL database `grozo_final_1793022095441_test`; no production access or reused test state. All **27** migrations succeeded. Backend TypeScript build passed.
 
-**1,142 tests passed; zero failures, zero skipped; 47 suites; exit code 0.** One complete invocation took **387.984 seconds**.
+From the repository root:
 
-Command: `QA_EVIDENCE_DIR=Docs/vendor-registration-fix/evidence/backend-final node scripts/qa/run_full_backend.mjs`. This creates a fresh isolated local PostgreSQL database, applies all migrations, then runs `node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/vendor-registration-fix/evidence/backend-final/backend-full-run.json` from `backend`.
+```bash
+source /workspace/.setup/grozo-env.sh
+/workspace/.setup/start-grozo-postgres.sh
+QA_EVIDENCE_DIR=Docs/production-readiness/evidence/release-final node scripts/qa/run_full_backend.mjs
+```
 
-Database: `grozo_final_1792949425395_test`, host `127.0.0.1`, PostgreSQL 17.11. Node v24.19.0, Linux x64, UTC. Started 2026-10-25T17:30:36.556Z, completed 2026-10-25T17:37:04.588Z. No live database was read or changed.
+The wrapper creates the disposable `_test` database and invokes the complete suite exactly once:
 
-Complete log: [backend-full-run.log](backend-full-run.log). [Machine-readable Jest results](../vendor-registration-fix/evidence/backend-final/backend-full-run.json), [runner summary](../vendor-registration-fix/evidence/backend-final/backend-full-run-summary.json), [all commands and attempt history](../vendor-registration-fix/verification.md).
+```text
+node node_modules/jest/bin/jest.js --runInBand --json --outputFile=../Docs/production-readiness/evidence/release-final/backend-full-run.json
+```
 
-Real Clerk provider login, Android device installation and hosted Render behavior remain external checks, distinct from the official verifier/native-channel fixtures used in local regression. No authorization check or failing functional test was disabled.
+| Result | Actual value |
+| --- | ---: |
+| Total tests | 1238 |
+| Passed | 1238 |
+| Failed | 0 |
+| Skipped | 0 |
+| Suites | 57 |
+| Duration | 524240 ms |
+| Exit code | 0 |
+
+Started `2026-10-26T13:41:45.367Z`; finished `2026-10-26T13:50:29.667Z`. Node v24.19.0; PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit; Linux x64. Payment transport is an explicit local simulator; Clerk-auth regression fixtures do not establish real hosted Clerk sessions. FCM credentials are absent; notification tests inject transport responses and verify durable state/ownership. Real PostgreSQL, HTTP and Socket.io behavior are exercised by lifecycle suites. No tests were disabled or loosened to obtain this result.
+
+Full combined migration/test log: [backend-full-run.log](backend-full-run.log). Original release log, machine-readable Jest results and setup summary: [release-final evidence](../production-readiness/evidence/release-final/). Earlier failed diagnostic runs and the independent 1,233-test checkpoint are retained separately.

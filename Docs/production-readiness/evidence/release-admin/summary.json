@@ -1,0 +1,12 @@
+{
+  "command": "npm test -- --maxWorkers=1 --minWorkers=1 --reporter=json --outputFile=../../Docs/production-readiness/evidence/release-admin/vitest.json",
+  "passed": 859,
+  "failed": 0,
+  "skipped": 0,
+  "files": 58,
+  "exitCode": 0,
+  "success": true,
+  "buildCommand": "npm run build",
+  "buildExitCode": 0,
+  "buildWarning": "Principal minified JS chunk 1195.45 kB; route splitting remains a performance optimization, not a failed build."
+}

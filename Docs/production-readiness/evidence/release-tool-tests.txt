@@ -1,0 +1,26 @@
+✔ Clerk CSP grants only exact trusted origins and preserves SPA refresh/security headers (81.24853ms)
+✔ reject insecure or wildcard backend origins and invalid Clerk keys (387.288315ms)
+✔ external product imagery needs individually configured HTTPS origins (55.722391ms)
+✔ PostgreSQL credentials enter child environment and never command arguments (2.058822ms)
+✔ restore cannot target an existing application database or its own backup source (4.035474ms)
+✔ remote backup/restore requires TLS and invalid URLs are never echoed (1.015683ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 640.225704
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.007s
+
+OK
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK
+PASS: active Flutter, admin, backend and demo copy; 226 allowed occurrences covered by 145 exact internal/historical exceptions. Historical regression fixtures are excluded; screenshot fixtures are scanned.
+Brand configuration is current.

@@ -8,6 +8,8 @@ import 'package:vendor_app/screens/vendor_home.dart';
 import 'package:vendor_app/screens/product_inventory_screen.dart';
 import 'package:vendor_app/screens/kitchen_queue.dart';
 import 'package:vendor_app/screens/sales_analytics.dart';
+import 'package:vendor_app/screens/preparation_settings_screen.dart';
+import 'package:vendor_app/screens/store_performance_screen.dart';
 import 'package:vendor_app/services/product_api.dart';
 import 'package:vendor_app/services/partner_auth_service.dart';
 import 'package:vendor_app/models/dish_model.dart';
@@ -48,14 +50,41 @@ class VisualProductApi extends ProductApi {
           [Map<String, dynamic>? body]) async =>
       {
         'success': true,
-        'data': path.contains('categories')
-            ? [
-                for (final name in (demoScenario['products'] as List)
-                    .map((p) => p['category'])
-                    .toSet())
-                  {'id': name, 'name': name}
-              ]
-            : products,
+        'data': path.endsWith('/preparation')
+            ? {
+                'preparationMinutes': 12,
+                'maxPreparingOrders': 4,
+                'busyUntil': null,
+                'operatingHours': [
+                  {'day': 1, 'opens': 480, 'closes': 1260},
+                  {'day': 2, 'opens': 480, 'closes': 1260}
+                ]
+              }
+            : path.contains('/performance')
+                ? {
+                    'orders': 24,
+                    'delivered': 21,
+                    'cancelled': 3,
+                    'averagePackingMinutes': 11.4,
+                    'stockEvents': [
+                      {'kind': 'MISSING', 'events': 2}
+                    ],
+                    'lowStock': [
+                      {
+                        'name': 'Toned milk',
+                        'stockQty': 3,
+                        'lowStockThreshold': 5
+                      }
+                    ]
+                  }
+                : path.contains('categories')
+                    ? [
+                        for (final name in (demoScenario['products'] as List)
+                            .map((p) => p['category'])
+                            .toSet())
+                          {'id': name, 'name': name}
+                      ]
+                    : products,
         'nextCursor': null
       };
 }
@@ -138,6 +167,12 @@ void main() {
         Scaffold(
             body: SalesAnalyticsScreen(orders: backend.server.values.toList())),
         'sales');
+    await show(
+        PreparationSettingsScreen(vendorId: 'visual-store', api: productApi),
+        'packing-and-hours');
+    await show(
+        StorePerformanceScreen(vendorId: 'visual-store', api: productApi),
+        'store-performance');
     controller.dispose();
     restoreImages();
   }, skip: !captureEnabled);

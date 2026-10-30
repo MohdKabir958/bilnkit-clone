@@ -1,0 +1,1240 @@
+FAIL test/e2e/pricing_catalog.test.ts (8.524 s)
+  ● Pricing and catalog (phase 1) › settings endpoints › GET returns the defaults of every group (isDefault) and only admins may read or write
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › settings endpoints › PUT merges over the current value, is audited with old and new value, and GET shows it (isDefault false)
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › settings endpoints › invalid input is refused as a whole with the field named, and nothing is stored
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › settings endpoints › named fee lines must add up to the base fee; changing the base fee needs matching lines in the same request
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › settings endpoints › commission and rounding changes tell the admin to recalculate; the fee does not
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › settings endpoints › the cache is dropped on every write (and a direct database edit is only seen after the TTL or an invalidation)
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › settings endpoints › a corrupt stored value falls back to the defaults, so pricing never breaks
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › settings endpoints › parallel saves of different keys under a lock all survive (nobody overwrites anybody)
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › settings endpoints › settings writes are rate limited per admin
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › restaurant dish flow › a restaurant adds a dish: PENDING, its own price, nothing about commission or the customer price
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › restaurant dish flow › menu-manage lists its own dishes with status, vendor price and reason; others cannot read it
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › restaurant dish flow › POST validation keeps the old rules, and one restaurant cannot post into another
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › restaurant dish flow › at most 50 dishes can wait for approval per restaurant (the queue cannot be flooded)
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › restaurant dish flow › an admin-created dish (through either endpoint) is live at once, with the commission applied
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › restaurant dish flow › availability is instant in every status, through both endpoints
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › restaurant dish flow › price rules: PENDING edits in place, LIVE becomes a request, same price withdraws it, REJECTED resubmits
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › restaurant dish flow › price patch validation and ownership; a deleted dish is gone for the restaurant
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › restaurant dish flow › vendor submissions are rate limited (they land in the approval queue)
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › what customers can reach › /vendors, /vendors/:id and /menus/:id show only approved, not-deleted dishes (sold out stays, greyed)
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › what customers can reach › the owning restaurant sees its dishes with ITS price and a status in /menus and /vendors, never the customer price or its commission
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › what customers can reach › pending, rejected and deleted dishes cannot be ordered, also by id: the answer is the same as for a dish that does not exist
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › what customers can reach › approval makes the dish orderable; delete takes it away again and restore brings it back; old orders keep their copy
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › what customers can reach › a dish whose price changes later does not change an order already placed; the snapshot holds vendor price and commission
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › only admins: 401 / 403 on every endpoint
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › list: filters by status / restaurant / search, paginates, shows commission, effective price and staleness
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › pending-count counts new dishes and price requests, not deleted ones
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › approve: sets the commission, computes the price, audits; inherits when none is sent
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › approve validation: half-set commission, bad values, bad price, unknown dish, applyPending false
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › approve is idempotent (a second identical call changes and audits nothing) and can overrule a rejection
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › reject: needs a reason, idempotent, a live dish without a request is refused, a deleted one too
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › edit: any field, a price preview in the response, validation, and the admin price supersedes a restaurant request
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › preview: price and effective commission without saving; validates; knows the restaurant default
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › create validation: restaurant, price, name, commission
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › delete and restore: soft, idempotent, audited; a deleted dish cannot be edited or approved
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › commission precedence through the API: dish > restaurant > global, and the restaurant commission endpoint
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › recalculate: dry run is the default and writes nothing; apply updates only the changed dishes; placed orders are untouched
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › rounding steps and large / paise values through the API (rounding goes up, to Grozo)
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › admin catalog endpoints › catalog writes are rate limited; reads and preview are not
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › race safety › ten parallel approvals of one dish: one change, one audit row, a consistent price
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › race safety › parallel deletes and restores end in a consistent state with one audit row per real change
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › race safety › approve racing a restaurant price edit: whatever the order, the stored customer price matches the stored restaurant price
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › race safety › recalculate and edits running together never leave a stale price behind
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › race safety › a price edit and its financial audit either both commit or both roll back
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › race safety › recalculation rolls every derived price back when its audit cannot be saved
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+  ● Pricing and catalog (phase 1) › race safety › two parallel checkouts of the same dish while it is being deleted: every order that exists has a valid snapshot
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.vendor.upsert()` invocation in
+    /workspace/bilnkit-clone/backend/test/harness/db.ts:69:38
+
+      66 });
+      67 
+      68 // 2. Seed Vendor
+    → 69 const vendor = await prisma.vendor.upsert(
+    The column `preparationMinutes` does not exist in the current database.
+
+      67 |
+      68 |   // 2. Seed Vendor
+    > 69 |   const vendor = await prisma.vendor.upsert({
+         |                  ^
+      70 |     where: { id: 'ven-1' },
+      71 |     update: {
+      72 |       userId: vendorUser.id,
+
+      at $n.handleRequestError (node_modules/@prisma/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (node_modules/@prisma/client/runtime/library.js:121:6623)
+      at $n.request (node_modules/@prisma/client/runtime/library.js:121:6307)
+      at l (node_modules/@prisma/client/runtime/library.js:130:9633)
+      at seedTestDatabase (test/harness/db.ts:69:18)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:73:5)
+
+
+  ● Test suite failed to run
+
+    TypeError: Cannot read properties of undefined (reading 'io')
+
+      90 | export const stopTestServer = async (instance: TestServerInstance): Promise<void> => {
+      91 |   return new Promise((resolve) => {
+    > 92 |     instance.io.close();
+         |              ^
+      93 |     instance.server.close(() => {
+      94 |       resolve();
+      95 |     });
+
+      at test/harness/app.ts:92:14
+      at stopTestServer (test/harness/app.ts:91:10)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:114:25)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 44 skipped, 45 total
+Snapshots:   0 total
+Time:        8.808 s
+Ran all test suites matching test/e2e/pricing_catalog.test.ts with tests matching "recalculate and edits running together".
+Test results written to: ../Docs/production-readiness/evidence/pricing/final-pool-two/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

@@ -1,0 +1,15 @@
+Application/backend implementation commit be665d1
+Docs/clerk/migration-inventory.json
+apps/driver_app/lib/main.dart
+apps/driver_app/lib/models/partner_session.dart
+apps/driver_app/lib/screens/login_screen.dart
+apps/driver_app/lib/screens/signup_screen.dart
+apps/driver_app/lib/services/partner_auth_service.dart
+apps/driver_app/lib/session/session_controller.dart
+apps/driver_app/pubspec.yaml
+apps/driver_app/test/clerk_rider_onboarding_test.dart
+backend/src/routes/partners.ts
+backend/test/e2e/clerk_migration.test.ts
+scripts/qa/terminology-allowances.json
+
+Handover: Docs/rider-registration-fix/, Docs/ui-ux/rider-registration/, Docs/qa/backend-full-run.*, Docs/qa/final-backend-regression.md, Docs/clerk/migration-inventory.json and .gitignore

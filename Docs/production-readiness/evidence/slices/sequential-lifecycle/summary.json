@@ -1,0 +1,27 @@
+{
+  "database": "grozo_readiness_1793007156291_test",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "connectionLimit": 5,
+  "poolTimeoutSeconds": 1,
+  "command": [
+    "node",
+    "/workspace/bilnkit-clone/scripts/qa/run_readiness_slice.mjs",
+    "sequential-lifecycle",
+    "5",
+    "1",
+    "test/e2e/lifecycle_journeys.test.ts"
+  ],
+  "results": [
+    {
+      "round": 1,
+      "exitCode": 0,
+      "durationMs": 62916,
+      "passed": 49,
+      "failed": 0,
+      "skipped": 0
+    }
+  ]
+}

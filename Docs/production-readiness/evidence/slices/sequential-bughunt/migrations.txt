@@ -1,0 +1,134 @@
+Empty database: applying the audited schema baseline. No existing data will be changed.
+Script executed successfully.
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_align_legacy_schema marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_clear_legacy_gate_otps marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260904_make_order_otp_nullable marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20260930_auth_v2_and_indexes marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261001_partner_approval marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261002_order_flow marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261003_hardening marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261005_push_notifications marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261006_campus_dropoints marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261007_user_hostel_no_default marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261008_vendor_location_source marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261009_pricing_catalog marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261010_settlements_payouts marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261011_order_groups marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+Migration 20261012_categories marked as applied.
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "grozo_readiness_1793006791142_test", schema "public" at "127.0.0.1:5432"
+
+25 migrations found in prisma/migrations
+
+Applying migration `20261019_india_serviceability`
+Applying migration `20261020_delivery_handover`
+Applying migration `20261020_delivery_operations`
+Applying migration `20261020_grocery_inventory`
+Applying migration `20261020_grocery_price_guard`
+Applying migration `20261020_real_review_scores`
+Applying migration `20261021060000_clerk_identity`
+Applying migration `20261021150000_admin_access`
+Applying migration `20261021150000_marketplace_workflow`
+Applying migration `20261025192000_production_readiness`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261019_india_serviceability/
+    └─ migration.sql
+  └─ 20261020_delivery_handover/
+    └─ migration.sql
+  └─ 20261020_delivery_operations/
+    └─ migration.sql
+  └─ 20261020_grocery_inventory/
+    └─ migration.sql
+  └─ 20261020_grocery_price_guard/
+    └─ migration.sql
+  └─ 20261020_real_review_scores/
+    └─ migration.sql
+  └─ 20261021060000_clerk_identity/
+    └─ migration.sql
+  └─ 20261021150000_admin_access/
+    └─ migration.sql
+  └─ 20261021150000_marketplace_workflow/
+    └─ migration.sql
+  └─ 20261025192000_production_readiness/
+    └─ migration.sql
+      
+All migrations have been successfully applied.

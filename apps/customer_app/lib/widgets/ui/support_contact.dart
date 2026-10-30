@@ -9,25 +9,40 @@ import '../../services/support_api.dart';
 /// Opens the mail app for a message to Grozo support; when no mail app can be opened the address
 /// is copied instead (and the student is told).
 Future<void> emailSupport(BuildContext context, {String? subject}) async {
-  if(kSupportEmail.isEmpty){await Navigator.push(context,MaterialPageRoute(builder:(_)=>const SupportCenter(call:SupportApi.call)));return;}
+  if (kSupportEmail.isEmpty) {
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => const SupportCenter(
+                call: SupportApi.call,
+                attachPhoto: SupportApi.attachPhoto,
+                readPhoto: SupportApi.readPhoto)));
+    return;
+  }
   final opened = await ExternalLinks.emailSupport(subject: subject);
   if (opened || !context.mounted) return;
   await Clipboard.setData(const ClipboardData(text: kSupportEmail));
   if (!context.mounted) return;
-  showKSnack(context, 'No email app found. $kSupportEmail is copied: paste it into your email.', icon: LucideIcons.copy);
+  showKSnack(context,
+      'No email app found. $kSupportEmail is copied: paste it into your email.',
+      icon: LucideIcons.copy);
 }
 
 /// Opens the dialer for [phone]; when that is not possible the number is copied and the student is told.
-Future<void> callNumber(BuildContext context, {required String name, required String phone}) async {
+Future<void> callNumber(BuildContext context,
+    {required String name, required String phone}) async {
   final opened = await ExternalLinks.dial(phone);
   if (opened || !context.mounted) return;
   await Clipboard.setData(ClipboardData(text: phone));
   if (!context.mounted) return;
-  showKSnack(context, 'Couldn’t open the dialer. $name’s number ($phone) is copied: paste it in your phone app.', icon: LucideIcons.phone);
+  showKSnack(context,
+      'Couldn’t open the dialer. $name’s number ($phone) is copied: paste it in your phone app.',
+      icon: LucideIcons.phone);
 }
 
 /// A snackbar action that writes to support, for messages that mention [kSupportEmail].
-SnackBarAction supportSnackAction(BuildContext context) => SnackBarAction(label: 'Help', onPressed: () => emailSupport(context));
+SnackBarAction supportSnackAction(BuildContext context) =>
+    SnackBarAction(label: 'Help', onPressed: () => emailSupport(context));
 
 /// "Need help? kraveo.contact@gmail.com": a tappable line that opens the mail app (copying the
 /// address when there is none).
@@ -51,8 +66,17 @@ class SupportEmailLine extends StatelessWidget {
           Flexible(
             child: Text.rich(
               TextSpan(children: [
-                TextSpan(text: '$prefix ', style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
-                TextSpan(text: kSupportEmail.isEmpty?'Help and requests':kSupportEmail, style: KraveoType.bodySm.copyWith(color: k.brand, fontWeight: FontWeight.w700, decoration: TextDecoration.underline)),
+                TextSpan(
+                    text: '$prefix ',
+                    style: KraveoType.bodySm.copyWith(color: k.inkMuted)),
+                TextSpan(
+                    text: kSupportEmail.isEmpty
+                        ? 'Help and requests'
+                        : kSupportEmail,
+                    style: KraveoType.bodySm.copyWith(
+                        color: k.brand,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.underline)),
               ]),
             ),
           ),

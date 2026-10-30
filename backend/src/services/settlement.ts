@@ -9,6 +9,7 @@ import { writeAudit } from './audit';
 import { getSettingGroup } from './settings';
 import { fromPaise, hasAtMostTwoDecimals, toPaise } from './pricing';
 import { adminAccountView, payoutSnapshotOf } from './payoutAccount';
+import { assertSettlementFinanciallySafe, FINANCIAL_SUPPORT_CATEGORIES } from './payoutReadiness';
 
 /**
  * Restaurant settlements (Docs/21 section 5).
@@ -103,6 +104,10 @@ const eligibleWhere = (cutoff: Date, vendorId?: string): Prisma.OrderWhereInput 
   settlementId: null,
   deliveredAt: { not: null, lte: cutoff },
   OR: [{ refundStatus: null }, { refundStatus: 'NONE' }],
+  refundRequests: {none:{state:{notIn:['PROCESSED','VOID']}}},
+  adjustments: {none:{state:'PROPOSED'}},
+  supportCases: {none:{status:{not:'RESOLVED'},category:{in:FINANCIAL_SUPPORT_CATEGORIES}}},
+  AND:[{OR:[{paymentMethod:{not:'COD'}},{cashCollection:{is:{remittedAt:{not:null}}}}]}],
   ...(vendorId ? { vendorId } : {}),
 });
 
@@ -129,6 +134,10 @@ const createForVendor = async (vendorId: string, deliveredBy: Date, batchKey: st
         SELECT "id", "subtotal", "vendorSubtotal", "commissionTotal", "deliveredAt" FROM "Order"
         WHERE "vendorId" = ${vendorId} AND "status" = 'DELIVERED' AND "paymentStatus" = 'PAID' AND "settlementId" IS NULL
           AND ("refundStatus" IS NULL OR "refundStatus" = 'NONE')
+          AND NOT EXISTS (SELECT 1 FROM "PaymentRefund" pr WHERE pr."orderId"="Order"."id" AND pr."state" NOT IN ('PROCESSED','VOID'))
+          AND NOT EXISTS (SELECT 1 FROM "OrderAdjustment" oa WHERE oa."orderId"="Order"."id" AND oa."state"='PROPOSED')
+          AND NOT EXISTS (SELECT 1 FROM "SupportCase" sc WHERE sc."orderId"="Order"."id" AND sc."status"<>'RESOLVED' AND sc."category" IN ('MISSING_ITEM','WRONG_ITEM','DAMAGED_ITEM','EXPIRED_ITEM','PAYMENT_CHARGED','REFUND_NOT_RECEIVED','DELIVERY_FAILED'))
+          AND ("paymentMethod"<>'COD' OR EXISTS (SELECT 1 FROM "CashCollection" cc WHERE cc."orderId"="Order"."id" AND cc."remittedAt" IS NOT NULL))
           AND "deliveredAt" IS NOT NULL AND "deliveredAt" <= (${deliveredBy.toISOString()}::timestamptz AT TIME ZONE 'UTC')
         ORDER BY "deliveredAt" ASC, "id" ASC
         FOR UPDATE`;
@@ -348,10 +357,14 @@ export const markPaid = async (id: string, raw: unknown, actor: Actor) => {
     if (s.status === 'CANCELLED') throw conflict('SETTLEMENT_CANCELLED', 'This settlement was cancelled.');
     if (s.status === 'ON_HOLD') throw conflict('SETTLEMENT_ON_HOLD', 'This settlement is on hold. Release it before marking it paid.');
     if (s.netPayable <= 0) throw conflict('NOTHING_TO_PAY', 'The payable amount is not above 0, so there is nothing to pay.');
+    await assertSettlementFinanciallySafe(tx,id);
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`settlement-bank-ref:${reference}`},0))::text`;
+    const duplicate=await tx.settlement.findFirst({where:{paymentReference:reference,status:'PAID',id:{not:id}}});
+    if(duplicate)throw conflict('PAYOUT_REFERENCE_USED','This bank reference was already recorded for another settlement. Review the bank evidence before recording another payment.');
     const row = await tx.settlement.update({ where: { id }, data: { status: 'PAID', paidAt, paymentReference: reference, paidBy: actor.id, ...(note !== null ? { note } : {}) } });
+    await tx.adminAuditLog.create({data:{action:'SETTLEMENT_PAID',targetType:'SETTLEMENT',targetId:id,summary:`Admin ${actor.id} recorded external settlement payment Rs ${row.netPayable.toFixed(2)}, reference ${reference}. This is an operator assertion, not provider confirmation.`}});
     return { row, changed: true };
   });
-  if (out.changed) await writeAudit('SETTLEMENT_PAID', 'SETTLEMENT', id, `Admin ${actor.id} marked the settlement of store ${out.row.vendorId} paid: Rs ${out.row.netPayable.toFixed(2)}, reference ${reference}.`);
   return out;
 };
 

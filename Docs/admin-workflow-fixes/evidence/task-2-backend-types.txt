@@ -1,0 +1,8 @@
+src/routes/vendorDirectory.ts(10,383): error TS1005: ',' expected.
+src/routes/vendorDirectory.ts(11,22): error TS1005: ',' expected.
+src/routes/vendorDirectory.ts(21,46): error TS1005: ',' expected.
+src/routes/vendorDirectory.ts(22,22): error TS1005: ',' expected.
+src/routes/vendorDirectory.ts(26,43): error TS1005: ',' expected.
+src/routes/vendorDirectory.ts(27,22): error TS1005: ',' expected.
+src/routes/vendorDirectory.ts(31,42): error TS1005: ',' expected.
+src/routes/vendorDirectory.ts(32,1): error TS1005: '}' expected.

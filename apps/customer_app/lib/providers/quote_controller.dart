@@ -28,7 +28,11 @@ enum QuoteStatus {
 /// - It only ever fills in the bill: placing the order and the "Updated total" notice stay the
 ///   safety net, and the local estimate shows while there is no server price.
 class QuoteController extends ChangeNotifier {
-  QuoteController({required OrderApi api, this.debounce = const Duration(milliseconds: 400), this.onMaxRestaurants}) : _api = api;
+  QuoteController(
+      {required OrderApi api,
+      this.debounce = const Duration(milliseconds: 400),
+      this.onMaxRestaurants})
+      : _api = api;
 
   final OrderApi _api;
   final Duration debounce;
@@ -38,7 +42,19 @@ class QuoteController extends ChangeNotifier {
   final void Function(int max)? onMaxRestaurants;
 
   /// Codes after which a combined order cannot succeed until the cart changes.
-  static const Set<String> blockingCodes = {'MULTI_DISABLED', 'TOO_MANY_RESTAURANTS', 'DUPLICATE_RESTAURANT', 'USE_SINGLE_ORDER', 'AREA_UNSUPPORTED', 'ADDRESS_REQUIRED', 'STORE_UNAVAILABLE', 'OUT_OF_STOCK'};
+  static const Set<String> blockingCodes = {
+    'MULTI_DISABLED',
+    'TOO_MANY_RESTAURANTS',
+    'DUPLICATE_RESTAURANT',
+    'USE_SINGLE_ORDER',
+    'AREA_UNSUPPORTED',
+    'ADDRESS_REQUIRED',
+    'STORE_UNAVAILABLE',
+    'OUT_OF_STOCK',
+    'DELIVERY_CAPACITY_UNAVAILABLE',
+    'ONLINE_PAYMENT_UNAVAILABLE',
+    'COD_UNAVAILABLE'
+  };
 
   QuoteStatus _status = QuoteStatus.idle;
   OrderQuote? _quote;
@@ -82,7 +98,8 @@ class QuoteController extends ChangeNotifier {
   }
 
   /// The order cannot be placed with this cart (too many restaurants, feature off...).
-  bool get blocksCheckout => _status == QuoteStatus.failed && blockingCodes.contains(_error?.code);
+  bool get blocksCheckout =>
+      _status == QuoteStatus.failed && blockingCodes.contains(_error?.code);
 
   /// Prices [request] (null = nothing to price). Safe to call on every rebuild: an unchanged cart
   /// is a no-op.
@@ -126,7 +143,9 @@ class QuoteController extends ChangeNotifier {
 
   Future<void> _run(QuoteRequest request, int seq) async {
     final r = await _api.quote(request);
-    if (_disposed || seq != _seq) return; // the cart changed meanwhile: that answer is about an older cart
+    if (_disposed || seq != _seq) {
+      return; // the cart changed meanwhile: that answer is about an older cart
+    }
     final q = r.value;
     if (q != null) {
       _quote = q;

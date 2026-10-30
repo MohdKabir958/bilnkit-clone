@@ -396,7 +396,7 @@ describe('Lifecycle journeys', () => {
       expect((await row(id)).payments[0].status).toBe('PAID');
     });
 
-    test('unpaid order expires after 15 minutes (injected time): CANCELLED by SYSTEM, nobody but the customer and admin notified', async () => {
+    test('unpaid attempt expires after the payment window and confirmation grace (injected time): CANCELLED by SYSTEM, nobody but the customer and admin notified', async () => {
       const [c1] = W.customers; const [v1] = W.vendors; const [r1] = W.riders;
       const wc = await watch(c1); const wv = await watch(v1); const wr = await watch(r1); const wa = await watch(W.admin);
       const id = await place(c1, v1);
@@ -404,7 +404,7 @@ describe('Lifecycle journeys', () => {
       await api.createPayment(c1, id);
       expect((await runOrderMaintenance(minutesFromNow(14))).expired).not.toContain(id);
       expect((await row(id)).status).toBe('PLACED');
-      const s = await runOrderMaintenance(minutesFromNow(16));
+      const s = await runOrderMaintenance(minutesFromNow(21));
       expect(s.expired).toContain(id);
       await flushAll();
       expect(await row(id)).toMatchObject({ status: 'CANCELLED', cancelledBy: 'SYSTEM', cancelReason: 'Payment not completed', paymentStatus: 'PENDING' });
@@ -426,7 +426,7 @@ describe('Lifecycle journeys', () => {
       await wc.join(`order_${id}`);
       const cp = await api.createPayment(c1, id);
       const rzp = cp.body.razorpayOrderId; const pid = `pay_late_${path}`;
-      await runOrderMaintenance(minutesFromNow(16));
+      await runOrderMaintenance(minutesFromNow(21));
       ledger.capture(rzp, pid, 20500);
       if (path === 'webhook') expect((await api.webhookCaptured(rzp, pid, 20500)).body.status).toBe('processed');
       if (path === 'verify') {
@@ -1034,7 +1034,7 @@ describe('Lifecycle journeys', () => {
   // 8. Provider failure injection
   // =========================================================================================
   describe('J8 payment provider failures', () => {
-    test('provider down during create-order: 503, no half-created payment, order intact, retry works', async () => {
+    test('uncertain provider create-order: 503, no exposed payment and no duplicate provider request', async () => {
       const [c1] = W.customers; const [v1] = W.vendors; const [r1] = W.riders;
       const wv = await watch(v1); const wr = await watch(r1);
       const id = await place(c1, v1);
@@ -1045,12 +1045,11 @@ describe('Lifecycle journeys', () => {
       expect(await row(id)).toMatchObject({ status: 'PLACED', paymentStatus: 'PENDING' });
       ledger.mode.createDown = false;
       const up = await api.createPayment(c1, id);
-      expect(up.status).toBe(200);
-      ledger.capture(up.body.razorpayOrderId, 'pay_after_outage', 20500);
-      expect((await api.verify(c1, up.body.razorpayOrderId, 'pay_after_outage')).status).toBe(200);
-      await flushAll();
-      expect(wv.count('new_order_alert', id)).toBe(1);
-      expect(await prisma.payment.count({ where: { orderId: id } })).toBe(1);
+      expect([up.status,up.body.code]).toEqual([409,'PAYMENT_START_PENDING']);
+      expect(ledger.calls.createOrder).toBe(1);
+      expect((await prisma.paymentCreation.findUniqueOrThrow({where:{orderId:id}})).state).toBe('UNKNOWN');
+      expect(wv.count('new_order_alert', id)).toBe(0);
+      expect(await prisma.payment.count({ where: { orderId: id } })).toBe(0);
       void wr;
     });
 

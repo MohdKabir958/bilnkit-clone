@@ -1,0 +1,99 @@
+{
+  "database": "grozo_pricing_1792994600543_test",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "connectionLimit": 2,
+  "poolTimeoutSeconds": 1,
+  "command": [
+    "node",
+    "/workspace/bilnkit-clone/scripts/qa/run_pricing_concurrency.mjs",
+    "final-pool-two-integrated",
+    "2",
+    "10",
+    "--testNamePattern=recalculate and edits running together"
+  ],
+  "results": [
+    {
+      "round": 1,
+      "exitCode": 0,
+      "durationMs": 7864,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 44
+    },
+    {
+      "round": 2,
+      "exitCode": 0,
+      "durationMs": 4974,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 44
+    },
+    {
+      "round": 3,
+      "exitCode": 0,
+      "durationMs": 6028,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 44
+    },
+    {
+      "round": 4,
+      "exitCode": 0,
+      "durationMs": 6482,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 44
+    },
+    {
+      "round": 5,
+      "exitCode": 0,
+      "durationMs": 6725,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 44
+    },
+    {
+      "round": 6,
+      "exitCode": 0,
+      "durationMs": 6199,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 44
+    },
+    {
+      "round": 7,
+      "exitCode": 0,
+      "durationMs": 9680,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 44
+    },
+    {
+      "round": 8,
+      "exitCode": 0,
+      "durationMs": 5901,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 44
+    },
+    {
+      "round": 9,
+      "exitCode": 0,
+      "durationMs": 8477,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 44
+    },
+    {
+      "round": 10,
+      "exitCode": 0,
+      "durationMs": 10990,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 44
+    }
+  ]
+}

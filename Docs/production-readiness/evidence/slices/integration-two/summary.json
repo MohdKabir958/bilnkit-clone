@@ -1,0 +1,29 @@
+{
+  "database": "grozo_readiness_1792995497857_test",
+  "node": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "postgres": "PostgreSQL 17.11 (Debian 17.11-0+deb13u1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+  "connectionLimit": 5,
+  "poolTimeoutSeconds": 1,
+  "command": [
+    "node",
+    "/workspace/bilnkit-clone/scripts/qa/run_readiness_slice.mjs",
+    "integration-two",
+    "5",
+    "1",
+    "test/e2e/marketplace_workflow.test.ts",
+    "test/e2e/operations_readiness.test.ts",
+    "test/e2e/compliance_payout_readiness.test.ts"
+  ],
+  "results": [
+    {
+      "round": 1,
+      "exitCode": 1,
+      "durationMs": 18950,
+      "passed": 28,
+      "failed": 5,
+      "skipped": 0
+    }
+  ]
+}

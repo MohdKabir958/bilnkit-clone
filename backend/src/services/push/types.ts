@@ -7,6 +7,7 @@ export const PUSH_EVENTS = [
   'PICKUP_READY',
   'ORDER_PLACED',
   'ORDER_PREPARING',
+  'ORDER_UPDATED',
   'RIDER_ASSIGNED_CUSTOMER',
   'RIDER_ASSIGNED_VENDOR',
   'NEW_ORDER',
@@ -37,7 +38,7 @@ export interface PushMessage {
   priority: 'high' | 'normal';
   ttlSeconds: number;
   collapseKey: string;
-  data: { event: string; orderId: string; v: '1' };
+  data: { event: string; orderId: string; v: '1'; offerId?: string; offerExpiresAt?: string; caseId?: string; noteId?: string };
 }
 
 /**
@@ -57,4 +58,7 @@ export interface PushOptions {
   userId?: string;
   /** Makes the claim key unique per repeat (NEW_ORDER_REMINDER: the minute since the order was paid). */
   bucket?: number;
+  /** Bind a rider push to the original short-lived offer. Never send a retry for its successor. */
+  offerId?: string;
+  offerExpiresAt?: string;
 }

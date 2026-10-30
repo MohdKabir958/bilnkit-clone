@@ -1,0 +1,233 @@
+  console.error
+    setting 'fees' in the database is invalid (baseFee); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettings (src/services/settings.ts:73:20)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:211:17)
+
+  console.error
+    setting 'commission' in the database is invalid (commission); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettings (src/services/settings.ts:73:20)
+      at Object.<anonymous> (test/e2e/pricing_catalog.test.ts:211:17)
+
+  console.error
+    setting 'fees' in the database is invalid (baseFee); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettingGroup (src/services/settings.ts:75:13)
+      at src/routes/catalog.ts:214:15
+
+  console.error
+    setting 'commission' in the database is invalid (commission); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettingGroup (src/services/settings.ts:75:13)
+      at src/routes/catalog.ts:214:15
+
+  console.error
+    setting 'fees' in the database is invalid (baseFee); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettings (src/services/settings.ts:73:20)
+      at adminCreateDish (src/services/catalog.ts:535:20)
+      at src/routes/catalog.ts:125:17
+
+  console.error
+    setting 'commission' in the database is invalid (commission); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettings (src/services/settings.ts:73:20)
+      at adminCreateDish (src/services/catalog.ts:535:20)
+      at src/routes/catalog.ts:125:17
+
+  console.error
+    setting 'fees' in the database is invalid (baseFee); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettings (src/services/settings.ts:73:20)
+      at createDish (src/services/catalog.ts:155:20)
+      at adminCreateDish (src/services/catalog.ts:536:15)
+      at src/routes/catalog.ts:125:17
+
+  console.error
+    setting 'commission' in the database is invalid (commission); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettings (src/services/settings.ts:73:20)
+      at createDish (src/services/catalog.ts:155:20)
+      at adminCreateDish (src/services/catalog.ts:536:15)
+      at src/routes/catalog.ts:125:17
+
+  console.error
+    setting 'fees' in the database is invalid (baseFee); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettings (src/services/settings.ts:73:20)
+      at validateAndCalculateOrder (src/utils/validation.ts:166:20)
+      at placeOrder (src/services/orderFlow.ts:319:16)
+      at src/routes/orders.ts:80:31
+
+  console.error
+    setting 'commission' in the database is invalid (commission); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettings (src/services/settings.ts:73:20)
+      at validateAndCalculateOrder (src/utils/validation.ts:166:20)
+      at placeOrder (src/services/orderFlow.ts:319:16)
+      at src/routes/orders.ts:80:31
+
+  console.error
+    setting 'fees' in the database is invalid (baseFee); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettings (src/services/settings.ts:73:38)
+      at validateAndCalculateOrder (src/utils/validation.ts:166:20)
+      at db_1.prisma.$transaction.maxWait (src/services/orderFlow.ts:372:18)
+      at Proxy._transactionWithCallback (node_modules/@prisma/client/runtime/library.js:130:8000)
+      at placeOrder (src/services/orderFlow.ts:326:21)
+      at src/routes/orders.ts:80:31
+
+  console.error
+    setting 'commission' in the database is invalid (commission); using the defaults
+
+      51 |       const check = validateSettingGroup(group, row.value);
+      52 |       if (check.ok) parsed = check.value;
+    > 53 |       else console.error(`setting '${group}' in the database is invalid (${check.error.field}); using the defaults`);
+         |                    ^
+      54 |     }
+      55 |     (value as any)[group] = parsed ?? cloneDefaults(group);
+      56 |     meta[group] = parsed !== undefined && row ? { isDefault: false, updatedAt: row.updatedAt.toISOString(), updatedBy: row.updatedBy ?? null } : { isDefault: true, updatedAt: null, updatedBy: null };
+
+      at loadAll (src/services/settings.ts:53:20)
+      at getSettings (src/services/settings.ts:73:38)
+      at validateAndCalculateOrder (src/utils/validation.ts:166:20)
+      at db_1.prisma.$transaction.maxWait (src/services/orderFlow.ts:372:18)
+      at Proxy._transactionWithCallback (node_modules/@prisma/client/runtime/library.js:130:8000)
+      at placeOrder (src/services/orderFlow.ts:326:21)
+      at src/routes/orders.ts:80:31
+
+  console.error
+    edit product failed: PrismaClientUnknownRequestError: Invalid `tx.adminAuditLog.create()` invocation in
+
+      17 |   if (err instanceof OrderFlowError) return res.status(err.status).json({ success: false, code: err.code, message: err.message, ...err.extra });
+      18 |   if (err instanceof AppError) return res.status(err.status).json({ success: false, code: err.code, message: err.message, ...(err.field ? { field: err.field } : {}), ...err.extra });
+    > 19 |   console.error(`${what} failed:`, errSummary(err));
+         |           ^
+      20 |   return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
+      21 | };
+      22 |
+
+      at fail (src/utils/http.ts:19:11)
+      at src/routes/catalog.ts:165:16
+
+  console.error
+    recalculate prices failed: PrismaClientUnknownRequestError: Invalid `tx.adminAuditLog.create()` invocation in
+
+      17 |   if (err instanceof OrderFlowError) return res.status(err.status).json({ success: false, code: err.code, message: err.message, ...err.extra });
+      18 |   if (err instanceof AppError) return res.status(err.status).json({ success: false, code: err.code, message: err.message, ...(err.field ? { field: err.field } : {}), ...err.extra });
+    > 19 |   console.error(`${what} failed:`, errSummary(err));
+         |           ^
+      20 |   return res.status(500).json({ success: false, message: 'Something went wrong. Please try again.' });
+      21 | };
+      22 |
+
+      at fail (src/utils/http.ts:19:11)
+      at src/routes/catalog.ts:93:16
+
+Test Suites: 1 passed, 1 total
+Tests:       45 passed, 45 total
+Snapshots:   0 total
+Time:        13.223 s
+Ran all test suites matching test/e2e/pricing_catalog.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/pricing/final-catalog-suite/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

@@ -1,0 +1,135 @@
+{
+  "admin": {
+    "total": 886,
+    "passed": 886,
+    "failed": 0,
+    "skipped": 0,
+    "files": 67,
+    "success": true,
+    "command": "node node_modules/vitest/vitest.mjs run --pool=threads --poolOptions.threads.singleThread --reporter=default --reporter=json --outputFile=../../Docs/admin-workflow-fixes/evidence/admin-full-final.json",
+    "reportedDurationSeconds": 25.62,
+    "exitCode": 0
+  },
+  "backendFocused": {
+    "total": 26,
+    "passed": 26,
+    "failed": 0,
+    "skipped": 0,
+    "success": true,
+    "exitCode": 0,
+    "notFullRegression": true
+  },
+  "backendFull": {
+    "status": "PASS",
+    "total": 1266,
+    "passed": 1266,
+    "failed": 0,
+    "skipped": 0,
+    "exitCode": 0,
+    "invocations": 1,
+    "sourceCommit": "cba6e5cba8b8bc917ec9f6a6bf646426aebd8e85",
+    "run": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/40453636470",
+    "fullLogAndJsonArtifact": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/40453636470/artifacts/12711776905",
+    "fullLogAndJsonMirroredLocally": false,
+    "localArtifactDownloadLimitation": "Workspace proxy forbids the Actions artifact/log redirect host; full files are preserved in the linked CI artifact. Check annotations and complete job/artifact metadata are saved locally.",
+    "command": "npm test -- --json --outputFile=../Docs/production-readiness/evidence/ci/backend.json",
+    "npmTestScript": "jest --runInBand",
+    "startedAt": "2026-10-27T05:09:39Z",
+    "finishedAt": "2026-10-27T05:15:25Z",
+    "ciStepWallSeconds": 346.0,
+    "durationScope": "Whole regression shell step, not a fabricated Jest-reported duration",
+    "database": "Dedicated ephemeral PostgreSQL 16-bookworm service, 127.0.0.1:5432/market_test; all 29 migrations applied before invocation; no hosted data",
+    "environment": {
+      "node": "24.19.0",
+      "runner": "ubuntu-latest Linux x86_64",
+      "postgresImage": "postgres:16-bookworm",
+      "NODE_ENV": "test"
+    }
+  },
+  "flutterAnalysis": {
+    "customer": "PASS",
+    "vendor": "PASS",
+    "driver": "PASS"
+  },
+  "flutterTests": {
+    "status": "PASS",
+    "roles": [
+      "customer",
+      "vendor",
+      "driver"
+    ],
+    "checks": [
+      "locked dependencies",
+      "analysis",
+      "complete tests",
+      "debug asset bundle"
+    ],
+    "command": "bash scripts/check_flutter.sh ROLE",
+    "sourceCommit": "cba6e5cba8b8bc917ec9f6a6bf646426aebd8e85",
+    "run": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/40453636470",
+    "counts": "No invented Flutter test counts; actual complete CI jobs are successful."
+  },
+  "apk": {
+    "status": "BUILT_PUBLISHED_DOWNLOAD_VERIFIED",
+    "versionName": "1.16.1",
+    "flutterBuildNumber": 25,
+    "androidVersionCode": 2025,
+    "roles": [
+      "customer",
+      "vendor",
+      "driver"
+    ],
+    "manifest": "apks/manifest.json",
+    "publicDownloadVerification": "apks/download-verification.json",
+    "buildSourceCommit": "8668d448a29ad3f60b3b2a521eee8b4913ac9afc",
+    "artifactCommit": "4ee38fe3ca01a1617c8f3a7c71775f75fde993fb",
+    "firebaseConfigured": false,
+    "physicalDeviceAndHostedProviderVerified": false
+  },
+  "screenshots": {
+    "status": "CAPTURED_AND_REVIEWED",
+    "count": 13,
+    "pdfPages": 15,
+    "manifest": "../screenshots/manifest.json",
+    "renderer": "Actual implemented React components in local Chromium",
+    "data": "Explicit synthetic in-memory fixtures",
+    "uncaughtErrors": 0,
+    "horizontalOverflowScreens": 0,
+    "hostedOrPhysicalDeviceCapture": false
+  },
+  "hostedAcceptance": {
+    "status": "NOT_RUN",
+    "reason": "No explicitly approved isolated staging deployment, synthetic provider identities or management credentials supplied. Supplied public URL does not establish isolation. No personal account used."
+  },
+  "personalAccountsUsed": false,
+  "environment": {
+    "node": "v24.19.0",
+    "flutter": "3.44.9",
+    "dart": "3.12.2",
+    "platform": "Linux x86_64",
+    "database": "Authorized isolated CI PostgreSQL; local startup rejected by automatic approval review and not retried or bypassed."
+  },
+  "backendBuild": {
+    "status": "PASS",
+    "prismaGenerated": true,
+    "typescriptBuild": true,
+    "allMigrationsApplied": true,
+    "sourceCommit": "cba6e5cba8b8bc917ec9f6a6bf646426aebd8e85"
+  },
+  "pricingConcurrency": {
+    "status": "PASS",
+    "repetitions": 10,
+    "connectionLimit": 2,
+    "poolTimeoutSeconds": 1,
+    "command": "node ../scripts/qa/run_pricing_concurrency.mjs ci-pool-two 2 10 --testNamePattern='recalculate and edits running together'",
+    "artifact": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/40453636470/artifacts/12711776905"
+  },
+  "allCiJobs": {
+    "backend": "success",
+    "web (super_admin)": "success",
+    "web (landing)": "success",
+    "flutter (driver)": "success",
+    "flutter (customer)": "success",
+    "flutter (vendor)": "success"
+  }
+}

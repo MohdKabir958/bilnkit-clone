@@ -1,3 +1,4 @@
+import { pendingCheckoutProtected, reconcileCheckoutsBeforeReplacement } from './checkoutRecovery';
 import { drainNotificationIntents } from './push/intents';
 import { fromPaise, toPaise } from './pricing';
 import { lockProducts, reserveStock, ensureStockAvailable } from './inventory';
@@ -11,7 +12,7 @@ import { ORDER_VIEW_INCLUDE, OrderWithRelations, orderView } from './orderView';
 import { publishOrderChange } from '../realtime';
 import {
   ChangeResult, GROUP_CANCEL_REASON_PREFIX, OrderFlowError, REPLACED_REASON, auditCancel, cancelInTx, countUnpaidOpen, finishChange, isAbandonedOrder, loadGroupChildren,
-  lockOrderInTx, mismatch, sameItems,
+  lockOrderInTx, mismatch, sameItems, blockPendingCheckout,
 } from './orderFlow';
 
 /**
@@ -190,6 +191,7 @@ export const placeGroup = async (customerId: string, input: PlaceGroupInput): Pr
     return { ...toBundle(existing), replay: true };
   }
 
+  await reconcileCheckoutsBeforeReplacement(customerId, input.restaurants.map(r => r.vendorId));
   const customer = await prisma.user.findUnique({ where: { id: customerId }, select: { id: true, deletedAt: true } });
   if (!customer || customer.deletedAt) throw new OrderFlowError(401, 'ACCOUNT_UNAVAILABLE', 'This account is no longer available. Please sign in again.');
 
@@ -230,6 +232,8 @@ export const placeGroup = async (customerId: string, input: PlaceGroupInput): Pr
         }
         await lockProducts(tx, [...input.restaurants.flatMap((r) => r.items.map((i) => i.itemId)), ...staleLocks.flatMap((l) => (l.group ?? [l.order]).flatMap((o) => o.items.flatMap((i) => i.menuItemId ? [i.menuItemId] : [])))]);
         for (const l of staleLocks) {
+          const creation = await tx.paymentCreation.findUnique({where:{orderId:l.order.id}});
+          if ((creation && ['CREATING','UNKNOWN'].includes(creation.state)) || pendingCheckoutProtected((l.group ?? [l.order])[0])) await blockPendingCheckout(tx,customerId,l.order.id,priced.appliedCoupon);
           const r = await cancelInTx(tx, l.order, { id: 'system', role: 'SYSTEM' }, 'SYSTEM', REPLACED_REASON, { guard: (o, g) => isAbandonedOrder(o, g) }, l.group);
           if (r.changed) replaced.push(r);
         }

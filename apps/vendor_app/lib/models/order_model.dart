@@ -235,6 +235,9 @@ class OrderModel {
     this.rider,
     this.vendorId,
     this.acceptBy,
+    this.estimatedReadyAt,
+    this.serverPreparationMinutes,
+    this.riderAtPickup = false,
     this.refundStatus,
     this.group,
   });
@@ -274,6 +277,9 @@ class OrderModel {
 
   /// The server's deadline for Accept / Reject (`acceptBy`, only while PLACED + PAID).
   final DateTime? acceptBy;
+  final DateTime? estimatedReadyAt;
+  final int? serverPreparationMinutes;
+  final bool riderAtPickup;
 
   /// `NONE|PENDING|DONE|FAILED` when the server sends it (the vendor view currently does not).
   final String? refundStatus;
@@ -366,6 +372,9 @@ class OrderModel {
         rider: rider,
         vendorId: vendorId,
         acceptBy: acceptBy,
+        estimatedReadyAt: estimatedReadyAt,
+        serverPreparationMinutes: serverPreparationMinutes,
+        riderAtPickup: riderAtPickup,
         refundStatus: refundStatus,
         group: group,
       );
@@ -451,6 +460,14 @@ class OrderModel {
               (raw['vendor'] is Map ? (raw['vendor'] as Map)['id'] : null))
           ?.toString(),
       acceptBy: _date(raw['acceptBy']),
+      estimatedReadyAt: raw['fulfillment'] is Map
+          ? _date(raw['fulfillment']['estimatedReadyAt'])
+          : null,
+      serverPreparationMinutes: raw['fulfillment'] is Map
+          ? _int(raw['fulfillment']['preparationMinutes'])
+          : null,
+      riderAtPickup: raw['fulfillment'] is Map &&
+          raw['fulfillment']['riderAtPickup'] == true,
       refundStatus: raw['refundStatus']?.toString(),
       group: OrderGroup.fromJson(raw['group']),
     );

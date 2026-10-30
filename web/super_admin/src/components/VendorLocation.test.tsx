@@ -70,19 +70,20 @@ describe('VendorLocationEditor', () => {
 
   it('typing coordinates saves through the API and reports the saved pin; a bad value never reaches the server', async () => {
     const saved = { lat: 23.0745, lng: 76.859, hasLocation: true, locationSource: 'ADMIN' as const, locationSetAt: '2026-10-05T10:00:00.000Z', locationAccuracyM: null };
-    const spy = vi.spyOn(apiService, 'setVendorLocation').mockResolvedValue(saved);
+    const spy = vi.spyOn(apiService, 'saveConfirmedPickup').mockResolvedValue(saved);
     const onSaved = vi.fn();
     const h = await mount(<VendorLocationEditor id="v1" name="Sharma Dhaba" pin={{ hasLocation: false }} onSaved={onSaved} />);
     await click(h.querySelector('button')!); // "Set location"
-    const input = h.querySelector('input') as HTMLInputElement;
+    const input = h.querySelector('#vloc-v1') as HTMLInputElement;
     await type(input, '-28.6139, 77.2090'); // Outside India
     await act(async () => { h.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
     expect(spy).not.toHaveBeenCalled();
     expect(h.textContent).toMatch(/valid store location in India/);
     await type(input, '23.0745, 76.8590');
+    await click([...h.querySelectorAll('button')].find(b=>b.textContent==='Confirm pickup pin')!);
     await act(async () => { h.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); });
     await flush();
-    expect(spy).toHaveBeenCalledWith('v1', 23.0745, 76.859);
+    expect(spy).toHaveBeenCalledWith('v1', 23.0745, 76.859,'MANUAL');
     expect(onSaved).toHaveBeenCalledWith('v1', saved);
   });
 });
@@ -164,3 +165,5 @@ describe('NeedsAttentionPanel: restaurants without a location', () => {
     expect(h.textContent).not.toContain('Sharma Dhaba');
   });
 });
+
+vi.mock('./PickupPinMap',()=>({default:()=>null}));

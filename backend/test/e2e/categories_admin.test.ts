@@ -198,7 +198,7 @@ describe('Managed categories', () => {
         ['bad icon', { name: 'ZT Ok', icon: 'rocket' }, 'icon'], ['icon type', { name: 'ZT Ok', icon: 7 }, 'icon'], ['long hindi', { name: 'ZT Ok', nameHi: 'अ'.repeat(31) }, 'nameHi'],
         ['hindi html', { name: 'ZT Ok', nameHi: '<i>x</i>' }, 'nameHi'], ['flag type', { name: 'ZT Ok', showOnHome: 'yes' }, 'showOnHome'],
         ['unusable', { name: 'ZT Ok', forRestaurants: false, forDishes: false }, 'forDishes'], ['unknown key', { name: 'ZT Ok', sortOrder: 3 }, 'sortOrder'],
-        ['isActive on create', { name: 'ZT Ok', isActive: false }, 'isActive'],
+        ['invalid isActive on create', { name: 'ZT Ok', isActive: 'no' }, 'isActive'],
       ];
       for (const [label, body, field] of bad) {
         const r = await post('/api/admin/categories', body);

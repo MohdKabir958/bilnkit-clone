@@ -29,6 +29,7 @@ test('reject insecure or wildcard backend origins and invalid Clerk keys',()=>{
  for(const origin of ['http://api.example.test','https://*.example.test','https://user:password@api.example.test','https://api.example.test?next=1'])
   run({GROZO_BACKEND_ORIGIN:origin},result=>assert.notEqual(result.status,0));
  run({VITE_CLERK_PUBLISHABLE_KEY:'invalid-key'},result=>assert.notEqual(result.status,0));
+ run({VITE_CLERK_PUBLISHABLE_KEY:'pk_test_'+Buffer.from('missing-dollar.clerk.accounts.dev').toString('base64')},result=>assert.notEqual(result.status,0));
 });
 test('external product imagery needs individually configured HTTPS origins',()=>{
  run({GROZO_PRODUCT_IMAGE_ORIGINS:'https://images.example.test'},(result,output)=>{

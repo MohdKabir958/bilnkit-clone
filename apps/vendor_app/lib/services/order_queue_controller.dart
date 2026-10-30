@@ -46,7 +46,8 @@ class ActionOutcome {
         code = null,
         current = null;
 
-  const ActionOutcome.failed(ApiFailure this.failure, {this.message, this.code, this.current})
+  const ActionOutcome.failed(ApiFailure this.failure,
+      {this.message, this.code, this.current})
       : ok = false,
         ignored = false;
 
@@ -163,7 +164,9 @@ class OrderQueueController extends ChangeNotifier {
 
   OrderModel _effective(OrderModel o) {
     final target = _overlay[o.id];
-    if (target != null && !o.status.isTerminal && o.status.rank < target.rank) return o.copyWith(status: target);
+    if (target != null && !o.status.isTerminal && o.status.rank < target.rank) {
+      return o.copyWith(status: target);
+    }
     return o;
   }
 
@@ -178,13 +181,20 @@ class OrderQueueController extends ChangeNotifier {
   OrderAction? busyAction(String id) => _busy[id];
 
   /// Paid orders waiting for Accept / Reject, the one closest to its deadline first.
-  List<OrderModel> get incoming => _all.where((o) => o.isIncoming).toList()..sort((a, b) => a.acceptDeadline.compareTo(b.acceptDeadline));
+  List<OrderModel> get incoming => _all.where((o) => o.isIncoming).toList()
+    ..sort((a, b) => a.acceptDeadline.compareTo(b.acceptDeadline));
 
   /// Accepted, cooking and ready orders.
-  List<OrderModel> get kitchen => _all.where((o) => o.status.isKitchen).toList();
+  List<OrderModel> get kitchen =>
+      _all.where((o) => o.status.isKitchen).toList();
 
   /// Picked up, at the gate, delivered, cancelled (and unknown states), newest first.
-  List<OrderModel> get finished => _all.where((o) => !o.status.isKitchen && !o.isIncoming && o.status != OrderStatus.placed).toList()
+  List<OrderModel> get finished => _all
+      .where((o) =>
+          !o.status.isKitchen &&
+          !o.isIncoming &&
+          o.status != OrderStatus.placed)
+      .toList()
     ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   /// Every order the app knows about (for the earnings screen).
@@ -198,12 +208,19 @@ class OrderQueueController extends ChangeNotifier {
     return out;
   }
 
-  int prepMinutesFor(String id) => _prepMinutes[id] ?? defaultPrepMinutes;
+  int prepMinutesFor(String id) =>
+      _orders[id]?.serverPreparationMinutes ??
+      _prepMinutes[id] ??
+      defaultPrepMinutes;
 
   /// When the kitchen's own "ready in N minutes" target runs out (a kitchen aid; the server does not use it).
-  DateTime prepDeadlineFor(OrderModel o) => (o.acceptedAt ?? o.paidAt ?? o.createdAt).add(Duration(minutes: prepMinutesFor(o.id)));
+  DateTime prepDeadlineFor(OrderModel o) =>
+      o.estimatedReadyAt ??
+      (o.acceptedAt ?? o.paidAt ?? o.createdAt)
+          .add(Duration(minutes: prepMinutesFor(o.id)));
 
-  bool isItemTicked(String orderId, int index) => _ticked[orderId]?.contains(index) ?? false;
+  bool isItemTicked(String orderId, int index) =>
+      _ticked[orderId]?.contains(index) ?? false;
 
   void toggleItem(String orderId, int index) {
     final set = _ticked.putIfAbsent(orderId, () => <int>{});
@@ -282,13 +299,15 @@ class OrderQueueController extends ChangeNotifier {
     String? cursor;
     var complete = false;
     for (var page = 0; page < _maxActivePages; page++) {
-      final res = await backend.fetchOrders(OrderScope.active, cursor: cursor, limit: _activePageSize);
+      final res = await backend.fetchOrders(OrderScope.active,
+          cursor: cursor, limit: _activePageSize);
       if (_disposed) return;
       if (!res.ok) {
         // Keep everything on screen; say that it may be stale.
         _syncFailure = res.failure;
         if (res.failure == ApiFailure.rateLimited) {
-          _pollPausedUntil = _clock().add(Duration(seconds: (res.retryAfterSeconds ?? 30).clamp(5, 300)));
+          _pollPausedUntil = _clock().add(
+              Duration(seconds: (res.retryAfterSeconds ?? 30).clamp(5, 300)));
         }
         _notify();
         return;
@@ -310,11 +329,16 @@ class OrderQueueController extends ChangeNotifier {
     _lastSyncAt = _clock();
     _notify();
 
-    if (!complete) return; // with a partial list we cannot tell what has left it
+    if (!complete) {
+      return; // with a partial list we cannot tell what has left it
+    }
 
     // Live orders the server no longer lists: ask about each one before letting it go.
     final missing = _orders.values
-        .where((o) => !o.status.isTerminal && !seen.contains(o.id) && !(_receivedAt[o.id]?.isAfter(startedAt) ?? false))
+        .where((o) =>
+            !o.status.isTerminal &&
+            !seen.contains(o.id) &&
+            !(_receivedAt[o.id]?.isAfter(startedAt) ?? false))
         .map((o) => o.id)
         .toList();
     for (final id in missing) {
@@ -328,7 +352,8 @@ class OrderQueueController extends ChangeNotifier {
     if (serverTime == null) return;
     final offset = serverTime.difference(_clock());
     // The Date header has 1-second resolution; ignore noise, keep real clock skew.
-    _clockOffset = offset.abs() < const Duration(seconds: 3) ? Duration.zero : offset;
+    _clockOffset =
+        offset.abs() < const Duration(seconds: 3) ? Duration.zero : offset;
   }
 
   /// Re-reads one order. A 404/403 is the server saying "gone": only then does it leave the screen.
@@ -337,7 +362,8 @@ class OrderQueueController extends ChangeNotifier {
     if (_disposed) return;
     if (res.ok) {
       _mergeIn(res.data!);
-    } else if (res.failure == ApiFailure.notFound || res.failure == ApiFailure.forbidden) {
+    } else if (res.failure == ApiFailure.notFound ||
+        res.failure == ApiFailure.forbidden) {
       _forget(id);
     }
   }
@@ -356,7 +382,10 @@ class OrderQueueController extends ChangeNotifier {
     if (!fromPoll) _receivedAt[o.id] = DateTime.now();
     final existing = _orders[o.id];
     if (existing != null && !existing.isSupersededBy(o)) return false;
-    if (existing != null && existing.status.isKitchen && o.status == OrderStatus.cancelled && o.cancelledBy != CancelledBy.vendor) {
+    if (existing != null &&
+        existing.status.isKitchen &&
+        o.status == OrderStatus.cancelled &&
+        o.cancelledBy != CancelledBy.vendor) {
       _kitchenCancellations.add(o);
       _chime();
     }
@@ -369,7 +398,9 @@ class OrderQueueController extends ChangeNotifier {
     if (_disposed) return;
     Object? raw = payload;
     if (raw is List && raw.isNotEmpty) raw = raw.first;
-    if (raw is Map && raw['data'] is Map && raw['id'] == null) raw = raw['data'];
+    if (raw is Map && raw['data'] is Map && raw['id'] == null) {
+      raw = raw['data'];
+    }
     final o = OrderModel.fromJson(raw);
     if (o == null) {
       // Something we cannot read: fetch the truth instead of guessing.
@@ -387,13 +418,17 @@ class OrderQueueController extends ChangeNotifier {
     _historyLoading = true;
     _historyFailure = null;
     _notify();
-    final res = await backend.fetchOrders(OrderScope.history, cursor: _historyCursor, limit: _historyPageSize);
+    final res = await backend.fetchOrders(OrderScope.history,
+        cursor: _historyCursor, limit: _historyPageSize);
     if (_disposed) return;
     _historyLoading = false;
     if (res.ok) {
       for (final o in res.data!.orders) {
         _mergeIn(o, fromPoll: true);
-        if (_oldestHistoryLoaded == null || o.createdAt.isBefore(_oldestHistoryLoaded!)) _oldestHistoryLoaded = o.createdAt;
+        if (_oldestHistoryLoaded == null ||
+            o.createdAt.isBefore(_oldestHistoryLoaded!)) {
+          _oldestHistoryLoaded = o.createdAt;
+        }
       }
       _historyCursor = res.data!.nextCursor;
       _historyHasMore = _historyCursor != null;
@@ -415,7 +450,10 @@ class OrderQueueController extends ChangeNotifier {
 
   /// True when every order created since [since] has been loaded (or there is no older history).
   bool historyCovers(DateTime since) =>
-      _historyLoadedOnce && (!_historyHasMore || (_oldestHistoryLoaded != null && _oldestHistoryLoaded!.isBefore(since)));
+      _historyLoadedOnce &&
+      (!_historyHasMore ||
+          (_oldestHistoryLoaded != null &&
+              _oldestHistoryLoaded!.isBefore(since)));
 
   /// Loads history pages until [since] is covered (bounded, for the earnings screen).
   Future<void> loadHistorySince(DateTime since, {int maxPages = 10}) async {
@@ -428,12 +466,15 @@ class OrderQueueController extends ChangeNotifier {
 
   // ------------------------------------------------------------------ actions
 
-  Future<ActionOutcome> accept(String id, {int? prepMinutes}) => _act(id, OrderAction.accept, prepMinutes: prepMinutes);
+  Future<ActionOutcome> accept(String id, {int? prepMinutes}) =>
+      _act(id, OrderAction.accept, prepMinutes: prepMinutes);
 
   /// [reason] must be 3-200 characters; the customer is shown it.
-  Future<ActionOutcome> reject(String id, String reason) => _act(id, OrderAction.reject, reason: reason);
+  Future<ActionOutcome> reject(String id, String reason) =>
+      _act(id, OrderAction.reject, reason: reason);
 
-  Future<ActionOutcome> startCooking(String id) => _act(id, OrderAction.startCooking);
+  Future<ActionOutcome> startCooking(String id) =>
+      _act(id, OrderAction.startCooking);
 
   Future<ActionOutcome> markReady(String id) => _act(id, OrderAction.markReady);
 
@@ -447,29 +488,39 @@ class OrderQueueController extends ChangeNotifier {
   bool _reached(OrderAction action, OrderModel? o) {
     if (o == null) return false;
     return switch (action) {
-      OrderAction.reject => o.status == OrderStatus.cancelled && o.cancelledBy == CancelledBy.vendor,
+      OrderAction.reject => o.status == OrderStatus.cancelled &&
+          o.cancelledBy == CancelledBy.vendor,
       _ => o.status == _targetOf(action),
     };
   }
 
-  Future<ActionOutcome> _act(String id, OrderAction action, {String? reason, int? prepMinutes}) async {
+  Future<ActionOutcome> _act(String id, OrderAction action,
+      {String? reason, int? prepMinutes}) async {
     if (_disposed) return const ActionOutcome.ignored();
     if (_busy.containsKey(id)) return const ActionOutcome.ignored();
     final before = byId(id);
     if (before == null) return const ActionOutcome.failed(ApiFailure.notFound);
     final cleanReason = reason?.trim().replaceAll(RegExp(r'\s+'), ' ');
-    if (action == OrderAction.reject && (cleanReason == null || cleanReason.length < 3 || cleanReason.length > 200)) {
-      return const ActionOutcome.failed(ApiFailure.invalid, message: 'Reason must be 3-200 characters.');
+    if (action == OrderAction.reject &&
+        (cleanReason == null ||
+            cleanReason.length < 3 ||
+            cleanReason.length > 200)) {
+      return const ActionOutcome.failed(ApiFailure.invalid,
+          message: 'Reason must be 3-200 characters.');
     }
 
-    final optimistic = action == OrderAction.startCooking || action == OrderAction.markReady;
+    final optimistic =
+        action == OrderAction.startCooking || action == OrderAction.markReady;
     _busy[id] = action;
     if (optimistic) _overlay[id] = _targetOf(action);
     _notify();
 
     final ApiResult<OrderModel> res = action == OrderAction.reject
         ? await backend.reject(id, cleanReason!)
-        : await backend.updateStatus(id, _targetOf(action));
+        : await backend.updateStatus(id, _targetOf(action),
+            preparationMinutes: action == OrderAction.accept
+                ? (prepMinutes ?? defaultPrepMinutes)
+                : null);
     if (_disposed) return const ActionOutcome.ignored();
 
     // Roll back the overlay whatever happened: from here on only the server's copy is shown.
@@ -483,7 +534,9 @@ class OrderQueueController extends ChangeNotifier {
       } else {
         await _refetch(id);
       }
-      if (action == OrderAction.accept) _setPrepMinutes(id, prepMinutes ?? defaultPrepMinutes);
+      if (action == OrderAction.accept) {
+        _setPrepMinutes(id, prepMinutes ?? defaultPrepMinutes);
+      }
       _notify();
       return const ActionOutcome.success();
     }
@@ -503,10 +556,13 @@ class OrderQueueController extends ChangeNotifier {
     _notify();
     final now = byId(id);
     if (_reached(action, now)) {
-      if (action == OrderAction.accept) _setPrepMinutes(id, prepMinutes ?? defaultPrepMinutes);
+      if (action == OrderAction.accept) {
+        _setPrepMinutes(id, prepMinutes ?? defaultPrepMinutes);
+      }
       return const ActionOutcome.success();
     }
-    return ActionOutcome.failed(res.failure!, message: res.message, code: res.code, current: now);
+    return ActionOutcome.failed(res.failure!,
+        message: res.message, code: res.code, current: now);
   }
 
   // ------------------------------------------------------------------ alarm
@@ -525,7 +581,9 @@ class OrderQueueController extends ChangeNotifier {
   }
 
   void _syncAlarm({bool force = false}) {
-    final should = !_disposed && _appInForeground && _orders.values.any((o) => o.isIncoming && !_busy.containsKey(o.id));
+    final should = !_disposed &&
+        _appInForeground &&
+        _orders.values.any((o) => o.isIncoming && !_busy.containsKey(o.id));
     if (should) {
       _ringing = true;
       if (force || !alarm.isRinging) alarm.start();
@@ -538,7 +596,13 @@ class OrderQueueController extends ChangeNotifier {
   /// One short sound for "the kitchen must stop": the alarm tone for [chimeDuration]. Skipped when the app is not on
   /// screen (the quiet system notification covers that) or when the loud new-order alarm is already ringing.
   void _chime() {
-    if (_disposed || !_appInForeground || _chimeTimer != null || _ringing || alarm.isRinging) return;
+    if (_disposed ||
+        !_appInForeground ||
+        _chimeTimer != null ||
+        _ringing ||
+        alarm.isRinging) {
+      return;
+    }
     alarm.start();
     _chimeTimer = Timer(chimeDuration, () {
       _chimeTimer = null;
@@ -563,7 +627,9 @@ class OrderQueueController extends ChangeNotifier {
       final map = jsonDecode(raw);
       if (map is Map) {
         map.forEach((k, v) {
-          if (v is num && v > 0 && v <= 120) _prepMinutes[k.toString()] = v.toInt();
+          if (v is num && v > 0 && v <= 120) {
+            _prepMinutes[k.toString()] = v.toInt();
+          }
         });
       }
     } catch (_) {}
@@ -572,8 +638,12 @@ class OrderQueueController extends ChangeNotifier {
   void _setPrepMinutes(String id, int minutes) {
     _prepMinutes[id] = minutes;
     // Keep only orders that are still in the kitchen.
-    _prepMinutes.removeWhere((key, _) => key != id && (_orders[key] == null || _orders[key]!.status.isTerminal));
+    _prepMinutes.removeWhere((key, _) =>
+        key != id && (_orders[key] == null || _orders[key]!.status.isTerminal));
     final snapshot = Map<String, int>.from(_prepMinutes);
-    SharedPreferences.getInstance().then((prefs) => prefs.setString(prepTimesPrefKey, jsonEncode(snapshot))).catchError((_) => false);
+    SharedPreferences.getInstance()
+        .then(
+            (prefs) => prefs.setString(prepTimesPrefKey, jsonEncode(snapshot)))
+        .catchError((_) => false);
   }
 }

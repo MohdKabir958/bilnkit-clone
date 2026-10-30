@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+import { JobAborted } from '../jobs';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../db';
 import { PUSH_EVENTS, PushEvent, PushOptions } from './types';
@@ -5,6 +7,7 @@ import { eventDef, pushEventsForChange, pushEventsForGroupChange } from './event
 import { notifyOrderEvent } from './pushService';
 import { getPushProvider } from './provider';
 import type { ChangeResult } from '../orderFlow';
+import { sendSupportUpdate } from './supportUpdates';
 
 export async function stageNotificationIntents(tx:Prisma.TransactionClient,r:Partial<ChangeResult>,assignedByAdmin=false) {
   if(!r.changed||!r.order||!r.before) return;
@@ -22,34 +25,43 @@ export function drainNotificationIntents() {
     .finally(()=>{running=null;if(requested)drainNotificationIntents();});
 }
 export async function waitForNotificationIntents() {while(running)await running;}
-export async function flushNotificationIntents(now=new Date()) {
+export type OutboxOptions = { signal?: AbortSignal; checkpoint?: () => Promise<void> };
+const MAX_INTENT_ATTEMPTS = 8;
+export async function flushNotificationIntents(now=new Date(), options:OutboxOptions={}) {
   const enabled=getPushProvider().enabled;
-  const rows=await prisma.$transaction(async(tx)=>{
-    const ids=await tx.$queryRaw<{id:string}[]>`SELECT "id" FROM "NotificationIntent" WHERE "state"='PENDING' AND ("leaseUntil" IS NULL OR "leaseUntil"<${now} OR (${enabled} AND "errorCode"='PROVIDER_UNCONFIGURED')) ORDER BY "createdAt" LIMIT 100 FOR UPDATE SKIP LOCKED`;
-    if(!ids.length) return [];
-    await tx.notificationIntent.updateMany({where:{id:{in:ids.map((r)=>r.id)}},data:{leaseUntil:new Date(now.getTime()+120000),errorCode:null}});
-    return tx.notificationIntent.findMany({where:{id:{in:ids.map((r)=>r.id)}}});
-  });
-  const expired=rows.filter((row)=>!(PUSH_EVENTS as readonly string[]).includes(row.event)||now.getTime()-row.createdAt.getTime()>eventDef(row.event as PushEvent).usefulMinutes*60000);
-  if(expired.length) await prisma.notificationIntent.updateMany({where:{id:{in:expired.map((r)=>r.id)}},data:{state:'EXPIRED',leaseUntil:null,errorCode:'STALE_OR_UNKNOWN_EVENT'}});
-  const expiredIds=new Set(expired.map((r)=>r.id));
-  const pending=rows.filter((row)=>!expiredIds.has(row.id));
-  if(!enabled) {
-    // Defer the entire batch. Leaving the lease empty repeatedly rewrote the same
-    // rows on every order change and could exhaust the connection pool.
-    if(pending.length) await prisma.notificationIntent.updateMany({where:{id:{in:pending.map((r)=>r.id)}},data:{leaseUntil:new Date(now.getTime()+60000),errorCode:'PROVIDER_UNCONFIGURED'}});
-    return rows.length;
-  }
-  for(const row of pending) {
-    const event=row.event as PushEvent;
+  let processed=0;
+  // Claim each item just before delivery. Claiming a large batch for serial sends lets later items' leases expire.
+  for(let i=0;i<100;i++) {
+    if(options.signal?.aborted)throw new JobAborted();
+    await options.checkpoint?.();
+    const at=new Date(Math.max(now.getTime(),Date.now())),token=randomUUID();
+    const row=await prisma.$transaction(async tx=>{
+      const ids=await tx.$queryRaw<{id:string}[]>`SELECT "id" FROM "NotificationIntent" WHERE "state"='PENDING' AND ("leaseUntil" IS NULL OR "leaseUntil"<${at} OR (${enabled} AND "errorCode"='PROVIDER_UNCONFIGURED')) ORDER BY "createdAt" LIMIT 1 FOR UPDATE SKIP LOCKED`;
+      if(!ids.length)return null;
+      return tx.notificationIntent.update({where:{id:ids[0].id},data:{leaseUntil:new Date(at.getTime()+120000),leaseToken:token,errorCode:null}});
+    });
+    if(!row)break;
+    processed++;
+    const finish=(data:Prisma.NotificationIntentUpdateManyMutationInput)=>prisma.notificationIntent.updateMany({where:{id:row.id,state:'PENDING',leaseToken:token},data:{...data,leaseToken:null}});
+    const support=row.event==='SUPPORT_UPDATED' && !!row.supportNoteId;
+    const stale=support?at.getTime()-row.createdAt.getTime()>86400000:!(PUSH_EVENTS as readonly string[]).includes(row.event)||at.getTime()-row.createdAt.getTime()>eventDef(row.event as PushEvent).usefulMinutes*60000;
+    const offer=(row.options??{}) as PushOptions;
+    const offerExpired=row.event==='NEW_DELIVERY'&&offer.offerExpiresAt&&Date.parse(offer.offerExpiresAt)<=at.getTime();
+    if(stale||offerExpired) {await finish({state:'EXPIRED',leaseUntil:null,errorCode:'STALE_OR_UNKNOWN_EVENT'});continue;}
+    if(!enabled){await finish({leaseUntil:new Date(at.getTime()+60000),errorCode:'PROVIDER_UNCONFIGURED'});continue;}
+    if(row.attempts>=MAX_INTENT_ATTEMPTS){await finish({state:'DEAD',leaseUntil:null,errorCode:'MAX_ATTEMPTS'});continue;}
     try {
-      // notifyOrderEvent persists recipient claims/retries in PushLog before sending.
-      // PushLog deduplicates completed claims; crash recovery provides at-least-once delivery.
-      await notifyOrderEvent(row.orderId,event,(row.options??{}) as PushOptions,true);
-      await prisma.notificationIntent.update({where:{id:row.id},data:{state:'DONE',attempts:{increment:1},leaseUntil:null,errorCode:null}});
-    } catch {
-      await prisma.notificationIntent.update({where:{id:row.id},data:{attempts:{increment:1},leaseUntil:new Date(now.getTime()+60000),errorCode:'DISPATCH_ERROR'}});
+      if(options.signal?.aborted)throw new JobAborted();
+      // PushLog contains its own durable recipient claim. Outbox completion is fenced to this lease owner.
+      if(support) await sendSupportUpdate(row);
+      else if(row.orderId) await notifyOrderEvent(row.orderId,row.event as PushEvent,offer,true);
+      else throw new Error('Missing notification context.');
+      await finish({state:'DONE',attempts:{increment:1},leaseUntil:null,errorCode:null});
+    } catch(error) {
+      const attempts=row.attempts+1;
+      await finish({attempts:{increment:1},state:attempts>=MAX_INTENT_ATTEMPTS?'DEAD':'PENDING',leaseUntil:attempts>=MAX_INTENT_ATTEMPTS?null:new Date(at.getTime()+Math.min(900000,30000*2**Math.min(5,attempts-1))),errorCode:'DISPATCH_ERROR'});
+      if(options.signal?.aborted)throw error;
     }
   }
-  return rows.length;
+  return processed;
 }

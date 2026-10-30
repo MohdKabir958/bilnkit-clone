@@ -6691,7 +6691,7 @@
     },
     {
       "path": "apps/driver_app/test/clerk_rider_onboarding_test.dart",
-      "sha256": "abd88f5868f85d1ab4048391517d1945e6619ed27d3ede8af5911d675b5e2782",
+      "sha256": "95ca92edebbe150f0463793f148fb91c5ffef4e6869e5562482f5f95944ad572",
       "references": [
         {
           "kind": "identity",
@@ -6701,77 +6701,77 @@
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 119
+          "line": 121
         },
         {
           "kind": "identity",
           "symbol": "Clerk",
-          "line": 261
+          "line": 263
         },
         {
           "kind": "session",
           "symbol": "ClerkSessions",
-          "line": 99
+          "line": 101
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSession",
-          "line": 104
+          "line": 106
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSession",
-          "line": 114
+          "line": 116
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSignupForm",
-          "line": 201
+          "line": 203
         },
         {
           "kind": "clientFlows",
           "symbol": "LoginScreen",
-          "line": 215
+          "line": 217
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSignupForm",
-          "line": 232
-        },
-        {
-          "kind": "clientFlows",
-          "symbol": "SignupScreen",
           "line": 234
         },
         {
           "kind": "clientFlows",
+          "symbol": "SignupScreen",
+          "line": 236
+        },
+        {
+          "kind": "clientFlows",
           "symbol": "PartnerSession",
-          "line": 251
+          "line": 253
         },
         {
           "kind": "clientFlows",
           "symbol": "SignupScreen",
-          "line": 283
+          "line": 285
         },
         {
           "kind": "clientFlows",
           "symbol": "SignupScreen",
-          "line": 289
+          "line": 291
         },
         {
           "kind": "clientFlows",
           "symbol": "PartnerSignupForm",
-          "line": 303
+          "line": 305
         },
         {
           "kind": "clientFlows",
           "symbol": "SignupScreen",
-          "line": 304
+          "line": 306
         },
         {
           "kind": "clientFlows",
           "symbol": "SignupScreen",
-          "line": 323
+          "line": 325
         },
         {
           "kind": "authorization",
@@ -6781,12 +6781,7 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 107
-        },
-        {
-          "kind": "authorization",
-          "symbol": "approvalStatus",
-          "line": 125
+          "line": 109
         },
         {
           "kind": "authorization",
@@ -6796,27 +6791,32 @@
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 131
+          "line": 129
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 154
+          "line": 133
         },
         {
           "kind": "authorization",
           "symbol": "approvalStatus",
-          "line": 276
+          "line": 156
+        },
+        {
+          "kind": "authorization",
+          "symbol": "approvalStatus",
+          "line": 278
         },
         {
           "kind": "transports",
           "symbol": "Authorization",
-          "line": 136
+          "line": 138
         },
         {
           "kind": "transports",
           "symbol": "Bearer",
-          "line": 136
+          "line": 138
         }
       ]
     },

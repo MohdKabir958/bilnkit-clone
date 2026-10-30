@@ -373,6 +373,11 @@ class OrderModel {
     this.otpCode,
     this.payBy,
     this.acceptBy,
+    this.estimatedReadyAt,
+    this.fulfillmentPhase,
+    this.itemChanges = const [],
+    this.partialRefunds = const [],
+    this.estimatedDeliveryBy,
     this.refundStatus = RefundStatus.none,
     this.isReviewed = false,
     this.group,
@@ -428,6 +433,11 @@ class OrderModel {
 
   /// Server deadline for the restaurant to accept (PLACED + PAID only), else null.
   final DateTime? acceptBy;
+  final DateTime? estimatedReadyAt;
+  final String? fulfillmentPhase;
+  final List<Map<String, dynamic>> itemChanges;
+  final List<Map<String, dynamic>> partialRefunds;
+  final DateTime? estimatedDeliveryBy;
   final RefundStatus refundStatus;
 
   /// The student already reviewed this order.
@@ -512,6 +522,27 @@ class OrderModel {
           : null,
       payBy: _date(json['payBy']),
       acceptBy: _date(json['acceptBy']),
+      itemChanges: json['itemChanges'] is List
+          ? (json['itemChanges'] as List)
+              .whereType<Map>()
+              .map((p) => Map<String, dynamic>.from(p))
+              .toList()
+          : const [],
+      partialRefunds: json['partialRefunds'] is List
+          ? (json['partialRefunds'] as List)
+              .whereType<Map>()
+              .map((p) => Map<String, dynamic>.from(p))
+              .toList()
+          : const [],
+      estimatedReadyAt: json['fulfillment'] is Map
+          ? _date(json['fulfillment']['estimatedReadyAt'])
+          : null,
+      estimatedDeliveryBy: json['fulfillment'] is Map
+          ? _date(json['fulfillment']['estimatedDeliveryBy'])
+          : null,
+      fulfillmentPhase: json['fulfillment'] is Map
+          ? json['fulfillment']['phase']?.toString()
+          : null,
       refundStatus: _parseRefund(json['refundStatus']),
       isReviewed: json['isReviewed'] == true,
       group: OrderGroupRef.tryParse(json['group']),

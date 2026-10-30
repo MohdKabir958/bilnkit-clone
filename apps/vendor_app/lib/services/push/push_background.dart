@@ -13,6 +13,9 @@ import 'push_ports.dart';
 Future<void> showBackgroundPush(
     PushMessage message, AlarmNotifications notifications) async {
   if (message.hasNotificationBlock || !message.isActionable) return;
+  if (message.event == PushEvent.supportUpdated) {
+    return;
+  } // Server uses a notification block; never treat a support reference as an order.
   final orderId = message.orderId!;
   switch (message.event) {
     case PushEvent.newOrderReminder:
@@ -34,6 +37,7 @@ Future<void> showBackgroundPush(
           title: message.title ?? 'Start cooking',
           body: message.body ?? 'All stores accepted - you can start cooking.');
     case PushEvent.unknown:
+    case PushEvent.supportUpdated:
       break;
   }
 }

@@ -1,0 +1,5 @@
+Analyzing vendor_app...                                         
+
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/services/push/push_background.dart:17:5 • curly_braces_in_flow_control_structures
+
+1 issue found. (ran in 8.4s)

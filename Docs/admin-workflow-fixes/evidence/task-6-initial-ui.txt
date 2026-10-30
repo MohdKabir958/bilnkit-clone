@@ -1,0 +1,15 @@
+
+> kraveo-super-admin@1.0.0 test
+> vitest run --maxWorkers=1 --minWorkers=1 src/components/PartnerOnboarding.test.tsx
+
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/components/PartnerOnboarding.test.tsx (6 tests) 977ms
+   ✓ rider wizard defaults pending, preserves Back values, and only submits on review 557ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  19:43:19
+   Duration  3.16s (transform 581ms, setup 0ms, collect 1.01s, tests 977ms, environment 668ms, prepare 142ms)
+

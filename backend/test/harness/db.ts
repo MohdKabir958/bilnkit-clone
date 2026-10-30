@@ -160,6 +160,9 @@ export const seedTestDatabase = async () => {
 };
 
 export const cleanTestOrders = async () => {
+  if (process.env.NODE_ENV !== 'test' || !new URL(process.env.DATABASE_URL ?? '').pathname.endsWith('_test')) throw new Error('Refusing test cleanup outside a disposable test database.');
+  // Financial evidence is append-only in production. TRUNCATE is restricted to this guarded local test harness.
+  await prisma.$executeRawUnsafe('TRUNCATE TABLE "PaymentRefund", "OrderAdjustment", "PaymentCreation", "CashLedgerEvent", "CashCollection", "CashDailyClose", "GpsException", "OperationalResolution" CASCADE');
   await (await import('../../src/services/push/pushService')).__waitForPushWork();
   // Delete test created orders/payments/orderItems
   await prisma.payment.deleteMany({});

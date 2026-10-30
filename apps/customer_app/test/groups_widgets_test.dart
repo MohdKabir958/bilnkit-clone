@@ -144,7 +144,8 @@ Future<void> pumpApp(
       ChangeNotifierProvider<SessionProvider>.value(value: signedIn()),
       ChangeNotifierProvider<DhabaProvider>.value(
           value: dhabas ?? liveDhabas()),
-      ChangeNotifierProvider<CartProvider>.value(value: cart ?? CartProvider(allowLegacyGroups: true)),
+      ChangeNotifierProvider<CartProvider>.value(
+          value: cart ?? CartProvider(allowLegacyGroups: true)),
       ChangeNotifierProvider<OrderProvider>.value(value: orders),
     ],
     child: MaterialApp(theme: KraveoTheme.customer(), home: child),
@@ -217,10 +218,34 @@ void main() {
 
   group('Checkout: the bill comes from the server quote', () {
     testWidgets(
+        'checkout shows a server capacity window without changing the quoted total',
+        (tester) async {
+      final api = FakeOrderApi()
+        ..onQuote = (_) async => OrderResult.ok(OrderQuote.tryParse({
+              ...quoteJson(count: 1, total: 140, max: 3),
+              'capacity': {
+                'estimatedDeliveryMinMinutes': 35,
+                'estimatedDeliveryMaxMinutes': 55,
+                'message': 'Limited delivery availability.'
+              }
+            })!);
+      final orders = fakeOrders(api);
+      await pumpApp(tester, const CheckoutScreen(selectedHostel: 'BH2'),
+          orders: orders, cart: singleCart());
+      await scrollTo(tester, find.text('Estimated delivery 35–55 min'));
+      expect(find.text('Estimated delivery 35–55 min'), findsOneWidget);
+      expect(find.textContaining('This is an estimate and can change.'),
+          findsOneWidget);
+      expect(button('Pay ₹140'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
         'ONE restaurant: bill and Pay button show the quote; the order still goes through POST /orders',
         (tester) async {
       final api = FakeOrderApi();
       api.onQuote = (r) async => OrderResult.ok(OrderQuote.tryParse({
+            'paymentMethods': ['ONLINE'],
             'restaurantCount': 1,
             'subtotal': 120,
             'fees': {
@@ -280,6 +305,9 @@ void main() {
           ['gx-ven-1', 'gx-ven-2']);
       expect(button('Pay ₹230'), findsOneWidget,
           reason: 'local estimate 190 + 25 + 15 while the quote loads');
+      expect(tester.widget<KButton>(button('Pay ₹230')).onPressed, isNull,
+          reason:
+              'An estimate does not authorize payment before server capabilities arrive.');
       await scrollTo(tester, find.text('Bill details'));
       expect(find.textContaining('Estimate'), findsOneWidget);
       expect(find.text('Extra store fee (x 1)'), findsOneWidget);
@@ -287,6 +315,7 @@ void main() {
       gate.complete(OrderResult.ok(quote()));
       await settle(tester);
       expect(button('Pay ₹260'), findsOneWidget);
+      expect(tester.widget<KButton>(button('Pay ₹260')).onPressed, isNotNull);
       await scrollTo(tester, find.text('Bill details'));
       expect(find.textContaining('Estimate'), findsNothing);
       expect(find.text('Items subtotal'), findsOneWidget);
@@ -341,7 +370,7 @@ void main() {
     });
 
     testWidgets(
-        'a coupon the server refuses is explained in the bill; Pay still works (the coupon is dropped when placing)',
+        'a refused coupon is explained; payment waits for a valid replacement quote',
         (tester) async {
       final api = FakeOrderApi();
       api.onQuote = (r) async => const OrderResult.fail(OrderApiError(
@@ -354,7 +383,9 @@ void main() {
       await scrollTo(tester, find.text('Bill details'));
       expect(
           find.text('WELCOME20 is only for your first order.'), findsOneWidget);
-      expect(tester.widget<KButton>(button('Pay ₹230')).onPressed, isNotNull);
+      expect(tester.widget<KButton>(button('Pay ₹230')).onPressed, isNull,
+          reason:
+              'A rejected quote has not authorized prices or payment methods.');
     });
 
     testWidgets(
@@ -365,6 +396,9 @@ void main() {
       await pumpApp(tester, const CheckoutScreen(selectedHostel: 'BH2'),
           orders: fakeOrders(api), cart: cart);
       expect(button('Pay ₹145'), findsOneWidget);
+      expect(tester.widget<KButton>(button('Pay ₹145')).onPressed, isNull,
+          reason:
+              'An old server without payment capabilities cannot authorize checkout.');
       expect(cart.maxRestaurants, 1);
       expect(find.textContaining('not available'), findsNothing);
     });

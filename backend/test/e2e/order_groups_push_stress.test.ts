@@ -120,7 +120,7 @@ describe('Order groups: push and stress', () => {
       const nd = fake.of('NEW_DELIVERY');
       expect(nd.map((m) => owner.get(m.token)!.replace('gs-', '')).sort()).toEqual(['rider-1']);
       expect(nd.every((m) => m.data.orderId === a)).toBe(true);
-      expect(nd[0].body).toBe("2 stores to Kothri, Bhopal. Tap to accept.");
+      expect(nd[0].body).toBe("2 stores to Kothri, Bhopal. Open to check current offers.");
       expect(await prisma.pushLog.count({ where: { event: 'NEW_DELIVERY', orderId: b } })).toBe(0);
       // claim, pickup stop by stop: ONE "picked up" when the last stop is done
       expect((await api.claim(r1, b)).status).toBe(200);

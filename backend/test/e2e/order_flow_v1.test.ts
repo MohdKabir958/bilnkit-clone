@@ -557,7 +557,7 @@ describe('Order flow v1', () => {
       const placed = await place();
       const id = placed.body.data.id;
       const pay = await createPayment(id);
-      const summary = await runOrderMaintenance(minutesFromNow(16));
+      const summary = await runOrderMaintenance(minutesFromNow(21));
       expect(summary.expired).toContain(id);
       expect((await db(id))).toMatchObject({ status: 'CANCELLED', cancelledBy: 'SYSTEM', cancelReason: 'Payment not completed' });
       const v = await verify(pay.body.razorpayOrderId, 'pay_after_expiry');
@@ -591,11 +591,9 @@ describe('Order flow v1', () => {
       // Bug hunt BE1-01: an abandoned checkout (no payment on its way) is replaced by the next one, so the cap of 3 is
       // exercised with orders that each have a Razorpay payment opened a moment ago (in flight).
       expect((await createPayment(first.body.data.id)).status).toBe(200);
-      for (let i = 0; i < 2; i++) {
-        const next = await place();
-        expect(next.status).toBe(201);
-        expect((await createPayment(next.body.data.id)).status).toBe(200);
-      }
+      expect((await place()).body.code).toBe('PAYMENT_IN_PROGRESS');
+      // Historical independent open checkouts still count globally; the new API prevents opening duplicates.
+      for (let i = 0; i < 2; i++) await prisma.order.create({data:{customerId:STUDENT.id,vendorId:'ven-of-2',subtotal:180,deliveryFee:25,totalAmount:205,dropoffHostel:'Saved fixture address',payments:{create:{razorpayOrderId:`quota-fixture-${randomUUID()}`,amount:205}}}});
       const fourth = await place();
       expect(fourth.status).toBe(429);
       expect(fourth.body.code).toBe('TOO_MANY_UNPAID_ORDERS');
@@ -1086,7 +1084,7 @@ describe('Order flow v1', () => {
         const placed = await place();
         const id = placed.body.data.id;
         const pay = await createPayment(id);
-        await Promise.all([runOrderMaintenance(minutesFromNow(16)), webhook(captured(pay.body.razorpayOrderId, 20500))]);
+        await Promise.all([runOrderMaintenance(minutesFromNow(21)), webhook(captured(pay.body.razorpayOrderId, 20500))]);
         await __waitForBackgroundWork();
         const o = await db(id);
         if (o.status === 'CANCELLED') {
@@ -1117,7 +1115,7 @@ describe('Order flow v1', () => {
     test('the job running twice at once cancels and refunds each order once', async () => {
       const unpaid = (await place()).body.data.id;
       const paid = await makePaidOrder('PLACED', { paidAgoMin: 30 });
-      const [a, b] = await Promise.all([runOrderMaintenance(minutesFromNow(16)), runOrderMaintenance(minutesFromNow(16))]);
+      const [a, b] = await Promise.all([runOrderMaintenance(minutesFromNow(21)), runOrderMaintenance(minutesFromNow(21))]);
       expect([...a.expired, ...b.expired].filter((x) => x === unpaid)).toHaveLength(1);
       expect([...a.autoCancelled, ...b.autoCancelled].filter((x) => x === paid.id)).toHaveLength(1);
       expect(await refundsOf(paid.id)).toHaveLength(1);
@@ -1146,7 +1144,7 @@ describe('Order flow v1', () => {
       expect(placed.body.data.payBy).toMatch(/Z$/);
       expect((await runOrderMaintenance(minutesFromNow(14))).expired).not.toContain(id);
       expect((await db(id)).status).toBe('PLACED');
-      expect((await runOrderMaintenance(minutesFromNow(16))).expired).toContain(id);
+      expect((await runOrderMaintenance(minutesFromNow(21))).expired).toContain(id);
       expect((await createPayment(id)).body.code).toBe('ORDER_CLOSED');
     });
 

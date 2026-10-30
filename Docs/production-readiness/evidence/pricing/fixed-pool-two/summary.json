@@ -1,0 +1,95 @@
+{
+  "database": "grozo_pricing_1792955988889_test",
+  "connectionLimit": 2,
+  "poolTimeoutSeconds": 1,
+  "command": [
+    "node",
+    "/tmp/grozo-pricing-run.mjs",
+    "fixed-pool-two",
+    "2",
+    "10",
+    "--testNamePattern=recalculate and edits running together"
+  ],
+  "results": [
+    {
+      "round": 1,
+      "exitCode": 0,
+      "durationMs": 10116,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 42
+    },
+    {
+      "round": 2,
+      "exitCode": 0,
+      "durationMs": 7595,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 42
+    },
+    {
+      "round": 3,
+      "exitCode": 0,
+      "durationMs": 14315,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 42
+    },
+    {
+      "round": 4,
+      "exitCode": 0,
+      "durationMs": 5238,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 42
+    },
+    {
+      "round": 5,
+      "exitCode": 0,
+      "durationMs": 4892,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 42
+    },
+    {
+      "round": 6,
+      "exitCode": 0,
+      "durationMs": 9369,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 42
+    },
+    {
+      "round": 7,
+      "exitCode": 0,
+      "durationMs": 4030,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 42
+    },
+    {
+      "round": 8,
+      "exitCode": 0,
+      "durationMs": 4196,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 42
+    },
+    {
+      "round": 9,
+      "exitCode": 0,
+      "durationMs": 4030,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 42
+    },
+    {
+      "round": 10,
+      "exitCode": 0,
+      "durationMs": 4114,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 42
+    }
+  ]
+}

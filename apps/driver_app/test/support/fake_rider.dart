@@ -225,7 +225,8 @@ class FakeRiderApi implements RiderOrdersApi {
   }
 
   @override
-  Future<ApiResult<OrderView?>> verifyGateOtp(String id, String code, {bool cashCollected = false}) async {
+  Future<ApiResult<OrderView?>> verifyGateOtp(String id, String code,
+      {bool cashCollected = false}) async {
     calls.add('otp:$id:$code');
     return onOtp(id, code);
   }
@@ -238,7 +239,9 @@ class FakeRiderApi implements RiderOrdersApi {
 
   @override
   Future<ApiResult<void>> postLocation(double lat, double lng,
-      {double heading = 0}) async {
+      {double heading = 0,
+      double? accuracyMeters,
+      DateTime? measuredAt}) async {
     calls.add('location');
     locations.add((lat, lng));
     if (onLocationGate != null) await onLocationGate!.future;

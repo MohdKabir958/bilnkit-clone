@@ -1,6 +1,3 @@
-import { runDispatchMaintenance } from './services/dispatch';
-import { usesClerk } from './config/authMode';
-import { retryClerkDeletions } from './services/clerkIdentity';
 import express from 'express';
 import {installStructuredLogging} from './utils/logger';
 import http from 'http';
@@ -8,10 +5,10 @@ import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { prisma } from './db';
-import { databaseReadinessDiagnostic } from './services/readinessDiagnostic';
+import { runtimeReadiness, databaseReadinessDiagnostic } from './services/readinessDiagnostic';
 import { apiRouter } from './routes/api';
 import { attachRealtime } from './realtime';
-import { startOrderMaintenance } from './services/orderMaintenance';
+import { startBackgroundWorker, stopBackgroundWorker } from './services/backgroundWorker';
 import { securityHeaders } from './middleware/securityHeaders';
 import { globalErrorHandler } from './middleware/errorHandler';
 import { assertRuntimeConfig } from './config/runtimeConfig';
@@ -106,7 +103,7 @@ app.get('/health', (req, res) => {
 let lastReadinessFailureAt = 0;
 app.get('/ready', async (_req, res) => {
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    await runtimeReadiness(prisma);
     lastReadinessFailureAt = 0;
     res.json({ready:true,pushConfigured:getPushProvider().enabled});
   } catch (error) {
@@ -138,14 +135,27 @@ server.on('error', guards.onListenError);
 
 // Bind IPv4 explicitly so Render's port scanner and container ingress can reach the API.
 server.listen(PORT, '0.0.0.0', () => {
-  if (usesClerk()) { const cleanup = setInterval(() => { retryClerkDeletions().catch(() => console.warn('Clerk deletion cleanup will retry.')); },60_000); cleanup.unref(); }
   console.log(`🚀 ${brand.name} Backend Engine listening on http://0.0.0.0:${PORT}`);
   console.log(`📡 WebSockets listening for real-time driver tracking & order alerts`);
   // Order housekeeping every 60 s: expire unpaid orders, auto-cancel unaccepted paid orders, retry refunds.
   // Started only once the port is really ours.
   if (process.env.NODE_ENV !== 'test') {
-    startOrderMaintenance();
-    let dispatchBusy=false;
-    const timer=setInterval(async()=>{if(dispatchBusy)return;dispatchBusy=true;try{await runDispatchMaintenance();}catch{console.error('Dispatch scan will retry.');}finally{dispatchBusy=false;}},15000);timer.unref();
+    void startBackgroundWorker().catch(() => console.error('Background worker could not start; check database schema and retry deployment.'));
   }
 });
+
+// Stop claiming work before draining HTTP/Socket.io on a Render restart. Abrupt termination is recovered by database leases.
+let shuttingDown = false;
+const shutdown = () => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  const deadline = setTimeout(() => process.exit(1), 25_000); deadline.unref();
+  void (async () => {
+    await stopBackgroundWorker();
+    await new Promise<void>(resolve => io.close(() => resolve()));
+    await prisma.$disconnect();
+    clearTimeout(deadline); process.exit(0);
+  })().catch(() => { console.error('Graceful shutdown did not complete.'); process.exit(1); });
+};
+process.once('SIGTERM', shutdown);
+process.once('SIGINT', shutdown);

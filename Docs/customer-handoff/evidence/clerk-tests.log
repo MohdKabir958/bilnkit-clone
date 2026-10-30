@@ -1,0 +1,15 @@
+00:00 +0: loading /home/runner/work/bilnkit-clone/bilnkit-clone/apps/customer_app/test/clerk/customer_handoff.dart
+00:00 +0: native initialization precedes profile validation; customer opens with one SDK token request
+00:00 +1: incomplete customer goes to profile setup rather than repeating sign-in
+00:00 +2: ADMIN stays unauthorized with a useful account-specific explanation
+00:00 +3: VENDOR stays unauthorized with a useful account-specific explanation
+00:00 +4: DRIVER stays unauthorized with a useful account-specific explanation
+00:00 +5: invalid session explains recovery without claiming shopping access
+00:00 +6: backend cold start remains retryable and a later customer profile succeeds
+00:00 +7: signed-in SDK with no token has an actionable error instead of a silent loop
+00:00 +8: late rejected profile cannot expire a newer successful restore
+00:00 +9: profile completing after sign-out cannot restore private account state
+00:00 +10: native account switch discards a late old-account rejection
+00:00 +11: Continue shows the backend role explanation in the existing themed entry screen
+00:00 +12: All tests passed!
+

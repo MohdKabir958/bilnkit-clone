@@ -1,0 +1,1 @@
+{"app": "customer", "filename": "Grozo-Customer-Clerk-Test.apk", "bytes": 53639844, "preview": false, "exitCode": 0}

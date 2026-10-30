@@ -1,0 +1,403 @@
+
+ RUN  v2.1.9 /workspace/bilnkit-clone/web/super_admin
+
+ ✓ src/lib/financeParse.test.ts (22 tests) 50ms
+ ✓ src/lib/orderGroups.test.ts (29 tests) 17ms
+ ✓ src/lib/riderMarkers.test.ts (32 tests) 13ms
+ ✓ src/lib/menuCsv.test.ts (33 tests) 16ms
+ ✓ src/lib/financeInput.test.ts (18 tests) 9ms
+ ✓ src/lib/catalogParse.test.ts (26 tests) 7ms
+ ✓ src/lib/dashboardStats.test.ts (17 tests) 11ms
+ ✓ src/lib/categoryParse.test.ts (30 tests) 5ms
+ ✓ src/lib/imageCompress.test.ts (13 tests) 10ms
+ ✓ src/lib/pricing.test.ts (40 tests) 5ms
+ ✓ src/lib/vendorLocation.test.ts (13 tests) 6ms
+ ✓ src/lib/catalogBulkParse.test.ts (12 tests) 4ms
+ ✓ src/lib/vendorProfile.test.ts (23 tests) 4ms
+ ✓ src/lib/locationInput.test.ts (34 tests) 5ms
+ ✓ src/lib/adminMessages.test.ts (7 tests) 2ms
+ ✓ src/lib/pickupCoverage.test.ts (2 tests) 1ms
+ ✓ src/lib/marketplaceOrders.test.ts (4 tests) 1ms
+ ✓ src/components/CategoriesPanel.test.tsx (32 tests) 1551ms
+ ✓ src/components/SettlementsPanel.test.tsx (24 tests) 1351ms
+ ✓ src/components/EditRestaurantDrawer.test.tsx (28 tests) 999ms
+ ✓ src/components/ImportMenuWizard.test.tsx (24 tests) 445ms
+ ✓ src/components/SettingsPanel.test.tsx (24 tests) 638ms
+ ✓ src/components/OrderGroups.test.tsx (22 tests) 489ms
+ ✓ src/services/taxonomyApi.test.ts (33 tests) 60ms
+ ✓ src/components/CatalogDishDrawer.test.tsx (31 tests) 651ms
+ ✓ src/components/CatalogPanel.bulk.test.tsx (16 tests) 719ms
+ ✓ src/components/DashboardFixes.test.tsx (14 tests) 198ms
+ ✓ src/components/CatalogDishDrawer.taxonomy.test.tsx (16 tests) 460ms
+ ✓ src/services/financeApi.test.ts (14 tests) 50ms
+ ✓ src/components/RidersPanel.test.tsx (14 tests) 402ms
+ ✓ src/components/PayoutAccountPanel.test.tsx (15 tests) 176ms
+ ✓ src/App.test.tsx (9 tests) 513ms
+ ✓ src/AppGroups.test.tsx (6 tests) 568ms
+ ✓ src/services/api.test.ts (17 tests) 48ms
+ ✓ src/components/VendorLocation.test.tsx (12 tests) 185ms
+ ✓ src/services/catalogApi.test.ts (10 tests) 38ms
+ ✓ src/components/FinanceWiring.test.tsx (10 tests) 280ms
+ ✓ src/components/FinanceOverview.test.tsx (10 tests) 342ms
+ ✓ src/components/AdminWorkspace.test.tsx (11 tests) 556ms
+ ✓ src/components/CatalogPanel.test.tsx (11 tests) 252ms
+ ✓ src/components/ImageUploadField.test.tsx (10 tests) 93ms
+ ✓ src/components/CategoryMultiSelect.test.tsx (10 tests) 106ms
+ ✓ src/CategoriesWiring.test.tsx (4 tests) 389ms
+ ✓ src/components/AddPartnerDrawer.test.tsx (8 tests) 307ms
+ ✓ src/auth/ClerkAdmin.test.tsx (11 tests) 107ms
+ ✓ src/components/GeographyPanel.test.tsx (8 tests) 311ms
+ ✓ src/components/PartnerOnboarding.test.tsx (6 tests) 515ms
+stderr | src/components/InventoryPanel.test.tsx
+Warning: A suspended resource finished loading inside a test, but the event was not wrapped in act(...).
+
+When testing, code that resolves suspended data should be wrapped into act(...):
+
+act(() => {
+  /* finish loading suspended data */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+
+ ✓ src/components/InventoryPanel.test.tsx (5 tests) 143ms
+stderr | src/AppWorkspace.test.tsx > overview Add vendor opens a creation form, while later vendor navigation opens the list
+Warning: An update to VendorManager inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at VendorManager (/workspace/bilnkit-clone/web/super_admin/src/components/VendorManager.tsx:36:26)
+    at div
+    at main
+    at div
+    at div
+    at App (/workspace/bilnkit-clone/web/super_admin/src/App.tsx:84:16)
+    at ToastProvider (/workspace/bilnkit-clone/web/super_admin/src/components/ui/Toast.tsx:19:26)
+Warning: An update to VendorManager inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at VendorManager (/workspace/bilnkit-clone/web/super_admin/src/components/VendorManager.tsx:36:26)
+    at div
+    at main
+    at div
+    at div
+    at App (/workspace/bilnkit-clone/web/super_admin/src/App.tsx:84:16)
+    at ToastProvider (/workspace/bilnkit-clone/web/super_admin/src/components/ui/Toast.tsx:19:26)
+
+ ✓ src/AppWorkspace.test.tsx (4 tests) 1133ms
+   ✓ sends selected city to the actual order query and shows owner-only team panel 338ms
+   ✓ new vendor completion navigates to inventory scoped to the created store 478ms
+ ✓ src/components/CampusMap.test.tsx (6 tests) 195ms
+ ✓ src/components/SettingsGroups.test.tsx (6 tests) 176ms
+ ✓ src/components/VendorDirectory.test.tsx (5 tests) 379ms
+stderr | src/components/OperationsPanel.test.tsx > renders actual paise metrics, dispatch escalation and audit responses
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/OperationsPanel.test.tsx > retries through the backend and opens the actual linked order for financial review
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/OperationsPanel.test.tsx > retries through the backend and opens the actual linked order for financial review
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/OperationsPanel.test.tsx > submits a requester-visible reply and handles authentication errors
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/OperationsPanel.test.tsx > submits a requester-visible reply and handles authentication errors
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/OperationsPanel.test.tsx > submits a requester-visible reply and handles authentication errors
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/OperationsPanel.test.tsx > a slow previous city response cannot overwrite the currently selected city metrics
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/OperationsPanel.test.tsx > a slow previous city response cannot overwrite the currently selected city metrics
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+stderr | src/components/OperationsPanel.test.tsx > a slow previous city response cannot overwrite the currently selected city metrics
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(0) and height(0) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+ ✓ src/components/OperationsPanel.test.tsx (4 tests) 248ms
+stderr | src/components/StoreCoverageWorkflow.test.tsx > offers only actual covering zones and clears the selection when the pin moves outside
+Warning: A suspended resource finished loading inside a test, but the event was not wrapped in act(...).
+
+When testing, code that resolves suspended data should be wrapped into act(...):
+
+act(() => {
+  /* finish loading suspended data */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+Warning: A suspended resource finished loading inside a test, but the event was not wrapped in act(...).
+
+When testing, code that resolves suspended data should be wrapped into act(...):
+
+act(() => {
+  /* finish loading suspended data */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+
+ ✓ src/components/StoreCoverageWorkflow.test.tsx (3 tests) 574ms
+ ✓ src/components/OperationalHealthPanel.test.tsx (3 tests) 55ms
+ ✓ src/CatalogBadge.test.tsx (3 tests) 88ms
+ ✓ src/components/PhysicalInventoryDrawer.test.tsx (3 tests) 62ms
+ ✓ src/components/CommissionEditor.test.tsx (4 tests) 68ms
+ ✓ src/components/PickupLocationPicker.test.tsx (3 tests) 197ms
+stderr | src/components/RiderIdentityWorkflow.test.tsx > a 409 identity conflict is shown before Review and offers an invitation without creating a rider
+Warning: An update to CreateRiderDrawer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at CreateRiderDrawer (/workspace/bilnkit-clone/web/super_admin/src/components/CreateRiderDrawer.tsx:18:30)
+Warning: An update to CreateRiderDrawer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at CreateRiderDrawer (/workspace/bilnkit-clone/web/super_admin/src/components/CreateRiderDrawer.tsx:18:30)
+Warning: An update to CreateRiderDrawer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at CreateRiderDrawer (/workspace/bilnkit-clone/web/super_admin/src/components/CreateRiderDrawer.tsx:18:30)
+Warning: An update to CreateRiderDrawer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at CreateRiderDrawer (/workspace/bilnkit-clone/web/super_admin/src/components/CreateRiderDrawer.tsx:18:30)
+
+stderr | src/components/RiderIdentityWorkflow.test.tsx > actual 429 blocks repeated identity requests and preserves the form without auto retry
+Warning: An update to CreateRiderDrawer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at CreateRiderDrawer (/workspace/bilnkit-clone/web/super_admin/src/components/CreateRiderDrawer.tsx:18:30)
+Warning: An update to CreateRiderDrawer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at CreateRiderDrawer (/workspace/bilnkit-clone/web/super_admin/src/components/CreateRiderDrawer.tsx:18:30)
+Warning: An update to CreateRiderDrawer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at CreateRiderDrawer (/workspace/bilnkit-clone/web/super_admin/src/components/CreateRiderDrawer.tsx:18:30)
+Warning: An update to CreateRiderDrawer inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at CreateRiderDrawer (/workspace/bilnkit-clone/web/super_admin/src/components/CreateRiderDrawer.tsx:18:30)
+
+ ✓ src/components/RiderIdentityWorkflow.test.tsx (3 tests) 241ms
+ ✓ src/components/InlineStoreCategory.test.tsx (2 tests) 341ms
+ ✓ src/services/api.clerk.test.ts (5 tests) 53ms
+ ✓ src/components/OverviewDashboard.test.tsx (3 tests) 175ms
+ ✓ src/auth/RiderInvitePage.test.tsx (3 tests) 85ms
+ ✓ src/components/OperationalExceptionsPanel.test.tsx (1 test) 21ms
+ ✓ src/components/CashLedgerPanel.test.tsx (3 tests) 54ms
+ ✓ src/services/ApiRetryAfter.test.ts (2 tests) 2ms
+
+ Test Files  67 passed (67)
+      Tests  886 passed (886)
+   Start at  02:06:57
+   Duration  25.62s (transform 3.92s, setup 0ms, collect 6.40s, tests 17.25s, environment 733ms, prepare 167ms)
+
+JSON report written to /workspace/bilnkit-clone/Docs/admin-workflow-fixes/evidence/admin-full-final.json

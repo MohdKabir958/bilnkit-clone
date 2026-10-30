@@ -78,7 +78,12 @@ class DriverApiService {
 
   /// Saves JWT token to local persistence
   static Future<void> saveToken(String token) async {
-    if (GrozoAuthConfig.usesClerk) { try { await SecureSessionTokens.delete(_tokenPrefKey); } catch (_) {} return; }
+    if (GrozoAuthConfig.usesClerk) {
+      try {
+        await SecureSessionTokens.delete(_tokenPrefKey);
+      } catch (_) {}
+      return;
+    }
     _tokenEpoch++;
     _cachedToken = token;
     try {
@@ -99,6 +104,7 @@ class DriverApiService {
   static Future<Map<String, String>> getAuthHeaders() async {
     final token = await getSavedToken();
     final headers = <String, String>{
+      ...ApiConfig.clientHeaders,
       'Content-Type': 'application/json',
     };
     if (token != null && token.isNotEmpty) {

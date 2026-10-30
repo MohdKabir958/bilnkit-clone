@@ -52,7 +52,8 @@ class OrderApiError {
       this.message,
       this.order,
       this.vendorId,
-      this.maxRestaurants});
+      this.maxRestaurants,
+      this.pendingOrderId});
 
   final OrderErrorKind kind;
   final int? statusCode;
@@ -73,6 +74,7 @@ class OrderApiError {
 
   /// `TOO_MANY_RESTAURANTS` also reports the allowed number.
   final int? maxRestaurants;
+  final String? pendingOrderId;
 
   bool get isNetwork =>
       kind == OrderErrorKind.offline || kind == OrderErrorKind.timeout;
@@ -456,7 +458,9 @@ class HttpOrderApi implements OrderApi {
         message: message,
         order: order,
         vendorId: vendorId is String && vendorId.isNotEmpty ? vendorId : null,
-        maxRestaurants: max is num ? max.toInt() : null);
+        maxRestaurants: max is num ? max.toInt() : null,
+        pendingOrderId:
+            body['pendingOrderId'] is String ? body['pendingOrderId'] : null);
   }
 }
 

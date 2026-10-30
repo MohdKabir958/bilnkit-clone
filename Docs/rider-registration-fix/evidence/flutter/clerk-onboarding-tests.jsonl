@@ -1,0 +1,45 @@
+{"protocolVersion":"0.1.1","runnerVersion":null,"pid":870223,"type":"start","time":0}
+{"suite":{"id":0,"platform":"vm","path":"/workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"suite","time":0}
+{"test":{"id":1,"name":"loading /workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart","suiteID":0,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":1}
+{"suite":{"id":2,"platform":"vm","path":"/workspace/bilnkit-clone/apps/driver_app/test/clerk_api_tokens_test.dart"},"type":"suite","time":5}
+{"test":{"id":3,"name":"loading /workspace/bilnkit-clone/apps/driver_app/test/clerk_api_tokens_test.dart","suiteID":2,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":5}
+{"count":2,"time":5,"type":"allSuites"}
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":30872}
+{"group":{"id":4,"suiteID":0,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":10,"line":null,"column":null,"url":null},"type":"group","time":30880}
+{"test":{"id":5,"name":"(setUpAll)","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":77,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"testStart","time":30881}
+{"testID":5,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":30958}
+{"test":{"id":6,"name":"identity without application cannot become approved through copies or stored data","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":101,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"testStart","time":30963}
+{"testID":6,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":31031}
+{"test":{"id":7,"name":"Clerk profile discovers onboarding using bearer authentication and validates role","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":118,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"testStart","time":31031}
+{"testID":7,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":31060}
+{"test":{"id":8,"name":"all approval states remain authoritative and keep the owned rider identifier","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":148,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"testStart","time":31061}
+{"testID":8,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":31072}
+{"test":{"id":9,"name":"role conflicts and network outages preserve useful explanations","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":162,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"testStart","time":31072}
+{"testID":9,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":31104}
+{"test":{"id":10,"name":"application requires a real rider profile, sends no password, reports server refusal","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":176,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"testStart","time":31104}
+{"testID":10,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":31120}
+{"test":{"id":11,"name":"welcome shows the real account conflict rather than a generic connection error","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":200,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"testStart","time":31121}
+{"testID":3,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":31456}
+{"group":{"id":12,"suiteID":2,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":3,"line":null,"column":null,"url":null},"type":"group","time":31456}
+{"test":{"id":13,"name":"(setUpAll)","suiteID":2,"groupIDs":[12],"metadata":{"skip":false,"skipReason":null},"line":15,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_api_tokens_test.dart"},"type":"testStart","time":31457}
+{"testID":13,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":31477}
+{"test":{"id":14,"name":"Clerk mode requests fresh SDK tokens for API headers","suiteID":2,"groupIDs":[12],"metadata":{"skip":false,"skipReason":null},"line":39,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_api_tokens_test.dart"},"type":"testStart","time":31478}
+{"testID":14,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":31506}
+{"test":{"id":15,"name":"saving an old Grozo JWT cannot replace the SDK session","suiteID":2,"groupIDs":[12],"metadata":{"skip":false,"skipReason":null},"line":46,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_api_tokens_test.dart"},"type":"testStart","time":31507}
+{"testID":15,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":31518}
+{"test":{"id":16,"name":"secure logout blocks further SDK token injection","suiteID":2,"groupIDs":[12],"metadata":{"skip":false,"skipReason":null},"line":51,"column":3,"url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_api_tokens_test.dart"},"type":"testStart","time":31519}
+{"testID":16,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":31526}
+{"test":{"id":17,"name":"(tearDownAll)","suiteID":2,"groupIDs":[12],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":31526}
+{"testID":17,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":31530}
+{"testID":11,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":32171}
+{"test":{"id":18,"name":"visible contact and vehicle validation prevent silent submission; double taps create one application","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":216,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"testStart","time":32172}
+{"testID":18,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":33357}
+{"test":{"id":19,"name":"real auth gate routes new Clerk rider into signup then pending, never delivery work","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":248,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"testStart","time":33358}
+{"testID":19,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":33917}
+{"test":{"id":20,"name":"cycle application works without a plate and the dark form fits a small phone at large text","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":283,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"testStart","time":33918}
+{"testID":20,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":34298}
+{"test":{"id":21,"name":"capture actual rider registration UI using clearly synthetic data","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":307,"root_column":3,"root_url":"file:///workspace/bilnkit-clone/apps/driver_app/test/clerk_rider_onboarding_test.dart"},"type":"testStart","time":34299}
+{"testID":21,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":34819}
+{"test":{"id":22,"name":"(tearDownAll)","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":34819}
+{"testID":22,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":34823}
+{"success":true,"type":"done","time":34848}

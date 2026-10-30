@@ -35,7 +35,25 @@ jobs:
       - run: npm run build
       - run: python3 ../scripts/qa/check_ui_terminology.py
       - run: python3 ../scripts/qa/test_terminology_guard.py
-      - run: npm test -- --silent
+      - name: Complete backend regression (one invocation)
+        run: |
+          mkdir -p ../Docs/production-readiness/evidence/ci
+          set -o pipefail
+          npm test -- --json --outputFile=../Docs/production-readiness/evidence/ci/backend.json 2>&1 | tee ../Docs/production-readiness/evidence/ci/backend.log
+      - name: Publish bounded backend failure diagnostics
+        if: always()
+        run: python3 ../scripts/qa/report_jest_results.py ../Docs/production-readiness/evidence/ci/backend.json
+      - name: Repeated pricing concurrency with the CI-sized connection pool
+        run: node ../scripts/qa/run_pricing_concurrency.mjs ci-pool-two 2 10 --testNamePattern='recalculate and edits running together'
+      - name: Preserve backend and pricing evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-and-pricing-${{ github.sha }}
+          path: |
+            Docs/production-readiness/evidence/ci
+            Docs/production-readiness/evidence/pricing
+          if-no-files-found: warn
       - run: npm audit --omit=dev
   web:
     runs-on: ubuntu-latest
@@ -54,9 +72,27 @@ jobs:
           cache-dependency-path: web/${{ matrix.component }}/package-lock.json
       - run: npm ci
       - run: npm run build
+      - name: Verify Clerk admin build with public test configuration
+        if: matrix.component == 'super_admin'
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import {execFileSync} from 'node:child_process';
+          const publicConfig=JSON.parse(readFileSync('../../Docs/clerk/android-staging-public.json','utf8'));
+          execFileSync('npm',['run','build'],{stdio:'inherit',env:{...process.env,VITE_AUTH_MODE:'clerk-test',VITE_CLERK_PUBLISHABLE_KEY:publicConfig.publishableKey,VITE_API_BASE_URL:publicConfig.backendOrigin,VITE_SOCKET_URL:publicConfig.backendOrigin}});
+          NODE
       - run: npm audit --omit=dev
       - if: matrix.component == 'super_admin'
-        run: npm test
+        run: |
+          mkdir -p ../../Docs/production-readiness/evidence/ci
+          npm test -- --reporter=json --outputFile=../../Docs/production-readiness/evidence/ci/admin.json
+      - name: Preserve admin test evidence
+        if: always() && matrix.component == 'super_admin'
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-${{ github.sha }}
+          path: Docs/production-readiness/evidence/ci/admin.json
+          if-no-files-found: warn
       - run: python3 ../../scripts/configure_brand.py --check
   flutter:
     runs-on: ubuntu-latest
@@ -70,4 +106,34 @@ jobs:
           flutter-version: '3.44.9'
           channel: stable
           cache: true
+      - name: Resolve locked dependencies for Clerk handoff checks
+        if: matrix.role == 'customer'
+        working-directory: apps/customer_app
+        run: flutter pub get --enforce-lockfile
+      - name: Customer Clerk session handoff regressions
+        id: customer_handoff
+        if: matrix.role == 'customer'
+        working-directory: apps/customer_app
+        run: |
+          mkdir -p ../../Docs/customer-handoff/evidence
+          set -o pipefail
+          flutter test --no-pub --dart-define=AUTH_MODE=clerk-test test/clerk/customer_handoff.dart --reporter=expanded 2>&1 | tee ../../Docs/customer-handoff/evidence/clerk-tests.log
+      - name: Publish bounded Clerk handoff diagnostics
+        if: always() && matrix.role == 'customer'
+        env:
+          HANDOFF_OUTCOME: ${{ steps.customer_handoff.outcome }}
+        run: python3 scripts/qa/report_customer_handoff.py
+      - name: Shared authentication UI regressions
+        if: matrix.role == 'customer'
+        working-directory: packages/kraveo_ui
+        run: |
+          flutter pub get
+          flutter test --no-pub
       - run: bash scripts/check_flutter.sh ${{ matrix.role }}
+      - name: Preserve customer handoff evidence
+        if: always() && matrix.role == 'customer'
+        uses: actions/upload-artifact@v4
+        with:
+          name: customer-clerk-handoff-${{ github.sha }}
+          path: Docs/customer-handoff/evidence
+          if-no-files-found: warn

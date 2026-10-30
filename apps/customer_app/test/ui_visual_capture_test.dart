@@ -31,9 +31,10 @@ import 'support/order_fakes.dart';
 final visualStore = Dhaba(
     id: '${demoScenario['namespace']}-store-1',
     name: demoScenario['stores'][0]['name'],
-    primaryCategoryId:'demo-store-category',
-    publicPhone:'+919000000001',
-    description:'Explicitly simulated grocery store. No real merchant affiliation.',
+    primaryCategoryId: 'demo-store-category',
+    publicPhone: '+919000000001',
+    description:
+        'Explicitly simulated grocery store. No real merchant affiliation.',
     category: 'Grocery stores',
     rating: 0,
     eta: '',
@@ -94,8 +95,16 @@ void main() {
         dhabas: [visualStore], menus: {visualStore.id: visualProducts});
     final cart = CartProvider();
     final api = FakeOrderApi();
-    api.onQuote = (_) async =>
-        OrderResult.ok(OrderQuote.tryParse({...Map<String,dynamic>.from(quoteFixture['quote'] as Map),'maxRestaurants':1,'paymentMethods':['ONLINE','COD']})!);
+    api.onQuote = (_) async => OrderResult.ok(OrderQuote.tryParse({
+          ...Map<String, dynamic>.from(quoteFixture['quote'] as Map),
+          'maxRestaurants': 1,
+          'paymentMethods': ['ONLINE', 'COD'],
+          'capacity': {
+            'estimatedDeliveryMinMinutes': 30,
+            'estimatedDeliveryMaxMinutes': 45,
+            'message': 'Nearby delivery partners available.'
+          }
+        })!);
     final orders = fakeOrders(api);
     Widget host(Widget child) => captureRoot(MultiProvider(
             providers: [

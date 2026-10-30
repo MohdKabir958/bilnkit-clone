@@ -1,3 +1,4 @@
+import { ageCheckoutAttempt } from '../harness/paymentAttempts';
 /**
  * Pre-demo bug hunt fixes (6 Oct 2026, Docs/bughunt/BE1_orders_money.md and BE2_auth_security_admin.md). One group per fixed
  * finding; each test here failed before the fix. Real PostgreSQL, real sockets, payment provider replaced by the in-memory ledger.
@@ -453,7 +454,7 @@ describe('Pre-demo bug hunt fixes', () => {
   // 8. BE1-01 an abandoned unpaid checkout is replaced by the next one
   // =========================================================================================
   describe('8. a new checkout replaces the customer\'s own abandoned unpaid orders at the same restaurant', () => {
-    const backdatePayments = (orderId: string, minutes: number) => prisma.payment.updateMany({ where: { orderId }, data: { createdAt: new Date(Date.now() - minutes * 60_000) } });
+    const backdatePayments = ageCheckoutAttempt;
 
     test('WELCOME20: the second checkout works, the first order is cancelled by SYSTEM with its coupon released', async () => {
       const [c1] = W.customers; const [v1] = W.vendors;
@@ -509,14 +510,14 @@ describe('Pre-demo bug hunt fixes', () => {
       void r1;
     });
 
-    test('a payment opened less than 2 minutes ago is "in flight": nothing is cancelled and the coupon stays held; after 2 minutes it is replaced', async () => {
+    test('an attempt is protected through its checkout confirmation window; aged authoritative no-capture releases the coupon', async () => {
       const [c1] = W.customers; const [v1] = W.vendors;
       const a = await place(c1, v1, { couponCode: 'WELCOME20' });
       expect((await api.createPayment(c1, a)).status).toBe(200);
       const blocked = await api.place(c1, v1, { couponCode: 'WELCOME20' });
       expect([blocked.status, blocked.body.code]).toEqual([400, 'COUPON_NOT_APPLICABLE']);
       expect((await row(a)).status).toBe('PLACED');
-      await backdatePayments(a, 3);
+      await backdatePayments(a, 25);
       const b = await place(c1, v1, { couponCode: 'WELCOME20' });
       expect((await row(a)).status).toBe('CANCELLED');
       expect((await row(b)).status).toBe('PLACED');
@@ -537,8 +538,10 @@ describe('Pre-demo bug hunt fixes', () => {
       const a = await place(c1, v1);
       await api.createPayment(c1, a);
       await prisma.payment.updateMany({ where: { orderId: a }, data: { capturedAmountPaise: 1234, createdAt: new Date(Date.now() - 10 * 60_000) } });
-      await place(c1, v1);
+      const blocked=await api.place(c1,v1);
+      expect([blocked.status,blocked.body.code]).toEqual([409,'PAYMENT_IN_PROGRESS']);
       expect((await row(a)).status).toBe('PLACED');
+      expect((await row(a)).payments[0].capturedAmountPaise).toBe(1234);
     });
 
     test('payment after supersede: the late capture is refunded automatically, exactly once, and the order stays cancelled', async () => {
@@ -546,7 +549,7 @@ describe('Pre-demo bug hunt fixes', () => {
       const wv = await watch(v1);
       const a = await place(c1, v1);
       const cp = await api.createPayment(c1, a);
-      await backdatePayments(a, 5); // the customer opened the payment sheet earlier and walked away
+      await backdatePayments(a, 25); // the customer opened the payment sheet earlier and walked away
       const b = await place(c1, v1);
       expect((await row(a)).status).toBe('CANCELLED');
       // ... but the customer pays on the still-open sheet

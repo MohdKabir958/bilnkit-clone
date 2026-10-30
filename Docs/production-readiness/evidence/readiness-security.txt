@@ -1,0 +1,21 @@
+FAIL test/unit/readiness_security.test.ts
+  ● Test suite failed to run
+
+    DATABASE_URL must name a disposable database ending in _test; tests delete records.
+
+       5 | if (process.env.NODE_ENV !== 'test') throw new Error('Test fixtures must only run in test mode.');
+       6 | if (!process.env.DATABASE_URL || !new URL(process.env.DATABASE_URL).pathname.endsWith('_test')) {
+    >  7 |   throw new Error('DATABASE_URL must name a disposable database ending in _test; tests delete records.');
+         |         ^
+       8 | }
+       9 | process.env.RAZORPAY_KEY_ID ||= 'rzp_test_local_simulator';
+      10 | process.env.JWT_SECRET ||= 'local-jwt-fixture-for-jest-only';
+
+      at Object.<anonymous> (test/setup-env.cjs:7:9)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        0.343 s, estimated 1 s
+Ran all test suites matching test/unit/readiness_security.test.ts.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

@@ -1,0 +1,100 @@
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 973a29b6-13ed-4048-8bf4-4a021ab74b74
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (bf-cust-1) earned +10 Grozo Coins! Total Balance: 10
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 8c8d73ae-2d82-44f8-bdf8-823331d963c8
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (bf-cust-1) earned +10 Grozo Coins! Total Balance: 20
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order fad362eb-28a4-4fcd-8382-d94ba9b3d129
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (bf-cust-1) earned +10 Grozo Coins! Total Balance: 30
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order 350a78e7-a3ec-4daf-bf80-09805ebe8a86
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (bf-cust-1) earned +10 Grozo Coins! Total Balance: 40
+
+      at src/routes/api.ts:1059:35
+
+  console.log
+    🔔 [push] RUNNER_ARRIVED for order ae6dbb66-d2f8-4028-b007-68210f50938a
+
+      at advanceStatus (src/services/orderFlow.ts:719:63)
+
+  console.log
+    🪙 [Grozo Coins Loyalty] User (bf-cust-1) earned +10 Grozo Coins! Total Balance: 50
+
+      at src/routes/api.ts:1059:35
+
+FAIL test/e2e/bughunt_fixes.test.ts (29.991 s)
+  ● Pre-demo bug hunt fixes › 8. a new checkout replaces the customer's own abandoned unpaid orders at the same restaurant › orders of another restaurant are not touched (and still count towards the cap)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+    -   409,
+    -   "PAYMENT_IN_PROGRESS",
+    +   201,
+    +   undefined,
+      ]
+
+      488 |       const a = await place(c1, v2);
+      489 |       const blocked=await api.place(c1,v1);
+    > 490 |       expect([blocked.status,blocked.body.code]).toEqual([409,'PAYMENT_IN_PROGRESS']);
+          |                                                  ^
+      491 |       expect((await row(a)).status).toBe('PLACED');
+      492 |     });
+      493 |
+
+      at Object.<anonymous> (test/e2e/bughunt_fixes.test.ts:490:50)
+
+  ● Pre-demo bug hunt fixes › 8. a new checkout replaces the customer's own abandoned unpaid orders at the same restaurant › a payment with a recorded captured amount is never superseded
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 201
+    Received: 409
+
+      49 |   const place = async (c: Customer, v: Vendor, extra: Record<string, unknown> = {}, itemIdx = 0) => {
+      50 |     const r = await api.place(c, v, extra, itemIdx);
+    > 51 |     expect(r.status).toBe(201);
+         |                      ^
+      52 |     return r.body.data.id as string;
+      53 |   };
+      54 |   const pay = async (c: Customer, orderId: string) => {
+
+      at place (test/e2e/bughunt_fixes.test.ts:51:22)
+      at Object.<anonymous> (test/e2e/bughunt_fixes.test.ts:542:7)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 56 passed, 58 total
+Snapshots:   0 total
+Time:        30.384 s
+Ran all test suites matching test/e2e/bughunt_fixes.test.ts.
+Test results written to: ../Docs/production-readiness/evidence/slices/sequential-bughunt/run-1.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

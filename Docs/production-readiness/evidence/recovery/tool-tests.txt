@@ -1,0 +1,14 @@
+✔ Clerk CSP grants only exact trusted origins and preserves SPA refresh/security headers (112.915311ms)
+✔ reject insecure or wildcard backend origins and invalid Clerk keys (391.033626ms)
+✔ external product imagery needs individually configured HTTPS origins (58.720519ms)
+✔ PostgreSQL credentials enter child environment and never command arguments (2.828278ms)
+✔ restore cannot target an existing application database or its own backup source (5.702069ms)
+✔ remote backup/restore requires TLS and invalid URLs are never echoed (1.028148ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 708.098458

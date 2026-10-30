@@ -1,0 +1,21 @@
+{
+  "command": [
+    "node",
+    "node_modules/jest/bin/jest.js",
+    "--runInBand",
+    "--json",
+    "--outputFile=/workspace/bilnkit-clone/Docs/production-readiness/evidence/jobs/results.json",
+    "test/e2e/background_jobs.test.ts",
+    "test/e2e/push_notifications.test.ts",
+    "test/e2e/order_groups_push_stress.test.ts"
+  ],
+  "node": "v24.19.0",
+  "database": "grozo_jobs_1792994540734_test",
+  "connectionLimit": 2,
+  "total": 57,
+  "passed": 56,
+  "failed": 1,
+  "skipped": 0,
+  "durationMs": 132213,
+  "exitCode": 1
+}
