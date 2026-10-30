@@ -75,6 +75,15 @@ class DhabaProvider with ChangeNotifier {
   static const String _all = 'All';
 
   CatalogStatus _status = CatalogStatus.idle;
+  String? _catalogErrorCode;
+  String? _catalogErrorMessage;
+
+  String get catalogErrorMessage =>
+      _catalogErrorMessage ?? 'Grozo could not load nearby stores. Please try again.';
+  bool get catalogNeedsAddress =>
+      _catalogErrorCode == 'ADDRESS_REQUIRED' ||
+      _catalogErrorCode == 'AREA_UNSUPPORTED' ||
+      _catalogErrorCode == 'ADDRESS_NOT_FOUND';
   Future<bool>? _loading;
 
   /// The most chips the server list may add after "All" (Docs/23 section 5).
@@ -466,6 +475,14 @@ class DhabaProvider with ChangeNotifier {
       notifyListeners();
     }
     try {
+      // The API requires an owned delivery address. Don't misreport its absence
+      // as an internet outage, and don't send a request that is known to fail.
+      if (CustomerApiService.selectedAddressId == null) {
+        throw const CatalogLoadFailure(
+          code: 'ADDRESS_REQUIRED',
+          message: 'Choose a delivery address to see nearby stores.',
+        );
+      }
       final vendors =
           await CustomerApiService.fetchVendors(hydrateProducts: false);
       if (generation != _catalogGeneration || _disposed) return false;
@@ -505,12 +522,26 @@ class DhabaProvider with ChangeNotifier {
         ..clear()
         ..addAll(loadedDhabas.map((d) => d.id));
       _status = CatalogStatus.ready;
+      _catalogErrorCode = null;
+      _catalogErrorMessage = null;
       if (_searchQuery.trim().isNotEmpty) setSearchQuery(_searchQuery);
       notifyListeners();
       return true;
     } catch (error) {
       if (generation != _catalogGeneration || _disposed) return false;
       debugPrint('[Catalog] Live catalog unavailable: ${error.runtimeType}');
+      if (error is CatalogLoadFailure) {
+        _catalogErrorCode = error.code;
+        _catalogErrorMessage = error.message;
+      } else if (error is TimeoutException) {
+        _catalogErrorCode = 'TIMEOUT';
+        _catalogErrorMessage =
+            'Grozo took too long to respond. Please try again.';
+      } else {
+        _catalogErrorCode = 'NETWORK_OR_SERVICE_ERROR';
+        _catalogErrorMessage =
+            'Grozo could not reach the store service. Please retry. If other apps work, the backend may be unavailable.';
+      }
       if (_status != CatalogStatus.ready) _status = CatalogStatus.failed;
       notifyListeners();
       return false;
@@ -545,6 +576,8 @@ class DhabaProvider with ChangeNotifier {
     _menuItems.clear();
     _liveVendorIds.clear();
     _status = CatalogStatus.idle;
+    _catalogErrorCode = null;
+    _catalogErrorMessage = null;
     notifyListeners();
   }
 
