@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
       AppLifecycleListener(onResume: () {
     if (!mounted) return;
     context.read<OrderProvider>().onAppResumed();
-    unawaited(_refreshCatalogWithAddress());
+    unawaited(context.read<DhabaProvider>().refreshHome());
   });
   final TextEditingController _searchController = TextEditingController();
 
@@ -59,16 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadInitialCatalog() async {
     await context.read<SessionProvider>().refreshDeliveryAddress();
     if (!mounted) return;
-    await _refreshCatalogWithAddress();
-  }
-
-  Future<bool> _refreshCatalogWithAddress() {
-    final catalog = context.read<DhabaProvider>();
-    if (context.read<SessionProvider>().selectedAddress == null) {
-      catalog.requireDeliveryAddress();
-      return Future.value(false);
-    }
-    return catalog.refreshHome();
+    await context.read<DhabaProvider>().refreshHome();
   }
 
   /// Pull-to-refresh on Home: kitchens and orders. Says so when the kitchens could not be refreshed.
@@ -76,11 +67,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final orders = context.read<OrderProvider>();
     final dhabas = context.read<DhabaProvider>();
     unawaited(orders.refreshActive());
-    final ok = await _refreshCatalogWithAddress();
+    final ok = await dhabas.refreshHome();
     if (!mounted || ok) return;
     // The Home empty state offers an address picker or retry as appropriate.
     if (dhabas.catalogNeedsAddress) return;
-    showKSnack(context, dhabas.catalogErrorMessage, error: true);
+    showKSnack(context,
+        'Couldn\'t refresh the stores. ${dhabas.catalogErrorMessage}',
+        error: true);
   }
 
   @override
@@ -105,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (mounted) {
       context.read<DhabaProvider>().resetForAddress();
-      await _refreshCatalogWithAddress();
+      await context.read<DhabaProvider>().refreshHome();
     }
   }
 
