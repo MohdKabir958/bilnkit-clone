@@ -221,13 +221,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       SliverToBoxAdapter(
                           child: KEmptyState(
                               icon: LucideIcons.wifiOff,
-                              title: "Can't load nearby stores",
-                              message:
-                                  'Check your connection, then try again. Pull down to refresh also works.',
+                              title: 'Nearby stores unavailable',
+                              message: catalog.catalogFailureMessage ??
+                                  'Grozo could not load stores. Please try again.',
                               action: KButton(
-                                  label: 'Try again',
-                                  onPressed: () =>
-                                      unawaited(catalog.refreshHome()))))
+                                  label: session.selectedAddress == null
+                                      ? 'Choose delivery address'
+                                      : 'Try again',
+                                  onPressed: session.selectedAddress == null
+                                      ? _chooseAddress
+                                      : () => unawaited(catalog.refreshHome()))))
                     else if (catalog.allDhabas.isEmpty)
                       SliverToBoxAdapter(
                           child: KEmptyState(
