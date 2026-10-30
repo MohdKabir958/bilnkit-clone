@@ -1772,7 +1772,7 @@ void main() {
               isStudent: null,
               avatarId: null));
       await launch(tester);
-      expect(find.text('Welcome to\nKraveo'), findsOneWidget);
+      expect(find.text('Welcome to\n${BrandConfig.name}'), findsOneWidget);
       expect(find.text('Aarav Sharma'), findsOneWidget);
     });
 
@@ -1859,7 +1859,8 @@ void main() {
       backend.on(
           'GET /v1/vendors/nearby', (_) => reply(500, {'success': false}));
       await launch(tester);
-      expect(find.text('Can\'t reach Grozo'), findsOneWidget);
+      expect(find.text('Grozo needs your attention'), findsOneWidget);
+      expect(find.textContaining('account service'), findsOneWidget);
       expect(find.text('Use a different account'), findsOneWidget);
       expect(await CustomerApiService.getSavedToken(), 'jwt-live');
 
