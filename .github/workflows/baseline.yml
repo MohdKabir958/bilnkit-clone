@@ -129,7 +129,21 @@ jobs:
         run: |
           flutter pub get
           flutter test --no-pub
-      - run: bash scripts/check_flutter.sh ${{ matrix.role }}
+      - name: Complete Flutter regression
+        id: flutter_regression
+        env:
+          GROZO_FLUTTER_TEST_JSON: ${{ github.workspace }}/build/ci/flutter-${{ matrix.role }}.jsonl
+        run: bash scripts/check_flutter.sh ${{ matrix.role }}
+      - name: Publish bounded Flutter failure diagnostics
+        if: always() && steps.flutter_regression.outcome == 'failure'
+        run: python3 scripts/qa/report_flutter_results.py build/ci/flutter-${{ matrix.role }}.jsonl
+      - name: Preserve complete Flutter machine results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-${{ matrix.role }}-${{ github.sha }}
+          path: build/ci/flutter-${{ matrix.role }}.jsonl
+          if-no-files-found: warn
       - name: Preserve customer handoff evidence
         if: always() && matrix.role == 'customer'
         uses: actions/upload-artifact@v4

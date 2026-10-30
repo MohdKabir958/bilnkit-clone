@@ -10,5 +10,10 @@ export ANALYZER_STATE_LOCATION_OVERRIDE="${ANALYZER_STATE_LOCATION_OVERRIDE:-$ro
 cd "$root_dir/apps/${role}_app"
 flutter pub get --enforce-lockfile
 flutter analyze --no-pub
-flutter test --no-pub --concurrency=2
+if [[ -n "${GROZO_FLUTTER_TEST_JSON:-}" ]]; then
+  mkdir -p "$(dirname "$GROZO_FLUTTER_TEST_JSON")"
+  flutter test --no-pub --concurrency=2 --machine | tee "$GROZO_FLUTTER_TEST_JSON"
+else
+  flutter test --no-pub --concurrency=2
+fi
 flutter build bundle --debug --target-platform=linux-x64 --no-pub
