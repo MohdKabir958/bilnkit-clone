@@ -237,6 +237,7 @@ class _AuthGateState extends State<AuthGate> {
         return const _SplashScreen();
       case SessionStatus.unreachable:
         return _SessionUnreachable(
+            message: session.connectionError,
             onRetry: session.retryRestore, onUseAnotherAccount: session.logout);
       case SessionStatus.signedOut:
         return const AuthScreen();
@@ -272,8 +273,9 @@ class _SplashScreen extends StatelessWidget {
 /// student is not logged out just because the network dropped.
 class _SessionUnreachable extends StatefulWidget {
   const _SessionUnreachable(
-      {required this.onRetry, required this.onUseAnotherAccount});
+      {required this.onRetry, required this.onUseAnotherAccount, this.message});
 
+  final String? message;
   final Future<void> Function() onRetry;
   final Future<void> Function() onUseAnotherAccount;
 
@@ -300,10 +302,10 @@ class _SessionUnreachableState extends State<_SessionUnreachable> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: KEmptyState(
-                icon: LucideIcons.wifiOff,
-                title: 'Can\'t reach ${BrandConfig.name}',
-                message:
-                    'Check your connection and try again. You are still signed in.',
+                icon: LucideIcons.circleAlert,
+                title: 'Grozo needs your attention',
+                message: widget.message ??
+                    'Grozo could not verify your session. Please try again. Your sign-in is retained.',
                 action: Column(mainAxisSize: MainAxisSize.min, children: [
                   KButton(
                       label: 'Try again',
