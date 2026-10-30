@@ -540,17 +540,6 @@ class DhabaProvider with ChangeNotifier {
     }
   }
 
-  /// Home calls this when there is no selected address. Avoid a request known
-  /// to fail with ADDRESS_REQUIRED while retaining the provider's public
-  /// loadCatalog() contract for existing consumers and tests.
-  void requireDeliveryAddress() {
-    resetForAddress();
-    _status = CatalogStatus.failed;
-    _catalogErrorCode = 'ADDRESS_REQUIRED';
-    _catalogErrorMessage = 'Choose a delivery address to see nearby stores.';
-    notifyListeners();
-  }
-
   /// Clears per-student browsing state (search, filters, favourites) on logout.
   void resetForLogout() {
     resetForAddress();
