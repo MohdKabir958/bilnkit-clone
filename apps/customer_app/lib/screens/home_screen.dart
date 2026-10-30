@@ -50,9 +50,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _lifecycle; // start listening
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      unawaited(
-          Provider.of<DhabaProvider>(context, listen: false).refreshHome());
+      unawaited(_loadInitialCatalog());
     });
+  }
+
+  /// Select a saved address before requesting nearby stores. Profile restoration
+  /// and delivery-address restoration otherwise race on cold app launch.
+  Future<void> _loadInitialCatalog() async {
+    await context.read<SessionProvider>().refreshDeliveryAddress();
+    if (!mounted) return;
+    await context.read<DhabaProvider>().refreshHome();
   }
 
   /// Pull-to-refresh on Home: kitchens and orders. Says so when the kitchens could not be refreshed.
@@ -62,9 +69,9 @@ class _HomeScreenState extends State<HomeScreen> {
     unawaited(orders.refreshActive());
     final ok = await dhabas.refreshHome();
     if (!mounted || ok) return;
-    showKSnack(context,
-        'Couldn\'t refresh the stores. Check your connection and try again.',
-        error: true);
+    // The Home empty state offers an address picker or retry as appropriate.
+    if (dhabas.catalogNeedsAddress) return;
+    showKSnack(context, dhabas.catalogErrorMessage, error: true);
   }
 
   @override
@@ -220,14 +227,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         catalog.allDhabas.isEmpty)
                       SliverToBoxAdapter(
                           child: KEmptyState(
-                              icon: LucideIcons.wifiOff,
-                              title: "Can't load nearby stores",
-                              message:
-                                  'Check your connection, then try again. Pull down to refresh also works.',
+                              icon: catalog.catalogNeedsAddress
+                                  ? LucideIcons.mapPin
+                                  : LucideIcons.circleAlert,
+                              title: catalog.catalogNeedsAddress
+                                  ? 'Choose your delivery address'
+                                  : "Can't load nearby stores",
+                              message: catalog.catalogErrorMessage,
                               action: KButton(
-                                  label: 'Try again',
-                                  onPressed: () =>
-                                      unawaited(catalog.refreshHome()))))
+                                  label: catalog.catalogNeedsAddress
+                                      ? 'Choose address'
+                                      : 'Try again',
+                                  onPressed: () => catalog.catalogNeedsAddress
+                                      ? unawaited(_chooseAddress())
+                                      : unawaited(catalog.refreshHome()))))
                     else if (catalog.allDhabas.isEmpty)
                       SliverToBoxAdapter(
                           child: KEmptyState(
