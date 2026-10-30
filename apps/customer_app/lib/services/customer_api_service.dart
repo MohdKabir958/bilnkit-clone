@@ -8,6 +8,107 @@ import '../config/api_config.dart';
 import '../models/auth_results.dart';
 import '../models/food_category.dart';
 
+/// A store-discovery failure with a safe, actionable message for the customer.
+/// Never show raw HTML/proxy responses or assume an API failure means lost internet.
+class CatalogLoadFailure implements Exception {
+  const CatalogLoadFailure({
+    required this.code,
+    required this.message,
+    this.statusCode,
+  });
+
+  final String code;
+  final String message;
+  final int? statusCode;
+
+  bool get needsAddress =>
+      code == 'ADDRESS_REQUIRED' ||
+      code == 'AREA_UNSUPPORTED' ||
+      code == 'ADDRESS_NOT_FOUND';
+
+  factory CatalogLoadFailure.fromResponse(http.Response response) {
+    Map<String, dynamic> body = {};
+    try {
+      final parsed = jsonDecode(response.body);
+      if (parsed is Map) body = Map<String, dynamic>.from(parsed);
+    } catch (_) {
+      // A proxy or older server can return HTML. Do not show that to users.
+    }
+    final code = body['code'] is String ? body['code'] as String : '';
+    final status = response.statusCode;
+    if (code == 'ADDRESS_REQUIRED') {
+      return const CatalogLoadFailure(
+        code: 'ADDRESS_REQUIRED',
+        message: 'Choose a delivery address to see nearby stores.',
+        statusCode: 400,
+      );
+    }
+    if (code == 'AREA_UNSUPPORTED') {
+      return CatalogLoadFailure(
+        code: code,
+        message:
+            'Grozo is not delivering to this address yet. Choose another delivery address.',
+        statusCode: status,
+      );
+    }
+    if (code == 'NOT_FOUND' && status == 404) {
+      return CatalogLoadFailure(
+        code: 'ADDRESS_NOT_FOUND',
+        message: 'Your saved delivery address could not be found. Choose it again.',
+        statusCode: status,
+      );
+    }
+    if (status == 401) {
+      return CatalogLoadFailure(
+        code: 'SESSION_EXPIRED',
+        message: 'Your session has expired. Sign in again to view nearby stores.',
+        statusCode: status,
+      );
+    }
+    if (status == 403) {
+      return CatalogLoadFailure(
+        code: 'CUSTOMER_ACCESS_REQUIRED',
+        message:
+            'This account cannot browse the Customer marketplace. Sign out and use an eligible customer account.',
+        statusCode: status,
+      );
+    }
+    if (status == 404) {
+      return CatalogLoadFailure(
+        code: 'SERVICE_VERSION_MISMATCH',
+        message:
+            'Store discovery is unavailable on this backend version. Grozo needs a compatible server deployment.',
+        statusCode: status,
+      );
+    }
+    if (status == 429) {
+      return CatalogLoadFailure(
+        code: 'STORE_RATE_LIMIT',
+        message:
+            'Grozo is receiving too many requests. Please retry in a moment.',
+        statusCode: status,
+      );
+    }
+    if (status >= 500) {
+      return CatalogLoadFailure(
+        code: 'STORE_SERVICE_UNAVAILABLE',
+        message:
+            'Grozo\'s store service is temporarily unavailable. Your internet connection may be fine. Please retry later.',
+        statusCode: status,
+      );
+    }
+    return CatalogLoadFailure(
+      code: code.isEmpty ? 'STORE_REQUEST_FAILED' : code,
+      message:
+          'Grozo could not load stores for this request. Please choose a delivery address or retry.',
+      statusCode: status,
+    );
+  }
+
+  @override
+  String toString() => 'CatalogLoadFailure($code, HTTP ${statusCode ?? "unknown"})';
+}
+
 class CustomerApiService {
   static String? selectedAddressId;
   static const String _tokenPrefKey = 'kraveo_customer_jwt_token';
@@ -282,11 +383,9 @@ class CustomerApiService {
       }).query;
       final response =
           await authorizedRequest('GET', '/v1/vendors/nearby?$query');
-      final body = jsonDecode(response.body);
-      if (response.statusCode != 200 || body is! Map || body['data'] is! List) {
-        throw Exception(body is Map
-            ? body['message'] ?? 'Unable to load nearby stores.'
-            : 'Unable to load nearby stores.');
+      final body = _json(response);
+      if (response.statusCode != 200 || body['data'] is! List) {
+        throw CatalogLoadFailure.fromResponse(response);
       }
       vendors.addAll((body['data'] as List)
           .whereType<Map>()
