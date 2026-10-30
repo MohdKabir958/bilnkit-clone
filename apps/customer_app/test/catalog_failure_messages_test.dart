@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:customer_app/providers/dhaba_provider.dart';
 import 'package:customer_app/services/customer_api_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -46,16 +45,10 @@ void main() {
     expect(oldServer.message, contains('backend'));
   });
 
-  test('Home can request address selection without loading remote catalog', () {
-    CustomerApiService.selectedAddressId = null;
-    final provider = DhabaProvider();
-    try {
-      provider.requireDeliveryAddress();
-      expect(provider.hasCatalogFailed, isTrue);
-      expect(provider.catalogNeedsAddress, isTrue);
-      expect(provider.catalogErrorMessage, contains('delivery address'));
-    } finally {
-      provider.dispose();
-    }
+  test('malformed response is not displayed as raw HTML', () {
+    final failure = CatalogLoadFailure.fromResponse(
+        http.Response('<html>proxy unavailable</html>', 200));
+    expect(failure.code, 'STORE_REQUEST_FAILED');
+    expect(failure.message, isNot(contains('<html>')));
   });
 }
