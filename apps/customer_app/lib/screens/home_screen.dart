@@ -238,9 +238,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   label: catalog.catalogNeedsAddress
                                       ? 'Choose address'
                                       : 'Try again',
-                                  onPressed: () => catalog.catalogNeedsAddress
-                                      ? unawaited(_chooseAddress())
-                                      : unawaited(catalog.refreshHome()))))
+                                  onPressed: () {
+                                    if (catalog.catalogNeedsAddress) {
+                                      unawaited(_chooseAddress());
+                                    } else {
+                                      unawaited(catalog.refreshHome());
+                                    }
+                                  })))
                     else if (catalog.allDhabas.isEmpty)
                       SliverToBoxAdapter(
                           child: KEmptyState(
