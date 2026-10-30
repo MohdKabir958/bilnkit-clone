@@ -273,7 +273,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final k = context.k;
     final session = context.read<SessionProvider>();
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      KDisplayText('Welcome to\nKraveo',
+      KDisplayText('Welcome to\n${BrandConfig.name}',
           style: KraveoType.displayMd.copyWith(color: k.ink)),
       const SizedBox(height: 10),
       Text(

@@ -30,6 +30,46 @@ class CategoryChip {
   final String? iconKey;
 }
 
+/// User-facing catalog diagnostics. Do not display untrusted server response bodies.
+String describeCatalogFailure(Object error) {
+  if (error is CatalogApiFailure) {
+    if (error.field == 'addressId' ||
+        const {'ADDRESS_REQUIRED', 'DELIVERY_ADDRESS_REQUIRED', 'ADDRESS_NOT_FOUND'}
+            .contains(error.code)) {
+      return 'Choose or update your delivery address to see stores serving your location.';
+    }
+    switch (error.statusCode) {
+      case 400:
+      case 422:
+        return 'Please check your delivery address and retry. If it continues, contact Grozo support.';
+      case 401:
+        return 'Your session could not be verified. Sign out and sign in again.';
+      case 403:
+        return 'Your account cannot load the customer catalog. Check your account access or contact support.';
+      case 404:
+        return 'The store service is unavailable on this backend version. Please contact Grozo support.';
+      case 429:
+        return 'Too many requests. Please wait a moment before trying again.';
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        return 'Grozo servers are temporarily unavailable. Please try again shortly.';
+      case 200:
+        return 'Grozo returned an unexpected store list. Please update the app or contact support.';
+      default:
+        return 'Grozo could not load stores (HTTP ${error.statusCode}). Please retry or contact support.';
+    }
+  }
+  if (error is TimeoutException) {
+    return 'Grozo is taking too long to respond. Please try again shortly.';
+  }
+  if (error is FormatException || error is TypeError) {
+    return 'Grozo returned store information this app could not understand. Please update the app or contact support.';
+  }
+  return 'Grozo could not load nearby stores. Please try again or contact support if the problem continues.';
+}
+
 class DhabaProvider with ChangeNotifier {
   /// Starts with no kitchens. Tests may pass a catalog (treated as freshly loaded from the server).
   DhabaProvider(
@@ -75,6 +115,7 @@ class DhabaProvider with ChangeNotifier {
   static const String _all = 'All';
 
   CatalogStatus _status = CatalogStatus.idle;
+  String? _catalogFailureMessage;
   Future<bool>? _loading;
 
   /// The most chips the server list may add after "All" (Docs/23 section 5).
@@ -243,6 +284,7 @@ class DhabaProvider with ChangeNotifier {
   bool get showFavoritesOnly => _showFavoritesOnly;
 
   CatalogStatus get catalogStatus => _status;
+  String? get catalogFailureMessage => _catalogFailureMessage;
 
   /// The very first catalog request is still running (show skeletons).
   bool get isCatalogLoading =>
@@ -461,6 +503,7 @@ class DhabaProvider with ChangeNotifier {
 
   Future<bool> _loadCatalog() async {
     final generation = _catalogGeneration;
+    _catalogFailureMessage = null;
     if (_status != CatalogStatus.ready) {
       _status = CatalogStatus.loading;
       notifyListeners();
@@ -505,12 +548,14 @@ class DhabaProvider with ChangeNotifier {
         ..clear()
         ..addAll(loadedDhabas.map((d) => d.id));
       _status = CatalogStatus.ready;
+      _catalogFailureMessage = null;
       if (_searchQuery.trim().isNotEmpty) setSearchQuery(_searchQuery);
       notifyListeners();
       return true;
     } catch (error) {
       if (generation != _catalogGeneration || _disposed) return false;
       debugPrint('[Catalog] Live catalog unavailable: ${error.runtimeType}');
+      _catalogFailureMessage = describeCatalogFailure(error);
       if (_status != CatalogStatus.ready) _status = CatalogStatus.failed;
       notifyListeners();
       return false;
@@ -545,6 +590,7 @@ class DhabaProvider with ChangeNotifier {
     _menuItems.clear();
     _liveVendorIds.clear();
     _status = CatalogStatus.idle;
+    _catalogFailureMessage = null;
     notifyListeners();
   }
 

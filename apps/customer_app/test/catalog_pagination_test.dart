@@ -106,4 +106,49 @@ void main() {
     expect(provider.dhabas.single.id, 'store');
     expect(provider.homeProducts('store').single.name, 'Basmati rice');
   });
+  test('store errors explain address, API version, rate limits and server failures', () async {
+    final cases = [
+      (status: 400, code: 'ADDRESS_REQUIRED', field: 'addressId', message: 'delivery address'),
+      (status: 404, code: 'NOT_FOUND', field: '', message: 'backend version'),
+      (status: 429, code: 'RATE_LIMITED', field: '', message: 'Too many requests'),
+      (status: 503, code: 'UNAVAILABLE', field: '', message: 'Grozo servers'),
+    ];
+    for (final scenario in cases) {
+      CustomerApiService.httpClientOverride = MockClient((_) async => http.Response(
+          jsonEncode({'success': false, 'code': scenario.code, 'field': scenario.field}),
+          scenario.status));
+      final provider = DhabaProvider();
+      expect(await provider.loadCatalog(), isFalse);
+      expect(provider.hasCatalogFailed, isTrue);
+      expect(provider.catalogFailureMessage, contains(scenario.message));
+      provider.dispose();
+    }
+  });
+
+  test('a working retry clears an earlier backend error', () async {
+    var attempt = 0;
+    CustomerApiService.httpClientOverride = MockClient((_) async {
+      if (attempt++ == 0) {
+        return http.Response(jsonEncode({'success': false, 'code': 'UNAVAILABLE'}), 503);
+      }
+      return catalog();
+    });
+    final provider = DhabaProvider();
+    addTearDown(provider.dispose);
+    expect(await provider.loadCatalog(), isFalse);
+    expect(provider.catalogFailureMessage, contains('Grozo servers'));
+    expect(await provider.loadCatalog(), isTrue);
+    expect(provider.catalogFailureMessage, isNull);
+    expect(provider.allDhabas.single.name, 'Local Market');
+  });
+
+  test('bad 200 response is an API format problem, not an internet problem', () async {
+    CustomerApiService.httpClientOverride = MockClient((_) async => http.Response(
+        '<html>proxy error</html>', 200));
+    final provider = DhabaProvider();
+    addTearDown(provider.dispose);
+    expect(await provider.loadCatalog(), isFalse);
+    expect(provider.catalogFailureMessage, contains('unexpected store list'));
+  });
+
 }
