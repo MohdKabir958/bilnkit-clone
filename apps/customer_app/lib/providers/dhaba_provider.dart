@@ -475,14 +475,6 @@ class DhabaProvider with ChangeNotifier {
       notifyListeners();
     }
     try {
-      // The API requires an owned delivery address. Don't misreport its absence
-      // as an internet outage, and don't send a request that is known to fail.
-      if (CustomerApiService.selectedAddressId == null) {
-        throw const CatalogLoadFailure(
-          code: 'ADDRESS_REQUIRED',
-          message: 'Choose a delivery address to see nearby stores.',
-        );
-      }
       final vendors =
           await CustomerApiService.fetchVendors(hydrateProducts: false);
       if (generation != _catalogGeneration || _disposed) return false;
@@ -546,6 +538,17 @@ class DhabaProvider with ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  /// Home calls this when there is no selected address. Avoid a request known
+  /// to fail with ADDRESS_REQUIRED while retaining the provider's public
+  /// loadCatalog() contract for existing consumers and tests.
+  void requireDeliveryAddress() {
+    resetForAddress();
+    _status = CatalogStatus.failed;
+    _catalogErrorCode = 'ADDRESS_REQUIRED';
+    _catalogErrorMessage = 'Choose a delivery address to see nearby stores.';
+    notifyListeners();
   }
 
   /// Clears per-student browsing state (search, filters, favourites) on logout.
