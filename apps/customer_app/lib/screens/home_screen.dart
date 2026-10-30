@@ -50,15 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _lifecycle; // start listening
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      unawaited(_loadInitialCatalog());
+      // The backend resolves an owned default when no address is supplied.
+      // Reloading addresses here would overwrite an explicit customer selection.
+      unawaited(context.read<DhabaProvider>().refreshHome());
     });
-  }
-
-  /// Resolve the saved address before the first nearby-store request.
-  Future<void> _loadInitialCatalog() async {
-    await context.read<SessionProvider>().refreshDeliveryAddress();
-    if (!mounted) return;
-    await context.read<DhabaProvider>().refreshHome();
   }
 
   /// Pull-to-refresh on Home: kitchens and orders. Says so when the kitchens could not be refreshed.
