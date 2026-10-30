@@ -69,6 +69,7 @@ class SessionProvider with ChangeNotifier {
   bool _savingProfile = false;
   bool _signingIn = false;
   String? _accessError;
+  String? _connectionError;
   int _restoreEpoch = 0;
 
   /// Name Google gave us for a brand-new account (pre-fills sign-up step 1).
@@ -120,6 +121,7 @@ class SessionProvider with ChangeNotifier {
   bool get isSavingProfile => _savingProfile;
   bool get isSigningIn => _signingIn;
   String? get accessError => _accessError;
+  String? get connectionError => _connectionError;
 
   /// The stored hostel mapped onto [kHostelBlocks] (legacy free-text included), or null if unset.
   String? get hostel => normalizeHostelBlock(_user?.hostelBlock, kHostelBlocks);
@@ -158,6 +160,8 @@ class SessionProvider with ChangeNotifier {
         await ClerkSessions.instance.initialize();
       } catch (_) {
         if (_disposed) return;
+        _connectionError =
+            'Secure sign-in is temporarily unavailable. Check Grozo backend and Clerk configuration, then retry.';
         _status = SessionStatus.unreachable;
         notifyListeners();
         return;
@@ -166,6 +170,7 @@ class SessionProvider with ChangeNotifier {
     if (_disposed) return;
     final epoch = ++_restoreEpoch;
     _accessError = null;
+    _connectionError = null;
     if (_status != SessionStatus.checking) {
       // A retry from the "can't reach Grozo" screen. (The first call starts as `checking`,
       // and notifying from initState would rebuild the tree mid-build.)
@@ -182,6 +187,8 @@ class SessionProvider with ChangeNotifier {
               : null);
     }
     if (result.networkError) {
+      _connectionError =
+          'Grozo could not connect to its account service. Your phone internet may be working; please retry or check backend status.';
       _status = SessionStatus.unreachable;
       notifyListeners();
       return;
@@ -192,6 +199,11 @@ class SessionProvider with ChangeNotifier {
       // trouble, not that the student is signed out: keep the token and offer a retry.
       final code = result.statusCode;
       if (code != 401 && code != 403 && code != 404) {
+        _connectionError = code == 429
+            ? 'Grozo has temporarily limited sign-in checks. Please wait a moment and retry.'
+            : code != null && code >= 500
+                ? 'Grozo account service has a server error (HTTP $code). Your internet connection may be fine. Please retry.'
+                : 'Grozo could not verify your profile. Please retry or check whether the backend version matches this app.';
         _status = SessionStatus.unreachable;
         notifyListeners();
         return;
@@ -301,6 +313,7 @@ class SessionProvider with ChangeNotifier {
 
   void _begin(CustomerUser user, {required bool needsProfile}) {
     _accessError = null;
+    _connectionError = null;
     if (_user?.id != user.id) {
       _addressEpoch++;
       _address = null;
@@ -383,6 +396,7 @@ class SessionProvider with ChangeNotifier {
   void _endSession({String? reason}) {
     _restoreEpoch++;
     _accessError = reason;
+    _connectionError = null;
     final wasActive = _user != null || _status != SessionStatus.signedOut;
     // Forget the Google account too, so the next sign-in starts from the account picker.
     if (_user != null) unawaited(_googleAuth.signOut());
