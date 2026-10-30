@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:customer_app/models/dhaba.dart';
+import 'package:customer_app/models/delivery_address.dart';
 import 'package:customer_app/models/menu_item.dart';
 import 'package:customer_app/models/order.dart';
 import 'package:customer_app/providers/cart_provider.dart';
@@ -309,8 +310,16 @@ void main() {
         'a failed catalog shows "Can\'t load kitchens" with Try again (and never invented kitchens); Try again loads them',
         (tester) async {
       final server = _Server(fail: true).install();
-      await _pump(tester, const HomeScreen(), dhabas: DhabaProvider());
-      expect(find.text('Can\'t load nearby stores'), findsOneWidget);
+      final session = _student();
+      addTearDown(session.dispose);
+      session.selectDeliveryAddress(DeliveryAddress({
+        'id': 'chosen-address', 'customerId': 'u1', 'isDefault': false,
+        'houseNumber': '12', 'street': 'Fixture street',
+        'locality': 'Fixture locality', 'pinCode': '560001',
+        'city': {'name': 'Synthetic city'},
+      }));
+      await _pump(tester, const HomeScreen(), dhabas: DhabaProvider(), session: session);
+      expect(find.text('Nearby stores unavailable'), findsOneWidget);
       expect(find.text('Try again'), findsOneWidget);
       expect(find.text('Sharma Highway Dhaba'), findsNothing);
       expect(find.text('FC Night Mess'), findsNothing);
@@ -322,7 +331,7 @@ void main() {
         ..vendors = [_vendor('v1', 'Real Dhaba')];
       await _tap(tester, find.text('Try again'));
       expect(server.vendorRequests, 2);
-      expect(find.text('Can\'t load nearby stores'), findsNothing);
+      expect(find.text('Nearby stores unavailable'), findsNothing);
       await tester.scrollUntilVisible(find.text('Real Dhaba'), 200,
           scrollable: find.byType(Scrollable).first);
       expect(find.text('Real Dhaba'), findsOneWidget);

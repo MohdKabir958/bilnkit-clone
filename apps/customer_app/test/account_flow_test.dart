@@ -1756,7 +1756,9 @@ void main() {
           seed: userJson(isStudent: false, hostel: null), isNewUser: false);
       await launch(tester);
       await tester.pump(const Duration(seconds: 5));
-      expect(find.text('Choose delivery address'), findsOneWidget);
+      // The header and the missing-address recovery button both explain the next step.
+      expect(find.text('Choose delivery address'), findsNWidgets(2));
+      expect(find.widgetWithText(KButton, 'Choose delivery address'), findsOneWidget);
       expect(find.text('Delivering to'), findsOneWidget);
     });
 

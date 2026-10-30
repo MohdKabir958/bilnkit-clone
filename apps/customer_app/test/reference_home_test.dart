@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -104,7 +105,14 @@ void main() {
   late SessionProvider session;
   late CartProvider cart;
   late OrderProvider orders;
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    FlutterSecureStorage.setMockInitialValues({});
+    await CustomerApiService.clearToken();
+    CustomerApiService.httpClientOverride = MockClient((request) async =>
+        request.url.path.endsWith('/addresses')
+            ? http.Response('{"success":true,"data":[]}', 200)
+            : http.Response('{"success":false,"code":"NOT_FOUND"}', 404));
     catalog = ReferenceFixtureCatalog();
     cart = CartProvider();
     orders = fakeOrders(FakeOrderApi());
@@ -156,7 +164,11 @@ void main() {
 
   testWidgets('opening Home retains an explicitly selected non-default address',
       (tester) async {
-    final selected = session.selectedAddress!;
+    final selected = DeliveryAddress({
+      ...session.selectedAddress!.data,
+      'id': 'chosen-non-default',
+      'isDefault': false,
+    });
     session.dispose();
     session = DefaultReloadSession();
     session.selectDeliveryAddress(selected);
