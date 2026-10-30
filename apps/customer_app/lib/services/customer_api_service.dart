@@ -8,6 +8,18 @@ import '../config/api_config.dart';
 import '../models/auth_results.dart';
 import '../models/food_category.dart';
 
+/// A catalog HTTP failure with non-sensitive details suitable for mapping to user guidance.
+/// Never include bearer tokens, response bodies or private account data in diagnostics.
+class CatalogApiFailure implements Exception {
+  const CatalogApiFailure(this.statusCode, {this.code, this.field});
+  final int statusCode;
+  final String? code;
+  final String? field;
+
+  @override
+  String toString() => 'Catalog request failed: HTTP $statusCode, code: ${code ?? 'unknown'}';
+}
+
 class CustomerApiService {
   static String? selectedAddressId;
   static const String _tokenPrefKey = 'kraveo_customer_jwt_token';
@@ -282,11 +294,11 @@ class CustomerApiService {
       }).query;
       final response =
           await authorizedRequest('GET', '/v1/vendors/nearby?$query');
-      final body = jsonDecode(response.body);
-      if (response.statusCode != 200 || body is! Map || body['data'] is! List) {
-        throw Exception(body is Map
-            ? body['message'] ?? 'Unable to load nearby stores.'
-            : 'Unable to load nearby stores.');
+      final body = _json(response);
+      if (response.statusCode != 200 || body['data'] is! List) {
+        throw CatalogApiFailure(response.statusCode,
+            code: body['code'] is String ? body['code'] as String : null,
+            field: body['field'] is String ? body['field'] as String : null);
       }
       vendors.addAll((body['data'] as List)
           .whereType<Map>()
