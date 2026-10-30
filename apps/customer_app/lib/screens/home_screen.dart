@@ -50,9 +50,15 @@ class _HomeScreenState extends State<HomeScreen> {
     _lifecycle; // start listening
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      unawaited(
-          Provider.of<DhabaProvider>(context, listen: false).refreshHome());
+      unawaited(_loadInitialCatalog());
     });
+  }
+
+  /// Resolve the saved address before the first nearby-store request.
+  Future<void> _loadInitialCatalog() async {
+    await context.read<SessionProvider>().refreshDeliveryAddress();
+    if (!mounted) return;
+    await context.read<DhabaProvider>().refreshHome();
   }
 
   /// Pull-to-refresh on Home: kitchens and orders. Says so when the kitchens could not be refreshed.
@@ -63,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final ok = await dhabas.refreshHome();
     if (!mounted || ok) return;
     showKSnack(context,
-        'Couldn\'t refresh the stores. Check your connection and try again.',
+        'Couldn\'t refresh the stores. ${dhabas.catalogFailureMessage ?? 'Please try again.'}',
         error: true);
   }
 
@@ -220,15 +226,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         catalog.allDhabas.isEmpty)
                       SliverToBoxAdapter(
                           child: KEmptyState(
-                              icon: LucideIcons.wifiOff,
+                              icon: LucideIcons.circleAlert,
                               title: 'Nearby stores unavailable',
                               message: catalog.catalogFailureMessage ??
                                   'Grozo could not load stores. Please try again.',
                               action: KButton(
-                                  label: session.selectedAddress == null
+                                  label: (session.selectedAddress == null ||
+                                          catalog.catalogNeedsAddress)
                                       ? 'Choose delivery address'
                                       : 'Try again',
-                                  onPressed: session.selectedAddress == null
+                                  onPressed: (session.selectedAddress == null ||
+                                          catalog.catalogNeedsAddress)
                                       ? _chooseAddress
                                       : () => unawaited(catalog.refreshHome()))))
                     else if (catalog.allDhabas.isEmpty)

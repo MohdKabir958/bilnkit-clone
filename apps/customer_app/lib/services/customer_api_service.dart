@@ -16,6 +16,32 @@ class CatalogApiFailure implements Exception {
   final String? code;
   final String? field;
 
+  /// Only explicit address errors lead to address recovery. A generic 404 can
+  /// mean an incompatible endpoint and must not be mistaken for a lost address.
+  bool get needsAddress =>
+      field == 'addressId' ||
+      const {
+        'ADDRESS_REQUIRED',
+        'DELIVERY_ADDRESS_REQUIRED',
+        'ADDRESS_NOT_FOUND',
+        'AREA_UNSUPPORTED',
+      }.contains(code);
+
+  factory CatalogApiFailure.fromResponse(http.Response response) {
+    Map<String, dynamic> body = {};
+    try {
+      final parsed = jsonDecode(response.body);
+      if (parsed is Map) {
+        body = Map<String, dynamic>.from(parsed);
+      }
+    } catch (_) {
+      // Never display raw HTML/proxy response bodies.
+    }
+    return CatalogApiFailure(response.statusCode,
+        code: body['code'] is String ? body['code'] as String : null,
+        field: body['field'] is String ? body['field'] as String : null);
+  }
+
   @override
   String toString() => 'Catalog request failed: HTTP $statusCode, code: ${code ?? 'unknown'}';
 }
@@ -296,9 +322,7 @@ class CustomerApiService {
           await authorizedRequest('GET', '/v1/vendors/nearby?$query');
       final body = _json(response);
       if (response.statusCode != 200 || body['data'] is! List) {
-        throw CatalogApiFailure(response.statusCode,
-            code: body['code'] is String ? body['code'] as String : null,
-            field: body['field'] is String ? body['field'] as String : null);
+        throw CatalogApiFailure.fromResponse(response);
       }
       vendors.addAll((body['data'] as List)
           .whereType<Map>()

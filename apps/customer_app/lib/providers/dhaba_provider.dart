@@ -33,9 +33,10 @@ class CategoryChip {
 /// User-facing catalog diagnostics. Do not display untrusted server response bodies.
 String describeCatalogFailure(Object error) {
   if (error is CatalogApiFailure) {
-    if (error.field == 'addressId' ||
-        const {'ADDRESS_REQUIRED', 'DELIVERY_ADDRESS_REQUIRED', 'ADDRESS_NOT_FOUND'}
-            .contains(error.code)) {
+    if (error.code == 'AREA_UNSUPPORTED') {
+      return 'Grozo is not delivering to this address yet. Choose another delivery address.';
+    }
+    if (error.needsAddress) {
       return 'Choose or update your delivery address to see stores serving your location.';
     }
     switch (error.statusCode) {
@@ -116,6 +117,8 @@ class DhabaProvider with ChangeNotifier {
 
   CatalogStatus _status = CatalogStatus.idle;
   String? _catalogFailureMessage;
+  bool _catalogNeedsAddress = false;
+  bool get catalogNeedsAddress => _catalogNeedsAddress;
   Future<bool>? _loading;
 
   /// The most chips the server list may add after "All" (Docs/23 section 5).
@@ -549,6 +552,7 @@ class DhabaProvider with ChangeNotifier {
         ..addAll(loadedDhabas.map((d) => d.id));
       _status = CatalogStatus.ready;
       _catalogFailureMessage = null;
+      _catalogNeedsAddress = false;
       if (_searchQuery.trim().isNotEmpty) setSearchQuery(_searchQuery);
       notifyListeners();
       return true;
@@ -556,6 +560,7 @@ class DhabaProvider with ChangeNotifier {
       if (generation != _catalogGeneration || _disposed) return false;
       debugPrint('[Catalog] Live catalog unavailable: ${error.runtimeType}');
       _catalogFailureMessage = describeCatalogFailure(error);
+      _catalogNeedsAddress = error is CatalogApiFailure && error.needsAddress;
       if (_status != CatalogStatus.ready) _status = CatalogStatus.failed;
       notifyListeners();
       return false;
@@ -591,6 +596,7 @@ class DhabaProvider with ChangeNotifier {
     _liveVendorIds.clear();
     _status = CatalogStatus.idle;
     _catalogFailureMessage = null;
+    _catalogNeedsAddress = false;
     notifyListeners();
   }
 
