@@ -66,6 +66,21 @@ class ReferenceFixtureCatalog extends DhabaProvider {
   Future<void> loadCategories() async {}
 }
 
+/// A default-address reload must not replace an explicit selection on Home entry.
+class DefaultReloadSession extends SessionProvider {
+  DefaultReloadSession() {
+    beginForTest({'id': 'reference-customer', 'role': 'STUDENT', 'name': 'Synthetic Customer'});
+  }
+  @override
+  Future<void> refreshDeliveryAddress() async {
+    selectDeliveryAddress(DeliveryAddress({
+      'id': 'different-default', 'customerId': 'reference-customer',
+      'isDefault': true, 'label': 'Default', 'houseNumber': 'Default fixture',
+      'street': 'Test street', 'locality': 'Test locality', 'pinCode': '560001',
+    }));
+  }
+}
+
 MenuItemModel product(String id, String name, String category, String size,
         String unit, double price, double mrp, String store) =>
     MenuItemModel(
@@ -138,6 +153,19 @@ void main() {
         () => Future<void>.delayed(const Duration(milliseconds: 300)));
     await tester.pump();
   }
+
+  testWidgets('opening Home retains an explicitly selected non-default address',
+      (tester) async {
+    final selected = session.selectedAddress!;
+    session.dispose();
+    session = DefaultReloadSession();
+    session.selectDeliveryAddress(selected);
+    await host(tester);
+    expect(session.selectedAddress?.id, selected.id);
+    expect(CustomerApiService.selectedAddressId, selected.id);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
 
   testWidgets(
       'reference structure: green brand, four stores, ten categories and two product columns',
