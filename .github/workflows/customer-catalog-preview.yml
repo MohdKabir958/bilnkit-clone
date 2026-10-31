@@ -1,0 +1,139 @@
+name: Customer catalog fix APK
+
+on:
+  push:
+    branches: [fix/customer-nearby-stores-apk-20261031]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: customer-catalog-preview-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  customer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.9'
+          channel: stable
+          cache: true
+      - name: Install Android verification tools
+        run: sdkmanager 'build-tools;36.0.0'
+      - name: Customer analysis and complete regressions
+        env:
+          GROZO_FLUTTER_TEST_JSON: ${{ github.workspace }}/build/ci/flutter-customer.jsonl
+        run: bash scripts/check_flutter.sh customer
+      - name: Native Clerk handoff regressions
+        working-directory: apps/customer_app
+        run: flutter test --no-pub --dart-define=AUTH_MODE=clerk-test test/clerk/customer_handoff.dart
+      - name: Build connected customer preview from committed source
+        run: |
+          python3 scripts/clerk/build_test_apks.py --app customer \
+            --public-config Docs/clerk/android-staging-public.json \
+            --backend-origin https://grozo-backend-3wdf.onrender.com \
+            --build-name 1.16.3 --build-number 27
+      - name: Verify APK and disclose the new development signature
+        run: python3 scripts/clerk/verify_apks.py --app customer --allow-development-key-rotation
+      - name: Preserve test and build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: customer-catalog-evidence-${{ github.sha }}
+          path: |
+            build/ci/flutter-customer.jsonl
+            build/clerk-test-apks/*-build.log
+            build/clerk-test-apks/*-build.json
+            build/clerk-test-apks/*-apk-verification.txt
+          if-no-files-found: warn
+      - name: Report actual customer failures
+        if: failure()
+        run: python3 scripts/qa/report_flutter_results.py build/ci/flutter-customer.jsonl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: customer-catalog-apk-${{ github.sha }}
+          path: |
+            build/clerk-test-apks/Grozo-Customer-Clerk-Test.apk
+            build/clerk-test-apks/manifest.json
+            build/clerk-test-apks/SHA256SUMS
+          if-no-files-found: error
+          compression-level: 0
+
+  publish:
+    needs: customer
+    if: github.repository == 'MohdKabir958/bilnkit-clone' && github.ref == 'refs/heads/fix/customer-nearby-stores-apk-20261031'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: artifacts/grozo-android-preview
+          path: archive
+          fetch-depth: 1
+      - uses: actions/download-artifact@v4
+        with:
+          name: customer-catalog-apk-${{ github.sha }}
+          path: incoming
+      - name: Publish verified preview without changing deployed source branches
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, shutil
+          incoming = pathlib.Path('incoming')
+          archive = pathlib.Path('archive')
+          manifest = json.loads((incoming / 'manifest.json').read_text())
+          assert len(manifest) == 1
+          record = manifest[0]
+          assert record['buildCommit'] == os.environ['SOURCE_COMMIT']
+          assert record['applicationId'] == 'in.grozo.customer'
+          assert record['authMode'] == 'clerk-test' and not record['authenticationPreview']
+          assert record['versionName'] == '1.16.3' and record['versionCode'] == 2027
+          apk = incoming / 'Grozo-Customer-Clerk-Test.apk'
+          assert hashlib.sha256(apk.read_bytes()).hexdigest() == record['sha256']
+          relative = pathlib.Path('clerk-staging') / ('1.16.3-27-' + os.environ['SOURCE_COMMIT'][:7])
+          destination = archive / relative
+          destination.mkdir(parents=True, exist_ok=False)
+          for name in ['Grozo-Customer-Clerk-Test.apk', 'manifest.json', 'SHA256SUMS']:
+              shutil.copy2(incoming / name, destination / name)
+          (destination / 'INSTALL.txt').write_text(
+              'Grozo Customer 1.16.3, Android ARM64 API 24+ preview.\n'
+              'Connected to https://grozo-backend-3wdf.onrender.com/api using Clerk development authentication.\n'
+              'New development signing certificate: this cannot update the older preview in place.\n'
+              'Preserve any needed local data, then uninstall the old preview and install this APK.\n'
+              'Uninstalling clears local app data; server records are preserved. Sign in again.\n'
+              'Select a saved delivery address, or add one in an enabled service city.\n'
+              'Firebase push is unconfigured in this preview; it is not a Play Store release.\n')
+          (archive / 'latest-customer.json').write_text(json.dumps(
+              {'path':str(relative / apk.name), 'sourceCommit':os.environ['SOURCE_COMMIT'],
+               'versionName':'1.16.3', 'versionCode':2027, 'sha256':record['sha256'],
+               'inPlaceUpdateCompatible':record['inPlaceUpdateCompatible']}, indent=2) + '\n')
+          PY
+          git -C archive config user.name 'github-actions[bot]'
+          git -C archive config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C archive add clerk-staging latest-customer.json
+          git -C archive commit -m "Publish customer catalog fix preview from ${SOURCE_COMMIT}"
+          git -C archive push origin HEAD:refs/heads/artifacts/grozo-android-preview
+          artifact_commit="$(git -C archive rev-parse HEAD)"
+          export ARTIFACT_COMMIT="$artifact_commit"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          record = json.loads(Path('archive/latest-customer.json').read_text())
+          url = 'https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/' + os.environ['ARTIFACT_COMMIT'] + '/' + record['path']
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as out:
+              out.write(f"Customer preview published: {url}\n\nSHA-256: `{record['sha256']}`\n\nNew development signature: uninstall the older preview first; local data is removed.\n")
+          print('Published artifact commit: ' + os.environ['ARTIFACT_COMMIT'])
+          print('Download: ' + url)
+          PY

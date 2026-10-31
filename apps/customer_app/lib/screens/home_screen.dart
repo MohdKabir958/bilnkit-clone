@@ -221,8 +221,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         catalog.allDhabas.isEmpty)
                       SliverToBoxAdapter(
                           child: KEmptyState(
-                              icon: LucideIcons.circleAlert,
-                              title: 'Nearby stores unavailable',
+                              icon: catalog.catalogNeedsAddress
+                                  ? LucideIcons.mapPin
+                                  : LucideIcons.circleAlert,
+                              title: catalog.catalogNeedsAddress
+                                  ? 'Choose where to deliver'
+                                  : 'Nearby stores unavailable',
                               message: catalog.catalogFailureMessage ??
                                   'Grozo could not load stores. Please try again.',
                               action: KButton(

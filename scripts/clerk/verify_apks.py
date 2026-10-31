@@ -8,6 +8,8 @@ SDK=Path(os.environ['ANDROID_HOME'])/'build-tools/36.0.0'
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--app',choices=['customer','vendor','driver'])
 parser.add_argument('--previous-manifest',type=Path,default=ROOT/'Docs/clerk/evidence/android/manifest.json')
+parser.add_argument('--allow-development-key-rotation',action='store_true',
+    help='Explicitly allow a fresh development certificate; the preview cannot update an older installation in place.')
 args=parser.parse_args()
 records=[]
 previous={r['applicationId']:r for r in json.loads(args.previous_manifest.read_text())} if args.previous_manifest.exists() else {}
@@ -49,11 +51,13 @@ for app,label in [('customer','Customer'),('vendor','Vendor'),('driver','Deliver
        'permissions':re.findall(r"uses-permission(?:-sdk-\d+)?: name='([^']+)'",badging),
        'certificateSha256':re.search(r'Signer #1 certificate SHA-256 digest: (\S+)',signature).group(1),
        'verification':{'zipIntegrity':True,'androidSignature':True,'callbackManifest':True,'arm64Only':True,'clerkSecretPatternAbsent':True}}
-    if expected in previous:
-        assert record['certificateSha256']==previous[expected]['certificateSha256'], 'Signing certificate changed: do not claim update compatibility.'
+    signing_matches = expected in previous and record['certificateSha256']==previous[expected]['certificateSha256']
+    if expected in previous and not signing_matches:
+        assert args.allow_development_key_rotation and build['authMode']=='clerk-test' and build['signing']=='Android development signing; not a Play Store release', 'Signing certificate changed: do not claim update compatibility.'
+        record['installationNotice'] = 'New development signing certificate. Uninstall the old preview before installing; local app data is removed. Server records are preserved. Never uninstall before preserving needed local data.'
     sensitive={'android.permission.ACCESS_FINE_LOCATION','android.permission.ACCESS_COARSE_LOCATION','android.permission.POST_NOTIFICATIONS','android.permission.CAMERA','android.permission.RECORD_AUDIO','android.permission.READ_CONTACTS','android.permission.READ_SMS','android.permission.READ_PHONE_STATE','android.permission.READ_MEDIA_IMAGES','android.permission.READ_EXTERNAL_STORAGE','android.permission.USE_FULL_SCREEN_INTENT','android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS'}
     assert not ({'android.permission.CAMERA','android.permission.RECORD_AUDIO','android.permission.READ_CONTACTS','android.permission.READ_SMS'} & set(record['permissions'])), 'Unexpected sensitive permission requires investigation.'
-    record.update({'minimumSdk':minimum_sdk,'targetSdk':target_sdk,'sensitivePermissionsForDeviceReview':sorted(sensitive & set(record['permissions'])),'historicalSigningCertificateMatches':expected in previous})
+    record.update({'minimumSdk':minimum_sdk,'targetSdk':target_sdk,'sensitivePermissionsForDeviceReview':sorted(sensitive & set(record['permissions'])),'historicalSigningCertificateMatches':signing_matches,'inPlaceUpdateCompatible':signing_matches})
     records.append(record)
     (OUT/f'{app}-apk-verification.txt').write_text(badging+'\n'+signature+'\n'+manifest)
 (OUT/'manifest.json').write_text(json.dumps(records,indent=2)+'\n')
