@@ -1,0 +1,26 @@
+[
+  {
+    "kind": "customer-build-publication",
+    "url": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/41212631228",
+    "sourceCommit": "cf34106ee60a947282650d2f8a2bd922b92f375a",
+    "status": "Success",
+    "duration": "9m 40s",
+    "verification": "Read from the public GitHub Actions run page; full logs/results remain in its artifacts."
+  },
+  {
+    "kind": "complete-baseline",
+    "url": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/41212631262",
+    "sourceCommit": "cf34106ee60a947282650d2f8a2bd922b92f375a",
+    "status": "Failure",
+    "duration": "7m 59s",
+    "verification": "Read from the public GitHub Actions run page; full logs/results remain in its artifacts.",
+    "backendTests": {
+      "total": 1266,
+      "passed": 1266,
+      "failed": 0,
+      "skipped": 0
+    },
+    "failureStep": "npm audit --omit=dev",
+    "dedicatedClerkHandoffTestsPassed": 12
+  }
+]
