@@ -70,7 +70,13 @@ void main() {
       child: MaterialApp(
           theme: KraveoTheme.customer(), home: const HomeScreen()),
     ));
-    await tester.pumpAndSettle();
+    // Home includes continuously animated loading decorations. Wait for the
+    // actual catalog outcome rather than waiting for every animation to stop.
+    for (var frame = 0;
+        frame < 50 && find.text('Choose where to deliver').evaluate().isEmpty;
+        frame++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
     expect(nearbyRequests, 1);
     expect(find.text('Choose where to deliver'), findsOneWidget);
     expect(find.textContaining('Choose or update your delivery address'),
@@ -81,7 +87,11 @@ void main() {
         find.widgetWithText(KButton, 'Choose delivery address');
     await tester.ensureVisible(chooseAddress);
     await tester.tap(chooseAddress);
-    await tester.pumpAndSettle();
+    for (var frame = 0;
+        frame < 50 && find.text('Add address').evaluate().isEmpty;
+        frame++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
     expect(find.byType(AddressesScreen), findsOneWidget);
     expect(find.text('Add address'), findsOneWidget);
     expect(tester.takeException(), isNull);
