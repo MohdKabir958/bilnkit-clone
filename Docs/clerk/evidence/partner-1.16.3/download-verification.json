@@ -1,0 +1,33 @@
+{
+  "artifactCommit": "07e7e27957306f168332e54b983212f3c6e47243",
+  "downloads": [
+    {
+      "app": "Vendor",
+      "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/07e7e27957306f168332e54b983212f3c6e47243/clerk-staging/partners-1.16.3-27-af9180f/Grozo-Vendor-Clerk-Test.apk",
+      "httpStatus": 200,
+      "bytes": 51730857,
+      "sha256": "c810e1e96b592ca87218fb0fd0bc41e27028eec514a0c8f28ac76551a688ba12",
+      "matchesPublishedManifest": true,
+      "zipIntegrity": true,
+      "compiledBackendUrlVerified": true,
+      "abi": "arm64-v8a",
+      "sourceCommit": "af9180f246d5233470276faafa51ac4c35f55a21",
+      "certificateSha256": "f430189cbe230ad590b9e5e2d9ae6b6c99a922c3137326540fc0dad367c88cf0",
+      "inPlaceUpdateCompatible": false
+    },
+    {
+      "app": "Delivery",
+      "url": "https://raw.githubusercontent.com/MohdKabir958/bilnkit-clone/07e7e27957306f168332e54b983212f3c6e47243/clerk-staging/partners-1.16.3-27-af9180f/Grozo-Delivery-Clerk-Test.apk",
+      "httpStatus": 200,
+      "bytes": 51041199,
+      "sha256": "7a3b1b60f8096a91002b877c2bd08cac5725710f9ba8b55336854f69a33b1c5d",
+      "matchesPublishedManifest": true,
+      "zipIntegrity": true,
+      "compiledBackendUrlVerified": true,
+      "abi": "arm64-v8a",
+      "sourceCommit": "af9180f246d5233470276faafa51ac4c35f55a21",
+      "certificateSha256": "f7b2654e2148235eb1efe67cc5905e64eeae94aebd9bf697a98d45b7aa0f7a08",
+      "inPlaceUpdateCompatible": false
+    }
+  ]
+}

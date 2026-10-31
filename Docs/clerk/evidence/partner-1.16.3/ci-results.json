@@ -1,0 +1,35 @@
+{
+  "runs": [
+    {
+      "kind": "partner-apk-build-and-publication",
+      "url": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/41222394933",
+      "sourceCommit": "af9180f246d5233470276faafa51ac4c35f55a21",
+      "status": "Success",
+      "duration": "10m 14s"
+    },
+    {
+      "kind": "complete-baseline",
+      "url": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/41222394891",
+      "sourceCommit": "af9180f246d5233470276faafa51ac4c35f55a21",
+      "status": "Failure",
+      "duration": "8m 0s",
+      "backendTests": {
+        "total": 1273,
+        "passed": 1273,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failedStep": "npm audit --omit=dev"
+    }
+  ],
+  "existingSkippedVisualTests": [
+    {
+      "role": "vendor",
+      "name": "capture vendor production screens with isolated service fixtures"
+    },
+    {
+      "role": "driver",
+      "name": "capture rider production screens with isolated service fixtures"
+    }
+  ]
+}
