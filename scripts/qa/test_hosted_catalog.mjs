@@ -27,7 +27,11 @@ try {
   await db.$executeRawUnsafe(sql);
   assert.equal(await db.vendor.count(),2);assert.equal(await db.menuItem.count(),24);checks.push('exactly two stores and 24 products inserted');
   assert.equal(await db.stockMovement.count(),22);checks.push('initial inventory movements recorded for 22 in-stock products; zero-stock packs add no movement');
-  assert.deepEqual(await db.user.findUnique({where:{id:sentinel.id}}),sentinel);assert.equal(await db.user.count(),1);checks.push('existing account, Clerk identity, role and balance preserved; no new accounts');
+  assert.deepEqual(await db.user.findUnique({where:{id:sentinel.id}}),sentinel);assert.equal(await db.user.count(),3);
+  const owners=await db.user.findMany({where:{id:{in:['gzhostdemo-blr-vendor-1','gzhostdemo-blr-vendor-2']}}});
+  assert.equal(owners.length,2);assert.ok(owners.every(u=>u.role==='VENDOR'&&!u.clerkUserId&&!u.phone&&!u.email&&!u.googleSub&&!u.passwordHash));
+  const stores=await db.vendor.findMany();assert.ok(stores.every(v=>v.userId&&v.primaryCategoryId==='gzhostdemo-blr-cat-grocery-stores'));
+  checks.push('existing account, Clerk identity, role and balance preserved; two inert vendor business owners have no sign-in credentials and stores have valid primary categories');
   const first=await db.menuItem.findFirstOrThrow({orderBy:{id:'asc'}});
   await db.menuItem.update({where:{id:first.id},data:{stockQty:{decrement:1},stockVersion:{increment:1}}});
   await db.stockMovement.create({data:{menuItemId:first.id,delta:-1,kind:'ADJUSTMENT',reason:'Synthetic test count',reference:'qa-count-change'}});

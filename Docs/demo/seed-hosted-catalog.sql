@@ -1,6 +1,7 @@
 -- OPERATOR ACTION: run only in the Grozo demonstration/staging database.
--- Adds 2 clearly simulated Bengaluru stores and 24 products. No users, passwords,
--- roles, orders, payments, or existing stock are changed. Re-runs do not reset stock.
+-- Adds 2 simulated stores, 24 products, and 2 inert vendor-owner business records.
+-- No Clerk identities, login credentials, existing users, roles, orders, payments,
+-- or existing stock are changed. Re-runs do not reset stock or approvals.
 -- Product imagery: original unbranded AI demo illustrations; inventory/licences:
 -- Docs/demo/product-image-licenses.md. Locations: demo/scenario.json provenance.
 BEGIN;
@@ -12,21 +13,32 @@ DECLARE
   ns text := 'gzhostdemo-blr';
   city_id text := 'gzhostdemo-blr-city';
   zone_id text := 'gzhostdemo-blr-zone';
+  store_category_id text := 'gzhostdemo-blr-cat-grocery-stores';
   s jsonb; p jsonb; anchor jsonb;
   idx integer := 0;
-  store_id text; cat_id text; item_id text;
+  store_id text; owner_id text; owner_name text; cat_id text; item_id text;
 BEGIN
   PERFORM pg_advisory_xact_lock(hashtextextended('grozo-hosted-demo-catalog-v1', 81971));
-  IF EXISTS (SELECT 1 FROM "City" WHERE id=city_id AND (code<>ns OR name<>'Bengaluru')) THEN
+  IF EXISTS (SELECT 1 FROM "City" WHERE id=city_id AND
+    (code<>ns OR name NOT IN ('Bengaluru','Bengaluru · Demo (simulated)') OR state<>'Karnataka' OR country<>'IN')) THEN
     RAISE EXCEPTION 'Demo namespace conflict; no changes committed';
   END IF;
   IF EXISTS (SELECT 1 FROM "DeliveryZone" WHERE id=zone_id AND "cityId"<>city_id) THEN
     RAISE EXCEPTION 'Demo zone conflict; no changes committed';
   END IF;
   INSERT INTO "City" (id,code,name,state,country,active)
-  VALUES (city_id,ns,'Bengaluru','Karnataka','IN',true) ON CONFLICT (id) DO NOTHING;
+  VALUES (city_id,ns,'Bengaluru · Demo (simulated)','Karnataka','IN',true) ON CONFLICT (id) DO NOTHING;
+  -- Disambiguate the isolated demo city from an existing operational Bengaluru.
+  -- Addresses are never moved between cities by this seed.
+  UPDATE "City" SET name='Bengaluru · Demo (simulated)' WHERE id=city_id AND name='Bengaluru';
   INSERT INTO "DeliveryZone" (id,"cityId",name,"centerLat","centerLng","radiusKm","baseFeePaise","perKmFeePaise",active)
   VALUES (zone_id,city_id,'Simulated central Bengaluru service circle',12.96393155,77.58425661,8,2500,100,true)
+  ON CONFLICT (id) DO NOTHING;
+  IF EXISTS (SELECT 1 FROM "Category" WHERE id=store_category_id AND slug<>store_category_id) THEN
+    RAISE EXCEPTION 'Demo store category conflict; no changes committed';
+  END IF;
+  INSERT INTO "Category" (id,name,slug,icon,"sortOrder","isActive","forRestaurants","forDishes","showOnHome","updatedAt")
+  VALUES (store_category_id,'Grocery stores',store_category_id,'shopping_basket',5,true,true,false,true,CURRENT_TIMESTAMP)
   ON CONFLICT (id) DO NOTHING;
   FOR p IN SELECT value FROM jsonb_array_elements(cfg->'products') LOOP
     cat_id := ns||'-cat-'||(p->>'categorySlug');
@@ -40,18 +52,37 @@ BEGIN
   FOR s IN SELECT value FROM jsonb_array_elements(cfg->'stores') LOOP
     idx := idx+1;
     store_id := ns||'-store-'||idx;
+    owner_id := ns||'-vendor-'||idx;
+    owner_name := 'Simulated demo store owner '||idx;
     anchor := (cfg->'points')->((s->>'point')::integer);
+    PERFORM id FROM "User" WHERE id=owner_id FOR UPDATE;
+    IF EXISTS (SELECT 1 FROM "User" WHERE id=owner_id AND
+      (name<>owner_name OR role<>'VENDOR' OR "clerkUserId" IS NOT NULL OR phone IS NOT NULL OR email IS NOT NULL
+       OR "googleSub" IS NOT NULL OR "passwordHash" IS NOT NULL OR "deletedAt" IS NOT NULL)) THEN
+      RAISE EXCEPTION 'Demo owner conflict; existing identity and access left unchanged';
+    END IF;
+    -- These satisfy the business ownership filter but cannot sign in. No public
+    -- account-claim flow, password, contact identity, session or Clerk user is made.
+    INSERT INTO "User" (id,name,role,"updatedAt")
+    VALUES (owner_id,owner_name,'VENDOR',CURRENT_TIMESTAMP) ON CONFLICT (id) DO NOTHING;
+    PERFORM id FROM "Vendor" WHERE id=store_id FOR UPDATE;
     IF EXISTS (SELECT 1 FROM "Vendor" WHERE id=store_id AND
-      ("userId" IS NOT NULL OR "cityId" IS DISTINCT FROM city_id OR name IS DISTINCT FROM s->>'name')) THEN
+      (("userId" IS NOT NULL AND "userId"<>owner_id) OR "cityId" IS DISTINCT FROM city_id OR name IS DISTINCT FROM s->>'name'
+       OR ("primaryCategoryId" IS NOT NULL AND "primaryCategoryId"<>store_category_id))) THEN
       RAISE EXCEPTION 'Demo store namespace/ownership conflict; no changes committed';
     END IF;
-    INSERT INTO "Vendor" (id,name,category,"bannerImage",address,"isAcceptingOrders",lat,lng,"cityId","pinCode",locality,
+    INSERT INTO "Vendor" (id,"userId",name,category,"primaryCategoryId","bannerImage",address,"isAcceptingOrders",lat,lng,"cityId","pinCode",locality,
       "locationSource","locationSetAt","approvalStatus",eta,rating,"totalRatingsCount","commissionType","commissionValue","updatedAt")
-    VALUES (store_id,s->>'name','Groceries',cfg->'products'->0->>'imageUrl',
+    VALUES (store_id,owner_id,s->>'name','Grocery stores',store_category_id,cfg->'products'->0->>'imageUrl',
       'Simulation only - public map anchor: '||(anchor->>'label')||', Bengaluru '||(s->>'pinCode'),true,
       (anchor->>'lat')::double precision,(anchor->>'lng')::double precision,city_id,s->>'pinCode',anchor->>'label',
       'ADMIN',CURRENT_TIMESTAMP,'APPROVED','',0,0,'FLAT',0,CURRENT_TIMESTAMP)
     ON CONFLICT (id) DO NOTHING;
+    -- Upgrade only the previous seed's missing business associations. Preserve
+    -- stock, opening/approval status, edited products and real owner assignments.
+    UPDATE "Vendor" SET "userId"=owner_id,"primaryCategoryId"=store_category_id,
+      category='Grocery stores',"updatedAt"=CURRENT_TIMESTAMP
+    WHERE id=store_id AND ("userId" IS NULL OR "primaryCategoryId" IS NULL);
     INSERT INTO "VendorCoverage" ("vendorId","zoneId",active) VALUES (store_id,zone_id,true)
     ON CONFLICT ("vendorId","zoneId") DO NOTHING;
     FOR p IN SELECT value FROM jsonb_array_elements(cfg->'products') LOOP
@@ -78,6 +109,7 @@ BEGIN
 END
 $grozo_seed$;
 COMMIT;
-SELECT v.name AS store, count(m.id) AS products FROM "Vendor" v
+SELECT v.name AS store,c.name AS city,v."cityId",v."userId",v."primaryCategoryId",v."approvalStatus",v."isAcceptingOrders",count(m.id) AS products FROM "Vendor" v
+JOIN "City" c ON c.id=v."cityId"
 LEFT JOIN "MenuItem" m ON m."vendorId"=v.id
-WHERE v.id IN ('gzhostdemo-blr-store-1','gzhostdemo-blr-store-2') GROUP BY v.id,v.name ORDER BY v.id;
+WHERE v.id IN ('gzhostdemo-blr-store-1','gzhostdemo-blr-store-2') GROUP BY v.id,c.id ORDER BY v.id;

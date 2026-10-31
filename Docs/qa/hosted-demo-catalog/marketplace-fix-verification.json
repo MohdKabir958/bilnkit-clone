@@ -1,0 +1,16 @@
+{
+  "sourceCommit": "08f979440bc93533c7bc63267f1ea545bf7cd814",
+  "ciUrl": "https://github.com/MohdKabir958/bilnkit-clone/actions/runs/41215169075",
+  "backend": {
+    "total": 1273,
+    "passed": 1273,
+    "failed": 0,
+    "skipped": 0
+  },
+  "newSeedRegressions": 7,
+  "aggregateRun": "Failure",
+  "failedStep": "Run npm audit --omit=dev",
+  "hostedDatabaseModified": false,
+  "actualOperatorSql": "Docs/demo/seed-hosted-catalog.sql",
+  "note": "The complete Jest invocation passed in CI; independent npm dependency audit still fails. Hosted seeding needs an operator connection and was not performed."
+}
