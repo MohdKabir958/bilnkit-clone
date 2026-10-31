@@ -1,0 +1,34 @@
+[
+  {
+    "role": "vendor",
+    "suite": "flutter-vendor.jsonl",
+    "passed": 538,
+    "failed": 0,
+    "skipped": 1,
+    "success": true
+  },
+  {
+    "role": "vendor",
+    "suite": "clerk-vendor.jsonl",
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "success": true
+  },
+  {
+    "role": "driver",
+    "suite": "flutter-driver.jsonl",
+    "passed": 418,
+    "failed": 0,
+    "skipped": 1,
+    "success": true
+  },
+  {
+    "role": "driver",
+    "suite": "clerk-driver.jsonl",
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "success": true
+  }
+]

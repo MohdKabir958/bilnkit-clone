@@ -1,0 +1,47 @@
+{"protocolVersion":"0.1.1","runnerVersion":null,"pid":3338,"type":"start","time":0}
+{"suite":{"id":0,"platform":"vm","path":"/home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_api_tokens_test.dart"},"type":"suite","time":0}
+{"test":{"id":1,"name":"loading /home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_api_tokens_test.dart","suiteID":0,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":1}
+{"suite":{"id":2,"platform":"vm","path":"/home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart"},"type":"suite","time":6}
+{"test":{"id":3,"name":"loading /home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart","suiteID":2,"groupIDs":[],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":6}
+{"count":2,"time":7,"type":"allSuites"}
+
+[{"event":"test.startedProcess","params":{"vmServiceUri":null}}]
+{"testID":1,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":9493}
+{"group":{"id":4,"suiteID":0,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":3,"line":null,"column":null,"url":null},"type":"group","time":9496}
+{"test":{"id":5,"name":"(setUpAll)","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":15,"column":3,"url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_api_tokens_test.dart"},"type":"testStart","time":9496}
+{"testID":5,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":9515}
+{"test":{"id":6,"name":"Clerk mode requests fresh SDK tokens for API headers","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":39,"column":3,"url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_api_tokens_test.dart"},"type":"testStart","time":9516}
+{"testID":6,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":9530}
+{"test":{"id":7,"name":"saving an old Grozo JWT cannot replace the SDK session","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":46,"column":3,"url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_api_tokens_test.dart"},"type":"testStart","time":9530}
+{"testID":7,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":9540}
+{"test":{"id":8,"name":"secure logout blocks further SDK token injection","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":51,"column":3,"url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_api_tokens_test.dart"},"type":"testStart","time":9540}
+{"testID":8,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":9544}
+{"test":{"id":9,"name":"(tearDownAll)","suiteID":0,"groupIDs":[4],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":9544}
+{"testID":9,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":9547}
+
+[{"event":"test.startedProcess","params":{"vmServiceUri":null}}]
+{"testID":3,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":14688}
+{"group":{"id":10,"suiteID":2,"parentID":null,"name":"","metadata":{"skip":false,"skipReason":null},"testCount":9,"line":null,"column":null,"url":null},"type":"group","time":14688}
+{"test":{"id":11,"name":"(setUpAll)","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":72,"column":3,"url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart"},"type":"testStart","time":14689}
+{"testID":11,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":14719}
+{"test":{"id":12,"name":"unregistered identity is pending and cannot become approved through copies or persistence","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":98,"column":3,"url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart"},"type":"testStart","time":14719}
+{"testID":12,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":14739}
+{"test":{"id":13,"name":"Clerk profile uses onboarding route; HTTP outage and role conflict retain actionable reasons","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":113,"column":3,"url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart"},"type":"testStart","time":14739}
+{"testID":13,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":14759}
+{"test":{"id":14,"name":"Clerk owner profile retains every approval state without granting access early","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":146,"column":3,"url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart"},"type":"testStart","time":14759}
+{"testID":14,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":14765}
+{"test":{"id":15,"name":"welcome preserves actionable account role errors instead of generic connection text","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":160,"root_column":3,"root_url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart"},"type":"testStart","time":14765}
+{"testID":15,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":15650}
+{"test":{"id":16,"name":"malformed application success is not treated as a created store and password is never sent","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":177,"column":3,"url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart"},"type":"testStart","time":15650}
+{"testID":16,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":15663}
+{"test":{"id":17,"name":"Clerk store form exposes contact, hides password, shows validation, submits only once","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":199,"root_column":3,"root_url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart"},"type":"testStart","time":15664}
+{"testID":17,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":16629}
+{"test":{"id":18,"name":"real auth gate routes fresh Clerk owner to registration then pending, never store dashboard","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":239,"root_column":3,"root_url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart"},"type":"testStart","time":16630}
+{"testID":18,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":17132}
+{"test":{"id":19,"name":"category load failure has retry and cannot submit an unclassified store","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":304,"root_column":3,"root_url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart"},"type":"testStart","time":17133}
+{"testID":19,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":17417}
+{"test":{"id":20,"name":"capture actual store registration UI with explicit synthetic fixtures","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":174,"column":5,"url":"package:flutter_test/src/widget_tester.dart","root_line":331,"root_column":3,"root_url":"file:///home/runner/work/bilnkit-clone/bilnkit-clone/apps/vendor_app/test/clerk_vendor_onboarding_test.dart"},"type":"testStart","time":17418}
+{"testID":20,"result":"success","skipped":false,"hidden":false,"type":"testDone","time":17644}
+{"test":{"id":21,"name":"(tearDownAll)","suiteID":2,"groupIDs":[10],"metadata":{"skip":false,"skipReason":null},"line":null,"column":null,"url":null},"type":"testStart","time":17645}
+{"testID":21,"result":"success","skipped":false,"hidden":true,"type":"testDone","time":17651}
+{"success":true,"type":"done","time":17679}

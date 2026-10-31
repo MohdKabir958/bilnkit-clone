@@ -1,0 +1,5 @@
+Grozo Vendor and Delivery 1.16.3, ARM64 Android API 24+ previews.
+Backend: https://grozo-backend-3wdf.onrender.com/api; Clerk development sign-in.
+New development signing certificates: preserve needed local data, uninstall the older previews, then install and sign in again. Uninstalling clears local app data; backend records remain.
+Vendor/rider admin approval and configured service locations remain required. No demo login or automatic store/account claim is provided.
+Firebase push is unconfigured in these previews; they are not Play Store releases.
