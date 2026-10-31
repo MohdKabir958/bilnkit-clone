@@ -33,6 +33,7 @@ jobs:
       - run: npx prisma generate
       - run: npm run db:deploy
       - run: npm run build
+      - run: python3 ../scripts/demo/generate_hosted_catalog.py --check
       - run: python3 ../scripts/qa/check_ui_terminology.py
       - run: python3 ../scripts/qa/test_terminology_guard.py
       - name: Complete backend regression (one invocation)
