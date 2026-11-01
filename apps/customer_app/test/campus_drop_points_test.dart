@@ -413,6 +413,9 @@ void main() {
         'shows the full delivery address and offers Change without campus choices',
         (tester) async {
       await open(tester);
+      await tester.scrollUntilVisible(
+          find.text('House 2, Main Road, Kothri, Bhopal 466114'), 160,
+          scrollable: find.byType(Scrollable).first);
       expect(find.text('Delivering to'), findsOneWidget);
       expect(find.text('House 2, Main Road, Kothri, Bhopal 466114'),
           findsOneWidget);

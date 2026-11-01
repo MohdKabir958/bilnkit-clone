@@ -245,7 +245,8 @@ class NearbyStoreTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: Stack(children: [
             Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 7),
+                padding: EdgeInsets.fromLTRB(
+                    8, MediaQuery.textScalerOf(context).scale(7) + 12, 8, 9),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -265,15 +266,18 @@ class NearbyStoreTile extends StatelessWidget {
                                   ][illustration % 4],
                                   color: const Color(0xFF17933E),
                                   size: 27))),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Expanded(
                           child: Center(
-                              child: Text(store.name,
+                              child: Tooltip(
+                                message: store.name,
+                                child: Text(store.name,
                                   textAlign: TextAlign.center,
-                                  maxLines: 2,
+                                  maxLines: 3,
                                   overflow: TextOverflow.ellipsis,
                                   style: groceryText(10.5,
-                                      weight: FontWeight.w700)))),
+                                      weight: FontWeight.w700))))),
+                      const SizedBox(height: 6),
                       Row(children: [
                         Container(
                             width: 6,

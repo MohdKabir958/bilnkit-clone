@@ -1,8 +1,8 @@
-name: Customer catalog fix APK
+name: Customer checkout layout APK
 
 on:
   push:
-    branches: [fix/customer-nearby-stores-apk-20261031]
+    branches: [fix/customer-checkout-layout-20261101]
     paths:
       - 'apps/customer_app/**'
       - 'packages/**'
@@ -37,21 +37,42 @@ jobs:
           mkdir -p build/ci
           set -o pipefail
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'build-tools;36.0.0' 2>&1 | tee build/ci/android-tools.log
-      - name: Customer analysis and complete regressions
+      - name: Customer analysis and focused layout regressions
         env:
           GROZO_FLUTTER_TEST_JSON: ${{ github.workspace }}/build/ci/flutter-customer.jsonl
-        run: bash scripts/check_flutter.sh customer
+        working-directory: apps/customer_app
+        run: |
+          # Baseline CI runs the full suite on this push; avoid duplicating it here.
+          flutter pub get --enforce-lockfile
+          flutter analyze --no-pub
+          set -o pipefail
+          flutter test --no-pub --machine test/checkout_layout_recovery_test.dart \
+            test/payment_readiness_test.dart test/reference_home_test.dart \
+            | tee "$GROZO_FLUTTER_TEST_JSON"
       - name: Native Clerk handoff regressions
         working-directory: apps/customer_app
         run: flutter test --no-pub --dart-define=AUTH_MODE=clerk-test test/clerk/customer_handoff.dart
+      - name: Capture actual updated widgets with isolated fixtures
+        working-directory: apps/customer_app
+        run: |
+          set -o pipefail
+          flutter test --no-pub --machine --dart-define=GROZO_CAPTURE=true \
+            --dart-define=GROZO_CAPTURE_PHASE=client-demo test/checkout_layout_recovery_test.dart \
+            | tee ../../build/ci/layout-captures.jsonl
       - name: Build connected customer preview from committed source
         run: |
           python3 scripts/clerk/build_test_apks.py --app customer \
             --public-config Docs/clerk/android-staging-public.json \
             --backend-origin https://grozo-backend-3wdf.onrender.com \
-            --build-name 1.16.3 --build-number 27
+            --build-name 1.16.4 --build-number 28
       - name: Verify APK and disclose the new development signature
         run: python3 scripts/clerk/verify_apks.py --app customer --allow-development-key-rotation
+      - name: Assemble verified APK and actual fixture captures
+        run: |
+          mkdir -p build/customer-publication
+          cp build/clerk-test-apks/*.apk build/clerk-test-apks/manifest.json build/clerk-test-apks/SHA256SUMS build/customer-publication/
+          cp build/ci/flutter-customer.jsonl build/customer-publication/
+          cp Docs/ui-ux/client-demo/customer/home-layout.png Docs/ui-ux/client-demo/customer/checkout-top.png Docs/ui-ux/client-demo/customer/checkout-address.png build/customer-publication/
       - name: Preserve test and build evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -59,6 +80,7 @@ jobs:
           name: customer-catalog-evidence-${{ github.sha }}
           path: |
             build/ci/flutter-customer.jsonl
+            build/ci/layout-captures.jsonl
             build/clerk-test-apks/*-build.log
             build/clerk-test-apks/*-build.json
             build/clerk-test-apks/*-apk-verification.txt
@@ -67,6 +89,7 @@ jobs:
         if: failure()
         run: |
           python3 scripts/qa/report_flutter_results.py build/ci/flutter-customer.jsonl
+          python3 scripts/qa/report_flutter_results.py build/ci/layout-captures.jsonl
           python3 - <<'PY'
           from pathlib import Path
           for path in [Path('build/ci/android-tools.log'), Path('build/clerk-test-apks/customer-build.log')]:
@@ -77,16 +100,13 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: customer-catalog-apk-${{ github.sha }}
-          path: |
-            build/clerk-test-apks/Grozo-Customer-Clerk-Test.apk
-            build/clerk-test-apks/manifest.json
-            build/clerk-test-apks/SHA256SUMS
+          path: build/customer-publication/
           if-no-files-found: error
           compression-level: 0
 
   publish:
     needs: customer
-    if: github.repository == 'MohdKabir958/bilnkit-clone' && github.ref == 'refs/heads/fix/customer-nearby-stores-apk-20261031'
+    if: github.repository == 'MohdKabir958/bilnkit-clone' && github.ref == 'refs/heads/fix/customer-checkout-layout-20261101'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -114,25 +134,27 @@ jobs:
           assert record['buildCommit'] == os.environ['SOURCE_COMMIT']
           assert record['applicationId'] == 'in.grozo.customer'
           assert record['authMode'] == 'clerk-test' and not record['authenticationPreview']
-          assert record['versionName'] == '1.16.3' and record['versionCode'] == 2027
+          assert record['versionName'] == '1.16.4' and record['versionCode'] == 2028
           apk = incoming / 'Grozo-Customer-Clerk-Test.apk'
           assert hashlib.sha256(apk.read_bytes()).hexdigest() == record['sha256']
-          relative = pathlib.Path('clerk-staging') / ('1.16.3-27-' + os.environ['SOURCE_COMMIT'][:7])
+          relative = pathlib.Path('clerk-staging') / ('1.16.4-28-' + os.environ['SOURCE_COMMIT'][:7])
           destination = archive / relative
           destination.mkdir(parents=True, exist_ok=False)
-          for name in ['Grozo-Customer-Clerk-Test.apk', 'manifest.json', 'SHA256SUMS']:
+          for name in ['Grozo-Customer-Clerk-Test.apk', 'manifest.json', 'SHA256SUMS', 'flutter-customer.jsonl', 'home-layout.png', 'checkout-top.png', 'checkout-address.png']:
               shutil.copy2(incoming / name, destination / name)
           (destination / 'INSTALL.txt').write_text(
-              'Grozo Customer 1.16.3, Android ARM64 API 24+ preview.\n'
+              'Grozo Customer 1.16.4, Android ARM64 API 24+ preview.\n'
               'Connected to https://grozo-backend-3wdf.onrender.com/api using Clerk development authentication.\n'
               'New development signing certificate: this cannot update the older preview in place.\n'
               'Preserve any needed local data, then uninstall the old preview and install this APK.\n'
               'Uninstalling clears local app data; server records are preserved. Sign in again.\n'
               'Select a saved delivery address, or add one in an enabled service city.\n'
-              'Firebase push is unconfigured in this preview; it is not a Play Store release.\n')
+              'Firebase push is unconfigured in this preview; it is not a Play Store release.\n'
+              'PNG captures are actual Flutter widgets rendered with synthetic fixtures, not physical-device screenshots.\n'
+              'Delivery still needs an approved online rider with recent real GPS in the enabled service area. Payment configuration is independent.\n')
           (archive / 'latest-customer.json').write_text(json.dumps(
               {'path':str(relative / apk.name), 'sourceCommit':os.environ['SOURCE_COMMIT'],
-               'versionName':'1.16.3', 'versionCode':2027, 'sha256':record['sha256'],
+               'versionName':'1.16.4', 'versionCode':2028, 'sha256':record['sha256'],
                'inPlaceUpdateCompatible':record['inPlaceUpdateCompatible']}, indent=2) + '\n')
           PY
           git -C archive config user.name 'github-actions[bot]'

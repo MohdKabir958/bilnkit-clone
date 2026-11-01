@@ -168,6 +168,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   /// Why a cart with several restaurants cannot be ordered as it is, or null.
   String? _blockMessage(CartProvider cart) {
+    if (_quote.quote?.deliveryAvailable == false) {
+      return _quote.quote!.deliveryMessage ??
+          'Delivery is temporarily unavailable. Please try again shortly.';
+    }
     if (_quote.quote != null && _quote.quote!.paymentMethods.isEmpty) {
       return _quote.quote!.paymentMessage ??
           'Payment is unavailable for this store. Please try again later.';
@@ -533,10 +537,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           if (keyboardOpen && _notice != null)
             _NoticeLine(message: _notice!, error: true),
           KReveal(
-              child: _SectionCard(
-                  title: 'Drop-off',
-                  icon: LucideIcons.mapPin,
-                  child: _buildDropoff(context, k))),
+            index: 0,
+            child: _SectionCard(
+              key: const ValueKey('checkout-order-section'),
+              title: multi
+                  ? 'Your order · ${cart.restaurantCount} stores'
+                  : (cart.dhabaName ?? 'Your order'),
+              icon: LucideIcons.receiptText,
+              child: _buildSummary(context, k, cart),
+            ),
+          ),
+          const SizedBox(height: 14),
+          KReveal(
+              index: 1,
+              child: KeyedSubtree(
+                  key: const ValueKey('checkout-bill-section'),
+                  child: _buildBill(cart))),
           const SizedBox(height: 14),
           if (_quote.quote?.estimatedDeliveryMinMinutes != null) ...[
             _InfoCard(
@@ -548,36 +564,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 14),
           ],
           KReveal(
-            index: 1,
-            child: _SectionCard(
-              title: multi
-                  ? 'Your order · ${cart.restaurantCount} stores'
-                  : (cart.dhabaName ?? 'Your order'),
-              icon: LucideIcons.receiptText,
-              child: _buildSummary(context, k, cart),
-            ),
-          ),
+              index: 2,
+              child: _SectionCard(
+                  key: const ValueKey('checkout-payment-section'),
+                  title: _quote.quote?.deliveryAvailable == false
+                      ? 'Delivery availability'
+                      : 'Payment',
+                  icon: _quote.quote?.deliveryAvailable == false
+                      ? LucideIcons.bike
+                      : LucideIcons.wallet,
+                  child: _buildPayment(context, k))),
           const SizedBox(height: 14),
           KReveal(
               index: 3,
               child: _SectionCard(
-                  title: 'Payment',
-                  icon: LucideIcons.wallet,
-                  child: _buildPayment(context, k))),
-          const SizedBox(height: 14),
-          KReveal(index: 4, child: _buildBill(cart)),
+                  key: const ValueKey('checkout-address-section'),
+                  title: 'Delivery address',
+                  icon: LucideIcons.mapPin,
+                  child: _buildDropoff(context, k))),
         ],
       );
       footer = KSheetFooter(
         floating: true,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          if (blockMessage != null && !keyboardOpen)
+          if (blockMessage != null && !keyboardOpen &&
+              _quote.quote?.deliveryAvailable != false &&
+              _quote.quote?.paymentMethods.isEmpty != true)
             _NoticeLine(message: blockMessage, error: true),
           if (_notice != null && !keyboardOpen && _notice != blockMessage)
             _NoticeLine(message: _notice!, error: true),
           KButton(
             label: _currentHostel == null
                 ? 'Choose address'
+                : _quote.quote?.deliveryAvailable == false
+                    ? 'Delivery unavailable'
+                : _quote.quote?.paymentMethods.isEmpty == true
+                    ? 'Payment unavailable'
                 : _selectedPaymentMethod == 'Cash on delivery'
                     ? 'Place cash order · ${rupee(_shownTotal(cart))}'
                     : 'Pay ${rupee(_shownTotal(cart))}',
@@ -602,6 +624,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ? 'Placing your order. Please do not close the app.'
                   : (_currentHostel == null
                       ? 'Tell us where to deliver first. Payment opens right after.'
+                      : blockMessage != null
+                          ? 'No payment will be taken while checkout is unavailable.'
                       : _quote.quote == null
                           ? 'Checking the current price and available payment methods.'
                           : _selectedPaymentMethod == 'Cash on delivery'
@@ -634,7 +658,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
             ),
           ),
-          title: const Text('Checkout'),
+          title: Text('Checkout',
+              style: KraveoType.titleLg.copyWith(fontSize: 22, color: k.ink)),
         ),
         body: body,
         // A Scaffold keeps its bottom bar at the very bottom of the screen, i.e. UNDER the keyboard:
@@ -867,7 +892,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Choose address point',
-                            style: KraveoType.titleLg.copyWith(color: k.ink)),
+                            style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16)),
                         const SizedBox(height: 2),
                         Text('Required before you can pay',
                             style:
@@ -884,14 +909,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       const SizedBox(height: 12),
       Text(
         'Your delivery verification code appears when the delivery partner arrives. Share it only when your order reaches your doorstep.',
-        style: KraveoType.bodySm.copyWith(color: k.inkMuted),
+        style: KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 12, height: 1.45),
       ),
       const SizedBox(height: 14),
       TextField(
         controller: _deliveryNoteController,
+        minLines: 2,
+        maxLines: 3,
+        maxLength: 300,
+        style: KraveoType.bodySm.copyWith(color: k.ink, fontSize: 13, height: 1.4),
         textInputAction: TextInputAction.done,
         decoration: InputDecoration(
-          hintText: 'Note for your delivery partner, e.g. call 5 mins before',
+          hintText: 'Delivery instructions (optional)',
+          counterText: '',
           prefixIcon:
               Icon(LucideIcons.messageSquare, size: 18, color: k.inkMuted),
         ),
@@ -980,12 +1010,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Widget _buildPayment(BuildContext context, KraveoTokens k) {
+    if (_quote.quote?.deliveryAvailable == false) {
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _NoticeLine(message: _quote.quote!.deliveryMessage ??
+            'Delivery is temporarily unavailable. Please try again shortly.', error: false),
+        TextButton.icon(
+            onPressed: _quote.isLoading ? null : _quote.retry,
+            icon: const Icon(LucideIcons.refreshCw, size: 16),
+            label: const Text('Refresh availability')),
+        Text('Payment choices appear when delivery is available.',
+            style: KraveoType.caption.copyWith(color: k.inkMuted, fontSize: 12)),
+      ]);
+    }
     return Column(children: [
-      if (_quote.quote?.paymentMessage != null)
+      if (_quote.quote != null &&
+          (_quote.quote!.paymentMessage != null || _quote.quote!.paymentMethods.isEmpty))
         Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: _NoticeLine(
-                message: _quote.quote!.paymentMessage!,
+                message: _quote.quote!.paymentMessage ??
+                    'Payment is unavailable for this store. Please try again later.',
                 error: _quote.quote!.paymentMethods.isEmpty)),
       for (final opt in _paymentOptions.where((o) =>
           _quote.quote?.paymentMethods
@@ -1024,10 +1068,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(opt['name'] as String,
-                            style: KraveoType.titleMd.copyWith(color: k.ink)),
+                            style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 15)),
                         Text(opt['sub'] as String,
                             style:
-                                KraveoType.bodySm.copyWith(color: k.inkMuted)),
+                                KraveoType.bodySm.copyWith(color: k.inkMuted, fontSize: 12)),
                       ]),
                 ),
                 const SizedBox(width: 8),
@@ -1060,7 +1104,8 @@ class _DeliveringToRow extends StatelessWidget {
           decoration: BoxDecoration(
               color: k.surfaceAlt,
               borderRadius: BorderRadius.circular(KRadius.lg)),
-          child: Row(children: [
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
             Container(
               width: 38,
               height: 38,
@@ -1076,15 +1121,18 @@ class _DeliveringToRow extends StatelessWidget {
                     Text('Delivering to',
                         style: KraveoType.caption
                             .copyWith(color: k.inkFaint, letterSpacing: 0.4)),
-                    Text(name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: KraveoType.titleLg.copyWith(color: k.ink)),
                   ]),
             ),
             const SizedBox(width: 8),
             Text('Change',
                 style: KraveoType.label.copyWith(color: k.brand, fontSize: 14)),
+            ]),
+            const SizedBox(height: 10),
+            Text(name,
+                key: const ValueKey('checkout-full-address'),
+                style: KraveoType.bodySm.copyWith(
+                    color: k.ink, fontSize: 13, height: 1.45,
+                    fontWeight: FontWeight.w500)),
           ]),
         ),
       ),
@@ -1094,7 +1142,7 @@ class _DeliveringToRow extends StatelessWidget {
 
 class _SectionCard extends StatelessWidget {
   const _SectionCard(
-      {required this.title, required this.icon, required this.child});
+      {super.key, required this.title, required this.icon, required this.child});
 
   final String title;
   final IconData icon;
@@ -1104,7 +1152,7 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final k = context.k;
     return KCard(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Row(children: [
           Container(
@@ -1117,9 +1165,9 @@ class _SectionCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
               child: Text(title,
-                  maxLines: 1,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: KraveoType.titleLg.copyWith(color: k.ink))),
+                  style: KraveoType.titleLg.copyWith(color: k.ink, fontSize: 18, height: 1.25))),
         ]),
         const SizedBox(height: 14),
         child,

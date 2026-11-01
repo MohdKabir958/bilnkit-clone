@@ -269,12 +269,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     else
                       SliverToBoxAdapter(
                           child: LayoutBuilder(builder: (context, constraints) {
+                        final columns = stores.length.clamp(1, 4);
                         final width = textScale > 1.25
-                            ? 125.0
-                            : ((constraints.maxWidth - 28 - 21) / 4)
-                                .clamp(78.0, 150.0);
+                            ? 148.0
+                            : ((constraints.maxWidth - 28 - 7 * (columns - 1)) /
+                                    columns)
+                                .clamp(104.0, 168.0);
                         return SizedBox(
-                            height: 104 + (textScale - 1).clamp(0, 2) * 58,
+                            height: 142 + (textScale - 1).clamp(0, 2) * 80,
                             child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
                                 padding: const EdgeInsets.symmetric(

@@ -9,6 +9,43 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  test('capacity reasons explain rider availability independently of payment setup and prices', () {
+    final quote = OrderQuote.tryParse({
+      'total': 134.01, 'subtotal': 135, 'discount': 27,
+      'couponCode': 'WELCOME20',
+      'fees': {'base': 26.01, 'total': 26.01},
+      'paymentMethods': [],
+      'paymentCapabilities': {'message': 'Online payment is unavailable.'},
+      'capacity': {
+        'canCheckout': false,
+        'reason': 'NO_RIDERS_AVAILABLE',
+        'message': 'Delivery is temporarily unavailable. Try again later or choose another store.',
+        'estimatedDeliveryMinMinutes': 20,
+        'estimatedDeliveryMaxMinutes': 35,
+      },
+    })!;
+    expect(quote.deliveryAvailable, isFalse);
+    expect(quote.capacityReason, 'NO_RIDERS_AVAILABLE');
+    expect(quote.deliveryMessage, contains('No delivery partner'));
+    expect(quote.paymentMessage, 'Online payment is unavailable.');
+    expect(quote.paymentMethods, isEmpty);
+    expect(quote.totalPaise, 13401);
+    expect(quote.discount, 27);
+    expect(quote.estimatedDeliveryMinMinutes, isNull);
+  });
+
+  test('paused service and busy store are not mislabeled as a missing rider', () {
+    for (final reason in ['DELIVERY_PAUSED', 'STORE_BUSY', 'STORE_AT_CAPACITY']) {
+      final quote = OrderQuote.tryParse({
+        'total': 105, 'subtotal': 80, 'paymentMethods': [],
+        'capacity': {'canCheckout': false, 'reason': reason},
+      })!;
+      expect(quote.deliveryAvailable, isFalse);
+      expect(quote.deliveryMessage, isNot(contains('No delivery partner')));
+      expect(quote.deliveryMessage, isNotEmpty);
+    }
+  });
+
   test('delivery windows are server-provided, bounded and never invented', () {
     final quote = OrderQuote.tryParse({
       'total': 105,

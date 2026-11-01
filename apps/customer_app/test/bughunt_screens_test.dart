@@ -800,7 +800,7 @@ void main() {
         final note = find.byWidgetPredicate((w) =>
             w is TextField &&
             (w.decoration?.hintText ?? '')
-                .startsWith('Note for your delivery partner'));
+                .startsWith('Delivery instructions (optional)'));
         await tester.scrollUntilVisible(note, 50,
             scrollable: find.byType(Scrollable).first);
         await tester.pump(const Duration(milliseconds: 300));

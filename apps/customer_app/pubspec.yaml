@@ -1,7 +1,7 @@
 name: customer_app
 description: "Grozo customer grocery shopping app"
 publish_to: 'none'
-version: 1.16.3+27
+version: 1.16.4+28
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

@@ -126,7 +126,7 @@ class BillBreakdown extends StatelessWidget {
         border: Border.all(color: k.line.withValues(alpha: 0.7)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text('Bill details', style: KraveoType.titleMd.copyWith(color: k.ink)),
+        Text('Bill details', style: KraveoType.titleMd.copyWith(color: k.ink, fontSize: 16)),
         const SizedBox(height: 12),
         _Row('Items subtotal', rupee(subtotal)),
         // One all-in line (older orders may still carry a separate packaging amount: it is folded in, never hidden).
@@ -142,13 +142,14 @@ class BillBreakdown extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Divider(height: 1, color: k.line),
         ),
-        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          Expanded(
-              child: Text('To pay',
-                  style: KraveoType.titleLg.copyWith(color: k.ink))),
+        Wrap(alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12, runSpacing: 6, children: [
+          Text('To pay',
+                  style: KraveoType.titleLg.copyWith(color: k.ink, fontSize: 18)),
           KMoneyText(
               value: total,
-              style: KraveoType.numeric.copyWith(color: k.ink, fontSize: 30)),
+              style: KraveoType.numeric.copyWith(color: k.ink, fontSize: 26)),
         ]),
         if (estimate) ...[
           const SizedBox(height: 6),

@@ -113,9 +113,13 @@ class QuoteLine {
 class OrderQuote {
   final List<String> paymentMethods;
   final String? paymentMessage;
+  final bool deliveryAvailable;
+  final String? capacityReason;
   const OrderQuote({
     this.paymentMethods = const ['ONLINE'],
     this.paymentMessage,
+    this.deliveryAvailable = true,
+    this.capacityReason,
     this.estimatedDeliveryMinMinutes,
     this.estimatedDeliveryMaxMinutes,
     this.deliveryMessage,
@@ -154,6 +158,24 @@ class OrderQuote {
   final int maxRestaurants;
 
   int get totalPaise => (total * 100).round();
+
+  static String? _deliveryGuidance(Map capacity) {
+    if (capacity['canCheckout'] != false) return _str(capacity['message']);
+    return switch (capacity['reason']) {
+      'NO_RIDERS_AVAILABLE' =>
+        'No delivery partner is available near this store right now. Please try again shortly.',
+      'DELIVERY_PAUSED' =>
+        'Deliveries are paused right now. Please try again later.',
+      'STORE_BUSY' =>
+        'This store is busy right now. Try again later or choose another store.',
+      'STORE_AT_CAPACITY' =>
+        'This store is handling its current orders. Try again shortly or choose another store.',
+      'DELIVERY_CAPACITY_CONSTRAINED' =>
+        'Delivery partners are busy right now. Please try again shortly.',
+      _ => _str(capacity['message']) ??
+          'Delivery is temporarily unavailable. Please try again shortly.',
+    };
+  }
 
   static OrderQuote? tryParse(Object? raw) {
     if (raw is! Map) return null;
@@ -199,16 +221,15 @@ class OrderQuote {
     return OrderQuote(
       estimatedDeliveryMinMinutes: validWindow ? minimum : null,
       estimatedDeliveryMaxMinutes: validWindow ? maximum : null,
-      deliveryMessage: capacity is Map ? _str(capacity['message']) : null,
+      deliveryAvailable: capacity is! Map || capacity['canCheckout'] != false,
+      capacityReason: capacity is Map ? _str(capacity['reason']) : null,
+      deliveryMessage: capacity is Map ? _deliveryGuidance(capacity) : null,
       paymentMethods: json['paymentMethods'] is List
           ? (json['paymentMethods'] as List).whereType<String>().toList()
           : const [],
-      paymentMessage: _str(
-          json['capacity'] is Map && json['capacity']['canCheckout'] == false
-              ? json['capacity']['message']
-              : json['paymentCapabilities'] is Map
-                  ? json['paymentCapabilities']['message']
-                  : null),
+      paymentMessage: _str(json['paymentCapabilities'] is Map
+          ? json['paymentCapabilities']['message']
+          : null),
       restaurantCount:
           count is num ? count.toInt() : (lines.isEmpty ? 1 : lines.length),
       subtotal: subtotal.toDouble(),

@@ -1624,6 +1624,8 @@ void main() {
           session: session, cart: cartWithItem());
       final choose = find
           .bySemanticsLabel('Choose a saved delivery address before checkout');
+      await tester.scrollUntilVisible(choose, 160,
+          scrollable: find.byType(Scrollable).first);
       expect(choose, findsOneWidget);
       await tester.tap(choose);
       await settle(tester);
@@ -1650,6 +1652,9 @@ void main() {
       await pumpWithProviders(
           tester, CheckoutScreen(selectedHostel: session.deliveryPoint),
           session: session, cart: cartWithItem());
+      await tester.scrollUntilVisible(
+          find.textContaining('Flat 14, Main Road, Central, Bengaluru 560001'),
+          160, scrollable: find.byType(Scrollable).first);
       expect(
           find.textContaining('Flat 14, Main Road, Central, Bengaluru 560001'),
           findsWidgets);
