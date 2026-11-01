@@ -1,0 +1,50 @@
+{
+  "artifactCommit": "28c77653d627e952f58dec09921ff019e08f6d74",
+  "sourceCommit": "80878bedf5d3f3e096a27b53bcb19d5c8e209974",
+  "downloads": [
+    {
+      "name": "manifest.json",
+      "status": 200,
+      "bytes": 2974,
+      "sha256": "b7c7ec3f5dc95fdd510f7b3d0d89c7a939fea7feaa9a77322943c1587992fb3d"
+    },
+    {
+      "name": "SHA256SUMS",
+      "status": 200,
+      "bytes": 96,
+      "sha256": "41decc0a14dcc6565147d45fa06b46a4ff0e217284dc4833511be1b0e046d207"
+    },
+    {
+      "name": "flutter-customer.jsonl",
+      "status": 200,
+      "bytes": 51684,
+      "sha256": "e364b7e5824144df730daff1fe5fbe62d8442a0f7b00cd1e9d5fb647268a114c"
+    },
+    {
+      "name": "home-layout.png",
+      "status": 200,
+      "bytes": 134869,
+      "sha256": "299ca77c4b0590c0cb8ac7c009bf0ad5d285836d90bc6e306cf27f7cc18b4f32"
+    },
+    {
+      "name": "checkout-top.png",
+      "status": 200,
+      "bytes": 61597,
+      "sha256": "26ccee95f929b40c3c8e3ff83cea7a2cf2a2487528c67affdb8907f808ac746d"
+    },
+    {
+      "name": "checkout-address.png",
+      "status": 200,
+      "bytes": 65394,
+      "sha256": "7cbbb14854d555074ffe72426d704b9a038e5101a8db226596cfe20c59f9e4f6"
+    },
+    {
+      "name": "Grozo-Customer-Clerk-Test.apk",
+      "status": 200,
+      "bytes": 53640124,
+      "sha256": "4bb920bd3d17e3cffb3d56cf34fa383d938968282353f672b842f2fd1ba6c17e"
+    }
+  ],
+  "zipIntegrity": true,
+  "compiledBackendAndGuidance": true
+}
