@@ -79,6 +79,19 @@ void main() {
     expect(await CustomerApiService.getSavedToken(), 'token-B');
   });
 
+  test('switching accounts while headers resolve prevents the old request from being sent', () async {
+    var writes = 0;
+    CustomerApiService.httpClientOverride = MockClient((request) async {
+      writes++;
+      return http.Response('{"success":false}', 401);
+    });
+    final pending = CustomerApiService.updateProfile(name: 'Old edit');
+    await CustomerApiService.saveToken('token-B');
+    expect((await pending).success, isFalse);
+    expect(writes, 0);
+    expect(await CustomerApiService.getSavedToken(), 'token-B');
+  });
+
   test('pending profile save completes safely after provider disposal', () async {
     final session = SessionProvider()..beginForTest(user('A', 'Customer A'));
     final pending = session.saveProfile(name: 'Changed A');
