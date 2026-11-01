@@ -178,7 +178,9 @@ void main() {
     expect(find.text('Home'), findsOneWidget);
 
     await tester.scrollUntilVisible(find.byKey(const ValueKey('all-nearby-stores')),-300,scrollable:find.byType(Scrollable).first);
-    await tester.tap(find.byKey(const ValueKey('all-nearby-stores')));await tester.pump(const Duration(seconds:1));await tester.pump(const Duration(seconds:1));
+    await tester.ensureVisible(find.byKey(const ValueKey('all-nearby-stores')));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(const ValueKey('all-nearby-stores')).hitTestable());await tester.pump(const Duration(seconds:1));await tester.pump(const Duration(seconds:1));
     await tester.scrollUntilVisible(
         find.byWidgetPredicate((w) => w is DhabaCard && w.dhaba.id == 'ven-1'),
         200,

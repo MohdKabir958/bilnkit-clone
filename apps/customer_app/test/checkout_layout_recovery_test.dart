@@ -76,7 +76,6 @@ void main() {
   late CartProvider cart;
   late OrderProvider orders;
   late FakeOrderApi api;
-  late void Function() restoreImages;
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
@@ -100,11 +99,9 @@ void main() {
     expect(cart.applyCoupon('WELCOME20'), isTrue);
     api = FakeOrderApi()..onQuote = (_) async => OrderResult.ok(quote());
     orders = fakeOrders(api);
-    restoreImages = installDemoImageTransport();
   });
   tearDown(() async {
     session.dispose(); catalog.dispose(); cart.dispose(); orders.dispose();
-    restoreImages();
     CustomerApiService.httpClientOverride = null;
     await CustomerApiService.clearToken();
   });
@@ -230,13 +227,19 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
   testWidgets('capture updated Home and checkout production widgets with explicit fixtures', (tester) async {
-    await host(tester, const HomeScreen());
-    await captureVisual(tester, 'customer', 'home-layout');
-    await tester.pumpWidget(const SizedBox());
-    await host(tester, CheckoutScreen(selectedHostel: address.formatted));
-    await captureVisual(tester, 'customer', 'checkout-top');
-    await scrollTo(tester, find.byKey(const ValueKey('checkout-address-section')));
-    await captureVisual(tester, 'customer', 'checkout-address');
-    await tester.pumpWidget(const SizedBox());
+    final restoreImages = installDemoImageTransport();
+    try {
+      await host(tester, const HomeScreen());
+      await captureVisual(tester, 'customer', 'home-layout');
+      await tester.pumpWidget(const SizedBox());
+      await host(tester, CheckoutScreen(selectedHostel: address.formatted));
+      await captureVisual(tester, 'customer', 'checkout-top');
+      await scrollTo(tester, find.byKey(const ValueKey('checkout-address-section')));
+      await captureVisual(tester, 'customer', 'checkout-address');
+      await tester.pumpWidget(const SizedBox());
+    } finally {
+      // Flutter checks painting globals before the normal test tearDown runs.
+      restoreImages();
+    }
   }, skip: !captureEnabled);
 }

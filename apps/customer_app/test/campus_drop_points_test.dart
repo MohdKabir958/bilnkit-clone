@@ -518,6 +518,9 @@ void main() {
         (tester) async {
       final (api, _, _, _, _) =
           await open(tester, selected: '12, Church Street, Bengaluru 560001');
+      await tester.scrollUntilVisible(
+          find.text('12, Church Street, Bengaluru 560001'), 160,
+          scrollable: find.byType(Scrollable).first);
       expect(find.text('12, Church Street, Bengaluru 560001'), findsOneWidget);
       await tapButton(tester, 'Pay ₹145');
       await tapButton(tester, 'Confirm and pay');
