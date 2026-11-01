@@ -108,9 +108,28 @@ jobs:
           channel: stable
           cache: true
       - name: Resolve locked dependencies for Clerk handoff checks
-        if: matrix.role == 'customer'
-        working-directory: apps/customer_app
+        working-directory: apps/${{ matrix.role }}_app
         run: flutter pub get --enforce-lockfile
+      - name: Focused account isolation regressions
+        id: account_isolation
+        working-directory: apps/${{ matrix.role }}_app
+        run: |
+          mkdir -p ../../build/ci
+          set -o pipefail
+          test_file=test/session_race_test.dart
+          if [ '${{ matrix.role }}' = customer ]; then test_file=test/profile_session_race_test.dart; fi
+          flutter test --no-pub --machine "$test_file" | tee ../../build/ci/${{ matrix.role }}-session-races.jsonl
+      - name: Report account isolation failures
+        if: always() && steps.account_isolation.outcome == 'failure'
+        run: python3 scripts/qa/report_flutter_results.py build/ci/${{ matrix.role }}-session-races.jsonl
+      - name: Partner native Clerk session and onboarding regressions
+        if: matrix.role != 'customer'
+        working-directory: apps/${{ matrix.role }}_app
+        run: |
+          set -o pipefail
+          onboarding=test/clerk_vendor_onboarding_test.dart
+          if [ '${{ matrix.role }}' = driver ]; then onboarding=test/clerk_rider_onboarding_test.dart; fi
+          flutter test --no-pub --dart-define=AUTH_MODE=clerk-test test/clerk_api_tokens_test.dart "$onboarding"
       - name: Customer Clerk session handoff regressions
         id: customer_handoff
         if: matrix.role == 'customer'
@@ -143,7 +162,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: flutter-${{ matrix.role }}-${{ github.sha }}
-          path: build/ci/flutter-${{ matrix.role }}.jsonl
+          path: |
+            build/ci/flutter-${{ matrix.role }}.jsonl
+            build/ci/${{ matrix.role }}-session-races.jsonl
           if-no-files-found: warn
       - name: Preserve customer handoff evidence
         if: always() && matrix.role == 'customer'
