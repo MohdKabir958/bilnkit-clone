@@ -24,7 +24,8 @@ beforeEach(async () => {
     } });
   }
   await prisma.vendor.create({ data: { id: otherStore, userId: fixtures.vendorUser.id,
-    name: 'Synthetic second store', category: 'Groceries', address: 'Synthetic pickup', cityId: 'seed-city' } });
+    name: 'Synthetic second store', category: 'Groceries', address: 'Synthetic pickup',
+    bannerImage: '', cityId: 'seed-city' } });
 });
 
 afterEach(async () => {
