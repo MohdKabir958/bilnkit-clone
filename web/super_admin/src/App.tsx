@@ -101,6 +101,8 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
   const [drawer, setDrawer] = useState<{ id: string; mode: DrawerMode } | null>(null);
   const [drawerFallback, setDrawerFallback] = useState<Order | null>(null);
   const [drawerLoad, setDrawerLoad] = useState<{ loading: boolean; error: string }>({ loading: false, error: '' });
+  const drawerRequest = useRef(0);
+  useEffect(() => () => { drawerRequest.current++; }, []);
   const ordersRef = useRef<Order[]>([]);
   ordersRef.current = orders;
   const vendorsRef = useRef<Vendor[]>([]);
@@ -506,6 +508,7 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
   );
 
   const openOrder = useCallback((orderId: string, mode: DrawerMode = 'view', fallback?: Order | null) => {
+    const request = ++drawerRequest.current;
     setDrawer({ id: orderId, mode });
     if (ordersRef.current.some((order) => order.id === orderId)) {
       setDrawerFallback(null);
@@ -516,11 +519,19 @@ export const App: React.FC<{clerkAdmin?: AdminProfile; onClerkSignOut?: () => vo
     setDrawerFallback(fallback ?? null);
     setDrawerLoad({ loading: true, error: '' });
     apiService.fetchOrder(orderId)
-      .then((order) => { setDrawerFallback((current) => (current && current.id === orderId ? mergeInto(current, order) : order)); setDrawerLoad({ loading: false, error: '' }); })
-      .catch((error) => { handleSessionError(error); setDrawerLoad({ loading: false, error: error instanceof Error ? error.message : 'This order could not be loaded.' }); });
+      .then((order) => {
+        if (request !== drawerRequest.current) return;
+        setDrawerFallback((current) => (current && current.id === orderId ? mergeInto(current, order) : order));
+        setDrawerLoad({ loading: false, error: '' });
+      })
+      .catch((error) => {
+        if (request !== drawerRequest.current) return;
+        handleSessionError(error);
+        setDrawerLoad({ loading: false, error: error instanceof Error ? error.message : 'This order could not be loaded.' });
+      });
   }, [handleSessionError]);
 
-  const closeDrawer = useCallback(() => { setDrawer(null); setDrawerFallback(null); setDrawerLoad({ loading: false, error: '' }); }, []);
+  const closeDrawer = useCallback(() => { drawerRequest.current++; setDrawer(null); setDrawerFallback(null); setDrawerLoad({ loading: false, error: '' }); }, []);
   const setDrawerMode = useCallback((mode: DrawerMode) => setDrawer((current) => (current ? { ...current, mode } : current)), []);
 
   const setVendorBusy = (vendorId: string, busy: boolean) => {
