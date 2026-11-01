@@ -36,6 +36,14 @@ jobs:
       - run: python3 ../scripts/demo/generate_hosted_catalog.py --check
       - run: python3 ../scripts/qa/check_ui_terminology.py
       - run: python3 ../scripts/qa/test_terminology_guard.py
+      - name: Focused store capacity regressions
+        id: capacity_regressions
+        run: |
+          mkdir -p ../Docs/production-readiness/evidence/ci
+          npm test -- --runTestsByPath test/unit/fulfillment_readiness.test.ts test/e2e/capacity_store_workload.test.ts --json --outputFile=../Docs/production-readiness/evidence/ci/capacity-regressions.json
+      - name: Report store capacity failures
+        if: always() && steps.capacity_regressions.outcome == 'failure'
+        run: python3 ../scripts/qa/report_jest_results.py ../Docs/production-readiness/evidence/ci/capacity-regressions.json
       - name: Complete backend regression (one invocation)
         run: |
           mkdir -p ../Docs/production-readiness/evidence/ci

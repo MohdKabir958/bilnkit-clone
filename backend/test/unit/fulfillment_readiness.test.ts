@@ -20,6 +20,16 @@ describe('fulfillment readiness policies',()=>{
   expect(capacityDecision({...input,eligibleRiders:0},now).canCheckout).toBe(false);
   expect(capacityDecision({...input,pendingOrders:2},now).canCheckout).toBe(false);
  });
+ test('other stores demand does not consume this stores packing limit when riders have spare capacity',()=>{
+  expect(capacityDecision({eligibleRiders:5,pendingOrders:3,storePreparingOrders:0,
+   preparationMinutes:10,maxPreparingOrders:2,deliverySeconds:300,busy:false,outage:false},now))
+   .toMatchObject({state:'AVAILABLE',canCheckout:true,reason:'CAPACITY_AVAILABLE'});
+ });
+ test('assigned orders still consume this stores packing capacity',()=>{
+  expect(capacityDecision({eligibleRiders:5,pendingOrders:0,storePreparingOrders:2,
+   preparationMinutes:10,maxPreparingOrders:2,deliverySeconds:300,busy:false,outage:false},now))
+   .toMatchObject({canCheckout:false,onlineAllowed:false,reason:'STORE_AT_CAPACITY'});
+ });
  test('nearby rider waits for packing; distant travel justifies early matching; ready always matches',()=>{
   expect(dispatchTiming(base,{durationSeconds:60},now).eligible).toBe(false);
   expect(dispatchTiming(base,{durationSeconds:540},now).eligible).toBe(true);
