@@ -773,8 +773,11 @@ void main() {
         await pay(tester, 'Pay ₹145');
         expect(find.textContaining('closed for new orders'), findsWidgets,
             reason: 'the notice (and the snackbar) show the error');
-        await tester.pump(const Duration(seconds: 4));
-        await tester.pumpAndSettle(); // finish the snackbar's exit animation
+        // Dismiss the transient snackbar before exercising the persistent
+        // inline notice and form. Fake-clock waits do not dismiss it reliably.
+        await tester.fling(
+            find.byType(SnackBar), const Offset(0, 200), 1000);
+        await tester.pumpAndSettle();
         expect(find.byType(SnackBar), findsNothing);
 
         // The keyboard comes up (the delivery note is being typed).
