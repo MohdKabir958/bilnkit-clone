@@ -773,7 +773,9 @@ void main() {
         await pay(tester, 'Pay ₹145');
         expect(find.textContaining('closed for new orders'), findsWidgets,
             reason: 'the notice (and the snackbar) show the error');
-        await tester.pump(const Duration(seconds: 4)); // the snackbar has gone
+        await tester.pump(const Duration(seconds: 4));
+        await tester.pumpAndSettle(); // finish the snackbar's exit animation
+        expect(find.byType(SnackBar), findsNothing);
 
         // The keyboard comes up (the delivery note is being typed).
         tester.view.viewInsets = const FakeViewPadding(bottom: 280);

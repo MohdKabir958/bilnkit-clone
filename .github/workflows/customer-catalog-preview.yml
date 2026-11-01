@@ -48,6 +48,7 @@ jobs:
           set -o pipefail
           flutter test --no-pub --machine test/checkout_layout_recovery_test.dart \
             test/payment_readiness_test.dart test/reference_home_test.dart \
+            test/bughunt_screens_test.dart \
             | tee "$GROZO_FLUTTER_TEST_JSON"
       - name: Native Clerk handoff regressions
         working-directory: apps/customer_app
