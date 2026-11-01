@@ -1,8 +1,8 @@
 {
-  "path": "clerk-staging/1.16.3-27-cf34106/Grozo-Customer-Clerk-Test.apk",
-  "sourceCommit": "cf34106ee60a947282650d2f8a2bd922b92f375a",
-  "versionName": "1.16.3",
-  "versionCode": 2027,
-  "sha256": "ae14e8a72e25f21fd354c1e9e0b7730fe4cea4b26284a7086f965165eb5e3141",
+  "path": "clerk-staging/1.16.4-28-7b75b43/Grozo-Customer-Clerk-Test.apk",
+  "sourceCommit": "7b75b431715eceb073e02d43054d0d132cab0992",
+  "versionName": "1.16.4",
+  "versionCode": 2028,
+  "sha256": "8be760bf45a15f3f11a1aa92731e8f6f28f4e25d3aa047911f849daaed73dcf4",
   "inPlaceUpdateCompatible": false
 }

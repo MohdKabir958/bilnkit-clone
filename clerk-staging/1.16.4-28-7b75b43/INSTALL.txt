@@ -1,0 +1,9 @@
+Grozo Customer 1.16.4, Android ARM64 API 24+ preview.
+Connected to https://grozo-backend-3wdf.onrender.com/api using Clerk development authentication.
+New development signing certificate: this cannot update the older preview in place.
+Preserve any needed local data, then uninstall the old preview and install this APK.
+Uninstalling clears local app data; server records are preserved. Sign in again.
+Select a saved delivery address, or add one in an enabled service city.
+Firebase push is unconfigured in this preview; it is not a Play Store release.
+PNG captures are actual Flutter widgets rendered with synthetic fixtures, not physical-device screenshots.
+Delivery still needs an approved online rider with recent real GPS in the enabled service area. Payment configuration is independent.
