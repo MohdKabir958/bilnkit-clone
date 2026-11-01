@@ -71,6 +71,7 @@ class SessionProvider with ChangeNotifier {
   String? _accessError;
   String? _connectionError;
   int _restoreEpoch = 0;
+  int _profileSaveRequest = 0;
 
   /// Name Google gave us for a brand-new account (pre-fills sign-up step 1).
   String? _googleName;
@@ -312,6 +313,9 @@ class SessionProvider with ChangeNotifier {
   }
 
   void _begin(CustomerUser user, {required bool needsProfile}) {
+    _restoreEpoch++;
+    _profileSaveRequest++;
+    _savingProfile = false;
     _accessError = null;
     _connectionError = null;
     if (_user?.id != user.id) {
@@ -335,6 +339,12 @@ class SessionProvider with ChangeNotifier {
       bool? isStudent,
       String? hostelBlock,
       int? avatarId}) async {
+    final userId = _user?.id;
+    if (_disposed || userId == null) {
+      return const ProfileResult(success: false, message: 'Sign in to update your profile.');
+    }
+    final epoch = _restoreEpoch;
+    final request = ++_profileSaveRequest;
     _savingProfile = true;
     notifyListeners();
     final result = await CustomerApiService.updateProfile(
@@ -343,6 +353,9 @@ class SessionProvider with ChangeNotifier {
         isStudent: isStudent,
         hostelBlock: hostelBlock,
         avatarId: avatarId);
+    if (_disposed || epoch != _restoreEpoch || request != _profileSaveRequest || _user?.id != userId) {
+      return const ProfileResult(success: false, message: 'Your account changed. Please try again.');
+    }
     _savingProfile = false;
     if (_user != null && result.success && result.user != null) {
       _user = CustomerUser.fromJson(result.user!);
@@ -395,6 +408,7 @@ class SessionProvider with ChangeNotifier {
 
   void _endSession({String? reason}) {
     _restoreEpoch++;
+    _profileSaveRequest++;
     _accessError = reason;
     _connectionError = null;
     final wasActive = _user != null || _status != SessionStatus.signedOut;

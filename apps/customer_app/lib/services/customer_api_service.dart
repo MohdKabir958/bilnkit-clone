@@ -238,12 +238,21 @@ class CustomerApiService {
       if (avatarId != null) 'avatarId': avatarId,
     };
     try {
+      final headers = await getAuthHeaders();
+      final epoch = _tokenEpoch;
+      final identity = ClerkSessions.instance.identity.value;
       final response = await _put(
         Uri.parse('${ApiConfig.baseUrl}/auth/profile'),
-        headers: await getAuthHeaders(),
+        headers: headers,
         body: jsonEncode(payload),
         timeout: const Duration(seconds: 10),
       );
+      final current = ClerkSessions.instance.identity.value;
+      if (epoch != _tokenEpoch ||
+          (GrozoAuthConfig.usesClerk &&
+              (identity.userId != current.userId || identity.sessionId != current.sessionId))) {
+        return const ProfileResult(success: false, message: 'Your account changed. Please try again.');
+      }
       if (await _rejectIfUnauthorized(response)) {
         return const ProfileResult(
             success: false, statusCode: 401, message: sessionExpiredMessage);
