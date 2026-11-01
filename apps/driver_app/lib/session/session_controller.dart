@@ -26,6 +26,7 @@ class SessionController extends ChangeNotifier {
       : auth = auth ?? ApiPartnerAuthService() {
     if (GrozoAuthConfig.usesClerk) {
       ClerkSessions.instance.onIdentityChanged = (_) {
+        _sessionEpoch++;
         if (_session != null) unawaited(expire());
       };
     }
@@ -42,6 +43,12 @@ class SessionController extends ChangeNotifier {
   SessionStatus _status = SessionStatus.checking;
   PartnerSession? _session;
   bool _expiring = false;
+  bool _disposed = false;
+  int _sessionEpoch = 0;
+  int _profileRequest = 0;
+
+  // Network responses belong to the account and request that started them.
+  bool _isCurrent(int epoch) => !_disposed && epoch == _sessionEpoch;
   String? _signOutNotice;
 
   /// The duty Grozo reported at the last successful login / profile read, and when that request was sent.
@@ -61,6 +68,7 @@ class SessionController extends ChangeNotifier {
   }
 
   void _set(SessionStatus status, [PartnerSession? session]) {
+    if (_disposed) return;
     _status = status;
     _session = session;
     notifyListeners();
@@ -120,29 +128,48 @@ class SessionController extends ChangeNotifier {
 
   /// App start: validate the stored token, or fall through to the login screen.
   Future<void> restore() async {
+    if (_disposed) return;
+    // Initialization may emit the first identity event; start the request after it.
+    if (GrozoAuthConfig.usesClerk) {
+      try {
+        await ClerkSessions.instance.initialize();
+      } catch (_) {
+        if (!_disposed) _set(SessionStatus.unreachable);
+        return;
+      }
+    }
+    if (_disposed) return;
+    final epoch = ++_sessionEpoch;
     String? token;
     try {
       token = await DriverApiService.getSavedToken();
     } catch (_) {
+      if (!_isCurrent(epoch)) return;
       _set(SessionStatus.unreachable);
       return;
     }
+    if (!_isCurrent(epoch)) return;
     if (token == null || token.isEmpty) {
       _set(SessionStatus.signedOut);
       return;
     }
     final stored = GrozoAuthConfig.usesClerk ? null : await _loadStored();
     final askedAt = DateTime.now();
+    if (!_isCurrent(epoch)) return;
     final result = await auth.fetchProfile(token);
+    if (!_isCurrent(epoch)) return;
     switch (result.outcome) {
       case ProfileOutcome.valid:
         final merged = _mergeFresh(stored, result.session!);
         await _persist(merged);
+        if (!_isCurrent(epoch)) return;
         if (merged.approval != PartnerApproval.approved) await _forgetDuty();
+        if (!_isCurrent(epoch)) return;
         dutyReading.value = DutyReading(merged.dutyStatus, askedAt);
         _set(SessionStatus.signedIn, merged);
       case ProfileOutcome.unauthorized:
         await _clearAll();
+        if (!_isCurrent(epoch)) return;
         if (result.suspended) {
           _signOutNotice = DriverApiService.accountPausedMessage;
         }
@@ -162,10 +189,16 @@ class SessionController extends ChangeNotifier {
   /// status flips to signed-in; on failure the result tells the screen what to show.
   Future<LoginResult> login(String phone, String password) async {
     final askedAt = DateTime.now();
+    final epoch = ++_sessionEpoch;
     final result = await auth.login(phone: phone, password: password);
+    if (!_isCurrent(epoch)) {
+      return const LoginResult.failure(LoginFailure.invalidCredentials);
+    }
     if (result.ok) {
       await DriverApiService.saveToken(result.token!);
+      if (!_isCurrent(epoch)) return const LoginResult.failure(LoginFailure.invalidCredentials);
       await _persist(result.session!);
+      if (!_isCurrent(epoch)) return const LoginResult.failure(LoginFailure.invalidCredentials);
       dutyReading.value = DutyReading(result.session!.dutyStatus, askedAt);
       _set(SessionStatus.signedIn, result.session);
     }
@@ -175,10 +208,14 @@ class SessionController extends ChangeNotifier {
   /// Creates a rider account. On success the new rider is signed in straight away and the gate
   /// shows the "waiting for approval" screen.
   Future<SignupResult> signUp(PartnerSignupForm form) async {
+    final epoch = ++_sessionEpoch;
     final result = await auth.signUp(form);
+    if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
     if (result.ok && result.token != null) {
       await DriverApiService.saveToken(result.token!);
+      if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
       await _persist(result.session!);
+      if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
       _set(SessionStatus.signedIn, result.session);
     }
     return result;
@@ -186,16 +223,21 @@ class SessionController extends ChangeNotifier {
 
   /// Fixes and re-sends an application that is pending or was rejected.
   Future<SignupResult> resubmit(PartnerSignupForm form) async {
+    final epoch = _sessionEpoch;
+    _profileRequest++;
     final token = await DriverApiService.getSavedToken();
     if (token == null || token.isEmpty) {
       return const SignupResult.failure(SignupFailure.unauthorized);
     }
+    if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
     final result = await auth.resubmit(token, form);
+    if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
     if (result.ok) {
       final answered = result.session;
       if (answered != null) {
         final merged = _mergeFresh(_session, answered);
         await _persist(merged);
+        if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
         _set(SessionStatus.signedIn, merged);
       } else {
         // Grozo accepted it (200) without sending the account back: read the new state ourselves.
@@ -210,11 +252,15 @@ class SessionController extends ChangeNotifier {
   /// Asks Grozo where the application stands. Returns true when something changed. Safe to call
   /// from a timer: a network problem keeps the current state.
   Future<bool> refreshApproval() async {
-    if (_status != SessionStatus.signedIn) return false;
+    if (_disposed || _status != SessionStatus.signedIn) return false;
+    final epoch = _sessionEpoch;
+    final request = ++_profileRequest;
     final token = await DriverApiService.getSavedToken();
     if (token == null || token.isEmpty) return false;
     final askedAt = DateTime.now();
+    if (!_isCurrent(epoch) || request != _profileRequest) return false;
     final result = await auth.fetchProfile(token);
+    if (!_isCurrent(epoch) || request != _profileRequest) return false;
     switch (result.outcome) {
       case ProfileOutcome.valid:
         final before = _session;
@@ -226,7 +272,9 @@ class SessionController extends ChangeNotifier {
         // form must not open with stale values), but they are not an "approval changed" answer for the caller.
         final detailsChanged = before == null || !before.sameDetailsAs(fresh);
         await _persist(fresh);
+        if (!_isCurrent(epoch) || request != _profileRequest) return false;
         if (fresh.approval != PartnerApproval.approved) await _forgetDuty();
+        if (!_isCurrent(epoch) || request != _profileRequest) return false;
         _session = fresh;
         dutyReading.value = DutyReading(fresh.dutyStatus, askedAt);
         if (changed || detailsChanged) notifyListeners();
@@ -241,6 +289,8 @@ class SessionController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
+    _sessionEpoch++;
     if (GrozoAuthConfig.usesClerk) {
       ClerkSessions.instance.onIdentityChanged = null;
     }
@@ -250,6 +300,8 @@ class SessionController extends ChangeNotifier {
 
   /// A 401 came back from an authenticated call: drop the token, show login.
   Future<void> expire({bool suspended = false}) async {
+    _sessionEpoch++;
+    if (_disposed) return;
     if (_status == SessionStatus.signedOut || _expiring) return;
     _expiring = true;
     try {
@@ -264,6 +316,8 @@ class SessionController extends ChangeNotifier {
   /// Signs out. The server call is best effort and bounded, so a dead network cannot trap
   /// the partner in the app; local data is always cleared.
   Future<void> logout({Future<void> Function()? beforeClear}) async {
+    _sessionEpoch++;
+    if (_disposed) return;
     final token = await DriverApiService.getSavedToken();
     final hook = beforeSignOut;
     if (hook != null) {

@@ -31,6 +31,7 @@ class SessionController extends ChangeNotifier {
         locationApi = locationApi ?? HttpVendorLocationApi() {
     if (GrozoAuthConfig.usesClerk) {
       ClerkSessions.instance.onIdentityChanged = (_) {
+        _sessionEpoch++;
         if (_session != null) unawaited(expire());
       };
     }
@@ -38,6 +39,8 @@ class SessionController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
+    _sessionEpoch++;
     if (GrozoAuthConfig.usesClerk) {
       ClerkSessions.instance.onIdentityChanged = null;
     }
@@ -66,11 +69,19 @@ class SessionController extends ChangeNotifier {
   SessionStatus _status = SessionStatus.checking;
   PartnerSession? _session;
   bool _expiring = false;
+  bool _disposed = false;
+  int _sessionEpoch = 0;
+  int _profileRequest = 0;
+  int _storeRequest = 0;
+
+  // Network responses belong to the account and request that started them.
+  bool _isCurrent(int epoch) => !_disposed && epoch == _sessionEpoch;
 
   SessionStatus get status => _status;
   PartnerSession? get session => _session;
 
   void _set(SessionStatus status, [PartnerSession? session]) {
+    if (_disposed) return;
     _status = status;
     _session = session;
     notifyListeners();
@@ -121,26 +132,44 @@ class SessionController extends ChangeNotifier {
 
   /// App start: validate the stored token, or fall through to the login screen.
   Future<void> restore() async {
+    if (_disposed) return;
+    // Initialization may emit the first identity event; start the request after it.
+    if (GrozoAuthConfig.usesClerk) {
+      try {
+        await ClerkSessions.instance.initialize();
+      } catch (_) {
+        if (!_disposed) _set(SessionStatus.unreachable);
+        return;
+      }
+    }
+    if (_disposed) return;
+    final epoch = ++_sessionEpoch;
     String? token;
     try {
       token = await VendorApiService.getSavedToken();
     } catch (_) {
+      if (!_isCurrent(epoch)) return;
       _set(SessionStatus.unreachable);
       return;
     }
+    if (!_isCurrent(epoch)) return;
     if (token == null || token.isEmpty) {
       _set(SessionStatus.signedOut);
       return;
     }
     final stored = GrozoAuthConfig.usesClerk ? null : await _loadStored();
+    if (!_isCurrent(epoch)) return;
     final result = await auth.fetchProfile(token);
+    if (!_isCurrent(epoch)) return;
     switch (result.outcome) {
       case ProfileOutcome.valid:
         final merged = _mergeFresh(stored, result.session!);
         await _persist(merged);
+        if (!_isCurrent(epoch)) return;
         _set(SessionStatus.signedIn, merged);
       case ProfileOutcome.unauthorized:
         await _clearAll();
+        if (!_isCurrent(epoch)) return;
         _set(SessionStatus.signedOut);
       case ProfileOutcome.unreachable:
         // Keep the token: a dropped network must not log a cook out mid-shift.
@@ -156,10 +185,16 @@ class SessionController extends ChangeNotifier {
   /// Signs in with phone + password. On success the token and basics are saved and the
   /// status flips to signed-in; on failure the result tells the screen what to show.
   Future<LoginResult> login(String phone, String password) async {
+    final epoch = ++_sessionEpoch;
     final result = await auth.login(phone: phone, password: password);
+    if (!_isCurrent(epoch)) {
+      return const LoginResult.failure(LoginFailure.invalidCredentials);
+    }
     if (result.ok) {
       await VendorApiService.saveToken(result.token!);
+      if (!_isCurrent(epoch)) return const LoginResult.failure(LoginFailure.invalidCredentials);
       await _persist(result.session!);
+      if (!_isCurrent(epoch)) return const LoginResult.failure(LoginFailure.invalidCredentials);
       locationPromptShown = false; // a new login asks again (once)
       _set(SessionStatus.signedIn, result.session);
     }
@@ -169,10 +204,14 @@ class SessionController extends ChangeNotifier {
   /// Creates a restaurant account. On success the new owner is signed in straight away and the gate
   /// shows the "waiting for approval" screen.
   Future<SignupResult> signUp(PartnerSignupForm form) async {
+    final epoch = ++_sessionEpoch;
     final result = await auth.signUp(form);
+    if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
     if (result.ok && result.token != null) {
       await VendorApiService.saveToken(result.token!);
+      if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
       await _persist(result.session!);
+      if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
       // The form just offered "Use my current location"; do not pop a sheet over the status screen right away. The
       // banner stays and the next login / app start asks again.
       locationPromptShown = true;
@@ -183,11 +222,15 @@ class SessionController extends ChangeNotifier {
 
   /// Fixes and re-sends an application that is pending or was rejected.
   Future<SignupResult> resubmit(PartnerSignupForm form) async {
+    final epoch = _sessionEpoch;
+    _profileRequest++;
     final token = await VendorApiService.getSavedToken();
     if (token == null || token.isEmpty) {
       return const SignupResult.failure(SignupFailure.unauthorized);
     }
+    if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
     final result = await auth.resubmit(token, form);
+    if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
     if (result.ok) {
       final answered = result.session;
       final now = _session;
@@ -198,6 +241,7 @@ class SessionController extends ChangeNotifier {
           : now?.copyWith(approval: PartnerApproval.pending, clearReason: true);
       if (next != null) {
         await _persist(next);
+        if (!_isCurrent(epoch)) return const SignupResult.failure(SignupFailure.unauthorized);
         _set(SessionStatus.signedIn, next);
       }
       if (answered == null) {
@@ -214,10 +258,14 @@ class SessionController extends ChangeNotifier {
   /// Asks Grozo where the application stands. Returns true when something changed. Safe to call
   /// from a timer: a network problem keeps the current state.
   Future<bool> refreshApproval() async {
-    if (_status != SessionStatus.signedIn) return false;
+    if (_disposed || _status != SessionStatus.signedIn) return false;
+    final epoch = _sessionEpoch;
+    final request = ++_profileRequest;
     final token = await VendorApiService.getSavedToken();
     if (token == null || token.isEmpty) return false;
+    if (!_isCurrent(epoch) || request != _profileRequest) return false;
     final result = await auth.fetchProfile(token);
+    if (!_isCurrent(epoch) || request != _profileRequest) return false;
     switch (result.outcome) {
       case ProfileOutcome.valid:
         final before = _session;
@@ -239,6 +287,7 @@ class SessionController extends ChangeNotifier {
             return false;
           }
         }
+        if (!_isCurrent(epoch) || request != _profileRequest) return false;
         final changed = before == null ||
             before.approval != fresh.approval ||
             before.rejectionReason != fresh.rejectionReason ||
@@ -251,6 +300,7 @@ class SessionController extends ChangeNotifier {
             before.lat != fresh.lat ||
             before.lng != fresh.lng;
         await _persist(fresh);
+        if (!_isCurrent(epoch) || request != _profileRequest) return false;
         _session = fresh;
         if (changed) notifyListeners();
         return changed;
@@ -263,12 +313,16 @@ class SessionController extends ChangeNotifier {
   }
 
   Future<void> selectStore(String id) async {
+    final epoch = _sessionEpoch;
+    final request = ++_storeRequest;
+    _profileRequest++;
     final response = await http
         .get(
             Uri.parse(
                 '${ApiConfig.baseUrl}/v1/partner/stores/${Uri.encodeComponent(id)}'),
             headers: await VendorApiService.getAuthHeaders())
         .timeout(const Duration(seconds: 12));
+    if (!_isCurrent(epoch) || request != _storeRequest) return;
     if (response.statusCode != 200) {
       throw Exception('Store access could not be verified.');
     }
@@ -279,7 +333,9 @@ class SessionController extends ChangeNotifier {
         !fresh.isApproved) {
       throw Exception('Store access is unavailable.');
     }
+    _profileRequest++;
     await _persist(fresh);
+    if (!_isCurrent(epoch) || request != _storeRequest) return;
     _session = fresh;
     notifyListeners();
   }
@@ -289,11 +345,16 @@ class SessionController extends ChangeNotifier {
   /// carries the server's message.
   Future<ApiResult<SavedLocation>> saveRestaurantLocation(
       LocationFix fix) async {
+    final epoch = _sessionEpoch;
+    final vendorId = _session?.vendorId;
     final result = await locationApi.save(
         lat: fix.lat,
         lng: fix.lng,
         accuracyM: fix.accuracyM,
-        vendorId: _session?.vendorId);
+        vendorId: vendorId);
+    if (!_isCurrent(epoch) || vendorId != _session?.vendorId) {
+      return const ApiResult.failure(ApiFailure.unauthorized);
+    }
     final saved = result.data;
     if (!result.ok || saved == null) {
       return result.ok ? const ApiResult.failure(ApiFailure.server) : result;
@@ -307,6 +368,9 @@ class SessionController extends ChangeNotifier {
           setAt: saved.setAt,
           accuracyM: saved.accuracyM);
       await _persist(updated);
+      if (!_isCurrent(epoch) || vendorId != _session?.vendorId) {
+        return const ApiResult.failure(ApiFailure.unauthorized);
+      }
       _session = updated;
       notifyListeners();
     }
@@ -319,6 +383,8 @@ class SessionController extends ChangeNotifier {
 
   /// A 401 came back from an authenticated call: drop the token, show login.
   Future<void> expire() async {
+    _sessionEpoch++;
+    if (_disposed) return;
     if (_status == SessionStatus.signedOut || _expiring) return;
     _expiring = true;
     try {
@@ -333,6 +399,8 @@ class SessionController extends ChangeNotifier {
   /// Signs out. The server call is best effort and bounded, so a dead network cannot trap
   /// the partner in the app; local data is always cleared.
   Future<void> logout({Future<void> Function()? beforeClear}) async {
+    _sessionEpoch++;
+    if (_disposed) return;
     final token = await VendorApiService.getSavedToken();
     try {
       await Future.wait<void>([
